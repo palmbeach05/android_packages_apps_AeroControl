@@ -87,7 +87,7 @@ public final class PerAppService extends Service {
         new Thread(mRunnable).start();
     }
 
-    `@Override`
+    @Override
     public void onDestroy() {
         mDestroyed = true;
         if (mRunnable != null) {
