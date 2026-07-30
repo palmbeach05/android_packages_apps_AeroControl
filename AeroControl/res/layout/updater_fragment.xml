@@ -1,18 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
     <PreferenceCategory android:title="@string/pref_updater">
-
         <com.aero.control.helpers.Android.CustomPreference
-            android:key="backup_kernel"
             android:title="@string/pref_backup_kernel"
-            android:summary="@string/pref_backup_kernel_sum" />
-
+            android:key="backup_kernel"
+            android:summary="@string/pref_backup_kernel_sum"/>
     </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/pref_restore">
-
-    </PreferenceCategory>
-
+    <PreferenceCategory android:title="@string/pref_restore"/>
 </PreferenceScreen>

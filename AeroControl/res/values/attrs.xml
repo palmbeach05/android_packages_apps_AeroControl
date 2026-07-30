@@ -1,90 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ The MIT License (MIT)
-  ~
-  ~ Copyright (c) 2014 Robin Chutaux
-  ~
-  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
-  ~ of this software and associated documentation files (the "Software"), to deal
-  ~ in the Software without restriction, including without limitation the rights
-  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  ~ copies of the Software, and to permit persons to whom the Software is
-  ~ furnished to do so, subject to the following conditions:
-  ~
-  ~ The above copyright notice and this permission notice shall be included in
-  ~ all copies or substantial portions of the Software.
-  ~
-  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  ~ THE SOFTWARE.
-  -->
-
 <resources>
-    <declare-styleable name="RippleView">
-        <attr name="rv_alpha" format="integer" />
-        <attr name="rv_framerate" format="integer"/>
-        <attr name="rv_rippleDuration" format="integer"/>
-        <attr name="rv_zoomDuration" format="integer" />
-        <attr name="rv_color" format="color" />
-        <attr name="rv_centered" format="boolean" />
-        <attr name="rv_type" format="enum">
-            <enum name="simpleRipple" value="0"/>
-            <enum name="doubleRipple" value="1"/>
-            <enum name="rectangle" value="2" />
-        </attr>
-        <attr name="rv_ripplePadding" format="dimension" />
-        <attr name="rv_zoom" format="boolean" />
-        <attr name="rv_zoomScale" format="float" />
-
-    </declare-styleable>
-
-    <declare-styleable name="ViewPagerIndicator">
-        <!-- Style of the circle indicator. -->
-        <attr name="vpiCirclePageIndicatorStyle" format="reference"/>
-    </declare-styleable>
-
-    <attr name="centered" format="boolean" />
-    <attr name="selectedColor" format="color" />
-    <attr name="strokeWidth" format="dimension" />
-    <attr name="unselectedColor" format="color" />
-
-    <declare-styleable name="CirclePageIndicator">
-        <!-- Whether or not the indicators should be centered. -->
-        <attr name="centered" />
-        <!-- Color of the filled circle that represents the current page. -->
-        <attr name="fillColor" format="color" />
-        <!-- Color of the filled circles that represents pages. -->
-        <attr name="pageColor" format="color" />
-        <!-- Orientation of the indicator. -->
-        <attr name="android:orientation"/>
-        <!-- Radius of the circles. This is also the spacing between circles. -->
-        <attr name="radius" format="dimension" />
-        <!-- Whether or not the selected indicator snaps to the circles. -->
-        <attr name="snap" format="boolean" />
-        <!-- Color of the open circles. -->
-        <attr name="strokeColor" format="color" />
-        <!-- Width of the stroke used to draw the circles. -->
-        <attr name="strokeWidth" />
-        <!-- View background -->
-        <attr name="android:background"/>
-    </declare-styleable>
-
-    <bool name="portrait_only">true</bool>
-
-    <!-- indicate if the slider must show number indicator -->
-    <attr name="showNumberIndicator" format="boolean" />
-    <!-- in progress view indicate max value of progress -->
-    <attr name="max" format="integer" />
-    <!-- in progress view indicate min value of progress -->
-    <attr name="min" format="integer" />
-
-    <declare-styleable name="CardBox">
-        <attr name="cardTitle" format="string" />
-        <attr name="cardContent" format="string" />
-    </declare-styleable>
-
+    <attr name="chart_axisThickness" format="dimension">
+    </attr>
+    <attr name="chart_axisColor" format="reference|color">
+    </attr>
+    <attr name="chart_axisBorderSpacing" format="dimension">
+    </attr>
+    <attr name="chart_axisTopSpacing" format="dimension">
+    </attr>
+    <attr name="chart_labels" format="boolean">
+    </attr>
+    <attr name="chart_labelColor" format="reference|color">
+    </attr>
+    <attr name="chart_fontSize" format="dimension">
+    </attr>
+    <attr name="chart_typeface" format="string">
+    </attr>
+    <attr name="chart_shadowColor" format="reference|color">
+    </attr>
+    <attr name="chart_shadowDx" format="dimension">
+    </attr>
+    <attr name="chart_shadowDy" format="dimension">
+    </attr>
+    <attr name="chart_shadowRadius" format="dimension">
+    </attr>
+    <attr name="chart_barSpacing" format="dimension">
+    </attr>
+    <attr name="chart_setSpacing" format="dimension">
+    </attr>
+    <attr name="fab_colorPressed" format="color">
+    </attr>
+    <attr name="fab_colorDisabled" format="color">
+    </attr>
+    <attr name="fab_colorNormal" format="color">
+    </attr>
+    <attr name="fab_icon" format="reference">
+    </attr>
+    <attr name="fab_size">
+        <enum name="mini" value="1" />
+        <enum name="normal" value="0" />
+    </attr>
+    <attr name="fab_title" format="string">
+    </attr>
+    <attr name="fab_stroke_visible" format="boolean">
+    </attr>
+    <attr name="fab_plusIconColor" format="color">
+    </attr>
+    <attr name="fab_addButtonColorPressed" format="color">
+    </attr>
+    <attr name="fab_addButtonColorNormal" format="color">
+    </attr>
+    <attr name="fab_addButtonSize">
+        <enum name="mini" value="1" />
+        <enum name="normal" value="0" />
+    </attr>
+    <attr name="fab_addButtonPlusIconColor" format="color">
+    </attr>
+    <attr name="fab_addButtonStrokeVisible" format="boolean">
+    </attr>
+    <attr name="fab_labelStyle" format="reference">
+    </attr>
+    <attr name="fab_labelsPosition">
+        <enum name="left" value="0" />
+        <enum name="right" value="1" />
+    </attr>
+    <attr name="fab_expandDirection">
+        <enum name="left" value="2" />
+        <enum name="right" value="3" />
+        <enum name="down" value="1" />
+        <enum name="up" value="0" />
+    </attr>
+    <attr name="sv_backgroundColor" format="reference|color">
+    </attr>
+    <attr name="sv_detailTextColor" format="reference|color">
+    </attr>
+    <attr name="sv_titleTextColor" format="reference|color">
+    </attr>
+    <attr name="sv_buttonBackgroundColor" format="reference|color">
+    </attr>
+    <attr name="sv_buttonForegroundColor" format="reference|color">
+    </attr>
+    <attr name="sv_buttonText" format="reference|string">
+    </attr>
+    <attr name="sv_detailTextAppearance" format="reference">
+    </attr>
+    <attr name="sv_titleTextAppearance" format="reference">
+    </attr>
+    <attr name="sv_showcaseColor" format="reference|color">
+    </attr>
+    <attr name="sv_tintButtonColor" format="reference|boolean">
+    </attr>
+    <attr name="showcaseViewStyle" format="reference">
+    </attr>
+    <attr name="rv_alpha" format="integer">
+    </attr>
+    <attr name="rv_framerate" format="integer">
+    </attr>
+    <attr name="rv_rippleDuration" format="integer">
+    </attr>
+    <attr name="rv_zoomDuration" format="integer">
+    </attr>
+    <attr name="rv_color" format="color">
+    </attr>
+    <attr name="rv_centered" format="boolean">
+    </attr>
+    <attr name="rv_type">
+        <enum name="doubleRipple" value="1" />
+        <enum name="rectangle" value="2" />
+        <enum name="simpleRipple" value="0" />
+    </attr>
+    <attr name="rv_ripplePadding" format="dimension">
+    </attr>
+    <attr name="rv_zoom" format="boolean">
+    </attr>
+    <attr name="rv_zoomScale" format="float">
+    </attr>
+    <attr name="vpiCirclePageIndicatorStyle" format="reference">
+    </attr>
+    <attr name="centered" format="boolean">
+    </attr>
+    <attr name="selectedColor" format="color">
+    </attr>
+    <attr name="strokeWidth" format="dimension">
+    </attr>
+    <attr name="unselectedColor" format="color">
+    </attr>
+    <attr name="fillColor" format="color">
+    </attr>
+    <attr name="pageColor" format="color">
+    </attr>
+    <attr name="radius" format="dimension">
+    </attr>
+    <attr name="snap" format="boolean">
+    </attr>
+    <attr name="strokeColor" format="color">
+    </attr>
+    <attr name="showNumberIndicator" format="boolean">
+    </attr>
+    <attr name="max" format="integer">
+    </attr>
+    <attr name="min" format="integer">
+    </attr>
+    <attr name="cardTitle" format="string">
+    </attr>
+    <attr name="cardContent" format="string">
+    </attr>
 </resources>

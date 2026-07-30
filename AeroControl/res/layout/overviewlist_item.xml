@@ -1,60 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent">
-
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <com.aero.control.helpers.CardLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-    <!-- We need to set the listview element
-        in one separated relative layout. Otherwise
-        we couldn't interact with the screen -->
-
-    <ListView
-        android:id="@+id/listView1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:divider="@null"
-        android:dividerHeight="-2dp"
-        android:layout_marginTop="-1dp"
-        android:listSelector="@android:color/transparent"/>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            style="@style/CardStyle">
-
-            <TextView
-                android:textSize="20sp"
-                android:id="@+id/header"
-                android:layout_width="fill_parent"
+        <ListView
+            android:id="@+id/listView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="-1dp"
+            android:listSelector="@android:color/transparent"
+            android:divider="@null"
+            android:dividerHeight="-2dp"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#263238"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/right_header"
-                android:textSize="20sp"
-                android:textColor="#263238"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"/>
-
-            <TextView
-                android:textSize="14sp"
-                android:textColor="#263238"
-                android:id="@+id/content"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"/>
-        </RelativeLayout>
-    </LinearLayout>
+                style="@style/CardStyle">
+                <TextView
+                    android:textSize="20sp"
+                    android:textColor="#263238"
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:textSize="20sp"
+                    android:textColor="#263238"
+                    android:id="@+id/right_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"/>
+                <TextView
+                    android:textSize="14sp"
+                    android:textColor="#263238"
+                    android:id="@+id/content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="25dp"/>
+            </RelativeLayout>
+        </LinearLayout>
     </com.aero.control.helpers.CardLayout>
 </RelativeLayout>

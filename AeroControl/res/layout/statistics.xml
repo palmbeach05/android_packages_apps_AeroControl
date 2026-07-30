@@ -1,59 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
     android:orientation="horizontal"
-    android:padding="5dp">
-
-    <TextView android:id="@+id/noCpuData"
+    android:padding="5dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
         android:textSize="20sp"
+        android:textColor="@color/light_grey"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:id="@+id/noCpuData"
+        android:padding="32dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_centerHorizontal="true"
-        android:padding="32dp"
         android:text="@string/nocpu_data"
-        android:textColor="@color/light_grey" />
-
+        android:layout_centerHorizontal="true"/>
     <com.echo.holographlibrary.PieGraph
+        android:id="@+id/graph"
         android:layout_width="match_parent"
         android:layout_height="220dp"
-        android:id="@+id/graph"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"/>
     <TextView
+        android:textSize="26dp"
+        android:gravity="center"
         android:id="@+id/statisticFreq"
         android:layout_width="124dp"
         android:layout_height="40dp"
         android:layout_marginTop="65dp"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:textSize="26dp"/>
+        android:layout_centerHorizontal="true"/>
     <TextView
+        android:gravity="center"
         android:id="@+id/statisticTime"
-        style="?android:textAppearanceLarge"
         android:layout_width="144dp"
         android:layout_height="30dp"
         android:layout_marginTop="105dp"
         android:layout_centerHorizontal="true"
-        android:gravity="center"/>
+        style="?android:attr/textAppearanceLarge"/>
     <TextView
+        android:textSize="42dp"
+        android:gravity="center"
         android:id="@+id/statisticPercentage"
         android:layout_width="124dp"
         android:layout_height="45dp"
         android:layout_marginTop="130dp"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:textSize="42dp"/>
-
-
+        android:layout_centerHorizontal="true"/>
     <ListView
         android:id="@+id/statisticListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginTop="240dp"
-        android:drawSelectorOnTop="true"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
         android:layout_marginBottom="48dp"
+        android:drawSelectorOnTop="true"
         android:divider="@android:color/transparent"
-        android:dividerHeight="2dip"/>
-
+        android:dividerHeight="2dp"/>
 </RelativeLayout>

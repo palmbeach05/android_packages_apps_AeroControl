@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Aero Control</string>
     <string name="drawer_open">Deschideți sertarul de navigare</string>
@@ -22,35 +23,22 @@
     <string name="refresh">Reîmprospătare</string>
     <string name="legal">Mențiuni legale</string>
     <string name="send_email">Trimite un e-mail</string>
-
-    <!-- Default Navigation Drawer entries -->
-
     <string name="slider_overview">Prezentare generală</string>
     <string name="slider_cpu_settings">Performanță CPU</string>
     <string name="slider_gpu_settings">Control GPU</string>
     <string name="slider_memory_settings">Tuning memorie</string>
     <string name="slider_defy_parts">Setări dispozitiv</string>
-    <string name="slider_updater">Actualizator</string>
     <string name="slider_profile">Profile</string>
     <string name="slider_statistics">Statistici CPU</string>
-    
-    <!-- Overview Elements -->
-
     <string name="kernel_version">Nucleu:</string>
     <string name="current_cpu_speed">Frecvență CPU:</string>
     <string name="current_gpu_speed">Frecvență GPU</string>
     <string name="current_governor">Manager CPU:</string>
     <string name="current_io_governor">Manager Intrare/Ieșire:</string>
     <string name="available_memory">Memorie totală:</string>
-
-    <!-- Action Overflow Menu -->
-
     <string name="about">Despre program</string>
     <string name="aero_settings">Setări</string>
-
-    <!-- Preference Menu -->
-
-    <string name="pref_appspecific">Specifice aplicației </string>
+    <string name="pref_appspecific">Specifice aplicației</string>
     <string name="pref_setatboot">Stabilește setările la pornire</string>
     <string name="pref_setatboot_sum">Atenție: Aceast lucru va stabili setările la pornirea sistemului.</string>
     <string name="pref_rebootcheck">Random Reboot Checker</string>
@@ -59,167 +47,92 @@
     <string name="pref_updatepath_sum">Setați locația pentru actualizările dorite.</string>
     <string name="pref_app_theme">Teme pentru aplicație</string>
     <string name="pref_app_theme_sum">Definește tema implicită pentru aplicație.</string>
-
     <string name="app_theme_red">Roșu - Light Holo cu accent roșu</string>
     <string name="app_theme_light">Deschis - Light Holo cu accent albastru</string>
     <string name="app_theme_dark">Închis - Light Holo cu accent albastru și bară activități neagră</string>
-
-    <!-- About -->
-    <string name="about_dialog">Bună ziua. Vă mulțumesc pentru utilizarea acestei aplicații. Numele meu este
-                        Alexander Christ (Blechd0se) și am scris această aplicație pentru distracție în timpul meu liber.
-                        De asemenea este Sursă Deschisă, așa că puteți să luați Codul Sursă și să-l modificați după cum doriți.
-                        Dacă doriți, puteți dona, fie lui Quarx pentru ROM-ul său minunat sau pentru mine.
-                        <b>Plăcerea de a trăi se află în a dărui.</b>
-    </string>
-    
-    <!-- Legal Notices -->
-    <string name="legal_dialog">Această aplicație este sub licență Apache. O copie acesteia poate fi descărcată aici:
-                        <b>http://www.apache.org/licenses/LICENSE-2.0</b>\n
-                        ShowCase Library de Alex Curran este sub licență Apache 2.0.\n
-                        HoloGraph Library de Daniel Nadeau este sub licență Apache 2.0.
-
-    </string>
-
-    <!-- Root Check -->
-    <string name="root_required">Se pare că dispozitivul nu are acces la Root. Această aplicație nu va funcționa corect fără acces Root.
-                                Dacă credeți că e o greșeală, informați-mă!</string>
-
-    <!-- CPU Fragment -->
-
+    <string name="about_dialog">Bună ziua. Vă mulțumesc pentru utilizarea acestei aplicații. Numele meu este Alexander Christ (Blechd0se) și am scris această aplicație pentru distracție în timpul meu liber. De asemenea este Sursă Deschisă, așa că puteți să luați Codul Sursă și să-l modificați după cum doriți. Dacă doriți, puteți dona, fie lui Quarx pentru ROM-ul său minunat sau pentru mine. Plăcerea de a trăi se află în a dărui. </string>
+    <string name="legal_dialog">Această aplicație este sub licență Apache. O copie acesteia poate fi descărcată aici: http://www.apache.org/licenses/LICENSE-2.0\n ShowCase Library de Alex Curran este sub licență Apache 2.0.\n HoloGraph Library de Daniel Nadeau este sub licență Apache 2.0. </string>
+    <string name="root_required">Se pare că dispozitivul nu are acces la Root. Această aplicație nu va funcționa corect fără acces Root. Dacă credeți că e o greșeală, informați-mă!</string>
     <string name="pref_cpu_freq">Frecvențe</string>
     <string name="pref_cpu_freqmax">Frecvență Maximă</string>
     <string name="pref_cpu_freqmin">Frecvență Minimă</string>
     <string name="pref_cpu_governor">Setare manager CPU</string>
     <string name="perf_live_oc_uc">OC/UC în timp real</string>
     <string name="perf_live_oc_uc_sum">Controlează Frecvețele și Tensiunile în timp real!</string>
-
     <string name="pref_gov_choose">Setări manager CPU</string>
     <string name="pref_gov_choose_sum">Aceasta va seta managerul favorit pentru CPU!</string>
-
     <string name="pref_gov_set">Setări specifice managerului pentru CPU</string>
     <string name="pref_gov_set_sum">Aici stabiliți setarile specifice managerului pentru CPU.</string>
-
-    <!-- Memory Fragment -->
     <string name="pref_memory_settings">Setări Memorie</string>
-
-    <string name="pref_memory_swappiness">Swappiness</string>
-    <string name="pref_memory_swappiness_sum">Swappiness definește cât de agresiv nucleul va folosi partiția swap.</string>
-
     <string name="pref_dynamic_fsync">FSync dinamic</string>
     <string name="pref_dynamic_fsync_sum">FSync dinamic este activ numai atunci când ecranul este oprit.</string>
-
     <string name="pref_memory_swap">Swap</string>
     <string name="pref_memory_swap_sum">Creați un dispozitiv swap.</string>
-
     <string name="pref_memory_zcache">zCache</string>
     <string name="pref_memory_zcache_sum">zCache folosește timpul procesorului pentru o gestionare puțin mai bună a memoriei.</string>
-
     <string name="pref_memory_zcache_compression">Compresia zCache</string>
     <string name="pref_memory_zcache_compression_sum">Alegeți metoda de compresie pentru zCache.</string>
-
     <string name="pref_dynamic_writeback">Control Writeback</string>
     <string name="pref_dynamic_writeback_sum">Activează sau dezactivează controlul Writeback aici.</string>
-    
     <string name="pref_low_mem_option">Optiune memorie mică</string>
     <string name="pref_low_mem_option_sum">Activează sau dezactivează opțiunea memorie mică. Aceasta s-ar putea să ajute dispozitivele cu 4.4+ (Kitkat).</string>
-
     <string name="pref_fstrim">Opțiuni Trim</string>
     <string name="pref_fstrim_sum">Utilizați Trim pe diverse partiții ale sistemului dvs! Aceast lucru ar putea dura câteva minute.</string>
-
-    <string name="pref_min_free_ram">Cantitatea de RAM liberă</string>
-    <string name="pref_min_free_ram_sum">Aici setați cantitatea reală de RAM liberă.</string>
-
     <string name="has_journal_dialog_header">A fost detectată o problemă</string>
-
-    <string name="has_journal_dialog">Se pare că partitia /data partition nu are activată caracteristica <b>has_journal</b>.
-                            Vă rugăm să reporniți sistemul în recovery și rulați următoarea comandă prin adb shell: <br /> <br />
-                            <b>tune2fs -O has_journal /dev/block/mmcblk1p25</b>
-    </string>
-    
+    <string name="has_journal_dialog">Se pare că partitia /data partition nu are activată caracteristica has_journal. Vă rugăm să reporniți sistemul în recovery și rulați următoarea comandă prin adb shell:   tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
     <string name="reboot_notifier_header">Oops, aceasta nu trebuia să se întâmple</string>
-    <string name="reboot_notifier">Se pare că nucleul s-a prăbușit. Verifică
-                    \n<b>/proc/last_kmsg </b> \nand trimite acest fișier programatorului tău favorit. Serios, trimite-l! \n
-                    Ne cerem scuze pentru inconvenient!</string>
-
-    <!-- IO Scheduler -->
+    <string name="reboot_notifier">Se pare că nucleul s-a prăbușit. Verifică \n/proc/last_kmsg  \nand trimite acest fișier programatorului tău favorit. Serios, trimite-l! \n Ne cerem scuze pentru inconvenient!</string>
     <string name="io_scheduler">Manager Intrare/Ieșire</string>
-
-    <!-- GPU Fragment -->
     <string name="pref_gpu_control_enable">Control GPU</string>
-    <string name="pref_gpu_control_enable_sum">Aceast lucru va permite un control al driverului GPU. Se ocupă de frecvențe și tensiuni cât
-                                            și un manager de bază pentru GPU.</string>
+    <string name="pref_gpu_control_enable_sum">Aceast lucru va permite un control al driverului GPU. Se ocupă de frecvențe și tensiuni cât și un manager de bază pentru GPU.</string>
     <string name="pref_gpu_max_freq">Frecvență maximă</string>
     <string name="pref_gpu_max_freq_sum">Acest lucru va seta Frecvența maximă pentru GPU. Implicită este 200 MHz.</string>
-
     <string name="pref_display_color">Culoare Afișaj</string>
     <string name="pref_display_color_sum">Aici reglați cularea afișajului.</string>
     <string name="defy_red_colors">Culoare Defy Roșu</string>
     <string name="defy_green_colors">Culoare Defy Verde</string>
     <string name="defy_energy_saver">Economizor Energie</string>
-    
     <string name="pref_sweeptowake">Sweep2Wake</string>
     <string name="pref_sweeptowake_sum">Poate consuma bateria un pic mai mult decât de obicei.</string>
-
-    <!-- Updater Fragment -->
     <string name="pref_updater">Actualizare Nucleu și copie de siguranță</string>
     <string name="pref_backup_kernel">Copie de siguranță Nucleu</string>
-    <string name="pref_backup_kernel_content">Aceast lucru va salva o copie a nucleului curent.</string>
-
     <string name="pref_updater_kernel">Actualizare Nucleu</string>
-    <string name="pref_updater_kernel_content">Acest lucru va actualiza nucleul.</string>
-
     <string name="pref_restore">Restaurare Copie de siguranță</string>
     <string name="pref_restore_kernel">Restaurare</string>
-    <string name="pref_restore_kernel_content">Restaurarea unei copii de siguranță a nucleului.</string>
-
-    <string name="last_backup_from">Ultima copie de siguranță din </string>
-    <string name="backup_from">Copie de siguranță de la </string>
-    <string name="restore_from_backup">Doriți să restaurați copia de siguranță din </string>
+    <string name="last_backup_from">Ultima copie de siguranță din</string>
+    <string name="backup_from">Copie de siguranță de la</string>
+    <string name="restore_from_backup">Doriți să restaurați copia de siguranță din</string>
     <string name="proceed_backup">Continuați? Acest lucru va face o copie de siguranță la nucleul curent.</string>
-
-    <!-- Showcase Strings -->
     <string name="showcase_aero_fragment">Bun venit în Aero Control!</string>
-    <string name="showcase_aero_fragment_sum">Trageți de la stânga spre dreapta pentru a afișa sertarul de navigare.
-                                                Pagina pe care o vizualizați în acet moment este pagina de prezentare generală.
-                                                Există un mic rezumat pentru unele setări ale nucleului. Sunt în timp real,
-                                                nu trebuie să reîmprospătați nimic!</string>
-
+    <string name="showcase_aero_fragment_sum">Trageți de la stânga spre dreapta pentru a afișa sertarul de navigare. Pagina pe care o vizualizați în acet moment este pagina de prezentare generală. Există un mic rezumat pentru unele setări ale nucleului. Sunt în timp real, nu trebuie să reîmprospătați nimic!</string>
     <string name="showcase_memory_fragment_trim">Opțiuni Trim</string>
-    <string name="showcase_memory_fragment_trim_sum">Pentru a menține performanța dispozitivului, puteți utiliza Trim
-                                                    pe diverse partiții ale sistemului dvs. de operare. Acest lucru poate
-                                                    dura un anumit timp, mai ales dacă sunt stocate o mulțime date.</string>
-                                                    
+    <string name="showcase_memory_fragment_trim_sum">Pentru a menține performanța dispozitivului, puteți utiliza Trim pe diverse partiții ale sistemului dvs. de operare. Acest lucru poate dura un anumit timp, mai ales dacă sunt stocate o mulțime date.</string>
     <string name="showcase_cpu_fragment_governor">Manager CPU</string>
-    <string name="showcase_cpu_fragment_governor_sum">Click pe acest simbol pentru a obține acces la setările managerului! Pentru a obține  
-                                                performanță poți modifica fiecare parametru pentru fiecare manager în parte, .</string>
+    <string name="showcase_cpu_fragment_governor_sum">Click pe acest simbol pentru a obține acces la setările managerului! Pentru a obține performanță poți modifica fiecare parametru pentru fiecare manager în parte, .</string>
     <string name="showcase_hidden_feature">Felicitări!</string>
-    <string name="showcase_hidden_feature_sum">Ai găsit o setare secretă! Nu spune nimănui despre asta și dacă ai
-                                         probleme, nu te impacienta. E secretul nostru.</string>
-
+    <string name="showcase_hidden_feature_sum">Ai găsit o setare secretă! Nu spune nimănui despre asta și dacă ai probleme, nu te impacienta. E secretul nostru.</string>
     <string name="showcase_profile_fragment">Adaugă Profile!</string>
-    <string name="showcase_profile_fragment_sum">Apasă pe acest buton pentru a adăuga un profil. Toate setările tale vor fi salvate in acest
-                                        nou Profil. Dacă ai salvat mai multe Profile le poți încărca apăsând pe ele.</string>
-
-
-    <!-- Defy Parts -->
+    <string name="showcase_profile_fragment_sum">Apasă pe acest buton pentru a adăuga un profil. Toate setările tale vor fi salvate in acest nou Profil. Dacă ai salvat mai multe Profile le poți încărca apăsând pe ele.</string>
     <string name="pref_general_settings_defy">Setări generale</string>
     <string name="pref_charging_led">Culoare LED în timpul îcărcării</string>
     <string name="pref_charging_led_sum">Culoarea LED-ului în timp ce bateria este încărcată</string>
-
     <string name="pref_button_brightness">Luminozitate butoane</string>
     <string name="pref_button_brightness_sum">Schimba intensitatea luminii butoanelor.</string>
-
     <string name="pref_multitouch">Puncte Multitouch</string>
     <string name="pref_multitouch_sum">Numărul punctelor multitouch.</string>
-
     <string name="pref_charge_led_mode_white">LED Alb</string>
     <string name="pref_charge_led_mode_rgb">LED Mixt (roșu/verde)</string>
     <string name="pref_charge_led_mode_off">Stins</string>
-
-    <!-- Profile Fragment -->
     <string name="pref_profile_enter_name">Trebuie să introduci un nume.</string>
     <string name="pref_profile_name_exists">Acest nume există deja.</string>
     <string name="pref_profile_change_name">Introduceți alt nume</string>
     <string name="pref_profile_change_name_sum">Schimbă numele profilului tău.</string>
-
+    <string name="slider_updater">Actualizator</string>
+    <string name="pref_memory_swappiness">Swappiness</string>
+    <string name="pref_memory_swappiness_sum">Swappiness definește cât de agresiv nucleul va folosi partiția swap.</string>
+    <string name="pref_min_free_ram">Cantitatea de RAM liberă</string>
+    <string name="pref_min_free_ram_sum">Aici setați cantitatea reală de RAM liberă.</string>
+    <string name="pref_backup_kernel_content">Aceast lucru va salva o copie a nucleului curent.</string>
+    <string name="pref_updater_kernel_content">Acest lucru va actualiza nucleul.</string>
+    <string name="pref_restore_kernel_content">Restaurarea unei copii de siguranță a nucleului.</string>
 </resources>

@@ -1,22 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
     <PreferenceCategory
         android:title="@string/pref_gpu_control_enable"
         android:key="gpu_settings">
-
         <com.aero.control.helpers.Android.CustomPreference
-            android:key="gpu_gov_settings"
             android:title="@string/perf_gpu_gov_settings"
-            android:summary="@string/perf_gpu_gov_settings_sum" />
-
+            android:key="gpu_gov_settings"
+            android:summary="@string/perf_gpu_gov_settings_sum"/>
         <com.aero.control.helpers.Android.CustomPreference
-            android:key="rgbValues"
             android:title="@string/pref_display_color"
+            android:key="rgbValues"
             android:summary="@string/pref_display_color_sum"
-            android:inputType="number" />
-
+            android:inputType="number"/>
     </PreferenceCategory>
-
 </PreferenceScreen>

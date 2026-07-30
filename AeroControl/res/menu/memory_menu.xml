@@ -1,8 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item android:id="@+id/action_io_settings"
-        android:title="@string/pref_io_scheduler"
+    <item
         android:icon="@drawable/ic_action_phone_light"
-        android:showAsAction="always" />
-
+        android:id="@+id/action_io_settings"
+        android:title="@string/pref_io_scheduler"
+        android:showAsAction="always"/>
 </menu>
