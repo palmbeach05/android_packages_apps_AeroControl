@@ -48,12 +48,12 @@
         android:layout_width="64dp"
         android:layout_height="match_parent"
         android:src="@drawable/rocket"
-        android:contentDescription="Assign to apps"/>
+        android:contentDescription="@string/profile_assign_to_apps"/>
     <ImageButton
         android:id="@+id/delete_button"
         android:background="?android:attr/selectableItemBackground"
         android:layout_width="64dp"
         android:layout_height="match_parent"
         android:src="@drawable/ic_action_discard"
-        android:contentDescription="Remove this"/>
+        android:contentDescription="@string/profile_remove"/>
 </LinearLayout>
