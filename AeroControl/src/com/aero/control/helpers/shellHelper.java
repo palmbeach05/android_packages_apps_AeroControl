@@ -2,7 +2,6 @@ package com.aero.control.helpers;
 
 import android.os.SystemClock;
 import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -10,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,827 +17,539 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by Alexander Christ on 18.09.13.
- * Summary of various shell-Methods, for easy method calling
- */
+/* JADX INFO: loaded from: classes.dex */
 public final class shellHelper {
-
-    // Buffer length;
     private static final int BUFF_LEN = 8192;
-    private static final byte[] buffer = new byte[BUFF_LEN];
+    private static final String NO_DATA_FOUND = "Unavailable";
+    private static shellHelper mShellHelper;
+    private List<String> mCommands;
+    private static final byte[] buffer = new byte[8192];
     private static final String LOG_TAG = shellHelper.class.getName();
     private ShellWorkqueue shWork = new ShellWorkqueue();
-    private static shellHelper mShellHelper;
-
-    private List<String> mCommands;
     private Process mProcess = null;
     private DataOutputStream mShellOutput = null;
     private BufferedReader mOutput = null;
-
     private boolean mShellLoaded = false;
 
-    private final static String NO_DATA_FOUND = "Unavailable";
-
-
     private shellHelper() {
-
-        Runnable run = new Runnable() {
-            @Override
+        Runnable run = new Runnable() { // from class: com.aero.control.helpers.shellHelper.1
+            @Override // java.lang.Runnable
             public void run() {
-                openShell();
+                shellHelper.this.openShell();
             }
         };
         Thread worker = new Thread(run);
         worker.start();
     }
 
-    /**
-     * Returns a interactive shell. If no shell objects existed previously,
-     * a new one is created.
-     * @return shellHelper
-     */
     public static synchronized shellHelper instance() {
         if (mShellHelper == null) {
             mShellHelper = new shellHelper();
         }
-
         return mShellHelper;
     }
 
-    /**
-     * Forcefully creates a new shell, this shouldn't be used.
-     * @return shellHelper
-     */
     public static synchronized shellHelper forceInstance() {
-
         mShellHelper = new shellHelper();
-
         return mShellHelper;
     }
 
-    /**
-     * Adds commands to our queue for our shell.
-     * @param commands String[]
-     */
     private synchronized void addCommands(String[] commands) {
         for (String cmd : commands) {
-            if (cmd != null)
+            if (cmd != null) {
                 this.mCommands.add(cmd);
+            }
         }
     }
 
-    /**
-     * Adds a single command to our queue for our shell.
-     * @param cmd String
-     */
     public synchronized void addCommand(String cmd) {
         this.mCommands.add(cmd);
     }
 
-    /**
-     * If necessary, initiates the relevant parts for the shell to work.
-     * This is only used internally.
-     */
-    private synchronized void openShell() {
-
-        if (mCommands == null) {
-            mCommands = new ArrayList<String>();
+    /* JADX INFO: Access modifiers changed from: private */
+    public synchronized void openShell() {
+        if (this.mCommands == null) {
+            this.mCommands = new ArrayList();
         }
         try {
-            if (mProcess == null) {
-                mProcess = Runtime.getRuntime().exec("su");
+            if (this.mProcess == null) {
+                this.mProcess = Runtime.getRuntime().exec("su");
             }
-            if (mShellOutput == null) {
-                mShellOutput = new DataOutputStream(mProcess.getOutputStream());
+            if (this.mShellOutput == null) {
+                this.mShellOutput = new DataOutputStream(this.mProcess.getOutputStream());
             }
-            if (mOutput == null) {
-                mOutput = new BufferedReader(new InputStreamReader(mProcess.getInputStream()));
+            if (this.mOutput == null) {
+                this.mOutput = new BufferedReader(new InputStreamReader(this.mProcess.getInputStream()));
             }
-
-            mShellLoaded = true;
-
+            this.mShellLoaded = true;
         } catch (IOException e) {
             Log.e(LOG_TAG, "We were not able to create a shell!", e);
-            mShellLoaded = false;
+            this.mShellLoaded = false;
         }
-
     }
 
-    /**
-     * Runs our commands without checking the output inside the shell.
-     * This method is only used internally.
-     */
     private synchronized void runCommands() {
-
         openShell();
-
-        if (mShellLoaded) {
-            List<String> commands = Collections.synchronizedList(mCommands);
-
+        if (this.mShellLoaded) {
+            List<String> commands = Collections.synchronizedList(this.mCommands);
             try {
                 for (String cmd : commands) {
-                    mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-                    mShellOutput.flush();
+                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
+                    this.mShellOutput.flush();
                 }
                 try {
-                    mShellOutput.flush();
+                    this.mShellOutput.flush();
                 } catch (IOException e) {
                 }
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Something interrupted our operations...", e);
+            } catch (IOException e2) {
+                Log.e(LOG_TAG, "Something interrupted our operations...", e2);
             }
+            this.mCommands.clear();
         } else {
-            // The shell couldn't be loaded correctly, we are not executing anything and clear our queue
+            this.mCommands.clear();
         }
-        mCommands.clear();
     }
 
-    /**
-     * Returns the output of *all* previously added commands. If one wants
-     * to get the output of the shell, one should call getRootResult() directly
-     * after addCommand() or addCommands().
-     * @return String
-     */
     private String getRootResult() {
-
-        List<String> commands = Collections.synchronizedList(mCommands);
-        char[] buf = new char[BUFF_LEN];
         int read;
+        List<String> commands = Collections.synchronizedList(this.mCommands);
+        char[] buf = new char[8192];
         StringBuilder response = new StringBuilder();
-
-        if (mShellLoaded) {
-            try {
+        try {
+            if (this.mShellLoaded) {
                 for (String cmd : commands) {
-                    mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-
-                    while (true) {
-                        read = mOutput.read(buf);
+                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
+                    do {
+                        read = this.mOutput.read(buf);
                         if (read == -1) {
                             return null;
                         }
-
                         response.append(buf, 0, read);
-
-                        if (read < BUFF_LEN) {
-                            //we have read everything
-                            break;
-                        }
-                    }
-
-                    mShellOutput.flush();
+                    } while (read >= 8192);
+                    this.mShellOutput.flush();
                 }
                 try {
-                    mShellOutput.flush();
+                    this.mShellOutput.flush();
                 } catch (IOException e) {
                 }
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Something interrupted our operations...", e);
-                return null;
-            } finally {
-                mCommands.clear();
             }
+            return response.toString();
+        } catch (IOException e2) {
+            Log.e(LOG_TAG, "Something interrupted our operations...", e2);
+            return null;
+        } finally {
+            this.mCommands.clear();
         }
-
-        return response.toString();
     }
 
-    /*
-     * Allows to simply query up commands to execute by the root process
-     */
     private class ShellWorkqueue {
-
         private ArrayList<String> mWorkItems;
 
-        private void addToWork(String work) {
-
-            if (mWorkItems == null)
-                initWork();
-            mWorkItems.add(work);
+        private ShellWorkqueue() {
         }
 
-        private String[] execWork() {
-            return mWorkItems.toArray(new String[0]);
+        /* JADX INFO: Access modifiers changed from: private */
+        public void addToWork(String work) {
+            if (this.mWorkItems == null) {
+                initWork();
+            }
+            this.mWorkItems.add(work);
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        public String[] execWork() {
+            return (String[]) this.mWorkItems.toArray(new String[0]);
         }
 
         private void initWork() {
-            mWorkItems = new ArrayList<String>();
+            this.mWorkItems = new ArrayList<>();
         }
 
-        private void flushWork() {
-            // Be super save here and check for null
-            if (mWorkItems != null) {
-                mWorkItems.clear();
-                mWorkItems = null;
+        /* JADX INFO: Access modifiers changed from: private */
+        public void flushWork() {
+            if (this.mWorkItems != null) {
+                this.mWorkItems.clear();
+                this.mWorkItems = null;
             }
         }
-
     }
 
-    /**
-     * Adds a work item to the current workqueue
-     *
-     * @param work   => work item (command for shell)
-     *
-     * @return nothing
-     */
     public void queueWork(String work) {
-        shWork.addToWork(work);
+        this.shWork.addToWork(work);
     }
 
-    /**
-     * Executes the current workqueue
-     *
-     * @return nothing
-     */
     public void execWork() {
-        shWork.addToWork("echo ");
-        setRootInfo(shWork.execWork());
+        this.shWork.addToWork("echo ");
+        setRootInfo(this.shWork.execWork());
     }
 
-    /**
-     * Flushes the workqueue with its items
-     *
-     * @return nothing
-     */
     public void flushWork() {
-        shWork.flushWork();
+        this.shWork.flushWork();
     }
 
-    /**
-     * Gets the current Kernel Version + some useful information
-     *
-     * @return String
-     */
     public final String getKernel() {
-        // Taken from Androids/CM Gingerbread Branch:
-        String procVersionStr;
-
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("/proc/version"), BUFF_LEN);
+            BufferedReader reader = new BufferedReader(new FileReader("/proc/version"), 8192);
             try {
-                procVersionStr = reader.readLine();
-            } finally {
+                String procVersionStr = reader.readLine();
                 reader.close();
-            }
-
-            final String PROC_VERSION_REGEX =
-                    "\\w+\\s+" + /* ignore: Linux */
-                            "\\w+\\s+" + /* ignore: version */
-                            "([^\\s]+)\\s+" + /* group 1: 2.6.22-omap1 */
-                            "\\(([^\\s@]+(?:@[^\\s.]+)?)[^)]*\\)\\s+" + /* group 2: (xxxxxx@xxxxx.constant) */
-                            "\\((?:[^(]*\\([^)]*\\))?[^)]*\\)\\s+" + /* ignore: (gcc ..) */
-                            "([^\\s]+)\\s+" + /* group 3: #26 */
-                            "(?:PREEMPT\\s+)?" + /* ignore: PREEMPT (optional) */
-                            "(.+)"; /* group 4: date */
-
-            Pattern p = Pattern.compile(PROC_VERSION_REGEX);
-            Matcher m = p.matcher(procVersionStr);
-
-            if (!m.matches()) {
-                Log.e(LOG_TAG, "Regex did not match on /proc/version: " + procVersionStr);
-                return NO_DATA_FOUND;
-            } else if (m.groupCount() < 4) {
-                Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount()
-                        + " groups");
-                return NO_DATA_FOUND;
-            } else {
-                return (new StringBuilder(m.group(1)).append("\n").append(
-                        m.group(2)).append(" ").append(m.group(3)).append("\n")
-                        .append(m.group(4))).toString();
+                Pattern p = Pattern.compile("\\w+\\s+\\w+\\s+([^\\s]+)\\s+\\(([^\\s@]+(?:@[^\\s.]+)?)[^)]*\\)\\s+\\((?:[^(]*\\([^)]*\\))?[^)]*\\)\\s+([^\\s]+)\\s+(?:PREEMPT\\s+)?(.+)");
+                Matcher m = p.matcher(procVersionStr);
+                if (!m.matches()) {
+                    Log.e(LOG_TAG, "Regex did not match on /proc/version: " + procVersionStr);
+                    return NO_DATA_FOUND;
+                }
+                if (m.groupCount() < 4) {
+                    Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount() + " groups");
+                    return NO_DATA_FOUND;
+                }
+                return m.group(1) + "\n" + m.group(2) + " " + m.group(3) + "\n" + m.group(4);
+            } catch (Throwable th) {
+                reader.close();
+                throw th;
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG,
-                    "IO Exception when getting kernel version for Device Info screen",
-                    e);
-
+            Log.e(LOG_TAG, "IO Exception when getting kernel version for Device Info screen", e);
             return NO_DATA_FOUND;
         }
     }
 
-    /**
-     * Gets information from the filesystem with a given path
-     *
-     * @param s   => path (with filename)
-     *
-     * @return String
-     */
     public final String getInfo(String s) {
-
         String info = NO_DATA_FOUND;
-
-        if (s == null || !(new File(s).exists()))
-            return info;
-
+        if (s == null || !new File(s).exists()) {
+            return NO_DATA_FOUND;
+        }
         try {
-            final BufferedReader reader = new BufferedReader(new FileReader(s), BUFF_LEN);
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
             try {
                 info = reader.readLine();
+                if (info == null) {
+                    info = NO_DATA_FOUND;
+                }
+                return info;
             } finally {
                 reader.close();
             }
-
-            if (info == null)
-                info = NO_DATA_FOUND;
-
-            return info;
         } catch (IOException e) {
-
-            String tmp = null;
-
-            // Make sure that the shell is open;
             openShell();
-
             addCommand("ls -l " + s);
-            tmp = getRootResult();
-
-            // At least try to read it via root, but check for permissions;
-            if (tmp != null && tmp.length() > 10 ) {
-                if (!(tmp.substring(0, 10).equals("--w-------"))) {
-                    //info = getLegacyRootInfo("cat", s);
-                    addCommand("cat " + s);
-                    info = getRootResult();
-                }
+            String tmp = getRootResult();
+            if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
+                addCommand("cat " + s);
+                info = getRootResult();
             }
-
-            if (info.equals(NO_DATA_FOUND))
-                Log.e(LOG_TAG,
-                        "IO Exception when trying to get information.",
-                        e);
-
+            if (info.equals(NO_DATA_FOUND)) {
+                Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+            }
             return info;
         }
     }
 
-    /**
-     * Reads a file from a given path. It has not sanity checks and uses FileInputStream
-     * to read the file.
-     * @param path String, the filepath to read
-     * @return String, the output from the file
-     */
-    public final String getFastInfo(final String path) {
-        String tmp;
+    public final String getFastInfo(String path) {
         try {
-            final FileInputStream fis = new FileInputStream(path);
-            final BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-
-            tmp = br.readLine();
-
+            FileInputStream fis = new FileInputStream(path);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            String tmp = br.readLine();
+            return tmp;
         } catch (IOException e) {
             Log.e(LOG_TAG, "IO Exception when trying to get information. Fallback to getInfo()", e);
-            tmp = getInfo(path);
+            String tmp2 = getInfo(path);
+            return tmp2;
         }
-
-        return tmp;
-
     }
 
-    /**
-     * Gets information from the filesystem with a given path
-     *
-     * @param s           => path (with filename)
-     * @param deepsleep   => Should current deepsleep value be added?
-     *
-     * @return String[]
-     */
     public final String[] getInfo(String s, boolean deepsleep) {
-
-        String info;
-        ArrayList<String> al = new ArrayList<String>();
-
+        ArrayList<String> al = new ArrayList<>();
         if (deepsleep) {
-            long sleepTime = (SystemClock.elapsedRealtime()
-                    - SystemClock.uptimeMillis()) / 10;
+            long sleepTime = (SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()) / 10;
             al.add(Long.toString(sleepTime));
         }
-
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(s), BUFF_LEN);
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
             try {
-                info = reader.readLine();
-
-                while (info != null) {
+                for (String info = reader.readLine(); info != null; info = reader.readLine()) {
                     al.add(info);
-                    info = reader.readLine();
                 }
-
-            } finally {
                 reader.close();
+                return (String[]) al.toArray(new String[0]);
+            } catch (Throwable th) {
+                reader.close();
+                throw th;
             }
-            return al.toArray(new String[0]);
         } catch (IOException e) {
-            Log.e(LOG_TAG,
-                    "IO Exception when trying to get information.",
-                    e);
-
+            Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
             return null;
         }
     }
 
-    /**
-     * Gets all files in a given dictionary
-     *
-     * @param s    => path to read the files
-     * @param flag => for files or directory
-     *
-     * @return String[]
-     */
     public final String[] getDirInfo(String s, boolean flag) {
-
-        String[] result;
-
-        // Return null, if the file doesn't exist
-        if (!(new File(s).exists()))
+        if (!new File(s).exists()) {
             return null;
-
-        // Handle case if files are needed;
+        }
         if (flag) {
-            List<String> results = new ArrayList<String>();
+            List<String> results = new ArrayList<>();
             File[] files = new File(s).listFiles();
-
             for (File file : files) {
                 if (file.isFile()) {
                     results.add(file.getName());
                 }
             }
-
-            result = new String[results.size()];
+            String[] result = new String[results.size()];
             for (int i = 0; i < results.size(); i++) {
                 result[i] = results.get(i);
             }
             Arrays.sort(result);
-
-            return result;
-
-        } else {
-            // Handle case if directory is needed;
-            File file = new File (s);
-            result = file.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return new File(file, s).isDirectory();
-                }
-            });
             return result;
         }
+        return new File(s).list(new FilenameFilter() { // from class: com.aero.control.helpers.shellHelper.2
+            @Override // java.io.FilenameFilter
+            public boolean accept(File file2, String s2) {
+                return new File(file2, s2).isDirectory();
+            }
+        });
     }
 
-    /**
-     * Splits up the information from a string in more usable values
-     * and returns this array.
-     *
-     * @param s         => string used (from a given path)
-     * @param flag      => set to 1 to convert it with @toMHZ
-     * @param flag_io   => set to 1 to read the io_schedulers
-     * @return String[]
-     */
-
     private String[] buildArray(String s, int flag, int flag_io) {
-
         String[] completeString = new String[0];
-        String[] output;
-
-        // Make sure the last value is not a line feed;
-        if ((int)s.charAt(s.length() - 1) == 10) {
-            s = s.replace(Character.toString((char)10), "");
+        if (s.charAt(s.length() - 1) == '\n') {
+            s = s.replace(Character.toString('\n'), "");
         }
-
-        if (flag_io == 1)
+        if (flag_io == 1) {
             completeString = s.replace("[", "").replace("]", "").split(" ");
-        else if (flag_io == 0)
+        } else if (flag_io == 0) {
             completeString = s.split(" ");
-
-        output = new String[completeString.length];
-        output[0] = NO_DATA_FOUND;
-
-        for (int i = 0; i < output.length; i++) {
-            if (flag == 1)
-                output[i] = toMHz(completeString[i]);
-            else
-                output[i] = completeString[i];
         }
-
+        String[] output = new String[completeString.length];
+        output[0] = NO_DATA_FOUND;
+        for (int i = 0; i < output.length; i++) {
+            if (flag == 1) {
+                output[i] = toMHz(completeString[i]);
+            } else {
+                output[i] = completeString[i];
+            }
+        }
         return output;
     }
 
-    /**
-     * This Method returns an Array, useful for the frequency list of the kernel
-     *
-     * @param s       => string used (from a given path)
-     * @param flag    => set to 1 to convert it with @toMHZ
-     * @param flag_io => set to 1 to read the io_schedulers
-     *
-     * @return String[]
-     */
     public final String[] getInfoArray(String s, int flag, int flag_io) {
-
-        String[] output = new String[] { NO_DATA_FOUND };
-        String tmp;
-
+        String[] output = {NO_DATA_FOUND};
         try {
-            // Try to read the given Path, if not available -> throw exception
-            BufferedReader reader = new BufferedReader(new FileReader(s), BUFF_LEN);
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
             try {
                 output = buildArray(reader.readLine(), flag, flag_io);
+                return output;
             } finally {
                 reader.close();
             }
-
-            return output;
         } catch (IOException e) {
-
-            // Make sure that the shell is open;
             openShell();
-
             String result = getRootInfo("ls -l", s);
-
-            // At least try to read it via root, but check for permissions;
-            if (result != null && result.length() > 10) {
-                if (!result.substring(0, 10).equals("--w-------")) {
-                    tmp = getRootInfo("cat", s);
-                    output = buildArray(tmp, flag, flag_io);
-                }
+            if (result != null && result.length() > 10 && !result.substring(0, 10).equals("--w-------")) {
+                String tmp = getRootInfo("cat", s);
+                output = buildArray(tmp, flag, flag_io);
             }
-
-            if (output[0].equals(NO_DATA_FOUND))
-                Log.e(LOG_TAG,
-                        "IO Exception when trying to get information.",
-                        e);
-
+            if (output[0].equals(NO_DATA_FOUND)) {
+                Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+            }
             return output;
         }
     }
 
-    /**
-     * Finds a String between two values (for now only used in io_schedulers)
-     *
-     * @param s   => string used (from a given path)
-     *
-     * @return String
-     */
     public final String getInfoString(String s) {
-
-        int open, close;
-        String finalString = NO_DATA_FOUND;
-
-        open = s.indexOf("[");
-        close = s.lastIndexOf("]");
-        if (open >= 0 && close >= 0) {
-            finalString = s.substring(open + 1, close);
-            return finalString;
-        } else {
-            return finalString;
+        int open = s.indexOf("[");
+        int close = s.lastIndexOf("]");
+        if (open < 0 || close < 0) {
+            return NO_DATA_FOUND;
         }
+        String finalString = s.substring(open + 1, close);
+        return finalString;
     }
 
-    /**
-     * Converts raw frequencies to userfriendly values
-     *
-     * @param mhzString   => String with frequencies
-     *
-     * @return String
-     */
     public final String toMHz(String mhzString) {
-
-        if (mhzString.equals(NO_DATA_FOUND) ||
-                mhzString.equals("Unavaila"))
+        String str;
+        if (mhzString.equals(NO_DATA_FOUND) || mhzString.equals("Unavaila")) {
             return NO_DATA_FOUND;
-
+        }
         try {
-            if (mhzString.length() < 8)
-                return new StringBuilder().append(Integer.valueOf(mhzString) / 1000).append(" MHz")
-                        .toString();
-            else
-                return new StringBuilder().append(Integer.valueOf(mhzString) / 1000000).append(" MHz")
-                        .toString();
+            if (mhzString.length() < 8) {
+                str = (Integer.valueOf(mhzString).intValue() / 1000) + " MHz";
+            } else {
+                str = (Integer.valueOf(mhzString).intValue() / 1000000) + " MHz";
+            }
+            return str;
         } catch (NumberFormatException e) {
-            Log.e(LOG_TAG,
-                    "Tried to add something to a non existing string.",
-                    e);
+            Log.e(LOG_TAG, "Tried to add something to a non existing string.", e);
             return NO_DATA_FOUND;
         }
     }
 
-    /**
-     * Gets the total amount of memory and the total amount
-     * of truly free memory.
-     *
-     * @param s   => path to read
-     *
-     * @return String
-     */
     public final String getMemory(String s) {
-        String totalMemory;
-        String totalFreeMemory;
-
         try {
-            /* /proc/meminfo entries follow this format:
-             * MemTotal:         362096 kB
-             * MemFree:           29144 kB
-             * Buffers:            5236 kB
-             * Cached:            81652 kB
-             */
-            BufferedReader reader = new BufferedReader(new FileReader(s), BUFF_LEN);
-            totalMemory = reader.readLine();
-            totalFreeMemory = reader.readLine();
-
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
+            String totalMemory = reader.readLine();
+            String totalFreeMemory = reader.readLine();
             if (totalMemory != null && totalFreeMemory != null) {
-                String parts[] = totalMemory.split("\\s+");
+                String[] parts = totalMemory.split("\\s+");
                 if (parts.length == 3) {
-                    totalMemory = Long.parseLong(parts[1]) / 1024 + " MB";
+                    totalMemory = (Long.parseLong(parts[1]) / 1024) + " MB";
                 }
-                parts = totalFreeMemory.split("\\s+");
-                if (parts.length == 3) {
-                    totalFreeMemory = Long.parseLong(parts[1]) / 1024 + " MB";
+                String[] parts2 = totalFreeMemory.split("\\s+");
+                if (parts2.length == 3) {
+                    totalFreeMemory = (Long.parseLong(parts2[1]) / 1024) + " MB";
                 }
             }
-
+            return totalFreeMemory + " / " + totalMemory;
         } catch (IOException e) {
-            Log.e(LOG_TAG,
-                    "Yep, i can't read your memory stats :( .",
-                    e);
+            Log.e(LOG_TAG, "Yep, i can't read your memory stats :( .", e);
             return NO_DATA_FOUND;
         }
-
-        return totalFreeMemory + " / " + totalMemory;
     }
 
-    /**
-     * Generic Method for setting values in kernel with "echo" command.
-     * This method is just a wrapper for runCommands().
-     *
-     * @param command   => (Object) and the value (echo value >)
-     * @param content   => the path to set the value (echo > path)
-     */
-    public synchronized final void setRootInfo(final String command, final String content) {
-
+    public final synchronized void setRootInfo(String command, String content) {
         String tmp;
-        String[] commands;
-        // Check if last char is a whitespace;
-        tmp = command.substring(command.length() - 1);
-        if (tmp.matches("^\\s*$")) {
+        String tmp2 = command.substring(command.length() - 1);
+        if (tmp2.matches("^\\s*$")) {
             tmp = command.substring(0, command.length() - 1);
         } else {
             tmp = command;
         }
-
-        commands = new String[]{
-                "chmod 0666 " + content,
-                "echo \"" + tmp + "\" " + "> " + content
-        };
-
+        String[] commands = {"chmod 0666 " + content, "echo \"" + tmp + "\" > " + content};
         addCommands(commands);
         runCommands();
     }
-    /**
-     * Generic Method for setting a bunch of commands
-     * Same as setRootInfo but with an array instead of objects.
-     * This method is just a wrapper for runCommands().
-     *
-     * @param array   => Commands to execute in an array
-     */
-    public final void setRootInfo(final String array[]) {
 
+    public final void setRootInfo(String[] array) {
         addCommands(array);
         runCommands();
     }
 
-    /**
-     * Remounts the system (on the Defy) via runCommands();
-     * TODO: Adjust this for the according device.
-     *
-     */
     public final void remountSystem() {
-
         addCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
         runCommands();
     }
 
-    /**
-     * Executes a command in Terminal and returns output.
-     * This method is just a wrapper for getRootResult().
-     *
-     * @param command   => set the command to execute
-     * @param parameter => set a parameter
-     *
-     * @return String
-     */
     public final String getRootInfo(String command, String parameter) {
-
-        String ret = null;
-
         addCommand(command + " " + parameter);
-        ret = getRootResult();
-
+        String ret = getRootResult();
         if (ret == null) {
-            ret = NO_DATA_FOUND;
+            return NO_DATA_FOUND;
         }
-
         return ret;
     }
 
-
-    /**
-     * This method returns an Array, with root rights.
-     * This method is just a wrapper for getRootResult().
-     *
-     * @param command   => the actual command which runs with root-rights
-     * @param split     => delimiter, which seperates the strings (mostly \n)
-     *
-     * @return String[]
-     */
     public final String[] getRootArray(String command, String split) {
-
-        ArrayList<String> temp = new ArrayList<String>();
-        String ret = null;
-
+        ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
-        ret = getRootResult();
-
-        for (String a : ret.split(split)) {
+        String ret = getRootResult();
+        String[] arr$ = ret.split(split);
+        for (String a : arr$) {
             temp.add(a);
         }
-
-        return temp.toArray(new String[0]);
+        return (String[]) temp.toArray(new String[0]);
     }
 
-    /**
-     * Executes a command in Terminal and returns output. Its only used internally for "legacy" devices/operations.
-     *
-     * @param command   => set the command to execute
-     * @param parameter => set a parameter
-     *
-     * @return String
-     */
-    public String getLegacyRootInfo(String command, String parameter) {
-
-        Process rooting = null;
-
-        try {
-            rooting = Runtime.getRuntime().exec("su");
-
-            DataOutputStream stdin = new DataOutputStream(rooting.getOutputStream());
-            
-            stdin.writeBytes(command + " " + parameter + "\n");
-            InputStream stdout = rooting.getInputStream();
-            int read;
-            String output = "";
-            while(true){
-                read = stdout.read(buffer);
-                if (read == -1)
-                    return NO_DATA_FOUND;
-
-                output += new String(buffer, 0, read);
-                if(read<BUFF_LEN){
-                    //we have read everything
-                    break;
-                }
-            }
-            stdin.writeBytes("exit\n");
-            return output;
-
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Do you even root, bro? :/", e);
-        } finally {
-            if (rooting != null) {
-                try {
-                    rooting.waitFor();
-                } catch (InterruptedException e) {}
-                rooting.destroy();
-            }
-        }
-
-        return NO_DATA_FOUND;
+    /* JADX WARN: Removed duplicated region for block: B:40:0x008f A[EXC_TOP_SPLITTER, SYNTHETIC] */
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct code enable 'Show inconsistent code' option in preferences
+    */
+    public java.lang.String getLegacyRootInfo(java.lang.String r11, java.lang.String r12) {
+        /*
+            r10 = this;
+            r3 = 0
+            java.lang.Runtime r6 = java.lang.Runtime.getRuntime()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r7 = "su"
+            java.lang.Process r3 = r6.exec(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.io.DataOutputStream r4 = new java.io.DataOutputStream     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.io.OutputStream r6 = r3.getOutputStream()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r4.<init>(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.StringBuilder r6 = new java.lang.StringBuilder     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r6.<init>()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.StringBuilder r6 = r6.append(r11)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r7 = " "
+            java.lang.StringBuilder r6 = r6.append(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.StringBuilder r6 = r6.append(r12)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r7 = "\n"
+            java.lang.StringBuilder r6 = r6.append(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r6 = r6.toString()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r4.writeBytes(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.io.InputStream r5 = r3.getInputStream()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r1 = ""
+        L3a:
+            byte[] r6 = com.aero.control.helpers.shellHelper.buffer     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            int r2 = r5.read(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r6 = -1
+            if (r2 != r6) goto L4e
+            java.lang.String r1 = "Unavailable"
+            if (r3 == 0) goto L4d
+            r3.waitFor()     // Catch: java.lang.InterruptedException -> L96
+        L4a:
+            r3.destroy()
+        L4d:
+            return r1
+        L4e:
+            java.lang.StringBuilder r6 = new java.lang.StringBuilder     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r6.<init>()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.StringBuilder r6 = r6.append(r1)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r7 = new java.lang.String     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            byte[] r8 = com.aero.control.helpers.shellHelper.buffer     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r9 = 0
+            r7.<init>(r8, r9, r2)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.StringBuilder r6 = r6.append(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            java.lang.String r1 = r6.toString()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            r6 = 8192(0x2000, float:1.148E-41)
+            if (r2 >= r6) goto L3a
+            java.lang.String r6 = "exit\n"
+            r4.writeBytes(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
+            if (r3 == 0) goto L4d
+            r3.waitFor()     // Catch: java.lang.InterruptedException -> L98
+        L75:
+            r3.destroy()
+            goto L4d
+        L79:
+            r0 = move-exception
+            java.lang.String r6 = com.aero.control.helpers.shellHelper.LOG_TAG     // Catch: java.lang.Throwable -> L8c
+            java.lang.String r7 = "Do you even root, bro? :/"
+            android.util.Log.e(r6, r7, r0)     // Catch: java.lang.Throwable -> L8c
+            if (r3 == 0) goto L89
+            r3.waitFor()     // Catch: java.lang.InterruptedException -> L9a
+        L86:
+            r3.destroy()
+        L89:
+            java.lang.String r1 = "Unavailable"
+            goto L4d
+        L8c:
+            r6 = move-exception
+            if (r3 == 0) goto L95
+            r3.waitFor()     // Catch: java.lang.InterruptedException -> L9c
+        L92:
+            r3.destroy()
+        L95:
+            throw r6
+        L96:
+            r6 = move-exception
+            goto L4a
+        L98:
+            r6 = move-exception
+            goto L75
+        L9a:
+            r6 = move-exception
+            goto L86
+        L9c:
+            r7 = move-exception
+            goto L92
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.aero.control.helpers.shellHelper.getLegacyRootInfo(java.lang.String, java.lang.String):java.lang.String");
     }
 
-
-    /**
-     * Sets the proper base addresses for the overclocking module.
-     *
-     * @return boolean, if overclocking was successful
-     */
     public final boolean setOverclockAddress() {
-
-        if (new File("/proc/overclock/omap2_clk_init_cpufreq_table_addr").exists() &&
-                new File("/proc/overclock/cpufreq_stats_update_addr").exists()) {
-
-            // getRootInfo() is much faster for large strings compared to getInfo()
-            final String kallsyms = "/proc/kallsyms";
-            final String omap_address = getLegacyRootInfo("busybox egrep \"omap2_clk_init_cpufreq_table$\"", kallsyms).substring(0, 8);
-            final String cpufreq_address = getLegacyRootInfo("busybox egrep \"cpufreq_stats_update$\"", kallsyms).substring(0, 8);
-
-            final String [] commands = new String[] {
-                    "echo " + "0x" + omap_address + " > " + "/proc/overclock/omap2_clk_init_cpufreq_table_addr",
-                    "echo " + "0x" + cpufreq_address + " > " + "/proc/overclock/cpufreq_stats_update_addr",
-            };
-
-            setRootInfo(commands);
-            return true;
-        } else {
-            // Return quickly;
+        if (!new File("/proc/overclock/omap2_clk_init_cpufreq_table_addr").exists() || !new File("/proc/overclock/cpufreq_stats_update_addr").exists()) {
             return false;
         }
+        String omap_address = getLegacyRootInfo("busybox egrep \"omap2_clk_init_cpufreq_table$\"", "/proc/kallsyms").substring(0, 8);
+        String cpufreq_address = getLegacyRootInfo("busybox egrep \"cpufreq_stats_update$\"", "/proc/kallsyms").substring(0, 8);
+        String[] commands = {"echo 0x" + omap_address + " > /proc/overclock/omap2_clk_init_cpufreq_table_addr", "echo 0x" + cpufreq_address + " > /proc/overclock/cpufreq_stats_update_addr"};
+        setRootInfo(commands);
+        return true;
     }
-
-
 }

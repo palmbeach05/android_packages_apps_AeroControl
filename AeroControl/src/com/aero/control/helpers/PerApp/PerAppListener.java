@@ -1,13 +1,6 @@
 package com.aero.control.helpers.PerApp;
 
-/**
- * Created by Alexander Christ on 05.10.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public interface PerAppListener {
-
-    /*
-     * Position and state of the clicked app;
-     */
-    void OnAppItemClicked(int position, boolean isChecked);
-
+    void OnAppItemClicked(int i, boolean z);
 }

@@ -10,45 +10,43 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-public abstract class CustomView extends RelativeLayout{
-
-    protected final static String MATERIALDESIGNXML = "http://schemas.android.com/apk/res-auto";
-    protected final static String ANDROIDXML = "http://schemas.android.com/apk/res/android";
-
-    final int disabledBackgroundColor = Color.parseColor("#E2E2E2");
-
-    protected int minWidth;
-    protected int minHeight;
-
+/* JADX INFO: loaded from: classes.dex */
+public abstract class CustomView extends RelativeLayout {
+    protected static final String ANDROIDXML = "http://schemas.android.com/apk/res/android";
+    protected static final String MATERIALDESIGNXML = "http://schemas.android.com/apk/res-auto";
+    protected boolean animation;
     protected int backgroundColor;
+    protected int backgroundResId;
     protected int beforeBackground;
-    protected int backgroundResId = -1;
-    protected boolean animation = false;
-
-    // Indicate if user touched this view the last time
-    public boolean isLastTouch = false;
-
-    public CustomView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        onInitDefaultValues();
-    }
+    final int disabledBackgroundColor;
+    public boolean isLastTouch;
+    protected int minHeight;
+    protected int minWidth;
 
     protected abstract void onInitDefaultValues();
 
+    public CustomView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        this.disabledBackgroundColor = Color.parseColor("#E2E2E2");
+        this.backgroundResId = -1;
+        this.animation = false;
+        this.isLastTouch = false;
+        onInitDefaultValues();
+    }
 
-    public static int dpToPx(float dp, Resources resources){
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.getDisplayMetrics());
+    public static int dpToPx(float dp, Resources resources) {
+        float px = TypedValue.applyDimension(1, dp, resources.getDisplayMetrics());
         return (int) px;
     }
 
     public static float dipOrDpToFloat(String value) {
+        String value2;
         if (value.contains("dp")) {
-            value = value.replace("dp", "");
+            value2 = value.replace("dp", "");
+        } else {
+            value2 = value.replace("dip", "");
         }
-        else {
-            value = value.replace("dip", "");
-        }
-        return Float.parseFloat(value);
+        return Float.parseFloat(value2);
     }
 
     public static int getRelativeTop(View myView) {
@@ -58,63 +56,62 @@ public abstract class CustomView extends RelativeLayout{
     }
 
     public static int getRelativeLeft(View myView) {
-        if(myView.getId() == android.R.id.content)
+        if (myView.getId() == 16908290) {
             return myView.getLeft();
-        else
-            return myView.getLeft() + getRelativeLeft((View) myView.getParent());
+        }
+        return getRelativeLeft((View) myView.getParent()) + myView.getLeft();
     }
 
-    // Set atributtes of XML to View
     protected void setAttributes(AttributeSet attrs) {
-        setMinimumHeight(dpToPx(minHeight, getResources()));
-        setMinimumWidth(dpToPx(minWidth, getResources()));
-        if (backgroundResId != -1 && !isInEditMode()) {
-            setBackgroundResource(backgroundResId);
+        setMinimumHeight(dpToPx(this.minHeight, getResources()));
+        setMinimumWidth(dpToPx(this.minWidth, getResources()));
+        if (this.backgroundResId != -1 && !isInEditMode()) {
+            setBackgroundResource(this.backgroundResId);
         }
         setBackgroundAttributes(attrs);
     }
 
     protected void setBackgroundAttributes(AttributeSet attrs) {
-        int backgroundColor = attrs.getAttributeResourceValue(ANDROIDXML,"background",-1);
-        if(backgroundColor != -1){
+        int backgroundColor = attrs.getAttributeResourceValue(ANDROIDXML, "background", -1);
+        if (backgroundColor != -1) {
             setBackgroundColor(getResources().getColor(backgroundColor));
-        }else{
-            // Color by hexadecimal
-            int background = attrs.getAttributeIntValue(ANDROIDXML, "background", -1);
-            if(background != -1 && !isInEditMode()) {
-                setBackgroundColor(background);
-            }else {
-                setBackgroundColor(backgroundColor);
-            }
+            return;
+        }
+        int background = attrs.getAttributeIntValue(ANDROIDXML, "background", -1);
+        if (background != -1 && !isInEditMode()) {
+            setBackgroundColor(background);
+        } else {
+            setBackgroundColor(backgroundColor);
         }
     }
 
-    @Override
+    @Override // android.view.View
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        if(enabled)
-            setBackgroundColor(beforeBackground);
-        else
-            setBackgroundColor(disabledBackgroundColor);
+        if (enabled) {
+            setBackgroundColor(this.beforeBackground);
+        } else {
+            setBackgroundColor(this.disabledBackgroundColor);
+        }
     }
 
-    @Override
+    @Override // android.view.View
     protected void onAnimationStart() {
         super.onAnimationStart();
-        animation = true;
+        this.animation = true;
     }
 
-    @Override
+    @Override // android.view.View
     protected void onAnimationEnd() {
         super.onAnimationEnd();
-        animation = false;
+        this.animation = false;
     }
 
-    @Override
+    @Override // android.view.View
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(animation)
+        if (this.animation) {
             invalidate();
+        }
     }
-
 }

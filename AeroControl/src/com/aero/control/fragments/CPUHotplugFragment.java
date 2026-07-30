@@ -4,62 +4,45 @@ import android.os.Bundle;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.util.Log;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 
-
-/**
- * Created by Alexander Christ on 09.03.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class CPUHotplugFragment extends PlaceHolderFragment {
-
-    private PreferenceScreen root;
     private PreferenceCategory PrefCat;
     private String mHotplugPath;
+    private PreferenceScreen root;
 
-    @Override
+    @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Load the preferences from an XML resource
         addPreferencesFromResource(R.layout.empty_preference);
-        root = this.getPreferenceScreen();
-
-        for (String s : FilePath.HOTPLUG_PATH) {
-            if (AeroActivity.genHelper.doesExist(s))
-                mHotplugPath = s;
+        this.root = getPreferenceScreen();
+        String[] arr$ = FilePath.HOTPLUG_PATH;
+        for (String s : arr$) {
+            if (AeroActivity.genHelper.doesExist(s)) {
+                this.mHotplugPath = s;
+            }
         }
-
-        // Set title
         setTitle(getActivity().getText(R.string.perf_cpu_hotplug_driver).toString());
-
-        // Load our custom preferences;
         loadHotplug();
     }
 
     public void loadHotplug() {
-
-        String completeParamterList[] = AeroActivity.shell.getDirInfo(mHotplugPath, true);
-
-        // If there are already some entries, kill them all (with fire)
-        if (PrefCat != null)
-            root.removePreference(PrefCat);
-
-        PrefCat = new PreferenceCategory(getActivity());
-        PrefCat.setTitle(R.string.perf_cpu_hotplug);
-        root.addPreference(PrefCat);
-
+        String[] completeParamterList = AeroActivity.shell.getDirInfo(this.mHotplugPath, true);
+        if (this.PrefCat != null) {
+            this.root.removePreference(this.PrefCat);
+        }
+        this.PrefCat = new PreferenceCategory(getActivity());
+        this.PrefCat.setTitle(R.string.perf_cpu_hotplug);
+        this.root.addPreference(this.PrefCat);
         try {
-
-            PreferenceHandler h = new PreferenceHandler(getActivity(), PrefCat, getPreferenceManager());
-
-            h.genPrefFromDictionary(completeParamterList, mHotplugPath);
-
+            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+            h.genPrefFromDictionary(completeParamterList, this.mHotplugPath);
         } catch (NullPointerException e) {
             Log.e("Aero", "I couldn't get any files!", e);
         }
-
     }
 }

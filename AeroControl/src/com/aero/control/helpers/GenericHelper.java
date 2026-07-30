@@ -7,25 +7,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * Created by Alexander Christ on 28.09.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class GenericHelper {
-
-    private static final int DEFAULT_DELAY = 200;
     private static final int BYTE = 1024;
-
-    public GenericHelper() { }
+    private static final int DEFAULT_DELAY = 200;
 
     public final int getDefaultDelay() {
         return DEFAULT_DELAY;
     }
 
     public final boolean doesExist(String s) {
-
-        if (s == null)
+        if (s == null) {
             return false;
-
+        }
         return new File(s).exists();
     }
 
@@ -33,27 +27,19 @@ public class GenericHelper {
         return new File(s);
     }
 
-    /**
-     * Copies one file another destination
-     *
-     * @param source      Source file + complete path
-     * @param destination Destination file + complete path
-     *
-     * @throws java.io.IOException
-     */
     public void copyFile(File source, File destination) throws IOException {
-
         InputStream input = new FileInputStream(source);
         OutputStream output = new FileOutputStream(destination);
-
-        // Copy the input;
-        byte[] buf = new byte[BYTE];
-        int len;
-        while ((len = input.read(buf)) > 0) {
-            output.write(buf, 0, len);
+        byte[] buf = new byte[1024];
+        while (true) {
+            int len = input.read(buf);
+            if (len > 0) {
+                output.write(buf, 0, len);
+            } else {
+                input.close();
+                output.close();
+                return;
+            }
         }
-        input.close();
-        output.close();
     }
-
 }

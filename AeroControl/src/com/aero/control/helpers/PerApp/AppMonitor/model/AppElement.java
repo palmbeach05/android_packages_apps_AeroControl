@@ -3,33 +3,40 @@ package com.aero.control.helpers.PerApp.AppMonitor.model;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Alexander Christ on 01.06.15.
- * Data model object to store GUI relevant information of AppMonitor
- */
+/* JADX INFO: loaded from: classes.dex */
 public class AppElement implements Parcelable {
+    public static final Parcelable.Creator<AppElement> CREATOR = new Parcelable.Creator<AppElement>() { // from class: com.aero.control.helpers.PerApp.AppMonitor.model.AppElement.2
+        /* JADX WARN: Can't rename method to resolve collision */
+        @Override // android.os.Parcelable.Creator
+        public AppElement createFromParcel(Parcel source) {
+            return new AppElement(source);
+        }
 
-    private String mAppName;
-    private String mRealAppName;
+        /* JADX WARN: Can't rename method to resolve collision */
+        @Override // android.os.Parcelable.Creator
+        public AppElement[] newArray(int size) {
+            return new AppElement[size];
+        }
+    };
     private Drawable mAppDrawable;
-    private Long mUsage;
-
+    private String mAppName;
     private ArrayList<AppElementDetail> mAverageData;
+    private String mRealAppName;
+    private Long mUsage;
 
     public AppElement(String name, Drawable appDrawable) {
         this.mAppName = name;
         this.mAppDrawable = appDrawable;
-        this.mAverageData = new ArrayList<AppElementDetail>();
+        this.mAverageData = new ArrayList<>();
     }
 
     public AppElement(Parcel parcel) {
         this.mAppName = parcel.readString();
-        this.mAverageData = parcel.readArrayList(new ClassLoader() {
-            @Override
+        this.mAverageData = parcel.readArrayList(new ClassLoader() { // from class: com.aero.control.helpers.PerApp.AppMonitor.model.AppElement.1
+            @Override // java.lang.ClassLoader
             protected Class<?> findClass(String className) throws ClassNotFoundException {
                 return super.findClass(className);
             }
@@ -37,86 +44,43 @@ public class AppElement implements Parcelable {
         this.mRealAppName = parcel.readString();
     }
 
-    /**
-     * Returns the child-data (list) of this AppElement
-     * @return List<AppElementDetail>
-     */
     public List<AppElementDetail> getChildData() {
-        return mAverageData;
+        return this.mAverageData;
     }
 
-    /**
-     * Returns the package name of this AppElement (e.g. com.aero.contro)
-     * @return String
-     */
     public String getName() {
-        return mAppName;
+        return this.mAppName;
     }
 
-    /**
-     * Returns the real name of this AppElement (e.g. Aero Control)
-     * @return String
-     */
     public String getRealName() {
-        return mRealAppName;
+        return this.mRealAppName;
     }
 
-    /**
-     * Allows to set the real name of this AppElement
-     * @param realName String, (e.g. Aero Control)
-     */
     public void setRealName(String realName) {
         this.mRealAppName = realName;
     }
 
-    /**
-     * Returns the drawable that is stored inside this AppElement
-     * @return Drawable (usually the appicon)
-     */
     public Drawable getImage() {
-        return mAppDrawable;
+        return this.mAppDrawable;
     }
 
-    /**
-     * Returns the usage-counter
-     * @return Long
-     */
     public Long getUsage() {
-        return mUsage;
+        return this.mUsage;
     }
 
-    /**
-     * Sets the usage-counter
-     * @param usage Long, usually the TimeUsage in ms
-     */
     public void setUsage(Long usage) {
         this.mUsage = usage;
     }
 
-    @Override
+    @Override // android.os.Parcelable
     public int describeContents() {
         return 0;
     }
 
-    @Override
+    @Override // android.os.Parcelable
     public void writeToParcel(Parcel parcel, int flags) {
-        parcel.writeString(mAppName);
-        parcel.writeList(mAverageData);
-        parcel.writeString(mRealAppName);
+        parcel.writeString(this.mAppName);
+        parcel.writeList(this.mAverageData);
+        parcel.writeString(this.mRealAppName);
     }
-
-    public static final Parcelable.Creator<AppElement> CREATOR =
-            new Parcelable.Creator<AppElement>(){
-
-                @Override
-                public AppElement createFromParcel(Parcel source) {
-                    return new AppElement(source);
-                }
-
-                @Override
-                public AppElement[] newArray(int size) {
-                    return new AppElement[size];
-                }
-            };
-
 }

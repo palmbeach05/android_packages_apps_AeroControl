@@ -9,22 +9,23 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.aero.control.R;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.aero.control.helpers.Util;
-
 import java.util.List;
 
-/**
- * Created by Alexander Christ on 03.05.15.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class AppDataAdapter extends ArrayAdapter<AppElement> {
-
+    private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;
-    private int layoutResourceId;
     private List<AppElement> data;
-    private final static Typeface font = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+    private int layoutResourceId;
+
+    public static class Holder {
+        ImageView image;
+        TextView text;
+        TextView textTime;
+    }
 
     public AppDataAdapter(Context context, int layoutResourceId, List<AppElement> data) {
         super(context, layoutResourceId, data);
@@ -33,61 +34,44 @@ public class AppDataAdapter extends ArrayAdapter<AppElement> {
         this.data = data;
     }
 
-    public static class Holder {
-        ImageView image;
-        TextView text;
-        TextView textTime;
-    }
-
-    @Override
+    @Override // android.widget.ArrayAdapter
     public void clear() {
         super.clear();
         this.data.clear();
-        this.notifyDataSetChanged();
+        notifyDataSetChanged();
     }
 
-    @Override
+    @Override // android.widget.ArrayAdapter, android.widget.BaseAdapter
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
     }
 
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+    @Override // android.widget.ArrayAdapter, android.widget.Adapter
+    public View getView(int position, View convertView, ViewGroup parent) {
+        Holder holder;
         View row = convertView;
-        final Holder holder;
-
         if (row == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(layoutResourceId, null);
-
+            LayoutInflater inflater = (LayoutInflater) this.context.getSystemService("layout_inflater");
+            row = inflater.inflate(this.layoutResourceId, (ViewGroup) null);
             holder = new Holder();
             holder.image = (ImageView) row.findViewById(R.id.rowimage);
-            holder.text = (TextView) row.findViewById((R.id.rowtext));
+            holder.text = (TextView) row.findViewById(R.id.rowtext);
             holder.textTime = (TextView) row.findViewById(R.id.rowtime);
             holder.text.setTypeface(font);
             holder.textTime.setTypeface(font);
-
-
             row.setTag(holder);
         } else {
             holder = (Holder) row.getTag();
         }
-
-        final AppElement overview = data.get(position);
-
-        if (data != null) {
-
+        AppElement overview = this.data.get(position);
+        if (this.data != null) {
             holder.text.setText(overview.getRealName());
-            holder.textTime.setText(Util.getFormatedTimeString(overview.getUsage()));
+            holder.textTime.setText(Util.getFormatedTimeString(overview.getUsage().longValue()));
             holder.image.setImageDrawable(overview.getImage());
-            holder.image.setTag(position);
-
+            holder.image.setTag(Integer.valueOf(position));
         } else {
-            Log.e("Aero",
-                    "No Data found for adapter.");
+            Log.e("Aero", "No Data found for adapter.");
         }
-
         return row;
     }
-
 }

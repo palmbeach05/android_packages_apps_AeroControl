@@ -15,9 +15,8 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout.LayoutParams;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.Material.CardBox;
@@ -28,366 +27,269 @@ import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.db.chart.Tools;
 import com.db.chart.listener.OnEntryClickListener;
 import com.db.chart.model.LineSet;
+import com.db.chart.view.AxisController;
+import com.db.chart.view.ChartView;
 import com.db.chart.view.LineChartView;
-import com.db.chart.view.XController;
-import com.db.chart.view.YController;
 import com.db.chart.view.animation.Animation;
 import com.db.chart.view.animation.easing.cubic.CubicEaseOut;
 import com.db.chart.view.animation.style.DashAnimation;
 import com.getbase.floatingactionbutton.FloatingActionButton;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Alexander Christ on 09.03.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class AppMonitorDetailFragment extends Fragment {
-
-    private ViewGroup mRoot;
     private static LineChartView mLineChart;
+    private TextView mAverage;
+    private List<CardBox> mCards;
+    private TextView mHeader;
+    private Paint mLineGridPaint;
+    private TextView mLineTooltip;
+    private TextView mModuleName;
+    private FloatingActionButton mResetButton;
+    private ViewGroup mRoot;
     private final TimeInterpolator enterInterpolator = new DecelerateInterpolator(1.5f);
     private final TimeInterpolator exitInterpolator = new AccelerateInterpolator();
-    private Paint mLineGridPaint;
     private String mAppName = null;
     private int mMaxValue = 0;
     private int mModule = 10;
-    private TextView mHeader, mLineTooltip, mAverage, mModuleName;
-    private List<CardBox> mCards;
     private int mPositionModule = 0;
-    private FloatingActionButton mResetButton;
-
-    private final OnEntryClickListener lineEntryListener = new OnEntryClickListener(){
-        @Override
+    private final OnEntryClickListener lineEntryListener = new OnEntryClickListener() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.1
+        @Override // com.db.chart.listener.OnEntryClickListener
         public void onClick(int setIndex, int entryIndex, Rect rect) {
-
-            if(mLineTooltip == null)
-                showLineTooltip(entryIndex, rect);
-            else
-                dismissLineTooltip(entryIndex, rect);
+            if (AppMonitorDetailFragment.this.mLineTooltip == null) {
+                AppMonitorDetailFragment.this.showLineTooltip(entryIndex, rect);
+            } else {
+                AppMonitorDetailFragment.this.dismissLineTooltip(entryIndex, rect);
+            }
         }
     };
-
-    private final View.OnClickListener lineClickListener = new View.OnClickListener(){
-        @Override
+    private final View.OnClickListener lineClickListener = new View.OnClickListener() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.2
+        @Override // android.view.View.OnClickListener
         public void onClick(View v) {
-            if(mLineTooltip != null)
-                dismissLineTooltip(-1, null);
+            if (AppMonitorDetailFragment.this.mLineTooltip != null) {
+                AppMonitorDetailFragment.this.dismissLineTooltip(-1, null);
+            }
         }
     };
-
-    private final CardBox.OnClickListener mCardListener = new CardBox.OnClickListener() {
-        @Override
+    private final View.OnClickListener mCardListener = new View.OnClickListener() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.3
+        @Override // android.view.View.OnClickListener
         public void onClick(View v) {
-
             int i = 0;
-            CardBox cb = (CardBox)v;
-
+            CardBox cb = (CardBox) v;
             for (AppModule module : AeroActivity.mJobManager.getModules()) {
                 if (module.getPrefix().equals(cb.getTitle())) {
-                    mModule = module.getIdentifier();
-                    mPositionModule = i;
+                    AppMonitorDetailFragment.this.mModule = module.getIdentifier();
+                    AppMonitorDetailFragment.this.mPositionModule = i;
                 }
                 i++;
             }
-
-            clearUI();
-            loadUI();
+            AppMonitorDetailFragment.this.clearUI();
+            AppMonitorDetailFragment.this.loadUI();
         }
     };
-
-    private final View.OnClickListener mResetListener = new View.OnClickListener() {
-        @Override
+    private final View.OnClickListener mResetListener = new View.OnClickListener() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.4
+        @Override // android.view.View.OnClickListener
         public void onClick(View v) {
-            AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.warning)
-                    .setIcon(R.drawable.warning)
-                    .setMessage(R.string.pref_reset_stats_for_app)
-                    .setPositiveButton(R.string.aero_continue, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            AeroActivity.mJobManager.forceCleanUp(mAppName);
-                            getActivity().onBackPressed();
-                        }
-                    })
-                    .create();
-
+            AlertDialog dialog = new AlertDialog.Builder(AppMonitorDetailFragment.this.getActivity()).setTitle(R.string.warning).setIcon(R.drawable.warning).setMessage(R.string.pref_reset_stats_for_app).setPositiveButton(R.string.aero_continue, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.4.1
+                @Override // android.content.DialogInterface.OnClickListener
+                public void onClick(DialogInterface dialog2, int which) {
+                    AeroActivity.mJobManager.forceCleanUp(AppMonitorDetailFragment.this.mAppName);
+                    AppMonitorDetailFragment.this.getActivity().onBackPressed();
+                }
+            }).create();
             dialog.show();
         }
     };
 
-    @Override
+    @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mRoot = (ViewGroup) inflater.inflate(R.layout.appmonitor_detail, null);
+        this.mRoot = (ViewGroup) inflater.inflate(R.layout.appmonitor_detail, (ViewGroup) null);
         this.mAppName = null;
-
-        mHeader = (TextView) mRoot.findViewById(R.id.usageTimer);
-        mAverage = (TextView) mRoot.findViewById(R.id.topValue);
-        mModuleName = (TextView) mRoot.findViewById(R.id.topModuleName);
-        mCards = new ArrayList<CardBox>();
-        mResetButton = (FloatingActionButton) mRoot.findViewById(R.id.reset_stats);
-
-        // Not super clean, but easier than create a gazillion layouts;
+        this.mHeader = (TextView) this.mRoot.findViewById(R.id.usageTimer);
+        this.mAverage = (TextView) this.mRoot.findViewById(R.id.topValue);
+        this.mModuleName = (TextView) this.mRoot.findViewById(R.id.topModuleName);
+        this.mCards = new ArrayList();
+        this.mResetButton = (FloatingActionButton) this.mRoot.findViewById(R.id.reset_stats);
         if (getActivity().getWindowManager().getDefaultDisplay().getWidth() <= 480) {
-            mResetButton.setVisibility(View.GONE);
+            this.mResetButton.setVisibility(8);
         }
-
-        LinearLayout layoutHolder = (LinearLayout) mRoot.findViewById(R.id.layouthorizontal);
-
-        for (AppModule module : AeroActivity.mJobManager.getModules()) {
+        LinearLayout layoutHolder = (LinearLayout) this.mRoot.findViewById(R.id.layouthorizontal);
+        for (AppModule appModule : AeroActivity.mJobManager.getModules()) {
             CardBox cardbox = new CardBox(getActivity());
-            cardbox.setOnClickListener(mCardListener);
-            mCards.add(cardbox);
+            cardbox.setOnClickListener(this.mCardListener);
+            this.mCards.add(cardbox);
         }
-
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(-1, -2);
         layoutParams.setMargins(0, 0, 15, 0);
-
-
-        // Add the views to our LinearLayout;
-        for (CardBox c : mCards) {
+        for (CardBox c : this.mCards) {
             layoutHolder.addView(c, layoutParams);
         }
-
         clearUI();
         loadUI();
-
-        return mRoot;
+        return this.mRoot;
     }
 
     public final void setTitle(String title) {
-        ((AeroActivity)getActivity()).setActionBarTitle(title);
+        ((AeroActivity) getActivity()).setActionBarTitle(title);
     }
 
-    private void clearUI() {
+    /* JADX INFO: Access modifiers changed from: private */
+    public void clearUI() {
         this.mMaxValue = 0;
         this.mRoot.invalidate();
-
-        // Turn everything normal;
-        for (CardBox b : mCards) {
+        for (CardBox b : this.mCards) {
             b.setBackground(R.drawable.card);
         }
-
-        // Select the one the user wanted to select;
-        mCards.get(mPositionModule).setBackground(R.drawable.card_clicked);
-
-        if (mLineTooltip != null) {
-            mLineChart.dismissTooltip(mLineTooltip);
+        this.mCards.get(this.mPositionModule).setBackground(R.drawable.card_clicked);
+        if (this.mLineTooltip != null) {
+            mLineChart.dismissTooltip(this.mLineTooltip);
             this.mLineTooltip = null;
         }
-        if (mLineChart != null)
+        if (mLineChart != null) {
             mLineChart.reset();
+        }
     }
 
-    private void loadUI() {
-
+    /* JADX INFO: Access modifiers changed from: private */
+    public void loadUI() {
         int i = 0;
-
         if (AeroActivity.mJobManager == null) {
-            // Generate a new instance;
             AeroActivity.mJobManager = JobManager.instance(getActivity());
         }
-
         AeroActivity.mJobManager.wakeUp();
-
         AppElement data = null;
         String suffix = "";
-
-        if (mAppName == null)
-            data = getActivity().getIntent().getExtras().getParcelable("aero_data");
-        else {
-            final List<AppElement> AppData = AeroActivity.mJobManager.getParentChildData(getActivity());
-
+        if (this.mAppName == null) {
+            data = (AppElement) getActivity().getIntent().getExtras().getParcelable("aero_data");
+        } else {
+            List<AppElement> AppData = AeroActivity.mJobManager.getParentChildData(getActivity());
             for (AppElement a : AppData) {
-                if (a.getName().equals(mAppName))
+                if (a.getName().equals(this.mAppName)) {
                     data = a;
+                }
             }
         }
-
         if (data != null) {
             setTitle(data.getRealName());
-            mAppName = data.getName();
+            this.mAppName = data.getName();
         }
-
-        mResetButton.setOnClickListener(mResetListener);
-
-        // Set up our small adapter for all loaded modules;
+        this.mResetButton.setOnClickListener(this.mResetListener);
         for (AppModule module : AeroActivity.mJobManager.getModules()) {
-            if (mModule == module.getIdentifier()) {
+            if (this.mModule == module.getIdentifier()) {
                 suffix = module.getSuffix();
-                mAverage.setText(data.getChildData().get((i + 1)).getContent());
-                mModuleName.setText(data.getChildData().get((i + 1)).getTitle());
+                this.mAverage.setText(data.getChildData().get(i + 1).getContent());
+                this.mModuleName.setText(data.getChildData().get(i + 1).getTitle());
             }
-
-            //mCards.get(i).setContent(data.getChilData().get((i + 1)).getContent());
-            mCards.get(i).setContent(module.getDrawable());
-            mCards.get(i).setTitle(data.getChildData().get((i + 1)).getTitle());
-
+            this.mCards.get(i).setContent(module.getDrawable());
+            this.mCards.get(i).setTitle(data.getChildData().get(i + 1).getTitle());
             i++;
         }
-
         loadGraph(data, suffix);
-
-        mHeader.setText(data.getChildData().get(0).getTitle() + " " + getText(R.string.usage_time));
-
-        mHeader.setTypeface(FilePath.kitkatFont);
+        this.mHeader.setText(data.getChildData().get(0).getTitle() + " " + ((Object) getText(R.string.usage_time)));
+        this.mHeader.setTypeface(FilePath.kitkatFont);
     }
 
-    private void loadGraph(final AppElement data, final String suffix) {
-
-        mLineChart = (LineChartView) mRoot.findViewById(R.id.graph);
-        mLineChart.setOnEntryClickListener(lineEntryListener);
-        mLineChart.setOnClickListener(lineClickListener);
-
-        mLineGridPaint = new Paint();
-        mLineGridPaint.setColor(this.getResources().getColor(R.color.grey));
-        mLineGridPaint.setPathEffect(new DashPathEffect(new float[]{5, 5}, 0));
-        mLineGridPaint.setStyle(Paint.Style.STROKE);
-        mLineGridPaint.setAntiAlias(true);
-        mLineGridPaint.setStrokeWidth(Tools.fromDpToPx(.75f));
-
+    private void loadGraph(AppElement data, String suffix) {
+        mLineChart = (LineChartView) this.mRoot.findViewById(R.id.graph);
+        mLineChart.setOnEntryClickListener(this.lineEntryListener);
+        mLineChart.setOnClickListener(this.lineClickListener);
+        this.mLineGridPaint = new Paint();
+        this.mLineGridPaint.setColor(getResources().getColor(R.color.grey));
+        this.mLineGridPaint.setPathEffect(new DashPathEffect(new float[]{5.0f, 5.0f}, 0.0f));
+        this.mLineGridPaint.setStyle(Paint.Style.STROKE);
+        this.mLineGridPaint.setAntiAlias(true);
+        this.mLineGridPaint.setStrokeWidth(Tools.fromDpToPx(0.75f));
         mLineChart.reset();
-
         loadLine(data);
-
-        mLineChart.setBorderSpacing(Tools.fromDpToPx(10))
-                .setGrid(LineChartView.GridType.HORIZONTAL, mLineGridPaint)
-                .setXLabels(XController.LabelPosition.OUTSIDE)
-                .setYLabels(YController.LabelPosition.OUTSIDE)
-                .setXAxis(false)
-                .setYAxis(false)
-                .setAxisBorderValues(0, mMaxValue, calculateSteps(0, mMaxValue))
-                .setLabelsFormat(new DecimalFormat("##" + suffix))
-                .show(new Animation()
-                        .setAlpha(-1)
-                        .setEasing(new CubicEaseOut())
-                        .setOverlap(.5f)
-                        .setDuration(750)
-                        .setStartPoint(.5f, .5f))
-        ;
-
+        mLineChart.setBorderSpacing(Tools.fromDpToPx(10.0f)).setGrid(ChartView.GridType.HORIZONTAL, this.mLineGridPaint).setXLabels(AxisController.LabelPosition.OUTSIDE).setYLabels(AxisController.LabelPosition.OUTSIDE).setXAxis(false).setYAxis(false).setAxisBorderValues(0, this.mMaxValue, calculateSteps(0, this.mMaxValue)).setLabelsFormat(new DecimalFormat("##" + suffix)).show(new Animation().setAlpha(-1).setEasing(new CubicEaseOut()).setOverlap(0.5f).setDuration(750).setStartPoint(0.5f, 0.5f));
         mLineChart.animateSet(1, new DashAnimation());
     }
 
-    private void loadLine(final AppElement data) {
-
-        final List<Integer> rawData = AeroActivity.mJobManager.getRawData(data.getName(), mModule);
-
-        if (rawData == null) {
-            return;
-        }
-
-        final int size = rawData.size();
-        final int chunksize = 10;
-        int position = 0;
-        final int chunks = size / chunksize;
-        int rest = size % chunksize;
+    private void loadLine(AppElement data) {
         int realPart;
-        int average = 0;
-        final LineSet dataSet = new LineSet();
-
-        // Reset the max value;
-        mMaxValue = 0;
-
-        // Find the highest value;
-        for (Integer j : rawData) {
-            if (j > mMaxValue)
-                mMaxValue = j;
-        }
-
-        for (int i = 0; i < size; i += realPart) {
-
-            int counter = 0;
-
-            if (rest > 0) {
-                rest--;
-                realPart = chunks + 1;
-            } else {
-                realPart = chunks;
+        List<Integer> rawData = AeroActivity.mJobManager.getRawData(data.getName(), this.mModule);
+        if (rawData != null) {
+            int size = rawData.size();
+            int position = 0;
+            int chunks = size / 10;
+            int rest = size % 10;
+            int average = 0;
+            LineSet dataSet = new LineSet();
+            this.mMaxValue = 0;
+            for (Integer j : rawData) {
+                if (j.intValue() > this.mMaxValue) {
+                    this.mMaxValue = j.intValue();
+                }
             }
-
-            for (int n = i; n < (i + realPart); n++) {
-                average += rawData.get(n);
-                counter++;
+            int i = 0;
+            while (i < size) {
+                int counter = 0;
+                if (rest > 0) {
+                    rest--;
+                    realPart = chunks + 1;
+                } else {
+                    realPart = chunks;
+                }
+                for (int n = i; n < i + realPart; n++) {
+                    average += rawData.get(n).intValue();
+                    counter++;
+                }
+                dataSet.addPoint(position + "", average / Math.max(counter, 1));
+                dataSet.setDots(true).setDotsColor(getResources().getColor(R.color.material_orange)).setDotsRadius(Tools.fromDpToPx(5.0f)).setDotsStrokeThickness(Tools.fromDpToPx(2.0f)).setDotsStrokeColor(getResources().getColor(R.color.white)).setLineColor(getResources().getColor(R.color.material_orange)).setLineThickness(Tools.fromDpToPx(3.0f)).setSmooth(true);
+                position++;
+                average = 0;
+                i += realPart;
             }
-            average = average / Math.max(counter, 1);
-
-            dataSet.addPoint(position + "", average);
-            dataSet.setDots(true)
-                    .setDotsColor(this.getResources().getColor(R.color.material_orange))
-                    .setDotsRadius(Tools.fromDpToPx(5))
-                    .setDotsStrokeThickness(Tools.fromDpToPx(2))
-                    .setDotsStrokeColor(this.getResources().getColor(R.color.white))
-                    .setLineColor(this.getResources().getColor(R.color.material_orange))
-                    .setLineThickness(Tools.fromDpToPx(3))
-                    .setSmooth(true);
-            position++;
-            average = 0;
+            mLineChart.addData(dataSet);
         }
-        mLineChart.addData(dataSet);
     }
 
-    private int calculateSteps(final int minValue, final int maxValue) {
-
+    private int calculateSteps(int minValue, int maxValue) {
         int range = maxValue - minValue;
-
-        return (int)Math.max(Math.ceil(range / 5), 1);
+        return (int) Math.max(Math.ceil(range / 5), 1.0d);
     }
 
-    private void showLineTooltip(int entryIndex, Rect rect){
-
-        mLineTooltip = (TextView) getActivity().getLayoutInflater().inflate(R.layout.circular_tooltip, null);
-        mLineTooltip.setText((int)mLineChart.getData().get(0).getEntry(entryIndex).getValue() + "");
-
-        LayoutParams layoutParams = new LayoutParams((int)Tools.fromDpToPx(64), (int)Tools.fromDpToPx(64));
-        layoutParams.leftMargin = rect.centerX() - layoutParams.width/2;
-        layoutParams.topMargin = rect.centerY() - layoutParams.height/2;
-        mLineTooltip.setLayoutParams(layoutParams);
-
-        if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1){
-            mLineTooltip.setPivotX(layoutParams.width/2);
-            mLineTooltip.setPivotY(layoutParams.height/2);
-            mLineTooltip.setAlpha(0);
-            mLineTooltip.setScaleX(0);
-            mLineTooltip.setScaleY(0);
-            mLineTooltip.animate()
-                    .setDuration(150)
-                    .alpha(1)
-                    .scaleX(1).scaleY(1)
-                    .rotation(360)
-                    .setInterpolator(enterInterpolator);
+    /* JADX INFO: Access modifiers changed from: private */
+    public void showLineTooltip(int entryIndex, Rect rect) {
+        this.mLineTooltip = (TextView) getActivity().getLayoutInflater().inflate(R.layout.circular_tooltip, (ViewGroup) null);
+        this.mLineTooltip.setText(((int) mLineChart.getData().get(0).getEntry(entryIndex).getValue()) + "");
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int) Tools.fromDpToPx(64.0f), (int) Tools.fromDpToPx(64.0f));
+        layoutParams.leftMargin = rect.centerX() - (layoutParams.width / 2);
+        layoutParams.topMargin = rect.centerY() - (layoutParams.height / 2);
+        this.mLineTooltip.setLayoutParams(layoutParams);
+        if (Build.VERSION.SDK_INT >= 12) {
+            this.mLineTooltip.setPivotX(layoutParams.width / 2);
+            this.mLineTooltip.setPivotY(layoutParams.height / 2);
+            this.mLineTooltip.setAlpha(0.0f);
+            this.mLineTooltip.setScaleX(0.0f);
+            this.mLineTooltip.setScaleY(0.0f);
+            this.mLineTooltip.animate().setDuration(150L).alpha(1.0f).scaleX(1.0f).scaleY(1.0f).rotation(360.0f).setInterpolator(this.enterInterpolator);
         }
-
-        mLineChart.showTooltip(mLineTooltip);
+        mLineChart.showTooltip(this.mLineTooltip);
     }
 
-    private void dismissLineTooltip(final int entryIndex, final Rect rect){
-
-        if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-            mLineTooltip.animate()
-                    .setDuration(100)
-                    .scaleX(0).scaleY(0)
-                    .alpha(0)
-                    .setInterpolator(exitInterpolator).withEndAction(new Runnable(){
-                @Override
+    /* JADX INFO: Access modifiers changed from: private */
+    public void dismissLineTooltip(final int entryIndex, final Rect rect) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            this.mLineTooltip.animate().setDuration(100L).scaleX(0.0f).scaleY(0.0f).alpha(0.0f).setInterpolator(this.exitInterpolator).withEndAction(new Runnable() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.5
+                @Override // java.lang.Runnable
                 public void run() {
-                    mLineChart.removeView(mLineTooltip);
-                    mLineTooltip = null;
-                    if(entryIndex != -1)
-                        showLineTooltip(entryIndex, rect);
+                    AppMonitorDetailFragment.mLineChart.removeView(AppMonitorDetailFragment.this.mLineTooltip);
+                    AppMonitorDetailFragment.this.mLineTooltip = null;
+                    if (entryIndex != -1) {
+                        AppMonitorDetailFragment.this.showLineTooltip(entryIndex, rect);
+                    }
                 }
             });
-        } else {
-            mLineChart.dismissTooltip(mLineTooltip);
-            mLineTooltip = null;
-            if(entryIndex != -1)
-                showLineTooltip(entryIndex, rect);
+            return;
+        }
+        mLineChart.dismissTooltip(this.mLineTooltip);
+        this.mLineTooltip = null;
+        if (entryIndex != -1) {
+            showLineTooltip(entryIndex, rect);
         }
     }
-
 }

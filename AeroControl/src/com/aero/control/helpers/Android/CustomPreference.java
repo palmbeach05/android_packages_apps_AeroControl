@@ -8,394 +8,302 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.Material.CheckBox;
-import com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener;
 import com.aero.control.helpers.Android.Material.CustomImageButton;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
-
 import java.util.Map;
 
-/**
- * Created by Alexander Christ on 30.09.13.
- */
-public class CustomPreference extends Preference implements OnCheckListener {
-
-
-    private Context mContext;
-    private TextView mTitle;
-    private TextView mSummary;
+/* JADX INFO: loaded from: classes.dex */
+public class CustomPreference extends Preference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
-    private CustomImageButton mCustomImageButton;
-
-    private String mName = super.getKey();
-    private CharSequence mSummaryPref;
-    private SharedPreferences mSharedPreference;
-
     private Boolean mChecked;
+    private Boolean mClicked;
+    private Context mContext;
+    private CustomImageButton mCustomImageButton;
+    private String mHelpContent;
     private Boolean mHideOnBoot;
     private String mLookUpDefault;
-    private Boolean mClicked;
+    private String mName;
+    private View.OnClickListener mOnClickListener;
+    private SharedPreferences mSharedPreference;
     private Boolean mShowHelp;
+    private TextView mSummary;
+    private CharSequence mSummaryPref;
+    private TextView mTitle;
 
-    private String mHelpContent;
-
-    private OnClickListener mOnClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            String key = getKey();
-            if (key == null) {
-                key = getName();
-            }
-
-            // Get the helptext if not already loaded;
-            if (mHelpContent == null) {
-                mHelpContent = HelpTextHolder.instance(mContext).getText(key);
-            }
-
-            AlertDialog dialog = new AlertDialog.Builder(mContext)
-                    .setTitle(getTitle())
-                    .setMessage(mHelpContent)
-                    .setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Do nothing
-                        }
-                    })
-                    .create();
-
-            dialog.show();
-
-        }
-    };
-
-    // Needed by the generic layout inflater;
     public CustomPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.setContext(context);
+        this.mName = super.getKey();
+        this.mOnClickListener = new View.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomPreference.1
+            @Override // android.view.View.OnClickListener
+            public void onClick(View v) {
+                String key = CustomPreference.this.getKey();
+                if (key == null) {
+                    key = CustomPreference.this.getName();
+                }
+                if (CustomPreference.this.mHelpContent == null) {
+                    CustomPreference.this.mHelpContent = HelpTextHolder.instance(CustomPreference.this.mContext).getText(key);
+                }
+                AlertDialog dialog = new AlertDialog.Builder(CustomPreference.this.mContext).setTitle(CustomPreference.this.getTitle()).setMessage(CustomPreference.this.mHelpContent).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomPreference.1.1
+                    @Override // android.content.DialogInterface.OnClickListener
+                    public void onClick(DialogInterface dialog2, int which) {
+                    }
+                }).create();
+                dialog.show();
+            }
+        };
+        setContext(context);
         setLayoutResource(R.layout.preference_enhanced);
-        mSharedPreference = PreferenceManager.getDefaultSharedPreferences(mContext);
-        this.setSummary(super.getSummary());
+        this.mSharedPreference = PreferenceManager.getDefaultSharedPreferences(this.mContext);
+        setSummary(super.getSummary());
     }
 
     public CustomPreference(Context context) {
         super(context);
-        this.setContext(context);
+        this.mName = super.getKey();
+        this.mOnClickListener = new View.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomPreference.1
+            @Override // android.view.View.OnClickListener
+            public void onClick(View v) {
+                String key = CustomPreference.this.getKey();
+                if (key == null) {
+                    key = CustomPreference.this.getName();
+                }
+                if (CustomPreference.this.mHelpContent == null) {
+                    CustomPreference.this.mHelpContent = HelpTextHolder.instance(CustomPreference.this.mContext).getText(key);
+                }
+                AlertDialog dialog = new AlertDialog.Builder(CustomPreference.this.mContext).setTitle(CustomPreference.this.getTitle()).setMessage(CustomPreference.this.mHelpContent).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomPreference.1.1
+                    @Override // android.content.DialogInterface.OnClickListener
+                    public void onClick(DialogInterface dialog2, int which) {
+                    }
+                }).create();
+                dialog.show();
+            }
+        };
+        setContext(context);
         setLayoutResource(R.layout.preference_enhanced);
-        mSharedPreference = PreferenceManager.getDefaultSharedPreferences(mContext);
+        this.mSharedPreference = PreferenceManager.getDefaultSharedPreferences(this.mContext);
     }
 
+    @Override // android.preference.Preference
     public Context getContext() {
-        return mContext;
+        return this.mContext;
     }
 
     public void setContext(Context context) {
         this.mContext = context;
     }
 
-    /**
-     * Sets the checkbox visible or invisible.
-     *
-     * @param checked Boolean. Decides whether the checkbox
-     *                should be visible or not.
-     */
-    public void setHideOnBoot (Boolean checked) {
+    public void setHideOnBoot(Boolean checked) {
         this.mHideOnBoot = checked;
     }
 
-    /**
-     * Gets the current hidden state for this preference
-     *
-     * @return Boolean
-     */
     public Boolean isHidden() {
-
-        // If not set, set it to false;
-        if (mHideOnBoot == null)
-            mHideOnBoot = false;
-
-        return mHideOnBoot;
-    }
-
-    /**
-     * Sets the small helptext icon left to the main entry visible or invisible
-     *
-     * @param enable boolean
-     */
-    public void setHelpEnable(boolean enable) {
-        this.mShowHelp = enable;
-    }
-
-
-    /**
-     * Gets the current state for the helptext icon.
-     *
-     * @return Boolean
-     */
-    public Boolean isHelpEnabled() {
-
-        if (mShowHelp == null) {
-            mShowHelp = true;
-
+        if (this.mHideOnBoot == null) {
+            this.mHideOnBoot = false;
         }
-        return mShowHelp;
+        return this.mHideOnBoot;
     }
 
-    /**
-     * Sets the checkbox to checked for this preference
-     *
-     * @param checked Boolean. Decides whether the checkbox
-     *                should be checked or not.
-     */
-    public void setChecked (Boolean checked) {
+    public void setHelpEnable(boolean enable) {
+        this.mShowHelp = Boolean.valueOf(enable);
+    }
+
+    public Boolean isHelpEnabled() {
+        if (this.mShowHelp == null) {
+            this.mShowHelp = true;
+        }
+        return this.mShowHelp;
+    }
+
+    public void setChecked(Boolean checked) {
         this.mChecked = checked;
     }
 
-    /**
-     * Gets the current checked state for this preference
-     *
-     * @return Boolean
-     */
     public Boolean isChecked() {
-
-        // If exists, we can mark it checked;
         try {
-            if (mSharedPreference.getString(getName(), null) != null) {
+            if (this.mSharedPreference.getString(getName(), null) != null) {
                 setChecked(true);
             }
         } catch (ClassCastException e) {
-            // This is the case if we try to cast a HashMap, since we found it;
             setChecked(true);
         }
-
-        // If not set, set it to false;
-        if (mChecked == null)
+        if (this.mChecked == null) {
             setChecked(false);
-
-        return mChecked;
+        }
+        return this.mChecked;
     }
 
-    /**
-     * Sets the to summary text to enabled/disabled
-     *
-     * @param checked Boolean. Handles the summary text
-     *                transition.
-     */
     public void setClicked(Boolean checked) {
         this.mClicked = checked;
-
-        if (mSummary != null) {
-            if (mClicked) {
-                mSummary.setText(R.string.enabled);
+        if (this.mSummary != null) {
+            if (this.mClicked.booleanValue()) {
+                this.mSummary.setText(R.string.enabled);
                 setSummary(R.string.enabled);
             } else {
-                mSummary.setText(R.string.disabled);
+                this.mSummary.setText(R.string.disabled);
                 setSummary(R.string.disabled);
             }
         }
-
     }
 
-    /**
-     * Gets the current clicked(summary) state for this preference
-     *
-     * @return Boolean
-     */
     public Boolean isClicked() {
-        if (mClicked == null)
+        if (this.mClicked == null) {
             return false;
-
-        return mClicked;
+        }
+        return this.mClicked;
     }
 
-    @Override
+    @Override // android.preference.Preference
     public CharSequence getSummary() {
-        return mSummaryPref;
+        return this.mSummaryPref;
     }
 
-    @Override
+    @Override // android.preference.Preference
     public void setSummary(CharSequence value) {
         super.setSummary(value);
         this.mSummaryPref = value;
     }
 
-    @Override
+    @Override // android.preference.Preference
     public void setKey(String key) {
         super.setKey(key);
         setName(key);
     }
 
-    @Override
+    @Override // android.preference.Preference
     public String getKey() {
         return getName();
     }
 
-    /**
-     * Sets the name for this preference (most probably filepath)
-     *
-     * @param name A name for the preference. Necessary for the
-     *             set on boot functionality.
-     */
-    public void setName (String name) {
+    public void setName(String name) {
         this.mName = name;
     }
 
-    @Override
+    @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-
         if (enabled) {
-            if (mTitle != null) {
-                mTitle.setTextColor(mContext.getResources().getColor(R.color.text_color));
+            if (this.mTitle != null) {
+                this.mTitle.setTextColor(this.mContext.getResources().getColor(R.color.text_color));
             }
-            if (mSummary != null) {
-                mSummary.setTextColor(mContext.getResources().getColor(R.color.text_color));
+            if (this.mSummary != null) {
+                this.mSummary.setTextColor(this.mContext.getResources().getColor(R.color.text_color));
             }
         } else {
-            if (mTitle != null) {
-                mTitle.setTextColor(mContext.getResources().getColor(android.R.color.darker_gray));
+            if (this.mTitle != null) {
+                this.mTitle.setTextColor(this.mContext.getResources().getColor(android.R.color.darker_gray));
             }
-            if (mSummary != null) {
-                mSummary.setTextColor(mContext.getResources().getColor(android.R.color.darker_gray));
+            if (this.mSummary != null) {
+                this.mSummary.setTextColor(this.mContext.getResources().getColor(android.R.color.darker_gray));
             }
         }
-        if (mCheckBox != null) {
-            mCheckBox.setEnabled(enabled);
+        if (this.mCheckBox != null) {
+            this.mCheckBox.setEnabled(enabled);
         }
     }
 
-    /**
-     * Gets the name for this preference (most probably filepath)
-     *
-     * @return String
-     */
     public String getName() {
-        return mName;
+        return this.mName;
     }
 
     public void setLookUpDefault(String filepath) {
         this.mLookUpDefault = filepath;
     }
 
-
     private String getLookUpDefault(String name) {
-
         String[] content;
-        String tmp1 = "";
-        String tmp2;
         int switcher;
+        String tmp1 = "";
         int i = 0;
-
         if (name.equals("rgbValues")) {
-            content = AeroActivity.shell.getInfoArray(mLookUpDefault, 0, 0);
+            content = AeroActivity.shell.getInfoArray(this.mLookUpDefault, 0, 0);
             switcher = 1;
         } else if (name.equals("voltage_values")) {
-            content = AeroActivity.shell.getInfo(mLookUpDefault, false);
+            content = AeroActivity.shell.getInfo(this.mLookUpDefault, false);
             switcher = 2;
         } else {
-            tmp2 = AeroActivity.shell.getInfo(mLookUpDefault);
-            return tmp2;
+            return AeroActivity.shell.getInfo(this.mLookUpDefault);
         }
-
-        for (String a : content) {
-
+        String[] arr$ = content;
+        for (String a : arr$) {
             switch (switcher) {
                 case 1:
-                    if (i == 0)
+                    if (i == 0) {
                         tmp1 = tmp1 + a;
-                    else
+                    } else {
                         tmp1 = tmp1 + " " + a;
-
+                    }
                     break;
                 case 2:
-                    tmp2 = a.split(":")[1].replace(" ", "");
-
-                    if (i == 0)
+                    String tmp2 = a.split(":")[1].replace(" ", "");
+                    if (i == 0) {
                         tmp1 = tmp1 + tmp2.replace("mV", "");
-                    else
+                    } else {
                         tmp1 = tmp1 + " " + tmp2.replace("mV", "");
-
+                    }
                     break;
                 default:
                     return null;
             }
             i++;
         }
-
         return tmp1;
     }
 
-    @Override
+    @Override // android.preference.Preference
     protected void onBindView(View view) {
         super.onBindView(view);
-
-        mTitle = (TextView) view.findViewById(R.id.preference_title);
-        mSummary = (TextView) view.findViewById(R.id.preference_summary);
-
-        mTitle.setText(super.getTitle());
-        mSummary.setText(mSummaryPref);
-        mTitle.setTypeface(FilePath.kitkatFont);
-        mSummary.setTypeface(FilePath.kitkatFont);
-
-        mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-        mCheckBox.setOncheckListener(this);
-
-        mCheckBox.setChecked(isChecked());
-
-        mCustomImageButton = (CustomImageButton) view.findViewById(R.id.info_button);
-
-        View separator_checkbox = (View) view.findViewById(R.id.separator_checkbox);
-        View seperator_info = (View) view.findViewById(R.id.separator_info);
-
-        if (isHelpEnabled()) {
-            mCustomImageButton.setOnClickListener(mOnClickListener);
+        this.mTitle = (TextView) view.findViewById(R.id.preference_title);
+        this.mSummary = (TextView) view.findViewById(R.id.preference_summary);
+        this.mTitle.setText(super.getTitle());
+        this.mSummary.setText(this.mSummaryPref);
+        this.mTitle.setTypeface(FilePath.kitkatFont);
+        this.mSummary.setTypeface(FilePath.kitkatFont);
+        this.mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
+        this.mCheckBox.setOncheckListener(this);
+        this.mCheckBox.setChecked(isChecked().booleanValue());
+        this.mCustomImageButton = (CustomImageButton) view.findViewById(R.id.info_button);
+        View separator_checkbox = view.findViewById(R.id.separator_checkbox);
+        View seperator_info = view.findViewById(R.id.separator_info);
+        if (isHelpEnabled().booleanValue()) {
+            this.mCustomImageButton.setOnClickListener(this.mOnClickListener);
         } else {
-            mCustomImageButton.setVisibility(View.GONE);
-            seperator_info.setVisibility(View.GONE);
+            this.mCustomImageButton.setVisibility(8);
+            seperator_info.setVisibility(8);
         }
-
-        // Some fragments don't need the new set on boot functionality for each element;
-        if (isHidden()) {
-            mCheckBox.setVisibility(View.GONE);
-            separator_checkbox.setVisibility(View.GONE);
+        if (isHidden().booleanValue()) {
+            this.mCheckBox.setVisibility(8);
+            separator_checkbox.setVisibility(8);
         }
     }
 
-    @Override
+    @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
     public void onCheck(boolean checked) {
-        SharedPreferences.Editor editor = mSharedPreference.edit();
-
-        // In order to find the already set voltage value;
+        SharedPreferences.Editor editor = this.mSharedPreference.edit();
         String tmp = null;
-        final Map<String,?> allKeys = mSharedPreference.getAll();
-
-        for(Map.Entry<String, ?> entry : allKeys.entrySet()) {
-
+        Map<String, ?> allKeys = this.mSharedPreference.getAll();
+        for (Map.Entry<String, ?> entry : allKeys.entrySet()) {
             String value = entry.getValue().toString();
             String key = entry.getKey().toString();
-
-            if (key.equals(this.getName()))
+            if (key.equals(getName())) {
                 tmp = value;
+            }
         }
-        // Check if its a special case;
-        if (tmp == null && mLookUpDefault != null)
-            tmp = getLookUpDefault(this.getName());
-
-        // Writes to our shared preferences or deletes the value
+        if (tmp == null && this.mLookUpDefault != null) {
+            tmp = getLookUpDefault(getName());
+        }
         if (checked) {
-            if (tmp != null)
-                editor.putString(this.getName(), tmp);
+            if (tmp != null) {
+                editor.putString(getName(), tmp);
+            }
         } else {
-            editor.remove(this.getName());
+            editor.remove(getName());
         }
         editor.commit();
-        setChecked(checked);
+        setChecked(Boolean.valueOf(checked));
     }
 }

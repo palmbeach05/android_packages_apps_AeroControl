@@ -1,45 +1,37 @@
 package com.aero.control.helpers.PerApp.AppMonitor;
 
-
 import android.content.Context;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
-import com.aero.control.helpers.FilePath;
 
-/**
- * Created by Alexander Christ on 03.05.15.
- * Checks for the current CPU temperature
- */
+/* JADX INFO: loaded from: classes.dex */
 public final class TEMPModule extends AppModule {
-
-    private final String mClassName = getClass().getName();
-    private final static String CPU_TEMP_FILE = FilePath.CPU_TEMP_FILE;
+    private static final String CPU_TEMP_FILE = "/sys/devices/virtual/thermal/thermal_zone1/temp";
+    private final String mClassName;
 
     public TEMPModule(Context context) {
         super(context);
-        setName(mClassName);
-        setIdentifier(AppModule.MODULE_TEMP_IDENTIFIER);
+        this.mClassName = getClass().getName();
+        setName(this.mClassName);
+        setIdentifier(40);
         setPrefix(context.getText(R.string.pref_temp_usage));
         setSuffix(" °C");
         setDrawable(context.getResources().getDrawable(R.drawable.appmonitor_temp));
-        AppLogger.print(mClassName, "Temperature Module successfully initialized!", 0);
+        AppLogger.print(this.mClassName, "Temperature Module successfully initialized!", 0);
     }
 
-    @Override
+    @Override // com.aero.control.helpers.PerApp.AppMonitor.AppModule
     protected void operate() {
         super.operate();
         long temp = System.currentTimeMillis();
         Integer temperature = null;
-
         try {
-            temperature = Integer.parseInt(AeroActivity.shell.getFastInfo(CPU_TEMP_FILE));
+            temperature = Integer.valueOf(Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/virtual/thermal/thermal_zone1/temp")));
         } catch (NumberFormatException e) {
         }
-
-        if (temperature != null)
+        if (temperature != null) {
             addValues(temperature);
-        AppLogger.print(mClassName, "TEMPModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
+        }
+        AppLogger.print(this.mClassName, "TEMPModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
     }
-
 }

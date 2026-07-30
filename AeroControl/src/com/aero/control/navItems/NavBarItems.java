@@ -2,19 +2,13 @@ package com.aero.control.navItems;
 
 import android.content.Context;
 import android.os.Build;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
-
 import java.util.ArrayList;
 
-/**
- * Created by Alexander Christ on 17.09.13.
- * Adds items to the Navigation Drawer (with icons)
- */
+/* JADX INFO: loaded from: classes.dex */
 public class NavBarItems {
-
-    public ArrayList<PreferenceItem> ITEMS = new ArrayList<PreferenceItem>();
+    public ArrayList<PreferenceItem> ITEMS = new ArrayList<>();
     private Context mContext;
 
     public NavBarItems(Context context) {
@@ -29,24 +23,19 @@ public class NavBarItems {
         addItem(new PreferenceItem(R.string.slider_gpu_settings, R.drawable.gpu));
         addItem(new PreferenceItem(R.string.slider_memory_settings, R.drawable.memory));
         addItem(new PreferenceItem(R.string.slider_misc_settings, R.drawable.mixer));
-
-        if (Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526"))
+        if (Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) {
             addItem(new PreferenceItem(R.string.slider_defy_parts, R.drawable.gear));
-
-
+        }
         addItem(new PreferenceItem(R.string.slider_backup_restore, R.drawable.update));
         addItem(new PreferenceItem(R.string.slider_profile, R.drawable.profile));
         addItem(new PreferenceItem(R.string.slider_app_monitor, R.drawable.appmonitor));
-
-        // Set up our file;
         int output = 0;
-
-        if (AeroActivity.genHelper.doesExist(mContext.getFilesDir().getAbsolutePath() + "/" + "testsuite")) {
+        if (AeroActivity.genHelper.doesExist(this.mContext.getFilesDir().getAbsolutePath() + "/testsuite")) {
             output = 1;
         }
-
-        if (output > 0)
+        if (output > 0) {
             addItem(new PreferenceItem(R.string.slider_testsuite_settings, R.drawable.dashboard));
+        }
     }
 
     public static class PreferenceItem {
@@ -60,7 +49,6 @@ public class NavBarItems {
     }
 
     private void addItem(PreferenceItem item) {
-        ITEMS.add(item);
+        this.ITEMS.add(item);
     }
 }
-

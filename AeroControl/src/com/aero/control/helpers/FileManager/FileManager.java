@@ -6,39 +6,31 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.adapter.FileAdapter;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by Alexander Christ on 21.09.14.
- */
-public class FileManager extends RelativeLayout implements OnItemClickListener {
-
-    Context mContext;
-    FileManagerListener mFolderListener;
+/* JADX INFO: loaded from: classes.dex */
+public class FileManager extends RelativeLayout implements AdapterView.OnItemClickListener {
     private static final String mRoot = "/";
-    private ListView mListView;
-    private List<AeroData> mData = new ArrayList<AeroData>();
     private FileAdapter mAdapter;
+    Context mContext;
     private String mCurrentPath;
+    private List<AeroData> mData;
     private Dialog mDialog;
-    private List<FileData> mFileData = null;
+    private List<FileData> mFileData;
+    FileManagerListener mFolderListener;
+    private ListView mListView;
 
-    /*
-     * Holds the meta information of the file manager;
-     */
     private class FileData {
         private String item;
         private String path;
@@ -47,29 +39,25 @@ public class FileManager extends RelativeLayout implements OnItemClickListener {
             this.item = item;
             this.path = path;
         }
-
     }
 
     public FileManager(Context context, AttributeSet attrs) {
         super(context, attrs);
-
+        this.mData = new ArrayList();
+        this.mFileData = null;
         this.mContext = context;
-
-        LayoutInflater layoutInflater = (LayoutInflater) context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService("layout_inflater");
         View view = layoutInflater.inflate(R.layout.file_folder, this);
-
-        mListView = (ListView) view.findViewById(R.id.list);
-
-        getDir(mRoot, mListView, false);
+        this.mListView = (ListView) view.findViewById(R.id.list);
+        getDir(mRoot, this.mListView, false);
     }
 
     public void setIFolderItemListener(FileManagerListener folderItemListener) {
         this.mFolderListener = folderItemListener;
     }
 
-    public void setDir(String dirPath){
-        getDir(dirPath, mListView, false);
+    public void setDir(String dirPath) {
+        getDir(dirPath, this.mListView, false);
     }
 
     public void setDialog(Dialog d) {
@@ -78,132 +66,100 @@ public class FileManager extends RelativeLayout implements OnItemClickListener {
 
     private void setTitle(String dirPath) {
         this.mCurrentPath = dirPath;
-        if (mDialog != null)
-            mDialog.setTitle(mCurrentPath);
+        if (this.mDialog != null) {
+            this.mDialog.setTitle(this.mCurrentPath);
+        }
     }
 
     private void getDir(String dirPath, ListView v, boolean root) {
-
-        setTitle(dirPath);
-        List<FileData> MetaDirectory = new ArrayList<FileData>();
-        List<FileData> MetaFiles = new ArrayList<FileData>();
-        String[] rootList;
-
-        File f = new File(dirPath);
         File[] files;
+        setTitle(dirPath);
+        List<FileData> MetaDirectory = new ArrayList<>();
+        List<FileData> MetaFiles = new ArrayList<>();
+        File f = new File(dirPath);
         if (!root) {
             files = f.listFiles();
         } else {
-            /*
-             * We are going into the root-fallback mode
-             * which gives us the full control
-             */
-            ArrayList<File> rootFiles = new ArrayList<File>();
-            rootList = AeroActivity.shell.getRootArray("ls -d " + dirPath + "/*", "\n");
+            ArrayList<File> rootFiles = new ArrayList<>();
+            String[] rootList = AeroActivity.shell.getRootArray("ls -d " + dirPath + "/*", "\n");
             if (rootList != null) {
                 for (String a : rootList) {
                     rootFiles.add(new File(a));
                 }
             } else {
-                rootFiles.add(new File(mContext.getText(R.string.folder_empty).toString()));
+                rootFiles.add(new File(this.mContext.getText(R.string.folder_empty).toString()));
             }
-            files = rootFiles.toArray(new File[0]);
+            files = (File[]) rootFiles.toArray(new File[0]);
         }
-
-
         if (!dirPath.equals(mRoot)) {
             MetaDirectory.add(new FileData("../", f.getParent()));
         }
-
-
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+        for (File file : files) {
             if (file.isDirectory()) {
-                MetaDirectory.add(new FileData(file.getName() + "/", file.getPath()));
+                MetaDirectory.add(new FileData(file.getName() + mRoot, file.getPath()));
             } else {
                 MetaFiles.add(new FileData(file.getName(), file.getPath()));
             }
         }
-
-        mFileData = new ArrayList<FileData>();
-
-        // Sort it a little bit;
-        Collections.sort(MetaDirectory, new Comparator<FileData>() {
-            @Override
+        this.mFileData = new ArrayList();
+        Collections.sort(MetaDirectory, new Comparator<FileData>() { // from class: com.aero.control.helpers.FileManager.FileManager.1
+            @Override // java.util.Comparator
             public int compare(FileData fileData, FileData fileData2) {
                 return fileData.item.compareTo(fileData2.item);
             }
         });
-
-        Collections.sort(MetaFiles, new Comparator<FileData>() {
-            @Override
+        Collections.sort(MetaFiles, new Comparator<FileData>() { // from class: com.aero.control.helpers.FileManager.FileManager.2
+            @Override // java.util.Comparator
             public int compare(FileData fileData, FileData fileData2) {
                 return fileData.item.compareTo(fileData2.item);
             }
         });
-
-        mFileData.addAll(MetaDirectory);
-        mFileData.addAll(MetaFiles);
-
+        this.mFileData.addAll(MetaDirectory);
+        this.mFileData.addAll(MetaFiles);
         setItemList();
-
     }
 
-    public void setItemList(){
-
-        if (mData != null)
-            mData.clear();
-
-        File checkFile;
-        for (FileData a : mFileData) {
-
-            // Get the full path;
-            checkFile = new File(mCurrentPath + "/" + a.item);
-
-            if (checkFile.isDirectory())
-                mData.add(new AeroData(R.drawable.file_folder, a.item));
-            else
-                mData.add(new AeroData(R.drawable.file_document, a.item));
+    public void setItemList() {
+        if (this.mData != null) {
+            this.mData.clear();
         }
-
-        if (mAdapter == null) {
-            mAdapter = new FileAdapter(mContext, R.layout.file_row, mData);
-
-            mListView.setAdapter(mAdapter);
-            mListView.setOnItemClickListener(this);
-        } else {
-            mAdapter.notifyDataSetChanged();
+        for (FileData a : this.mFileData) {
+            File checkFile = new File(this.mCurrentPath + mRoot + a.item);
+            if (checkFile.isDirectory()) {
+                this.mData.add(new AeroData(R.drawable.file_folder, a.item));
+            } else {
+                this.mData.add(new AeroData(R.drawable.file_document, a.item));
+            }
         }
+        if (this.mAdapter == null) {
+            this.mAdapter = new FileAdapter(this.mContext, R.layout.file_row, this.mData);
+            this.mListView.setAdapter((ListAdapter) this.mAdapter);
+            this.mListView.setOnItemClickListener(this);
+            return;
+        }
+        this.mAdapter.notifyDataSetChanged();
     }
-
 
     public void onListItemClick(ListView l, View v, int position, long id) {
-
-        File file = new File(mFileData.get(position).path);
-
+        File file = new File(this.mFileData.get(position).path);
         if (file.isDirectory()) {
-            if (file.canRead())
+            if (file.canRead()) {
                 getDir(file.toString(), l, false);
-            else {
-                //what to do when folder is unreadable
-                if (mFolderListener != null) {
-                    mFolderListener.OnCannotFileRead(file);
-                }
-                // We are root!
-                getDir(file.toString(), l, true);
-
+                return;
             }
-        } else {
-            // File is actually clicked;
-            if (mFolderListener != null) {
-                mFolderListener.OnFileClicked(file);
+            if (this.mFolderListener != null) {
+                this.mFolderListener.OnCannotFileRead(file);
             }
-
+            getDir(file.toString(), l, true);
+            return;
+        }
+        if (this.mFolderListener != null) {
+            this.mFolderListener.OnFileClicked(file);
         }
     }
 
+    @Override // android.widget.AdapterView.OnItemClickListener
     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
         onListItemClick((ListView) arg0, arg0, arg2, arg3);
     }
-
 }

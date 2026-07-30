@@ -9,20 +9,20 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.aero.control.R;
-
 import java.util.List;
 
-/**
- * Created by ac on 18.09.13.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class FileAdapter extends ArrayAdapter<AeroData> {
-
+    private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;
-    private int layoutResourceId;
     private List<AeroData> data;
-    private final static Typeface font = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+    private int layoutResourceId;
+
+    public static class Holder {
+        TextView content;
+        ImageView header;
+    }
 
     public FileAdapter(Context context, int layoutResourceId, List<AeroData> data) {
         super(context, layoutResourceId, data);
@@ -31,56 +31,40 @@ public class FileAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    public static class Holder {
-        ImageView header;
-        TextView content;
-    }
-
-    @Override
+    @Override // android.widget.ArrayAdapter
     public void clear() {
         super.clear();
         this.data.clear();
-        this.notifyDataSetChanged();
+        notifyDataSetChanged();
     }
 
-    @Override
+    @Override // android.widget.ArrayAdapter, android.widget.BaseAdapter
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
     }
 
-    @Override
+    @Override // android.widget.ArrayAdapter, android.widget.Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
-        View row = convertView;
         Holder holder;
-
+        View row = convertView;
         if (row == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(layoutResourceId, null);
-
+            LayoutInflater inflater = (LayoutInflater) this.context.getSystemService("layout_inflater");
+            row = inflater.inflate(this.layoutResourceId, (ViewGroup) null);
             holder = new Holder();
             holder.header = (ImageView) row.findViewById(R.id.rowfolder);
-            holder.content = (TextView) row.findViewById((R.id.rowtext));
-
+            holder.content = (TextView) row.findViewById(R.id.rowtext);
             holder.content.setTypeface(font);
-
             row.setTag(holder);
         } else {
             holder = (Holder) row.getTag();
         }
-
-        final AeroData overview = data.get(position);
-        if (data != null) {
-
+        AeroData overview = this.data.get(position);
+        if (this.data != null) {
             holder.header.setImageResource(overview.file);
-
             holder.content.setText(overview.content);
-
         } else {
-            Log.e("Aero",
-                    "No Data found for adapter.");
+            Log.e("Aero", "No Data found for adapter.");
         }
-
         return row;
     }
-
 }

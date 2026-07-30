@@ -13,14 +13,13 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.aero.control.R;
 import com.aero.control.SplashScreen;
 
+/* JADX INFO: loaded from: classes.dex */
 public class PerAppFragment extends Fragment {
-
     public static final String ARG_PAGE = "PerApp";
-    public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+    public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);
 
     public static PerAppFragment create(int pageNumber) {
         PerAppFragment fragment = new PerAppFragment();
@@ -30,67 +29,50 @@ public class PerAppFragment extends Fragment {
         return fragment;
     }
 
-    public PerAppFragment() {
-    }
-
-    @Override
+    @Override // android.support.v4.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        // Inflate the layout containing a title and body text.
-        final ViewGroup rootView = (ViewGroup) inflater
-                .inflate(R.layout.perappshow_fragment, container, false);
-
-        // Set the title view to show the page number.
-        TextView heading = ((TextView) rootView.findViewById(R.id.text_heading));
+    @Override // android.support.v4.app.Fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.perappshow_fragment, container, false);
+        TextView heading = (TextView) rootView.findViewById(R.id.text_heading);
         heading.setText(R.string.introduction_perapp_heading);
         heading.setTypeface(kitkatFont);
-
-        TextView content = ((TextView) rootView.findViewById(R.id.text_content));
+        TextView content = (TextView) rootView.findViewById(R.id.text_content);
         content.setText(R.string.introduction_perapp_content);
         content.setTypeface(kitkatFont);
-
         CheckBox checkbox = (CheckBox) rootView.findViewById(R.id.show_checkbox);
         checkbox.setTypeface(kitkatFont);
-
         final ProgressBar progressBar = (ProgressBar) rootView.findViewById(R.id.show_progress);
-        progressBar.setVisibility(View.INVISIBLE);
-
-        checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
+        progressBar.setVisibility(4);
+        checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() { // from class: com.aero.control.sliderFragments.PerAppFragment.1
+            @Override // android.widget.CompoundButton.OnCheckedChangeListener
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-
-                SharedPreferences mSharedPreference = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                SharedPreferences mSharedPreference = PreferenceManager.getDefaultSharedPreferences(PerAppFragment.this.getActivity());
                 SharedPreferences.Editor editor = mSharedPreference.edit();
-                progressBar.setVisibility(View.VISIBLE);
-
-                // Service should be enabled;
+                progressBar.setVisibility(0);
                 if (checked) {
                     editor.putBoolean("per_app_service", true);
                 } else {
                     editor.putBoolean("per_app_service", false);
                 }
                 editor.commit();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
+                new Handler().postDelayed(new Runnable() { // from class: com.aero.control.sliderFragments.PerAppFragment.1.1
+                    @Override // java.lang.Runnable
                     public void run() {
-                        progressBar.setVisibility(View.INVISIBLE);
+                        progressBar.setVisibility(4);
                     }
-                }, 1500);
+                }, 1500L);
             }
         });
-
         return rootView;
     }
 
-    @Override
+    @Override // android.support.v4.app.Fragment
     public void onResume() {
         super.onResume();
-        ((SplashScreen)getActivity()).initDefaultSkip();
+        ((SplashScreen) getActivity()).initDefaultSkip();
     }
-
 }

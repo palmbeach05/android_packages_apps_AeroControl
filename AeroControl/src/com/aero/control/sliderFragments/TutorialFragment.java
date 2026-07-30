@@ -1,6 +1,5 @@
 package com.aero.control.sliderFragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -11,18 +10,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.SplashScreen;
-
+import com.aero.control.fragments.MiscSettingsFragment;
+import com.aero.control.fragments.ProfileFragment;
+import com.aero.control.fragments.StatisticsFragment;
+import com.aero.control.helpers.FilePath;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/* JADX INFO: loaded from: classes.dex */
 public class TutorialFragment extends Fragment {
-
     private static final String ARG_PAGE = "Tutorial";
-    private static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+    private static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);
     private CheckBox mCheckbox;
 
     public static TutorialFragment create(int pageNumber) {
@@ -33,84 +34,57 @@ public class TutorialFragment extends Fragment {
         return fragment;
     }
 
-    public TutorialFragment() {
-    }
-
-    @Override
+    @Override // android.support.v4.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        // Inflate the layout containing a title and body text.
-        ViewGroup rootView = (ViewGroup) inflater
-                .inflate(R.layout.tutorial_fragment, container, false);
-
-        // Set the title view to show the page number.
-        TextView heading = ((TextView) rootView.findViewById(R.id.text_heading));
+    @Override // android.support.v4.app.Fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.tutorial_fragment, container, false);
+        TextView heading = (TextView) rootView.findViewById(R.id.text_heading);
         heading.setText(R.string.introduction_tutorial_heading);
         heading.setTypeface(kitkatFont);
-
-        TextView content = ((TextView) rootView.findViewById(R.id.text_content));
+        TextView content = (TextView) rootView.findViewById(R.id.text_content);
         content.setText(R.string.introduction_tutorial_content);
         content.setTypeface(kitkatFont);
-
-        mCheckbox = (CheckBox) rootView.findViewById(R.id.show_checkbox);
-        mCheckbox.setTypeface(kitkatFont);
-
+        this.mCheckbox = (CheckBox) rootView.findViewById(R.id.show_checkbox);
+        this.mCheckbox.setTypeface(kitkatFont);
         return rootView;
     }
 
-    @Override
+    @Override // android.support.v4.app.Fragment
     public void onResume() {
         super.onResume();
-        ((SplashScreen)getActivity()).mSkip.setText(R.string.got_it);
-
-        ((SplashScreen)getActivity()).mSkip.setOnClickListener(new View.OnClickListener() {
-            @Override
+        ((SplashScreen) getActivity()).mSkip.setText(R.string.got_it);
+        ((SplashScreen) getActivity()).mSkip.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.sliderFragments.TutorialFragment.1
+            @Override // android.view.View.OnClickListener
             public void onClick(View v) {
-                FileOutputStream fos = null;
-                // Set tutorials?
-                boolean check_state = mCheckbox.isChecked();
-
+                boolean check_state = TutorialFragment.this.mCheckbox.isChecked();
                 try {
-                    fos = getActivity().openFileOutput(SplashScreen.FIRSTRUN_AERO, Context.MODE_PRIVATE);
+                    FileOutputStream fos = TutorialFragment.this.getActivity().openFileOutput(SplashScreen.FIRSTRUN_AERO, 0);
                     fos.write("1".getBytes());
-
                     if (!check_state) {
-                        fos = getActivity().openFileOutput("firstrun", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_cpu", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_perapp", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_profiles", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_statistics", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_trim", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_misc", Context.MODE_PRIVATE);
-                        fos.write("1".getBytes());
-                        fos = getActivity().openFileOutput("firstrun_appmonitor", Context.MODE_PRIVATE);
+                        TutorialFragment.this.getActivity().openFileOutput("firstrun", 0).write("1".getBytes());
+                        TutorialFragment.this.getActivity().openFileOutput("firstrun_cpu", 0).write("1".getBytes());
+                        TutorialFragment.this.getActivity().openFileOutput(ProfileFragment.FILENAME_PERAPP, 0).write("1".getBytes());
+                        TutorialFragment.this.getActivity().openFileOutput(ProfileFragment.FILENAME_PROFILES, 0).write("1".getBytes());
+                        TutorialFragment.this.getActivity().openFileOutput(StatisticsFragment.FILENAME_STATISTICS, 0).write("1".getBytes());
+                        TutorialFragment.this.getActivity().openFileOutput(FilePath.FILENAME, 0).write("1".getBytes());
+                        TutorialFragment.this.getActivity().openFileOutput(MiscSettingsFragment.FILENAME_MISC, 0).write("1".getBytes());
+                        fos = TutorialFragment.this.getActivity().openFileOutput("firstrun_appmonitor", 0);
                         fos.write("1".getBytes());
                     }
                     fos.close();
                 } catch (IOException e) {
                     Log.e("Aero", "Could not save file(s). ", e);
-                } catch (NullPointerException e) {
-                    Log.e("Aero", "OpenFileOutput probably was initialized on a null-object.", e);
+                } catch (NullPointerException e2) {
+                    Log.e("Aero", "OpenFileOutput probably was initialized on a null-object.", e2);
                 }
-
-                Intent i = new Intent(getActivity(), AeroActivity.class);
-                startActivity(i);
-
-                // close this activity
-                getActivity().finish();
+                Intent i = new Intent(TutorialFragment.this.getActivity(), (Class<?>) AeroActivity.class);
+                TutorialFragment.this.startActivity(i);
+                TutorialFragment.this.getActivity().finish();
             }
         });
-
     }
 }

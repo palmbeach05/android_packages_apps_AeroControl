@@ -9,155 +9,142 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
-
 import com.aero.control.R;
 
+/* JADX INFO: loaded from: classes.dex */
 public class CheckBox extends CustomView {
-
-    private int backgroundColor = Color.parseColor("#4CAF50");
-    // Indicate step in check animation
-    private int step = 0;
-
+    private int backgroundColor;
+    private boolean check;
     private Check checkView;
-
-    private boolean press = false;
-    private boolean check = false;
-
     private Paint mPaint;
-
     private OnCheckListener onCheckListener;
+    private boolean press;
+    private int step;
+
+    public interface OnCheckListener {
+        void onCheck(boolean z);
+    }
+
+    static /* synthetic */ int access$208(CheckBox x0) {
+        int i = x0.step;
+        x0.step = i + 1;
+        return i;
+    }
+
+    static /* synthetic */ int access$210(CheckBox x0) {
+        int i = x0.step;
+        x0.step = i - 1;
+        return i;
+    }
 
     public CheckBox(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.backgroundColor = Color.parseColor("#4CAF50");
+        this.step = 0;
+        this.press = false;
+        this.check = false;
         setAttributes(attrs);
     }
 
-    @Override
+    @Override // com.aero.control.helpers.Android.Material.CustomView
     protected void onInitDefaultValues() {
-        minWidth = 48;
-        minHeight = 48;
-        backgroundColor = Color.parseColor("#4CAF50");// default color
-        backgroundResId = R.drawable.background_checkbox;
+        this.minWidth = 48;
+        this.minHeight = 48;
+        this.backgroundColor = Color.parseColor("#4CAF50");
+        this.backgroundResId = R.drawable.background_checkbox;
     }
 
-    // Set atributtes of XML to View
+    @Override // com.aero.control.helpers.Android.Material.CustomView
     protected void setAttributes(AttributeSet attrs) {
-
         setBackgroundResource(R.drawable.background_checkbox);
-
-        // Set size of view
-        setMinimumHeight(dpToPx(48, getResources()));
-        setMinimumWidth(dpToPx(48, getResources()));
-
-        // Set background Color
-        // Color by resource
-        int backgroundColor = attrs.getAttributeResourceValue(ANDROIDXML,
-                "background", -1);
+        setMinimumHeight(dpToPx(48.0f, getResources()));
+        setMinimumWidth(dpToPx(48.0f, getResources()));
+        int backgroundColor = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "background", -1);
         if (backgroundColor != -1) {
             setBackgroundColor(getResources().getColor(backgroundColor));
         } else {
-            // Color by hexadecimal
-            int background = attrs.getAttributeIntValue(ANDROIDXML, "background", -1);
-            if (background != -1)
+            int background = attrs.getAttributeIntValue("http://schemas.android.com/apk/res/android", "background", -1);
+            if (background != -1) {
                 setBackgroundColor(background);
+            }
         }
-
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.parseColor("#446D6D6D"));
-
-        checkView = new Check(getContext());
-        RelativeLayout.LayoutParams params = new LayoutParams(dpToPx(20,
-                getResources()), dpToPx(20, getResources()));
-        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        checkView.setLayoutParams(params);
-        addView(checkView);
+        this.mPaint = new Paint();
+        this.mPaint.setAntiAlias(true);
+        this.mPaint.setColor(Color.parseColor("#446D6D6D"));
+        this.checkView = new Check(getContext());
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(dpToPx(20.0f, getResources()), dpToPx(20.0f, getResources()));
+        params.addRule(13, -1);
+        this.checkView.setLayoutParams(params);
+        addView(this.checkView);
     }
 
-    @Override
+    /* JADX WARN: Can't fix incorrect switch cases order, some code will duplicate */
+    @Override // android.view.View
     public boolean onTouchEvent(MotionEvent event) {
         if (isEnabled()) {
-            isLastTouch = true;
-            final int action = event.getAction();
-
+            this.isLastTouch = true;
+            int action = event.getAction();
             switch (action) {
-                case MotionEvent.ACTION_DOWN:
-                    changeBackgroundColor((check) ? makePressColor() : Color
-                            .parseColor("#446D6D6D"));
+                case 0:
+                    changeBackgroundColor(this.check ? makePressColor() : Color.parseColor("#446D6D6D"));
                     break;
-                case MotionEvent.ACTION_UP:
-                    changeBackgroundColor(getResources().getColor(
-                            android.R.color.transparent));
-                    press = false;
-
-                    if ((event.getX() <= getWidth() && event.getX() >= 0)
-                            && (event.getY() <= getHeight() && event.getY() >= 0)) {
-                        isLastTouch = false;
-                        check = !check;
-                        if (onCheckListener != null)
-                            onCheckListener.onCheck(check);
-                        if (check) {
-                            step = 0;
+                case 1:
+                    changeBackgroundColor(getResources().getColor(android.R.color.transparent));
+                    this.press = false;
+                    if (event.getX() <= getWidth() && event.getX() >= 0.0f && event.getY() <= getHeight() && event.getY() >= 0.0f) {
+                        this.isLastTouch = false;
+                        this.check = !this.check;
+                        if (this.onCheckListener != null) {
+                            this.onCheckListener.onCheck(this.check);
                         }
-                        if (check)
-                            checkView.changeBackground();
+                        if (this.check) {
+                            this.step = 0;
+                        }
+                        if (this.check) {
+                            this.checkView.changeBackground();
+                        }
                     }
                     break;
-                case MotionEvent.ACTION_CANCEL:
-                    /*
-                     * We have to use the cancel-event here since ACTION_MOVE would need
-                     * some calculations to find out if we are outside of our view. Otherwise
-                     * we would have a grey circle around our view until touched again.
-                     * Let it handle by the parent.
-                     */
-                    changeBackgroundColor(getResources().getColor(
-                            android.R.color.transparent));
+                case 3:
+                    changeBackgroundColor(getResources().getColor(android.R.color.transparent));
                     break;
             }
         }
         return true;
     }
 
-    @Override
+    @Override // com.aero.control.helpers.Android.Material.CustomView, android.view.View
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (press) {
-            canvas.drawCircle(getWidth() / 2, getHeight() / 2, getWidth() / 2,
-                    mPaint);
+        if (this.press) {
+            canvas.drawCircle(getWidth() / 2, getHeight() / 2, getWidth() / 2, this.mPaint);
         }
     }
 
     private void changeBackgroundColor(int color) {
         LayerDrawable layer = (LayerDrawable) getBackground();
-        GradientDrawable shape = (GradientDrawable) layer
-                .findDrawableByLayerId(R.id.shape_background);
+        GradientDrawable shape = (GradientDrawable) layer.findDrawableByLayerId(R.id.shape_background);
         shape.setColor(color);
     }
 
-    /**
-     * Make a dark color to press effect
-     *
-     * @return
-     */
     protected int makePressColor() {
-        int r = (this.backgroundColor >> 16) & 0xFF;
-        int g = (this.backgroundColor >> 8) & 0xFF;
-        int b = (this.backgroundColor) & 0xFF;
-        r = (r - 30 < 0) ? 0 : r - 30;
-        g = (g - 30 < 0) ? 0 : g - 30;
-        b = (b - 30 < 0) ? 0 : b - 30;
-        return Color.argb(70, r, g, b);
+        int r = (this.backgroundColor >> 16) & MotionEventCompat.ACTION_MASK;
+        int g = (this.backgroundColor >> 8) & MotionEventCompat.ACTION_MASK;
+        int b = this.backgroundColor & MotionEventCompat.ACTION_MASK;
+        return Color.argb(70, r + (-30) < 0 ? 0 : r - 30, g + (-30) < 0 ? 0 : g - 30, b + (-30) < 0 ? 0 : b - 30);
     }
 
-    @Override
+    @Override // android.view.View
     public void setBackgroundColor(int color) {
-        backgroundColor = color;
-        if (isEnabled())
-            beforeBackground = backgroundColor;
+        this.backgroundColor = color;
+        if (isEnabled()) {
+            this.beforeBackground = this.backgroundColor;
+        }
         changeBackgroundColor(color);
     }
 
@@ -165,109 +152,95 @@ public class CheckBox extends CustomView {
         invalidate();
         this.check = check;
         setPressed(false);
-        changeBackgroundColor(getResources().getColor(
-                android.R.color.transparent));
+        changeBackgroundColor(getResources().getColor(android.R.color.transparent));
         if (check) {
-            step = 0;
+            this.step = 0;
         }
-        if (check)
-            checkView.changeBackground();
-
+        if (check) {
+            this.checkView.changeBackground();
+        }
     }
 
     public boolean isCheck() {
-        return check;
+        return this.check;
     }
 
-    // View that contains checkbox
     private class Check extends View {
-
-        private Bitmap sprite;
-        private Rect mSrc;
+        private boolean forceReDraw;
         private Rect mDst;
-        private boolean needDrawBackground = true;
-        private boolean needReDraw = false;
-        private boolean forceReDraw = false;
-        private BitmapFactory.Options mOpt = new BitmapFactory.Options();
+        private BitmapFactory.Options mOpt;
+        private Rect mSrc;
+        private boolean needDrawBackground;
+        private boolean needReDraw;
+        private Bitmap sprite;
 
         public Check(Context context) {
             super(context);
-            mOpt.inPreferredConfig = Bitmap.Config.RGB_565;
+            this.needDrawBackground = true;
+            this.needReDraw = false;
+            this.forceReDraw = false;
+            this.mOpt = new BitmapFactory.Options();
+            this.mOpt.inPreferredConfig = Bitmap.Config.RGB_565;
             setBackgroundResource(R.drawable.background_checkbox_uncheck);
-            mOpt.inScaled = false;
-            sprite = BitmapFactory.decodeResource(context.getResources(),
-                    R.drawable.sprite_check, mOpt);
+            this.mOpt.inScaled = false;
+            this.sprite = BitmapFactory.decodeResource(context.getResources(), R.drawable.sprite_check, this.mOpt);
         }
 
         public void changeBackground() {
-            if (check) {
+            if (CheckBox.this.check) {
                 setBackgroundResource(R.drawable.background_checkbox_check);
                 LayerDrawable layer = (LayerDrawable) getBackground();
-                GradientDrawable shape = (GradientDrawable) layer
-                        .findDrawableByLayerId(R.id.shape_background);
-                shape.setColor(backgroundColor);
-            } else {
-                setBackgroundResource(R.drawable.background_checkbox_uncheck);
+                GradientDrawable shape = (GradientDrawable) layer.findDrawableByLayerId(R.id.shape_background);
+                shape.setColor(CheckBox.this.backgroundColor);
+                return;
             }
+            setBackgroundResource(R.drawable.background_checkbox_uncheck);
         }
+
         private void drawRect() {
-            /*
-             * Avoid useless memory allocation;
-             */
-            if (mSrc != null && mDst != null) {
-                mSrc.set(40 * step, 0, (40 * step) + 40, 40);
-                mDst.set(0, 0, this.getWidth() - 2, this.getHeight());
+            if (this.mSrc != null && this.mDst != null) {
+                this.mSrc.set(CheckBox.this.step * 40, 0, (CheckBox.this.step * 40) + 40, 40);
+                this.mDst.set(0, 0, getWidth() - 2, getHeight());
             } else {
-                mSrc = new Rect(40 * step, 0, (40 * step) + 40, 40);
-                mDst = new Rect(0, 0, this.getWidth() - 2, this.getHeight());
+                this.mSrc = new Rect(CheckBox.this.step * 40, 0, (CheckBox.this.step * 40) + 40, 40);
+                this.mDst = new Rect(0, 0, getWidth() - 2, getHeight());
             }
         }
 
-        @Override
+        @Override // android.view.View
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            if (check) {
-                if (step < 11) {
-                    step++;
-
-                    needDrawBackground = true;
-                    needReDraw = true;
+            if (CheckBox.this.check) {
+                if (CheckBox.this.step < 11) {
+                    CheckBox.access$208(CheckBox.this);
+                    this.needDrawBackground = true;
+                    this.needReDraw = true;
                 }
-
-                if (!needReDraw)
-                    forceReDraw = true;
+                if (!this.needReDraw) {
+                    this.forceReDraw = true;
+                }
             } else {
-                if (step >= 0) {
-                    step--;
-
-                    needDrawBackground = true;
-                    needReDraw = true;
+                if (CheckBox.this.step >= 0) {
+                    CheckBox.access$210(CheckBox.this);
+                    this.needDrawBackground = true;
+                    this.needReDraw = true;
                 }
-                if (step == -1) {
-                    if (needDrawBackground) {
-                        changeBackground();
-
-                        needDrawBackground = false;
-                    }
+                if (CheckBox.this.step == -1 && this.needDrawBackground) {
+                    changeBackground();
+                    this.needDrawBackground = false;
                 }
             }
             drawRect();
-            canvas.drawBitmap(sprite, mSrc, mDst, null);
-            if (needReDraw || forceReDraw && !needReDraw) {
+            canvas.drawBitmap(this.sprite, this.mSrc, this.mDst, (Paint) null);
+            if (this.needReDraw || (this.forceReDraw && !this.needReDraw)) {
                 invalidate();
-                needReDraw = false;
-                forceReDraw = false;
+                this.needReDraw = false;
+                this.forceReDraw = false;
             }
         }
-
     }
 
     public void setOncheckListener(OnCheckListener onCheckListener) {
         this.onCheckListener = onCheckListener;
     }
-
-    public interface OnCheckListener {
-        public void onCheck(boolean check);
-    }
-
 }

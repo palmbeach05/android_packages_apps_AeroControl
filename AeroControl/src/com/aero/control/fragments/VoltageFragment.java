@@ -7,109 +7,79 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
-
 import java.util.ArrayList;
 
-/**
- * Created by Alexander Christ on 03.05.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class VoltageFragment extends PlaceHolderFragment {
-
-    private PreferenceScreen root;
     private PreferenceCategory PrefCat;
-    private final ArrayList<String> voltList = new ArrayList<String>();
     private SharedPreferences mPrefs;
+    private PreferenceScreen root;
+    private final ArrayList<String> voltList = new ArrayList<>();
 
-    @Override
+    @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        // Load the preferences from an XML resource
         addPreferencesFromResource(R.layout.empty_preference);
-        root = this.getPreferenceScreen();
+        this.root = getPreferenceScreen();
         setTitle(getActivity().getText(R.string.perf_voltage_control).toString());
-
-        // Load our custom preferences;
         loadVoltage();
     }
 
-    // Create our options menu;
-    @Override
+    @Override // android.app.Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.voltage_menu, menu);
-
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Override
+    @Override // android.app.Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        String [] voltArray = voltList.toArray(new String[0]);
+        String[] voltArray = (String[]) this.voltList.toArray(new String[0]);
         String exec = "";
-
-
         switch (item.getItemId()) {
-            case R.id.action_mVPlus:
-
-                voltList.clear();
+            case R.id.action_mVPlus /* 2131099754 */:
+                this.voltList.clear();
                 for (String a : voltArray) {
                     int tmp = Integer.parseInt(a) + 25;
-                    voltList.add("" + tmp);
-
+                    this.voltList.add("" + tmp);
                     exec = exec + " " + tmp;
                 }
                 executeVolt(exec);
-
                 break;
-            case R.id.action_mVMinus:
-
-                voltList.clear();
-                for (String a : voltArray) {
-                    int tmp = Integer.parseInt(a) - 25;
-                    voltList.add("" + tmp);
-
-                    exec = exec + " " + tmp;
+            case R.id.action_mVMinus /* 2131099755 */:
+                this.voltList.clear();
+                for (String a2 : voltArray) {
+                    int tmp2 = Integer.parseInt(a2) - 25;
+                    this.voltList.add("" + tmp2);
+                    exec = exec + " " + tmp2;
                 }
                 executeVolt(exec);
-
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-
     public void loadVoltage() {
-
-        String completeParamterList[] = AeroActivity.shell.getInfo(FilePath.VOLTAGE_PATH, false);
-
-        // If there are already some entries, kill them all (with fire)
-        if (PrefCat != null)
-            root.removePreference(PrefCat);
-
-        PrefCat = new PreferenceCategory(getActivity());
-        PrefCat.setTitle(R.string.perf_voltage_control);
-        root.addPreference(PrefCat);
-
-        String freqTmp, volTmp;
+        String[] completeParamterList = AeroActivity.shell.getInfo(FilePath.VOLTAGE_PATH, false);
+        if (this.PrefCat != null) {
+            this.root.removePreference(this.PrefCat);
+        }
+        this.PrefCat = new PreferenceCategory(getActivity());
+        this.PrefCat.setTitle(R.string.perf_voltage_control);
+        this.root.addPreference(this.PrefCat);
         for (String s : completeParamterList) {
-            freqTmp = s.split(":")[0];
-            volTmp = s.split(":")[1].replace(" ", "");
-
-            voltList.add(volTmp.replace("mV", ""));
-
-            // Generates our custom text preference
+            String freqTmp = s.split(":")[0];
+            String volTmp = s.split(":")[1].replace(" ", "");
+            this.voltList.add(volTmp.replace("mV", ""));
             final CustomTextPreference voltPref = new CustomTextPreference(getActivity());
-            voltPref.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+            voltPref.getEditText().setInputType(2);
             voltPref.setPrefSummary(volTmp);
             voltPref.setTitle(freqTmp);
             voltPref.setPrefText(freqTmp);
@@ -117,63 +87,45 @@ public class VoltageFragment extends PlaceHolderFragment {
             voltPref.setDialogTitle(freqTmp);
             voltPref.setHideOnBoot(true);
             voltPref.setHelpEnable(false);
-
-            PrefCat.addPreference(voltPref);
-
-            // Custom OnChangeListener for each element in our list;
-            voltPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
+            this.PrefCat.addPreference(voltPref);
+            voltPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.VoltageFragment.1
+                @Override // android.preference.Preference.OnPreferenceChangeListener
                 public boolean onPreferenceChange(Preference preference, Object o) {
-
-                    String [] voltArray = voltList.toArray(new String[0]);
+                    String[] voltArray = (String[]) VoltageFragment.this.voltList.toArray(new String[0]);
                     String tmp = "";
-
                     voltArray[preference.getOrder()] = o.toString();
                     preference.setSummary(o.toString() + "mV");
                     voltPref.setPrefSummary(o.toString() + "mV");
-
-                    // Clears our list so we can set multiple values
-                    voltList.clear();
+                    VoltageFragment.this.voltList.clear();
                     for (String a : voltArray) {
                         tmp = tmp + " " + a;
-                        voltList.add(a);
+                        VoltageFragment.this.voltList.add(a);
                     }
-
-                    executeVolt(tmp);
-
+                    VoltageFragment.this.executeVolt(tmp);
                     return true;
-                };
+                }
             });
-
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            /* For better KitKat+ looks; */
-                Preference blankedPref = new Preference(getActivity());
-                blankedPref.setSelectable(false);
-                PrefCat.addPreference(blankedPref);
+        if (Build.VERSION.SDK_INT >= 19) {
+            Preference blankedPref = new Preference(getActivity());
+            blankedPref.setSelectable(false);
+            this.PrefCat.addPreference(blankedPref);
         }
     }
 
-    // Executes the new voltage values and updates UI
     public void executeVolt(String exeVolt) {
-
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        this.mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         AeroActivity.shell.setRootInfo(exeVolt, FilePath.VOLTAGE_PATH);
         updateUI();
-
     }
 
-    // Updates UI by iterating through the children;
     public void updateUI() {
-
-        String [] voltArray = voltList.toArray(new String[0]);
-
-        for (int i = 0; i < PrefCat.getPreferenceCount() - 1; i++) {
-            CustomTextPreference voltPref = (CustomTextPreference)PrefCat.getPreference(i);
+        String[] voltArray = (String[]) this.voltList.toArray(new String[0]);
+        for (int i = 0; i < this.PrefCat.getPreferenceCount() - 1; i++) {
+            CustomTextPreference voltPref = (CustomTextPreference) this.PrefCat.getPreference(i);
             voltPref.setSummary(voltArray[i] + "mV");
             voltPref.setPrefSummary(voltArray[i] + "mV");
             voltPref.setText(voltArray[i]);
         }
-
     }
 }

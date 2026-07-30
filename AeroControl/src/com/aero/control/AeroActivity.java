@@ -3,12 +3,9 @@ package com.aero.control;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -31,10 +28,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.aero.control.fragments.AeroFragment;
 import com.aero.control.fragments.AppMonitorFragment;
 import com.aero.control.fragments.CPUFragment;
@@ -48,496 +45,391 @@ import com.aero.control.fragments.UpdaterFragment;
 import com.aero.control.helpers.GenericHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.Util;
-import com.aero.control.helpers.rootHelper;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.navItems.NavBarItems;
-import com.aero.control.navItems.NavBarItems.PreferenceItem;
 import com.aero.control.service.PerAppService;
 import com.aero.control.service.PerAppServiceHelper;
 import com.aero.control.settings.PrefsActivity;
 import com.aero.control.testsuite.TestSuiteFragment;
 import com.ikimuhendis.ldrawer.ActionBarDrawerToggle;
 import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
-
 import java.util.ArrayList;
 import java.util.Stack;
 
+/* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
-
-    private static final String SELECTED_ITEM = "SelectedItem";
-
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private ItemAdapter mAdapter;
-    public static Stack<Fragment> mFragmentStack;
-
-    private DrawerArrowDrawable mDrawerArrow;
-    private CharSequence mTitle;
-    private String[] mAeroTitle;
-    private int mPreviousTitle;
-    private static int mBackCounter = 0;
-
-    // Fragment Keys;
-    private static final int OVERVIEW = 0;
+    private static final int APPSTATISTICS = 9;
     private static final int CPU = 1;
-    private static final int STATISTICS = 2;
+    private static final int DEFY = 6;
     private static final int GPU = 3;
     private static final int MEMORY = 4;
     private static final int MISC = 5;
-    private static final int DEFY = 6;
-    private static final int UPDATER = 7;
+    private static final int OVERVIEW = 0;
     private static final int PROFILE = 8;
-    private static final int APPSTATISTICS = 9;
+    private static final String SELECTED_ITEM = "SelectedItem";
+    private static final int STATISTICS = 2;
     private static final int TESTSUITE = 10;
-
-    // Fragments;
+    private static final int UPDATER = 7;
+    public static Stack<Fragment> mFragmentStack;
+    public static JobManager mJobManager;
+    public static PerAppServiceHelper perAppService;
+    private ActionBar mActionBar;
+    public TextView mActionBarTitle;
+    public int mActionBarTitleID;
+    private ItemAdapter mAdapter;
     private AeroFragment mAeroFragment;
+    private String[] mAeroTitle;
+    private AppMonitorFragment mAppStatisticsFragment;
     private CPUFragment mCPUFragement;
-    private GPUFragment mGPUFragement;
     private DefyPartsFragment mDefyPartsFragment;
+    private DrawerArrowDrawable mDrawerArrow;
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private GPUFragment mGPUFragement;
     private MemoryFragment mMemoryFragment;
-    private UpdaterFragment mUpdaterFragement;
+    private MiscSettingsFragment mMiscSettingsFragment;
+    private int mPreviousTitle;
     private ProfileFragment mProfileFragment;
     private StatisticsFragment mStatisticsFragment;
-    private MiscSettingsFragment mMiscSettingsFragment;
-    private AppMonitorFragment mAppStatisticsFragment;
     private TestSuiteFragment mTestSuiteFragment;
-
+    private CharSequence mTitle;
+    private UpdaterFragment mUpdaterFragement;
+    private static int mBackCounter = 0;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
-    public static final Typeface font = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
-    public int mActionBarTitleID;
-    public TextView mActionBarTitle;
-    private ActionBar mActionBar;
-
+    public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     public static final shellHelper shell = shellHelper.instance();
-    public static PerAppServiceHelper perAppService;
-
     public static GenericHelper genHelper = new GenericHelper();
-    public static JobManager mJobManager;
 
-    @Override
+    @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(getResources().getBoolean(R.bool.portrait_only)){
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (getResources().getBoolean(R.bool.portrait_only)) {
+            setRequestedOrientation(1);
         }
-
-        mJobManager = JobManager.instance(AeroActivity.this);
-
+        mJobManager = JobManager.instance(this);
         int actionBarHeight = 0;
-
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
         }
-
-        mFragmentStack = new Stack<Fragment>();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT &&
-                !(ViewConfiguration.get(getBaseContext()).hasPermanentMenuKey())) {
-
+        mFragmentStack = new Stack<>();
+        if (Build.VERSION.SDK_INT >= 19 && !ViewConfiguration.get(getBaseContext()).hasPermanentMenuKey()) {
             Window win = getWindow();
             WindowManager.LayoutParams winParams = win.getAttributes();
-            final int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-            winParams.flags |= bits;
+            winParams.flags |= 134217728;
             win.setAttributes(winParams);
-
             TypedValue tv = new TypedValue();
             if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
             }
-
         }
-
-        // Start the service if needed;
         if (!isServiceUp()) {
-            // Service is not running, check if it should;
             perAppService = new PerAppServiceHelper(this);
             if (perAppService.shouldBeStarted()) {
-                Util.showUsageStatDialog(AeroActivity.this);
+                Util.showUsageStatDialog(this);
                 perAppService.startService();
             }
         }
-
-        // Assign action bar title;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mActionBar = getActionBar();
+        if (Build.VERSION.SDK_INT >= 21) {
+            this.mActionBar = getActionBar();
         } else {
-            mActionBarTitleID = getResources().getIdentifier("action_bar_title", "id", "android");
-            mActionBarTitle = (TextView) findViewById(mActionBarTitleID);
-            mActionBarTitle.setTypeface(font);
+            this.mActionBarTitleID = getResources().getIdentifier("action_bar_title", "id", "android");
+            this.mActionBarTitle = (TextView) findViewById(this.mActionBarTitleID);
+            this.mActionBarTitle.setTypeface(font);
         }
-
-        mTitle = getTitle();
-        mAeroTitle = getResources().getStringArray(R.array.aero_array);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
+        this.mTitle = getTitle();
+        this.mAeroTitle = getResources().getStringArray(R.array.aero_array);
+        this.mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        this.mDrawerList = (ListView) findViewById(R.id.left_drawer);
         if (actionBarHeight != 0) {
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)mDrawerLayout.getLayoutParams();
-            params.setMargins(0, actionBarHeight + (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()), 0, 0);
-            mDrawerLayout.setLayoutParams(params);
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) this.mDrawerLayout.getLayoutParams();
+            params.setMargins(0, ((int) TypedValue.applyDimension(1, 24.0f, getResources().getDisplayMetrics())) + actionBarHeight, 0, 0);
+            this.mDrawerLayout.setLayoutParams(params);
         }
-
-        // set a custom shadow that overlays the main content when the drawer opens
-        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        // set up the drawer's list view with items and click listener
-        // Set up lists;
+        this.mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         NavBarItems content = new NavBarItems(this);
-
-        mAdapter = new ItemAdapter(this, R.layout.activity_main, content.ITEMS);
-        mDrawerList.setAdapter(mAdapter);
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-
-        // enable ActionBar app icon to behave as action to toggle nav drawer
+        this.mAdapter = new ItemAdapter(this, R.layout.activity_main, content.ITEMS);
+        this.mDrawerList.setAdapter((ListAdapter) this.mAdapter);
+        this.mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
-
-        // ActionBarDrawerToggle ties together the the proper interactions
-        // between the sliding drawer and the action bar app icon
-
-        mDrawerArrow = new DrawerArrowDrawable(this) {
-            @Override
+        this.mDrawerArrow = new DrawerArrowDrawable(this) { // from class: com.aero.control.AeroActivity.1
+            @Override // com.ikimuhendis.ldrawer.DrawerArrowDrawable
             public boolean isLayoutRtl() {
                 return false;
             }
         };
-
-        // Navigation Drawer with toggle and animation;
-        mDrawerToggle = new ActionBarDrawerToggle(this,
-                mDrawerLayout,
-                mDrawerArrow,
-                R.string.drawer_open,
-                R.string.drawer_close) {
+        this.mDrawerToggle = new ActionBarDrawerToggle(this, this.mDrawerLayout, this.mDrawerArrow, R.string.drawer_open, R.string.drawer_close) { // from class: com.aero.control.AeroActivity.2
+            @Override // com.ikimuhendis.ldrawer.ActionBarDrawerToggle, android.support.v4.app.ActionBarDrawerToggle, android.support.v4.widget.DrawerLayout.DrawerListener
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                invalidateOptionsMenu();
+                AeroActivity.this.invalidateOptionsMenu();
             }
 
+            @Override // com.ikimuhendis.ldrawer.ActionBarDrawerToggle, android.support.v4.app.ActionBarDrawerToggle, android.support.v4.widget.DrawerLayout.DrawerListener
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                invalidateOptionsMenu();
+                AeroActivity.this.invalidateOptionsMenu();
             }
         };
-
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
-
+        this.mDrawerLayout.setDrawerListener(this.mDrawerToggle);
+        this.mDrawerToggle.syncState();
         if (savedInstanceState == null) {
-            selectItem(OVERVIEW);
+            selectItem(0);
         } else {
             selectItem(savedInstanceState.getInt(SELECTED_ITEM));
         }
-
-        // Handle notification click here;
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if (extras != null) {
-                if (extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
-                    selectItem(!(Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? PROFILE : APPSTATISTICS);
-                }
+            if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
+                selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
+                return;
             }
-        } else {
-            if (savedInstanceState.getSerializable("NOTIFY_STRING") != null) {
-                if (savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
-                    selectItem(!(Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? PROFILE : APPSTATISTICS);
-                }
-            }
+            return;
         }
-
+        if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
+            selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
+        }
     }
 
-    private final class ItemAdapter extends ArrayAdapter<PreferenceItem> {
+    private final class ItemAdapter extends ArrayAdapter<NavBarItems.PreferenceItem> {
+        private ArrayList<NavBarItems.PreferenceItem> items;
 
-        private ArrayList<PreferenceItem> items;
-
-        public ItemAdapter(Context context, int textViewResourceId,
-                           ArrayList<PreferenceItem> objects) {
+        public ItemAdapter(Context context, int textViewResourceId, ArrayList<NavBarItems.PreferenceItem> objects) {
             super(context, textViewResourceId, objects);
             this.items = objects;
         }
 
+        @Override // android.widget.ArrayAdapter, android.widget.Adapter
         public View getView(int position, View convertView, ViewGroup parent) {
             View v = convertView;
-
             if (v == null) {
-                LayoutInflater vi = getLayoutInflater();
-                v = vi.inflate(R.layout.adapter_item, null);
+                LayoutInflater vi = AeroActivity.this.getLayoutInflater();
+                v = vi.inflate(R.layout.adapter_item, (ViewGroup) null);
             }
-
-            PreferenceItem item = items.get(position);
-
+            NavBarItems.PreferenceItem item = this.items.get(position);
             if (item != null) {
                 ImageView icon = (ImageView) v.findViewById(R.id.icon);
                 TextView text = (TextView) v.findViewById(R.id.text);
-
-                text.setTypeface(font);
-
+                text.setTypeface(AeroActivity.font);
                 if (icon != null) {
                     icon.setImageResource(item.drawable);
                 }
-
                 if (text != null) {
-                    text.setText(getString(item.content));
+                    text.setText(AeroActivity.this.getString(item.content));
                 }
             }
-
             return v;
         }
     }
 
-    @Override
+    @Override // android.app.Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
-
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
+    @Override // android.app.Activity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
-        //If we don't do this, the application will crash when resume via a notification.
         setIntent(intent);
     }
 
-    @Override
+    @Override // android.app.Activity
     protected void onResume() {
         super.onResume();
         Bundle extras = getIntent().getExtras();
-
-        // Display the appmonitor upon resume;
-        if (extras != null) {
-            if (extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
-                selectItem(!(Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? PROFILE : APPSTATISTICS);
-            }
+        if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
+            selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
         }
-
-        // Reset the string;
         getIntent().putExtra("NOTIFY_STRING", new String());
-
     }
 
-    @Override
+    @Override // android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
-        // The action bar home/up action should open or close the drawer.
-        // ActionBarDrawerToggle will take care of this.
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+        if (this.mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
         switch (item.getItemId()) {
-            case R.id.aero_settings:
-
+            case R.id.aero_settings /* 2131099748 */:
                 Intent trIntent = new Intent("android.intent.action.PREFS");
                 trIntent.setClass(this, PrefsActivity.class);
-                trIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                this.startActivity(trIntent);
+                trIntent.setFlags(268435456);
+                startActivity(trIntent);
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    /* The click listener for ListView in the navigation drawer */
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
+    private class DrawerItemClickListener implements AdapterView.OnItemClickListener {
+        private DrawerItemClickListener() {
+        }
+
+        @Override // android.widget.AdapterView.OnItemClickListener
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
+            AeroActivity.this.selectItem(position);
         }
     }
 
     private boolean isServiceUp() {
-        final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager manager = (ActivityManager) getSystemService("activity");
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (PerAppService.class.getName().equals(service.service.getClassName())) {
-                // its already up and running
                 return true;
             }
         }
         return false;
     }
 
-
-    private void selectItem(int position) {
-
+    /* JADX INFO: Access modifiers changed from: private */
+    public void selectItem(int position) {
         int j = position;
-
-        if(mDrawerLayout != null)
-            mDrawerLayout.closeDrawers();
-
-        // update the main content by replacing fragments
+        if (this.mDrawerLayout != null) {
+            this.mDrawerLayout.closeDrawers();
+        }
         Fragment fragment = null;
-
-        if (!(Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526"))
-                && position >= DEFY)
+        if (!Build.MODEL.equals("MB525") && !Build.MODEL.equals("MB526") && position >= 6) {
             j++;
-
-        // Switch to show different fragments;
+        }
         switch (j) {
-            case OVERVIEW:
-                if (mAeroFragment == null) {
-                    mAeroFragment = new AeroFragment();
+            case 0:
+                if (this.mAeroFragment == null) {
+                    this.mAeroFragment = new AeroFragment();
                 }
-                fragment = mAeroFragment;
+                fragment = this.mAeroFragment;
                 break;
-            case CPU:
-                if (mCPUFragement == null) {
-                    mCPUFragement = new CPUFragment();
+            case 1:
+                if (this.mCPUFragement == null) {
+                    this.mCPUFragement = new CPUFragment();
                 }
-                fragment = mCPUFragement;
+                fragment = this.mCPUFragement;
                 break;
-            case STATISTICS:
-
-                if (mStatisticsFragment == null) {
-                    mStatisticsFragment = new StatisticsFragment();
+            case 2:
+                if (this.mStatisticsFragment == null) {
+                    this.mStatisticsFragment = new StatisticsFragment();
                 }
-                fragment = mStatisticsFragment;
+                fragment = this.mStatisticsFragment;
                 break;
-            case GPU:
-                if (mGPUFragement == null) {
-                    mGPUFragement = new GPUFragment();
+            case 3:
+                if (this.mGPUFragement == null) {
+                    this.mGPUFragement = new GPUFragment();
                 }
-                fragment = mGPUFragement;
+                fragment = this.mGPUFragement;
                 break;
-            case MEMORY:
-                if (mMemoryFragment == null) {
-                    mMemoryFragment = new MemoryFragment();
+            case 4:
+                if (this.mMemoryFragment == null) {
+                    this.mMemoryFragment = new MemoryFragment();
                 }
-                fragment = mMemoryFragment;
+                fragment = this.mMemoryFragment;
                 break;
-            case MISC:
-                if (mMiscSettingsFragment == null) {
-                    mMiscSettingsFragment = new MiscSettingsFragment();
+            case 5:
+                if (this.mMiscSettingsFragment == null) {
+                    this.mMiscSettingsFragment = new MiscSettingsFragment();
                 }
-                fragment = mMiscSettingsFragment;
+                fragment = this.mMiscSettingsFragment;
                 break;
-            case DEFY:
-                if (mDefyPartsFragment == null) {
-                    mDefyPartsFragment = new DefyPartsFragment();
+            case 6:
+                if (this.mDefyPartsFragment == null) {
+                    this.mDefyPartsFragment = new DefyPartsFragment();
                 }
-                fragment = mDefyPartsFragment;
+                fragment = this.mDefyPartsFragment;
                 break;
-            case UPDATER:
-                if (mUpdaterFragement == null) {
-                    mUpdaterFragement = new UpdaterFragment();
+            case 7:
+                if (this.mUpdaterFragement == null) {
+                    this.mUpdaterFragement = new UpdaterFragment();
                 }
-                fragment = mUpdaterFragement;
+                fragment = this.mUpdaterFragement;
                 break;
-            case PROFILE:
-                if (mProfileFragment == null) {
-                    mProfileFragment = new ProfileFragment();
+            case 8:
+                if (this.mProfileFragment == null) {
+                    this.mProfileFragment = new ProfileFragment();
                 }
-                fragment = mProfileFragment;
+                fragment = this.mProfileFragment;
                 break;
-            case APPSTATISTICS:
-                if (mAppStatisticsFragment == null) {
-                    mAppStatisticsFragment = new AppMonitorFragment();
+            case 9:
+                if (this.mAppStatisticsFragment == null) {
+                    this.mAppStatisticsFragment = new AppMonitorFragment();
                 }
-                fragment = mAppStatisticsFragment;
+                fragment = this.mAppStatisticsFragment;
                 break;
-            case TESTSUITE:
-                if (mTestSuiteFragment == null) {
-                    mTestSuiteFragment = new TestSuiteFragment();
+            case 10:
+                if (this.mTestSuiteFragment == null) {
+                    this.mTestSuiteFragment = new TestSuiteFragment();
                 }
-                fragment = mTestSuiteFragment;
+                fragment = this.mTestSuiteFragment;
                 break;
         }
-
-        if (fragment != null)
+        if (fragment != null) {
             switchContent(fragment);
-
-        // update selected item and title, then close the drawer
-        mDrawerList.setItemChecked(position, true);
-        mPreviousTitle = j;
-        setTitle(mAeroTitle[j]);
+        }
+        this.mDrawerList.setItemChecked(position, true);
+        this.mPreviousTitle = j;
+        setTitle(this.mAeroTitle[j]);
         mBackCounter = 0;
-
-        mDrawerLayout.closeDrawer(mDrawerList);
+        this.mDrawerLayout.closeDrawer(this.mDrawerList);
     }
 
     public void setActionBarTitle(String title) {
         setTitle(title);
     }
 
+    @Override // android.app.Activity
     public final void setTitle(CharSequence title) {
-        mTitle = title;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (mActionBar != null)
-                mActionBar.setTitle(mTitle);
-        } else {
-            if (mActionBarTitle != null)
-                mActionBarTitle.setText(mTitle);
+        this.mTitle = title;
+        if (Build.VERSION.SDK_INT >= 21) {
+            if (this.mActionBar != null) {
+                this.mActionBar.setTitle(this.mTitle);
+            }
+        } else if (this.mActionBarTitle != null) {
+            this.mActionBarTitle.setText(this.mTitle);
         }
     }
 
-    /**
-     * When using the ActionBarDrawerToggle, you must call it during
-     * onPostCreate() and onConfigurationChanged()...
-     */
-
-    @Override
+    @Override // android.app.Activity
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
+        this.mDrawerToggle.syncState();
     }
 
-    @Override
+    @Override // android.app.Activity, android.content.ComponentCallbacks
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggls
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        this.mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    @Override
+    @Override // android.app.Activity
     public void onBackPressed() {
-
         if (mFragmentStack.size() > 1) {
             switchContent(mFragmentStack.lastElement());
-            setTitle(mAeroTitle[mPreviousTitle]);
+            setTitle(this.mAeroTitle[this.mPreviousTitle]);
         }
-
-        // Back-Button logic;
         mBackCounter++;
         if (mBackCounter == 1) {
-            Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.back_for_close, 1).show();
         }
-        if (mBackCounter == 2)
+        if (mBackCounter == 2) {
             finish();
+        }
     }
 
-    /**
-     * Resets the back button counter logic.
-     */
     public static void resetBackCounter() {
         mBackCounter = 0;
     }
 
     public final void switchContent(final Fragment fragment) {
-
-        // Reduce the navigation drawer delay for a smoother UI;
-        mHandler.postDelayed(new Runnable()  {
-            @Override
+        mHandler.postDelayed(new Runnable() { // from class: com.aero.control.AeroActivity.3
+            @Override // java.lang.Runnable
             public void run() {
-
-                /*
-                 * Somehow the activity is destroyed sometimes when we switched activities which
-                 * forced an orientation. To hopefully avoid this, we are just restarting the app
-                 * safely.
-                 */
                 try {
-                    getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in,
-                            android.R.animator.fade_out).replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+                    AeroActivity.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, fragment).commitAllowingStateLoss();
                 } catch (IllegalStateException e) {
-                    recreate();
+                    AeroActivity.this.recreate();
                 }
             }
-        },genHelper.getDefaultDelay());
+        }, genHelper.getDefaultDelay());
         mFragmentStack.push(fragment);
     }
 }

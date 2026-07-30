@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
@@ -27,332 +26,243 @@ import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-/**
- * Created by Alexander Christ on 03.04.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public class MiscSettingsFragment extends PlaceHolderFragment implements FileManagerListener {
-
     public static final String FILENAME_MISC = "firstrun_misc";
-    private PreferenceScreen root;
-    private PreferenceCategory PrefCat;
-    private PreferenceCategory mMiscCat;
-    private PreferenceHandler mHandler;
-    private ArrayList<String> mParaList;
-    private ArrayList<String> mNameList;
-    private SharedPreferences mPrefs;
-    private SharedPreferences mMiscSettings;
-    private FileManager mLocalFolders;
-    private Dialog mFileDialog;
-    private Context mContext;
-    private ShowcaseView mShowCase;
-
-
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";
+    private PreferenceCategory PrefCat;
+    private Context mContext;
+    private Dialog mFileDialog;
+    private PreferenceHandler mHandler;
+    private FileManager mLocalFolders;
+    private PreferenceCategory mMiscCat;
+    private SharedPreferences mMiscSettings;
+    private ArrayList<String> mNameList;
+    private ArrayList<String> mParaList;
+    private SharedPreferences mPrefs;
+    private ShowcaseView mShowCase;
+    private PreferenceScreen root;
 
-    @Override
+    @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Load the preferences from an XML resource
         addPreferencesFromResource(R.layout.empty_preference);
-        root = this.getPreferenceScreen();
-
-        mContext = getActivity();
-
-        // Always rebuild;
-        mMiscSettings = mContext.getSharedPreferences(MISC_SETTINGS_STORAGE, mContext.MODE_PRIVATE);
-
-        // Load parameter data:
+        this.root = getPreferenceScreen();
+        this.mContext = getActivity();
+        Context context = this.mContext;
+        Context context2 = this.mContext;
+        this.mMiscSettings = context.getSharedPreferences(MISC_SETTINGS_STORAGE, 0);
         loadParalist();
-
-        // Load our custom preferences;
         loadSettings();
     }
 
-    // Create our options menu;
-    @Override
+    @Override // android.app.Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
-
+        this.mPrefs = PreferenceManager.getDefaultSharedPreferences(this.mContext.getApplicationContext());
         inflater.inflate(R.menu.misc_menu, menu);
-
         super.onCreateOptionsMenu(menu, inflater);
-
     }
 
-    @Override
+    @Override // android.app.Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_add_item:
-
-                // Setup our file manager;
-                mLocalFolders = new FileManager(mContext, null);
-                mLocalFolders.setIFolderItemListener(this);
-                mLocalFolders.setDir("/");
-
-                if (mFileDialog == null) {
-                    mFileDialog = new Dialog(mContext);
-                    ViewGroup.LayoutParams abc = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                    mFileDialog.addContentView(mLocalFolders, abc);
-
-                    // In case we are just creating the dialog, fill it with the root-path;
-                    mFileDialog.setTitle("/");
-                    mLocalFolders.setDialog(mFileDialog);
-                }
-                mFileDialog.show();
-
-                break;
-            case R.id.action_delete_item:
-
-                if (mMiscCat == null)
-                    break;
-
-                final AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
-                final ArrayList<String> allMiscSettings = new ArrayList<String>();
-                final ArrayList<Boolean> miscSettingsDelete = new ArrayList<Boolean>();
-                for (int i = 0; i < mMiscCat.getPreferenceCount(); i++) {
-                    allMiscSettings.add(mMiscCat.getPreference(i).getTitle().toString());
-                }
-                if (allMiscSettings.size() == 0) {
-                    Toast.makeText(mContext, R.string.pref_misc_no_settings, Toast.LENGTH_LONG).show();
-                    break;
-                }
-
-                // Fill with default data;
-                for (String a : allMiscSettings) {
-                    miscSettingsDelete.add(false);
-                }
-
-                final String[] preferenceData = allMiscSettings.toArray(new String[0]);
-
-                dialog.setTitle(R.string.pref_misc_delete_misc);
-                dialog.setIcon(R.drawable.warning);
-                dialog.setMultiChoiceItems(preferenceData, null, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i, boolean b) {
-                        if (b) {
-                            miscSettingsDelete.add(i, true);
-                        } else {
-                            miscSettingsDelete.add(i, false);
-                        }
+            case R.id.action_delete_item /* 2131099750 */:
+                if (this.mMiscCat != null) {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(this.mContext);
+                    ArrayList<String> allMiscSettings = new ArrayList<>();
+                    final ArrayList<Boolean> miscSettingsDelete = new ArrayList<>();
+                    for (int i = 0; i < this.mMiscCat.getPreferenceCount(); i++) {
+                        allMiscSettings.add(this.mMiscCat.getPreference(i).getTitle().toString());
                     }
-                })
-                        // Set the action buttons
-                        .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-
-                                SharedPreferences.Editor editor = mMiscSettings.edit();
-                                SharedPreferences.Editor aero_editor = mPrefs.edit();
-                                final Map<String,?> keys = mMiscSettings.getAll();
-
-                                int i = 0;
-                                for (String s : preferenceData) {
-                                    if (miscSettingsDelete.get(i)) {
-                                        for (final Map.Entry<String,?> entry : keys.entrySet()) {
-
-                                            // Delete our marked entries;
-
+                    if (allMiscSettings.size() == 0) {
+                        Toast.makeText(this.mContext, R.string.pref_misc_no_settings, 1).show();
+                    } else {
+                        for (String str : allMiscSettings) {
+                            miscSettingsDelete.add(false);
+                        }
+                        final String[] preferenceData = (String[]) allMiscSettings.toArray(new String[0]);
+                        dialog.setTitle(R.string.pref_misc_delete_misc);
+                        dialog.setIcon(R.drawable.warning);
+                        dialog.setMultiChoiceItems(preferenceData, (boolean[]) null, new DialogInterface.OnMultiChoiceClickListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.3
+                            @Override // android.content.DialogInterface.OnMultiChoiceClickListener
+                            public void onClick(DialogInterface dialogInterface, int i2, boolean b) {
+                                if (b) {
+                                    miscSettingsDelete.add(i2, true);
+                                } else {
+                                    miscSettingsDelete.add(i2, false);
+                                }
+                            }
+                        }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.2
+                            @Override // android.content.DialogInterface.OnClickListener
+                            public void onClick(DialogInterface dialog2, int id) {
+                                SharedPreferences.Editor editor = MiscSettingsFragment.this.mMiscSettings.edit();
+                                SharedPreferences.Editor aero_editor = MiscSettingsFragment.this.mPrefs.edit();
+                                Map<String, ?> keys = MiscSettingsFragment.this.mMiscSettings.getAll();
+                                int i2 = 0;
+                                String[] arr$ = preferenceData;
+                                for (String str2 : arr$) {
+                                    if (((Boolean) miscSettingsDelete.get(i2)).booleanValue()) {
+                                        for (Map.Entry<String, ?> entry : keys.entrySet()) {
                                             String key = entry.getKey();
                                             String value = entry.getValue().toString();
-
-                                            if (preferenceData[i].equals(value)) {
+                                            if (preferenceData[i2].equals(value)) {
                                                 editor.remove(key).commit();
                                                 aero_editor.remove(key).commit();
                                             }
                                         }
                                     }
-                                    i++;
+                                    i2++;
                                 }
-                                // Re-init to rebuild UI;
-                                root.removePreference(mMiscCat);
-                                mMiscCat = null;
-                                initMisc();
+                                MiscSettingsFragment.this.root.removePreference(MiscSettingsFragment.this.mMiscCat);
+                                MiscSettingsFragment.this.mMiscCat = null;
+                                MiscSettingsFragment.this.initMisc();
                             }
-                        })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                // Do Nothing
-
+                        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.1
+                            @Override // android.content.DialogInterface.OnClickListener
+                            public void onClick(DialogInterface dialog2, int id) {
                             }
-                        })
-                ;
-                dialog.create().show();
+                        });
+                        dialog.create().show();
+                    }
+                }
+                break;
+            case R.id.action_add_item /* 2131099751 */:
+                this.mLocalFolders = new FileManager(this.mContext, null);
+                this.mLocalFolders.setIFolderItemListener(this);
+                this.mLocalFolders.setDir("/");
+                if (this.mFileDialog == null) {
+                    this.mFileDialog = new Dialog(this.mContext);
+                    ViewGroup.LayoutParams abc = new ViewGroup.LayoutParams(-2, -1);
+                    this.mFileDialog.addContentView(this.mLocalFolders, abc);
+                    this.mFileDialog.setTitle("/");
+                    this.mLocalFolders.setDialog(this.mFileDialog);
+                }
+                this.mFileDialog.show();
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+    @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
-
         super.onActivityCreated(savedInstanceState);
-
-        // Set up our file;
         int output = 0;
-
         if (AeroActivity.genHelper.doesExist(getActivity().getFilesDir().getAbsolutePath() + "/" + FILENAME_MISC)) {
             output = 1;
         }
-
-        // Only show showcase once;
-        if (output == 0)
+        if (output == 0) {
             DrawFirstStart(R.string.showcase_your_settings, R.string.showcase_your_settings_sum);
-
+        }
     }
 
     public void DrawFirstStart(int header, int content) {
-
         try {
-            final FileOutputStream fos = getActivity().openFileOutput(FILENAME_MISC, Context.MODE_PRIVATE);
+            FileOutputStream fos = getActivity().openFileOutput(FILENAME_MISC, 0);
             fos.write("1".getBytes());
             fos.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Log.e("Aero", "Could not save file. ", e);
         }
-
-        Target homeTarget = new Target() {
-            @Override
+        Target homeTarget = new Target() { // from class: com.aero.control.fragments.MiscSettingsFragment.4
+            @Override // com.github.amlcurran.showcaseview.targets.Target
             public Point getPoint() {
-                // Get approximate position of overflow action icon's center
-                int actionBarSize = getActivity().findViewById(R.id.action_add_item).getHeight();
-                int x = getResources().getDisplayMetrics().widthPixels - actionBarSize / 2;
+                int actionBarSize = MiscSettingsFragment.this.getActivity().findViewById(R.id.action_add_item).getHeight();
+                int x = MiscSettingsFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
                 int y = actionBarSize / 2;
                 return new Point(x, y);
             }
         };
-
-        mShowCase = new ShowcaseView.Builder(getActivity())
-                .setContentTitle(header)
-                .setContentText(content)
-                .setTarget(homeTarget)
-                .build();
+        this.mShowCase = new ShowcaseView.Builder(getActivity()).setContentTitle(header).setContentText(content).setTarget(homeTarget).build();
     }
 
-    public void OnCannotFileRead(File file) { }
+    @Override // com.aero.control.helpers.FileManager.FileManagerListener
+    public void OnCannotFileRead(File file) {
+    }
 
+    @Override // com.aero.control.helpers.FileManager.FileManagerListener
     public void OnFileClicked(File file) {
-
-        // Sanity-check; is this tunable already added?
-        for (int i = 0; i < mMiscCat.getPreferenceCount(); i++) {
-            if (file.toString().contains(mMiscCat.getPreference(i).getTitle().toString())) {
-                Toast.makeText(mContext, "This tunable was already added!", Toast.LENGTH_LONG).show();
-                mFileDialog.dismiss();
+        for (int i = 0; i < this.mMiscCat.getPreferenceCount(); i++) {
+            if (file.toString().contains(this.mMiscCat.getPreference(i).getTitle().toString())) {
+                Toast.makeText(this.mContext, "This tunable was already added!", 1).show();
+                this.mFileDialog.dismiss();
                 return;
             }
-
         }
-
-        mHandler.genPrefFromSingleFile(file.toString());
-
+        this.mHandler.genPrefFromSingleFile(file.toString());
         String[] array = file.toString().split("/");
         String paraName = "";
-        int i = 0;
-
+        int i2 = 0;
         for (String a : array) {
-            if (array.length - 1 == i)
+            if (array.length - 1 == i2) {
                 paraName = a;
-            i++;
+            }
+            i2++;
         }
-
-        mMiscSettings.edit().putString(file.toString(), paraName).commit();
-        root.addPreference(mMiscCat);
-
-        mFileDialog.dismiss();
+        this.mMiscSettings.edit().putString(file.toString(), paraName).commit();
+        this.root.addPreference(this.mMiscCat);
+        this.mFileDialog.dismiss();
     }
 
-    /*
-     * Basically inits everything and maps data;
-     */
-    private void initMisc() {
-
-        final Map<String,?> keys = mMiscSettings.getAll();
+    /* JADX INFO: Access modifiers changed from: private */
+    public void initMisc() {
+        Map<String, ?> keys = this.mMiscSettings.getAll();
         int i = 0;
-
-        if (mMiscCat == null) {
-            mMiscCat = new PreferenceCategory(mContext);
-            mMiscCat.setTitle(R.string.pref_misc_your_settings);
-            root.addPreference(mMiscCat);
-
-            mHandler = new PreferenceHandler(mContext, mMiscCat, getPreferenceManager());
-
-            // Load our saved data;
-            for (final Map.Entry<String,?> entry : keys.entrySet()) {
+        if (this.mMiscCat == null) {
+            this.mMiscCat = new PreferenceCategory(this.mContext);
+            this.mMiscCat.setTitle(R.string.pref_misc_your_settings);
+            this.root.addPreference(this.mMiscCat);
+            this.mHandler = new PreferenceHandler(this.mContext, this.mMiscCat, getPreferenceManager());
+            for (Map.Entry<String, ?> entry : keys.entrySet()) {
                 String key = entry.getKey();
-                mHandler.genPrefFromSingleFile(key);
+                this.mHandler.genPrefFromSingleFile(key);
                 i++;
             }
-
         } else {
-            root.addPreference(mMiscCat);
+            this.root.addPreference(this.mMiscCat);
         }
-
-        if (mHandler == null) {
-            mHandler = new PreferenceHandler(mContext, mMiscCat, getPreferenceManager());
+        if (this.mHandler == null) {
+            this.mHandler = new PreferenceHandler(this.mContext, this.mMiscCat, getPreferenceManager());
         }
-
-        // Remove the category if nothing is left;
-        if (mMiscCat.getPreferenceCount() == 0) {
-            root.removePreference(mMiscCat);
+        if (this.mMiscCat.getPreferenceCount() == 0) {
+            this.root.removePreference(this.mMiscCat);
         }
-
     }
 
     private void loadParalist() {
-
-        mParaList = new ArrayList<String>();
-        mNameList = new ArrayList<String>();
-
-        mNameList.add("vtg_level");
-        mParaList.add(FilePath.MISC_VIBRATOR_CONTROL);
-
-        mNameList.add("amp");
-        mParaList.add(FilePath.MISC_VIBRATOR_CONTROL);
-
-        mNameList.add("temp_threshold");
-        mParaList.add(FilePath.MISC_THERMAL_CONTROL);
-
-        mNameList.add("volume_boost");
-        mParaList.add(FilePath.MISC_HEADSET_VOLUME_BOOST);
-
+        this.mParaList = new ArrayList<>();
+        this.mNameList = new ArrayList<>();
+        this.mNameList.add("vtg_level");
+        this.mParaList.add(FilePath.MISC_VIBRATOR_CONTROL);
+        this.mNameList.add("amp");
+        this.mParaList.add(FilePath.MISC_VIBRATOR_CONTROL);
+        this.mNameList.add("temp_threshold");
+        this.mParaList.add(FilePath.MISC_THERMAL_CONTROL);
+        this.mNameList.add("volume_boost");
+        this.mParaList.add(FilePath.MISC_HEADSET_VOLUME_BOOST);
         setHasOptionsMenu(true);
     }
 
     public void loadSettings() {
-
-        // If there are already some entries, kill them all (with fire)
-        if (PrefCat != null)
-            root.removePreference(PrefCat);
-
-        final CustomListPreference tcpPreference = new CustomListPreference(mContext);
-
-        PrefCat = new PreferenceCategory(mContext);
-        PrefCat.setTitle(R.string.pref_misc_settings);
-        root.addPreference(PrefCat);
-
+        if (this.PrefCat != null) {
+            this.root.removePreference(this.PrefCat);
+        }
+        final CustomListPreference tcpPreference = new CustomListPreference(this.mContext);
+        this.PrefCat = new PreferenceCategory(this.mContext);
+        this.PrefCat.setTitle(R.string.pref_misc_settings);
+        this.root.addPreference(this.PrefCat);
         initMisc();
-
         try {
-
-            PreferenceHandler h = new PreferenceHandler(mContext, PrefCat, getPreferenceManager());
-
-            h.genPrefFromFiles(mNameList.toArray(new String[0]), mParaList.toArray(new String[0]), false);
-
+            PreferenceHandler h = new PreferenceHandler(this.mContext, this.PrefCat, getPreferenceManager());
+            h.genPrefFromFiles((String[]) this.mNameList.toArray(new String[0]), (String[]) this.mParaList.toArray(new String[0]), false);
         } catch (NullPointerException e) {
             Log.e("Aero", "I couldn't get any files!", e);
         }
-
-        // Needed for set-on-boot;
         tcpPreference.setName("tcp_congestion");
         tcpPreference.setTitle(R.string.pref_misc_tcp_congestion);
         tcpPreference.setDialogTitle(R.string.pref_misc_tcp_congestion);
@@ -360,19 +270,15 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         tcpPreference.setValue(AeroActivity.shell.getInfo(FilePath.MISC_TCP_CONGESTION_CURRENT));
         tcpPreference.setEntries(AeroActivity.shell.getInfoArray(FilePath.MISC_TCP_CONGESTION_AVAILABLE, 0, 0));
         tcpPreference.setEntryValues(AeroActivity.shell.getInfoArray(FilePath.MISC_TCP_CONGESTION_AVAILABLE, 0, 0));
-
-        if (AeroActivity.genHelper.doesExist(FilePath.MISC_TCP_CONGESTION_AVAILABLE))
-            PrefCat.addPreference(tcpPreference);
-
-        tcpPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
+        if (AeroActivity.genHelper.doesExist(FilePath.MISC_TCP_CONGESTION_AVAILABLE)) {
+            this.PrefCat.addPreference(tcpPreference);
+        }
+        tcpPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.5
+            @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-
                 String a = (String) o;
-
                 AeroActivity.shell.setRootInfo(a, FilePath.MISC_TCP_CONGESTION_CURRENT);
                 tcpPreference.setSummary(a);
-
                 return true;
             }
         });

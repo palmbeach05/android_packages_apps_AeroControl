@@ -17,240 +17,172 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.view.Display;
 import android.widget.Toast;
-
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.PerApp.AppMonitor.AppContext;
 import com.aero.control.helpers.PerApp.AppMonitor.AppLogger;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.settingsHelper;
-
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-/**
- * Created by Alexander Christ on 17.05.14.
- */
+/* JADX INFO: loaded from: classes.dex */
 public final class PerAppService extends Service {
-
-    private static String mPreviousApp = null;
-    private static String mCurrentApp = null;
+    private static JobManager mJobManager = null;
     private static final String perAppProfileHandler = "perAppProfileHandler";
     private boolean mActive;
-    private String mProfile;
-    private SharedPreferences mPerAppPrefs;
     private ActivityManager mAm;
     private Context mContext;
+    private SharedPreferences mPerAppPrefs;
+    private String mProfile;
+    private Runnable mRunnable;
+    private static String mPreviousApp = null;
+    private static String mCurrentApp = null;
     private static final settingsHelper settingsHelper = new settingsHelper();
     private static final Handler mHandler = new Handler(Looper.getMainLooper());
-    private Runnable mRunnable;
-    private boolean mDestroyed;
-    private static JobManager mJobManager;
     private final String mClassName = getClass().getName();
     private boolean mShowToasts = true;
 
-    @Override
+    @Override // android.app.Service
     public void onCreate() {
-        mDestroyed = false;
-
-        final boolean enabled = (AeroActivity.perAppService != null) ? AeroActivity.perAppService.getState() : true;
-
-        mJobManager = JobManager.instance(PerAppService.this);
-
-        if (mContext == null)
-            mContext = this;
-
-        if (mRunnable == null) {
-            mRunnable = new Runnable() {
-                @Override
+        final boolean enabled = AeroActivity.perAppService != null ? AeroActivity.perAppService.getState() : true;
+        mJobManager = JobManager.instance(this);
+        if (this.mContext == null) {
+            this.mContext = this;
+        }
+        if (this.mRunnable == null) {
+            this.mRunnable = new Runnable() { // from class: com.aero.control.service.PerAppService.1
+                @Override // java.lang.Runnable
                 public void run() {
-                    mHandler.post(new Runnable() {
-                        @Override
+                    PerAppService.mHandler.post(new Runnable() { // from class: com.aero.control.service.PerAppService.1.1
+                        @Override // java.lang.Runnable
                         public void run() {
-                            if (mDestroyed) {
-                                return;
-                            }
-                            // Do work in its own thread;
                             if (enabled) {
-                                runTask();
+                                PerAppService.this.runTask();
                             }
-                            if (!mDestroyed) {
-                                mHandler.postDelayed(mRunnable, 5000);
-                            }
+                            PerAppService.mHandler.postDelayed(PerAppService.this.mRunnable, 5000L);
                         }
                     });
                 }
             };
         }
-        new Thread(mRunnable).start();
+        new Thread(this.mRunnable).start();
     }
 
-    @Override
-    public void onDestroy() {
-        mDestroyed = true;
-        if (mRunnable != null) {
-            mHandler.removeCallbacks(mRunnable);
-        }
-        super.onDestroy();
-    }
-    
-    @Override
+    @Override // android.app.Service
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return Service.START_STICKY;
+        return 1;
     }
 
-    @Override
+    @Override // android.app.Service
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    private void runTask() {
-
-        AppContext localContext = null;
-
-        if (mPerAppPrefs == null)
-            mPerAppPrefs = mContext.getSharedPreferences(perAppProfileHandler, Context.MODE_PRIVATE);
-
-        mShowToasts = PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean("per_app_toast", true);
-
-        // init our data;
+    /* JADX INFO: Access modifiers changed from: private */
+    public void runTask() {
+        if (this.mPerAppPrefs == null) {
+            this.mPerAppPrefs = this.mContext.getSharedPreferences(perAppProfileHandler, 0);
+        }
+        this.mShowToasts = PreferenceManager.getDefaultSharedPreferences(this.mContext).getBoolean("per_app_toast", true);
         setAppData();
-
         if (mJobManager != null) {
-
-            mJobManager.setContext(mContext);
-            localContext = mJobManager.getAppContext(mCurrentApp);
-
+            mJobManager.setContext(this.mContext);
+            AppContext localContext = mJobManager.getAppContext(mCurrentApp);
             mJobManager.setSleep(isScreenOn());
-
-            /*
-             * We need to check three things here before shutting down the JobManager;
-             * 1.) Is the context null, e.g. are we disabled or sleeping?
-             * 2.) Is the last known state NOT the sleeping state?
-             * 3.) Is the screen currently on?
-             */
             if (localContext == null && !mJobManager.getSleepState() && isScreenOn()) {
-                AppLogger.print(mClassName, "Shutting down JobManager...", 0);
+                AppLogger.print(this.mClassName, "Shutting down JobManager...", 0);
                 mJobManager = null;
             } else {
                 mJobManager.schedule(localContext);
             }
             AeroActivity.mJobManager = mJobManager;
         }
-
-        // Check if our screen is on, if not, return;
-        if (isScreenOn()) {
-            return;
-        }
-
-        if (mPreviousApp != null && mCurrentApp != null) {
-            if (!(mPreviousApp.equals(mCurrentApp))) {
-
-                if(mActive) {
-                    if (mShowToasts) {
-                        Toast.makeText(mContext, mContext.getText(R.string.return_to_normal), Toast.LENGTH_LONG).show();
-                    }
-                    mActive = false;
-                    mProfile = null;
-                    settingsHelper.executeDefault();
+        if (!isScreenOn() && mPreviousApp != null && mCurrentApp != null && !mPreviousApp.equals(mCurrentApp)) {
+            if (this.mActive) {
+                if (this.mShowToasts) {
+                    Toast.makeText(this.mContext, this.mContext.getText(R.string.return_to_normal), 1).show();
                 }
-
-                final Map<String,?> keys = mPerAppPrefs.getAll();
-
-                for (final Map.Entry<String,?> entry : keys.entrySet()) {
-
-                    final String savedSelectedProfiles = mPerAppPrefs.getString(entry.getKey(), null);
-                    if (savedSelectedProfiles == null)
-                        return;
-
-                    final String tmp[] = savedSelectedProfiles.replace("+", " ").split(" ");
-
-                    for (final String a : tmp) {
+                this.mActive = false;
+                this.mProfile = null;
+                settingsHelper.executeDefault();
+            }
+            Map<String, ?> keys = this.mPerAppPrefs.getAll();
+            for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                String savedSelectedProfiles = this.mPerAppPrefs.getString(entry.getKey(), null);
+                if (savedSelectedProfiles != null) {
+                    String[] tmp = savedSelectedProfiles.replace("+", " ").split(" ");
+                    for (String a : tmp) {
                         if (mCurrentApp.equals(a)) {
-                            mProfile = entry.getKey();
-                            if (mShowToasts) {
-                                Toast.makeText(mContext, mContext.getText(R.string.apply_profile) + " " + mProfile, Toast.LENGTH_LONG).show();
+                            this.mProfile = entry.getKey();
+                            if (this.mShowToasts) {
+                                Toast.makeText(this.mContext, ((Object) this.mContext.getText(R.string.apply_profile)) + " " + this.mProfile, 1).show();
                             }
-                            mActive = true;
-
-                            // Passing the profile to our settings helper;
-                            settingsHelper.setSettings(mContext, mProfile, false);
+                            this.mActive = true;
+                            settingsHelper.setSettings(this.mContext, this.mProfile, false);
                         }
                     }
+                } else {
+                    return;
                 }
-            }
-            else {
-                // No app change detected, return;
-                return;
             }
         }
     }
 
     private void setAppData() {
-
-        String PackageName = mCurrentApp;
-        mPreviousApp = PackageName;
-
-        if (mAm == null)
-            mAm = (ActivityManager) PerAppService.this.getSystemService(ACTIVITY_SERVICE);
-
-        // Get the first item in the list;
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+        String PackageName;
+        String PackageName2 = mCurrentApp;
+        mPreviousApp = PackageName2;
+        if (this.mAm == null) {
+            this.mAm = (ActivityManager) getSystemService("activity");
+        }
+        if (Build.VERSION.SDK_INT > 19) {
             PackageName = getTopApp();
         } else {
-            ActivityManager.RunningTaskInfo AppInfo = mAm.getRunningTasks(1).get(0);
-
+            ActivityManager.RunningTaskInfo AppInfo = this.mAm.getRunningTasks(1).get(0);
             PackageName = AppInfo.topActivity.getPackageName();
         }
         if (PackageName != null) {
             PackageName = PackageName.trim();
         }
-
         mCurrentApp = PackageName;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(21)
     private String getTopApp() {
-
-        String visibleApp = null;
         long time = System.currentTimeMillis();
-        UsageStatsManager usm = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
-        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
-
-        if (appList != null && appList.size() > 0) {
-            SortedMap<Long, UsageStats> sortedMap = new TreeMap<Long, UsageStats>();
-            for (UsageStats usageStats : appList) {
-                sortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-            }
-            if (!sortedMap.isEmpty()) {
-                // Get the last name;
-                visibleApp = sortedMap.get(sortedMap.lastKey()).getPackageName();
-            }
+        UsageStatsManager usm = (UsageStatsManager) getSystemService("usagestats");
+        List<UsageStats> appList = usm.queryUsageStats(0, time - 1000000, time);
+        if (appList == null || appList.size() <= 0) {
+            return null;
         }
-
+        SortedMap<Long, UsageStats> sortedMap = new TreeMap<>();
+        for (UsageStats usageStats : appList) {
+            sortedMap.put(Long.valueOf(usageStats.getLastTimeUsed()), usageStats);
+        }
+        if (sortedMap.isEmpty()) {
+            return null;
+        }
+        String visibleApp = sortedMap.get(sortedMap.lastKey()).getPackageName();
         return visibleApp;
     }
 
     private boolean isScreenOn() {
-
-        // Take special care for API20+
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            DisplayManager dm = (DisplayManager) mContext.getSystemService(mContext.DISPLAY_SERVICE);
-
-            // We iterate through all available displays
-            for (Display display : dm.getDisplays()) {
-                if (display.getState() != Display.STATE_OFF)
+        if (Build.VERSION.SDK_INT > 19) {
+            Context context = this.mContext;
+            Context context2 = this.mContext;
+            DisplayManager dm = (DisplayManager) context.getSystemService("display");
+            Display[] arr$ = dm.getDisplays();
+            for (Display display : arr$) {
+                if (display.getState() != 1) {
                     return false;
+                }
             }
-            // If we are here, all displays are on;
             return true;
-
-        } else {
-            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-
-            return !pm.isScreenOn();
         }
+        PowerManager pm = (PowerManager) getSystemService("power");
+        return !pm.isScreenOn();
     }
 }

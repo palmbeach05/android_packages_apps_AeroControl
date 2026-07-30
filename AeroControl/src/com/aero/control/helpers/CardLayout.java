@@ -1,20 +1,15 @@
 package com.aero.control.helpers;
 
-
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 
-/**
- * Created by Alexander Christ on 11.02.14.
- */
-public class CardLayout extends LinearLayout implements OnGlobalLayoutListener {
-
+/* JADX INFO: loaded from: classes.dex */
+public class CardLayout extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
     public CardLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         initLayoutObserver();
-
     }
 
     public CardLayout(Context context) {
@@ -23,13 +18,11 @@ public class CardLayout extends LinearLayout implements OnGlobalLayoutListener {
     }
 
     private void initLayoutObserver() {
-        setOrientation(LinearLayout.VERTICAL);
+        setOrientation(1);
         getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
-    @Override
+    @Override // android.view.ViewTreeObserver.OnGlobalLayoutListener
     public void onGlobalLayout() {
-        return;
     }
-
 }
