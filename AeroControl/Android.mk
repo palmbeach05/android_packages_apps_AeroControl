@@ -15,6 +15,7 @@ include $(BUILD_PACKAGE)
 include $(CLEAR_VARS)
 
 LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := \
-    android-support-v4_13:/libs/android-support-v4.jar
+    android-support-v4_13:/libs/android-support-v4.jar \
+    aerocontrol-nineoldandroids:libs/nineoldandroids-2.4.0.jar
 
 include $(BUILD_MULTI_PREBUILT)
