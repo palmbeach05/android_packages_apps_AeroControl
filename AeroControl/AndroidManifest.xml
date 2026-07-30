@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.aero.control"
     android:versionCode="31"
-    android:versionName="2.2.1">
+    android:versionName="2.2.2">
 
     <uses-sdk
         android:minSdkVersion="14"
