@@ -17,15 +17,15 @@
         tools:ignore="ProtectedPermissions" />
 
     <application
+        android:theme="@style/AeroTheme"
         android:label="@string/app_name"
-        android:icon="@drawable/ic_launcher"
-        android:theme="@style/AeroTheme">
+        android:icon="@drawable/ic_launcher">
 
         <activity
-            android:name=".SplashScreen"
+			android:theme="@style/Theme.Transparent"
             android:label="@string/app_name"
-            android:configChanges="orientation|screenSize|screenLayout"
-            android:theme="@style/Theme.Transparent" >
+            android:name="com.aero.control.SplashScreen"
+            android:configChanges="screenSize|screenLayout|orientation" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -33,23 +33,23 @@
         </activity>
 
         <activity
-            android:name=".AeroActivity"
+            android:label="@string/app_name"
+            android:name="com.aero.control.AeroActivity"
             android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize|screenLayout"
-            android:label="@string/app_name">
+            android:configChanges="screenSize|screenLayout|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name="com.aero.control.boot.RebootActivity"
             android:theme="@style/RebootDialog"
+            android:name="com.aero.control.boot.RebootActivity"
             android:excludeFromRecents="true" />
 
         <activity
-            android:name=".settings.PrefsActivity"
-            android:configChanges="orientation|screenSize|screenLayout">
+            android:name="com.aero.control.settings.PrefsActivity"
+            android:configChanges="screenSize|screenLayout|orientation">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.aero.control.AeroActivity" />
@@ -65,7 +65,7 @@
             android:enabled="true">
         </service>
         <service
-            android:name=".service.PerAppService"
+            android:name="com.aero.control.service.PerAppService"
             android:enabled="true">
         </service>
 
