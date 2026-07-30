@@ -38,6 +38,7 @@ public final class PerAppService extends Service {
     private SharedPreferences mPerAppPrefs;
     private String mProfile;
     private Runnable mRunnable;
+    private boolean mDestroyed;
     private static String mPreviousApp = null;
     private static String mCurrentApp = null;
     private static final settingsHelper settingsHelper = new settingsHelper();
@@ -47,6 +48,8 @@ public final class PerAppService extends Service {
 
     @Override // android.app.Service
     public void onCreate() {
+        mDestroyed = false;
+
         final boolean enabled = AeroActivity.perAppService != null ? AeroActivity.perAppService.getState() : true;
         mJobManager = JobManager.instance(this);
         if (this.mContext == null) {
@@ -59,16 +62,32 @@ public final class PerAppService extends Service {
                     PerAppService.mHandler.post(new Runnable() { // from class: com.aero.control.service.PerAppService.1.1
                         @Override // java.lang.Runnable
                         public void run() {
+                            if (mDestroyed) {
+                                return;
+                            }
+
                             if (enabled) {
                                 PerAppService.this.runTask();
                             }
-                            PerAppService.mHandler.postDelayed(PerAppService.this.mRunnable, 5000L);
+
+                            if (!mDestroyed) {
+                                PerAppService.mHandler.postDelayed(PerAppService.this.mRunnable, 5000L);
+                            }
                         }
                     });
                 }
             };
         }
         new Thread(this.mRunnable).start();
+    }
+
+    @Override
+    public void onDestroy() {
+        mDestroyed = true;
+        if (mRunnable != null) {
+            mHandler.removeCallbacks(mRunnable);
+        }
+        super.onDestroy();
     }
 
     @Override // android.app.Service
