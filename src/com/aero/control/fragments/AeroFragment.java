@@ -123,7 +123,7 @@ public class AeroFragment extends Fragment {
         if (!this.mExecuted) {
             setPermissions();
         }
-        AppRate.with(getActivity()).text(R.string.rateIt).fromTop(false).delay(2000).autoHide(10000).allowPlayLink(true).checkAndShow();
+        AppRate.with(getActivity()).text(R.string.rate_it).fromTop(false).delay(2000).autoHide(10000).allowPlayLink(true).checkAndShow();
         return this.root;
     }
 

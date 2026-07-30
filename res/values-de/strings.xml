@@ -27,8 +27,8 @@
     <string name="nocpu_data">Konnte keine CPU Daten finden.</string>
     <string name="maybe_later">Vielleicht später</string>
     <string name="successful">Erfolg!</string>
-    <string name="perAppAssigned">Per-App: Aktiv</string>
-    <string name="notperAppAssigned">Per-App: Nicht aktiv</string>
+    <string name="per_app_active">Per-App: Aktiv</string>
+    <string name="per_app_not_active">Per-App: Nicht aktiv</string>
     <string name="nogpu_data">Konnte keine GPU relevanten Daten finden</string>
     <string name="enabled">Aktiviert</string>
     <string name="disabled">Deaktiviert</string>
@@ -231,7 +231,7 @@
     <string name="pref_ram_usage">Freier RAM</string>
     <string name="pref_temp_usage">Temperatur</string>
     <string name="pref_reset_stats_for_app">Bist Du sicher, dass Du die Statistiken für diese App zurücksetzen möchtest?</string>
-    <string name="rateIt">Klick mich und bewerte diese App!</string>
+    <string name="rate_It">Klick mich und bewerte diese App!</string>
     <string name="introduction_welcome_heading">Willkommen zu \nAero Control</string>
     <string name="introduction_welcome_content">Du bist kurz davor richtig loszulegen. Wenn Du dich bereit fühlst, swipe von rechts nach links. Alle Einstellungen, die Du in diesem Assistent vornimmst, kannst Du später abändern.</string>
     <string name="introduction_perapp_heading">Per-App Profile</string>

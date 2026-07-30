@@ -394,10 +394,10 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
     /* JADX INFO: Access modifiers changed from: private */
     public void updateStatus(TextView txtView, boolean toggle) {
         if (toggle) {
-            txtView.setText(R.string.perAppAssigned);
+            txtView.setText(R.string.per_app_active);
             txtView.setTextColor(Color.parseColor("#1abc9c"));
         } else {
-            txtView.setText(R.string.notperAppAssigned);
+            txtView.setText(R.string.per_app_not_active);
             txtView.setTextColor(Color.parseColor("#e74c3c"));
         }
     }

@@ -44,7 +44,7 @@ public class VoltageFragment extends PlaceHolderFragment {
         String[] voltArray = (String[]) this.voltList.toArray(new String[0]);
         String exec = "";
         switch (item.getItemId()) {
-            case R.id.action_mVPlus /* 2131099754 */:
+            case R.id.action_mv_plus /* 2131099754 */:
                 this.voltList.clear();
                 for (String a : voltArray) {
                     int tmp = Integer.parseInt(a) + 25;
@@ -53,7 +53,7 @@ public class VoltageFragment extends PlaceHolderFragment {
                 }
                 executeVolt(exec);
                 break;
-            case R.id.action_mVMinus /* 2131099755 */:
+            case R.id.action_mv_minus /* 2131099755 */:
                 this.voltList.clear();
                 for (String a2 : voltArray) {
                     int tmp2 = Integer.parseInt(a2) - 25;

@@ -27,10 +27,10 @@
     <string name="nocpu_data">No se pudo encontrar datos de la CPU.</string>
     <string name="maybe_later">Tal vez despues</string>
     <string name="successful">Exito!</string>
-    <string name="mVPlus">+25 mV</string>
-    <string name="mVMinus">-25 mV</string>
-    <string name="perAppAssigned">PerApp: Activo</string>
-    <string name="notperAppAssigned">PerApp: No esta activo</string>
+    <string name="mv_plus">+25 mV</string>
+    <string name="mv_minus">-25 mV</string>
+    <string name="per_app_active">PerApp: Activo</string>
+    <string name="per_app_not_active">PerApp: No esta activo</string>
     <string name="nogpu_data">No se pudo encontrar datos de la GPU</string>
     <string name="xda">Hilo en XDA</string>
     <string name="enabled">Habilitado</string>
@@ -187,7 +187,7 @@
     <string name="pref_profile_export">Exportar</string>
     <string name="pref_profile_import">Importar</string>
     <string name="pref_profile_import_select">Seleciona los perfiles para importar</string>
-    <string name="rateIt">Clickeame y calfica la aplicacion!</string>
+    <string name="rate_it">Clickeame y calfica la aplicacion!</string>
     <string name="introduction_welcome_heading">Bienvenido a\nAero Control</string>
     <string name="introduction_welcome_content">Estamos por empezar. Si te sentis listo, solamente desliza tu dedo de derecha a izquierda. Puedes cambiar todos los ajustes - que vas a cambiar con este asistente - mas tarde.</string>
     <string name="introduction_perapp_heading">Perfiles por aplicacion</string>
