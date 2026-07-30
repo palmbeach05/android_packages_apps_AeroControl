@@ -33,10 +33,10 @@ public class TestSuiteFragment extends PreferenceFragment {
         this.root = getPreferenceScreen();
         if (Build.VERSION.SDK_INT >= 21) {
             this.mActionBar = getActivity().getActionBar();
-            this.mActionBar.setTitle(getText(R.string.slider_testsuite_settings));
+            this.mActionBar.setTitle(getText(R.string.slider_test_suite_settings));
         } else {
             TextView mActionBarTitle = (TextView) getActivity().findViewById(getResources().getIdentifier("action_bar_title", "id", "android"));
-            mActionBarTitle.setText(R.string.slider_testsuite_settings);
+            mActionBarTitle.setText(R.string.slider_test_suite_settings);
         }
         loadSettings();
     }
@@ -134,7 +134,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             super.onPostExecute(result);
             AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
             builder.setTitle("Result");
-            builder.setMessage("Great! \nYou have achieved; \n" + TestSuiteFragment.this.mMFlops + " MFlops");
+            builder.setMessage("Great! \nYou have achieved: \n" + TestSuiteFragment.this.mMFlops + " MFlops");
             builder.show();
             TestSuiteFragment.this.mMFlops = 0.0d;
             this.progressDialog.dismiss();

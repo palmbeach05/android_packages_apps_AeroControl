@@ -6,11 +6,11 @@
         <CheckBoxPreference
             android:title="@string/pref_rebootcheck"
             android:key="reboot_checker"
-            android:summary="@string/pref_rebootcheck_sum"/>
+            android:summary="@string/pref_rebootcheck_summary"/>
         <CheckBoxPreference
             android:title="@string/pref_per_app_service"
             android:key="per_app_service"
-            android:summary="@string/pref_per_app_service_sum"/>
+            android:summary="@string/pref_per_app_service_summary"/>
         <CheckBoxPreference
             android:title="@string/pref_perapp_monitor"
             android:key="per_app_monitor"

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <PreferenceCategory
-        android:title="@string/slider_testsuite_settings"
+        android:title="@string/slider_test_suite_settings"
         android:key="testsuite_settings">
         <Preference
             android:title="Linpack Test"

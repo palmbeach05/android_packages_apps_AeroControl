@@ -152,7 +152,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
         View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
         TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
         builder.setTitle(R.string.pref_profile_reset);
-        aboutText.setText(R.string.pref_profile_reset_sum);
+        aboutText.setText(R.string.pref_profile_reset_summary);
         builder.setView(layout).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.5
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog, int id) {
@@ -195,7 +195,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                     output = 1;
                 }
                 if (output == 0) {
-                    ProfileFragment.this.DrawFirstStart(R.string.showcase_perapp_profiles, R.string.showcase_perapp_profiles_sum, ProfileFragment.FILENAME_PERAPP, null);
+                    ProfileFragment.this.DrawFirstStart(R.string.showcase_perapp_profiles, R.string.showcase_perapp_profiles_summary, ProfileFragment.FILENAME_PERAPP, null);
                 }
                 ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(8);
                 ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(8);
@@ -589,7 +589,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                 final EditText editText = new EditText(ProfileFragment.this.mContext);
                 final CharSequence oldName = txtView.getText();
                 editText.setText(oldName);
-                AlertDialog dialog = new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.pref_profile_change_name).setMessage(R.string.pref_profile_change_name_sum).setView(editText).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.14.1
+                AlertDialog dialog = new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.pref_profile_change_name).setMessage(R.string.pref_profile_change_name_summary).setView(editText).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.14.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog2, int which) {
                         String newName = editText.getText().toString();
@@ -616,7 +616,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_profile_fragment, R.string.showcase_profile_fragment_sum, FILENAME_PROFILES, Integer.valueOf(R.id.action_add_item));
+            DrawFirstStart(R.string.showcase_profile_fragment, R.string.showcase_profile_fragment_summary, FILENAME_PROFILES, Integer.valueOf(R.id.action_add_item));
         }
     }
 

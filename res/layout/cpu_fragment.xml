@@ -8,20 +8,20 @@
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/perf_live_oc_uc"
             android:key="cpu_commands"
-            android:summary="@string/perf_live_oc_uc_sum"
+            android:summary="@string/perf_live_oc_uc_summary"
             android:inputType="number"/>
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/perf_cpu_hotplug"
             android:key="hotplug_control"
-            android:summary="@string/perf_cpu_hotplug_sum"/>
+            android:summary="@string/perf_cpu_hotplug_summary"/>
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/perf_voltage_control"
             android:key="voltage_values"
-            android:summary="@string/perf_voltage_control_sum"/>
+            android:summary="@string/perf_voltage_control_summary"/>
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/perf_cpu_boost_control"
             android:key="cpu_boost_control"
-            android:summary="@string/perf_cpu_boost_control_sum"/>
+            android:summary="@string/perf_cpu_boost_control_summary"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/pref_cpu_governor"

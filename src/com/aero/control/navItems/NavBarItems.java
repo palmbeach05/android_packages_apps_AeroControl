@@ -34,7 +34,7 @@ public class NavBarItems {
             output = 1;
         }
         if (output > 0) {
-            addItem(new PreferenceItem(R.string.slider_testsuite_settings, R.drawable.dashboard));
+            addItem(new PreferenceItem(R.string.slider_test_suite_settings, R.drawable.dashboard));
         }
     }
 

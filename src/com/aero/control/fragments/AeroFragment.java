@@ -135,7 +135,7 @@ public class AeroFragment extends Fragment {
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_aero_fragment, R.string.showcase_aero_fragment_sum);
+            DrawFirstStart(R.string.showcase_aero_fragment, R.string.showcase_aero_fragment_summary);
         }
     }
 

@@ -28,7 +28,7 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         String brightness = AeroActivity.shell.getRootInfo("getprop", FilePath.PROP_BUTTON_BRIGHTNESS);
         this.led_charging = new CustomListPreference(getActivity());
         this.led_charging.setName("led_charging");
-        this.led_charging.setSummary(R.string.pref_charging_led_sum);
+        this.led_charging.setSummary(R.string.pref_charging_led_summary);
         this.led_charging.setTitle(R.string.pref_charging_led);
         this.led_charging.setDialogTitle(R.string.pref_charging_led);
         this.led_charging.setOrder(1);
@@ -45,7 +45,7 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         defyParts.addPreference(this.button_brightness);
         this.multi_touch = new CustomListPreference(getActivity());
         this.multi_touch.setName("multi_touch");
-        this.multi_touch.setSummary(R.string.pref_multitouch_sum);
+        this.multi_touch.setSummary(R.string.pref_multitouch_summary);
         this.multi_touch.setTitle(R.string.pref_multitouch);
         this.multi_touch.setDialogTitle(R.string.pref_multitouch);
         this.multi_touch.setOrder(10);

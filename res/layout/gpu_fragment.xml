@@ -8,11 +8,11 @@
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/perf_gpu_gov_settings"
             android:key="gpu_gov_settings"
-            android:summary="@string/perf_gpu_gov_settings_sum"/>
+            android:summary="@string/perf_gpu_gov_settings_summary"/>
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/pref_display_color"
             android:key="rgbValues"
-            android:summary="@string/pref_display_color_sum"
+            android:summary="@string/pref_display_color_summary"
             android:inputType="number"/>
     </PreferenceCategory>
 </PreferenceScreen>

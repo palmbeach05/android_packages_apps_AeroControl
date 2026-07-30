@@ -543,7 +543,7 @@ public class CPUFragment extends PlaceHolderFragment {
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_cpu_fragment_governor, R.string.showcase_cpu_fragment_governor_sum);
+            DrawFirstStart(R.string.showcase_cpu_fragment_governor, R.string.showcase_cpu_fragment_governor_summary);
         }
     }
 

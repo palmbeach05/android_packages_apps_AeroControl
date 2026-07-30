@@ -157,7 +157,7 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_your_settings, R.string.showcase_your_settings_sum);
+            DrawFirstStart(R.string.showcase_your_settings, R.string.showcase_your_settings_summary);
         }
     }
 

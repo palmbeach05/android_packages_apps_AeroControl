@@ -97,7 +97,7 @@ public class StatisticsFragment extends Fragment {
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_statistics_fragment, R.string.showcase_statistics_fragment_sum);
+            DrawFirstStart(R.string.showcase_statistics_fragment, R.string.showcase_statistics_fragment_summary);
         }
     }
 

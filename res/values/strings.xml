@@ -81,14 +81,14 @@
     <!-- CPU & Hotplug Configuration Strings                       -->
     <!-- ========================================================= -->
     <string name="perf_cpu_boost_control">CPU Boost</string>
-    <string name="perf_cpu_boost_control_sum">Adjust the CPU boost tunables of your cpu here</string>
+    <string name="perf_cpu_boost_control_summary">Adjust the CPU boost tunables of your cpu here</string>
     <string name="perf_cpu_hotplug">Hotplug Settings</string>
     <string name="perf_cpu_hotplug_driver">Hotplug Driver</string>
-    <string name="perf_cpu_hotplug_sum">Adjust the hotplug driver here</string>
+    <string name="perf_cpu_hotplug_summary">Adjust the hotplug driver here</string>
     <string name="perf_live_oc_uc">Live OC/UC</string>
-    <string name="perf_live_oc_uc_sum">Control Frequencies and Voltage in realtime!</string>
+    <string name="perf_live_oc_uc_summary">Control Frequencies and Voltage in realtime!</string>
     <string name="perf_voltage_control">Voltage Control</string>
-    <string name="perf_voltage_control_sum">Adjust the voltage of your cpu here</string>
+    <string name="perf_voltage_control_summary">Adjust the voltage of your cpu here</string>
     <string name="pref_big_cpu_freqmax">Max. Frequency (big)</string>
     <string name="pref_big_cpu_freqmin">Min. Frequency (big)</string>
     <string name="pref_cpu_freq">Frequencies</string>
@@ -96,10 +96,10 @@
     <string name="pref_cpu_freqmin">Min. Frequency</string>
     <string name="pref_cpu_governor">Governor Settings</string>
     <string name="pref_gov_choose">Governor Settings</string>
-    <string name="pref_gov_choose_sum">This will set your favorite governor!</string>
+    <string name="pref_gov_choose_summary">This will set your favorite governor!</string>
     <string name="pref_gov_set">Governor Specific Settings</string>
     <string name="pref_gov_set_no_parameter">Looks like there are no parameter for this governor?</string>
-    <string name="pref_gov_set_sum">Set the governor Specific settings here.</string>
+    <string name="pref_gov_set_summary">Set the governor Specific settings here.</string>
     <string name="mv_minus">-25 mV</string>
     <string name="mv_plus">+25 mV</string>
 
@@ -108,11 +108,11 @@
     <!-- ========================================================= -->
     <string name="perf_gpu_gov">GPU Governor</string>
     <string name="perf_gpu_gov_settings">GPU Governor Settings</string>
-    <string name="perf_gpu_gov_settings_sum">Tweak the governor parameters of your gpu.</string>
+    <string name="perf_gpu_gov_settings_summary">Tweak the governor parameters of your gpu.</string>
     <string name="pref_gpu_control_enable">GPU Control</string>
-    <string name="pref_gpu_control_enable_sum">This will enable the GPU Control driver. It handles overclocking/undervolting as well as some basic scheduling for the GPU.</string>
+    <string name="pref_gpu_control_enable_summary">This will enable the GPU Control driver. It handles overclocking/undervolting as well as some basic scheduling for the GPU.</string>
     <string name="pref_gpu_max_freq">Max. Frequency</string>
-    <string name="pref_gpu_max_freq_sum">This will set the maximum GPU Frequency. Default is 200 MHz.</string>
+    <string name="pref_gpu_max_freq_summary">This will set the maximum GPU Frequency. Default is 200 MHz.</string>
 
     <!-- ========================================================= -->
     <!-- Memory & Virtual Machine Settings                        -->
@@ -120,30 +120,30 @@
     <string name="io_scheduler">IO Scheduler</string>
     <string name="pref_dalvik_settings">VM Settings</string>
     <string name="pref_dalvik_settings_heading">Virtual Machine</string>
-    <string name="pref_dalvik_settings_sum">Change parameters of the virtual machine.</string>
+    <string name="pref_dalvik_settings_summary">Change parameters of the virtual machine.</string>
     <string name="pref_dynamic_fsync">Dynamic FSync</string>
-    <string name="pref_dynamic_fsync_sum">Dynamic FSync enables fsync only while the screen is off.</string>
+    <string name="pref_dynamic_fsync_summary">Dynamic FSync enables fsync only while the screen is off.</string>
     <string name="pref_dynamic_writeback">Writeback Control</string>
-    <string name="pref_dynamic_writeback_sum">Enable or Disable the writeback control here.</string>
+    <string name="pref_dynamic_writeback_summary">Enable or Disable the writeback control here.</string>
     <string name="pref_entropy_settings">Entropy</string>
-    <string name="pref_entropy_settings_sum">Change the read and write threshold for the entropy pool.</string>
+    <string name="pref_entropy_settings_summary">Change the read and write threshold for the entropy pool.</string>
     <string name="pref_fsync">FSync</string>
-    <string name="pref_fsync_sum">Enables or disabled fsync completely.</string>
+    <string name="pref_fsync_summary">Enables or disabled fsync completely.</string>
     <string name="pref_fstrim">Trim Option</string>
     <string name="pref_fstrim_no_busybox">BusyBox is required for this operation!</string>
-    <string name="pref_fstrim_sum">Trim several parts of your system! This might take a while.</string>
+    <string name="pref_fstrim_summary">Trim several parts of your system! This might take a while.</string>
     <string name="pref_io_scheduler">IO Scheduler Parameter</string>
     <string name="pref_io_scheduler_no_parameter">Looks like there are no parameter for this scheduler?</string>
     <string name="pref_ksm">KSM</string>
-    <string name="pref_ksm_sum">Enables or disabled the KSM deamon completely.</string>
+    <string name="pref_ksm_summary">Enables or disabled the KSM deamon completely.</string>
     <string name="pref_low_mem_option">Low Memory Option</string>
-    <string name="pref_low_mem_option_sum">Enable or Disable the low memory option here. This might help on devices with 4.4+ (Kitkat).</string>
+    <string name="pref_low_mem_option_summary">Enable or Disable the low memory option here. This might help on devices with 4.4+ (Kitkat).</string>
     <string name="pref_memory_settings">Memory Settings</string>
     <string name="pref_memory_swap">Swap</string>
-    <string name="pref_memory_swap_sum">Create a swap device.</string>
+    <string name="pref_memory_swap_summary">Create a swap device.</string>
     <string name="pref_memory_zcache">zCache</string>
     <string name="pref_memory_zcache_compression">zCache Compression</string>
-    <string name="pref_memory_zcache_compression_sum">Choose the compression method for zCache.</string>
+    <string name="pref_memory_zcache_compression_summary">Choose the compression method for zCache.</string>
     <string name="pref_memory_zcache_summary">zCache uses CPU-time for a slightly better memory managment.</string>
     <string name="pref_readahead">Readahead size</string>
     <string name="pref_readahead_dialog">Readahead size in kb</string>
@@ -155,21 +155,21 @@
     <string name="defy_green_colors">Defy Green Colors</string>
     <string name="defy_red_colors">Defy Red Colors</string>
     <string name="pref_button_brightness">Button Brightness</string>
-    <string name="pref_button_brightness_sum">Change the button brightness here.</string>
+    <string name="pref_button_brightness_summary">Change the button brightness here.</string>
     <string name="pref_charging_led">Charging LED Color</string>
-    <string name="pref_charging_led_sum">Color of your LED while charging</string>
+    <string name="pref_charging_led_summary">Color of your LED while charging</string>
     <string name="pref_charge_led_mode_white">White LED</string>
     <string name="pref_charge_led_mode_rgb">Mixed LED (red/green)</string>
     <string name="pref_charge_led_mode_off">Off</string>
     <string name="pref_display_color">Display Color</string>
-    <string name="pref_display_color_sum">Adjust the display color here.</string>
+    <string name="pref_display_color_summary">Adjust the display color here.</string>
     <string name="pref_doubletaptowake">Doubletap2Wake</string>
-    <string name="pref_doubletaptowake_sum">Wake your device with a doubletap gesture.</string>
+    <string name="pref_doubletaptowake_summary">Wake your device with a doubletap gesture.</string>
     <string name="pref_general_settings_defy">General Settings</string>
     <string name="pref_multitouch">Multitouch-Points</string>
-    <string name="pref_multitouch_sum">Number of multitouch points.</string>
+    <string name="pref_multitouch_summary">Number of multitouch points.</string>
     <string name="pref_sweeptowake">Sweep2Wake</string>
-    <string name="pref_sweeptowake_sum">May drain your battery a bit more than usual.</string>
+    <string name="pref_sweeptowake_summary">May drain your battery a bit more than usual.</string>
 
     <!-- ========================================================= -->
     <!-- Settings Screen Configuration Elements                     -->
@@ -180,7 +180,7 @@
     <string name="app_theme_red">Red - Light Holo with red accent</string>
     <string name="pref_appspecific">App specific</string>
     <string name="pref_app_theme">App Theme</string>
-    <string name="pref_app_theme_sum">Defines the default app theme.</string>
+    <string name="pref_app_theme_summary">Defines the default app theme.</string>
     <string name="pref_beta_program">Become a Beta-Tester</string>
     <string name="pref_beta_program_text">If you want, you can become a beta tester. This means you will receive Aero Control updates earlier.\nTo become a beta tester, you need to fulfill two steps:\n\n Join the Google+ Community\n\n Apply for beta testing  \n\nKeep in mind that you can always leave the beta channel if you click the second link again. </string>
     <string name="pref_boot_delay">Boot Timer Delay</string>
@@ -193,11 +193,11 @@
     <string name="pref_misc_your_settings">Your Settings</string>
     <string name="pref_misc_no_settings">You haven\'t added any settings yet!</string>
     <string name="pref_per_app_service">Per-App Profile Service</string>
-    <string name="pref_per_app_service_sum">Enable or disable the per-app profile service.</string>
+    <string name="pref_per_app_service_summary">Enable or disable the per-app profile service.</string>
     <string name="pref_perapp_monitor">Per-App Monitor</string>
     <string name="pref_perapp_toasts">Per-App Toasts</string>
     <string name="pref_profile_change_name">Set another name</string>
-    <string name="pref_profile_change_name_sum">Change the name of your profile.</string>
+    <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
     <string name="pref_profile_deleted">Deleted</string>
     <string name="pref_profile_enter_name">You have to enter a name.</string>
     <string name="pref_profile_export">Export</string>
@@ -208,20 +208,20 @@
     <string name="pref_profile_no_import">I couldn\'t find anything to import.</string>
     <string name="pref_profile_per_app">Choose your apps</string>
     <string name="pref_profile_reset">Reset your current profile</string>
-    <string name="pref_profile_reset_sum">This will completely reset your current profile. Just like if you freshly installed Aero Control.</string>
+    <string name="pref_profile_reset_summary">This will completely reset your current profile. Just like if you freshly installed Aero Control.</string>
     <string name="pref_profile_service_not_running">Per App Service not running, but you have associated apps to profiles!</string>
     <string name="pref_profile_show_system">System Apps</string>
     <string name="pref_profile_undo">Undo</string>
     <string name="pref_rebootcheck">Random Reboot Checker</string>
-    <string name="pref_rebootcheck_sum">It will inform you if your device had a sudden reboot.</string>
+    <string name="pref_rebootcheck_summary">It will inform you if your device had a sudden reboot.</string>
     <string name="pref_reset_tutorials">Reset Tutorials</string>
     <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
     <string name="pref_reset_tutorials_title">There is no way back</string>
     <string name="pref_setatboot">Set at Boot</string>
-    <string name="pref_setatboot_sum">Caution: This will set your settings at boot.</string>
+    <string name="pref_setatboot_summary">Caution: This will set your settings at boot.</string>
     <string name="pref_setonboot_settings">set-on-boot settings.</string>
     <string name="pref_updatepath">Updatelocation:</string>
-    <string name="pref_updatepath_sum">Set your desired update path.</string>
+    <string name="pref_updatepath_summary">Set your desired update path.</string>
 
     <!-- ========================================================= -->
     <!-- App Monitor & CPU Statistics Tracker                      -->
@@ -243,13 +243,13 @@
     <string name="backup_from">Backup from</string>
     <string name="last_backup_from">Last Backup from</string>
     <string name="pref_backup_kernel">Backup your Kernel</string>
-    <string name="pref_backup_kernel_sum">This will save a copy of your current kernel.</string>
+    <string name="pref_backup_kernel_summary">This will save a copy of your current kernel.</string>
     <string name="pref_restore">Restore Backup</string>
     <string name="pref_restore_kernel">Restore</string>
-    <string name="pref_restore_kernel_sum">Restore from a kernel backup.</string>
+    <string name="pref_restore_kernel_summary">Restore from a kernel backup.</string>
     <string name="pref_updater">Kernel Updater and Backup</string>
     <string name="pref_updater_kernel">Update Kernel</string>
-    <string name="pref_updater_kernel_sum">This will update your kernel.</string>
+    <string name="pref_updater_kernel_summary">This will update your kernel.</string>
     <string name="proceed_backup">Proceed with backup? This will backup your current kernel.</string>
     <string name="restore_from_backup">Do you want to restore the backup from</string>
 
@@ -298,23 +298,23 @@
     <!-- Interactive App Tutorials (Showcase Views)               -->
     <!-- ========================================================= -->
     <string name="showcase_aero_fragment">Welcome to Aero Control!</string>
-    <string name="showcase_aero_fragment_sum">Swipe from the left to the right to show the navigation drawer. The page you are currently looking at is the main overview panel. There is a small summary of some kernel settings. They are live, you don\'t have to refresh anything!</string>
+    <string name="showcase_aero_fragment_summary">Swipe from the left to the right to show the navigation drawer. The page you are currently looking at is the main overview panel. There is a small summary of some kernel settings. They are live, you don\'t have to refresh anything!</string>
     <string name="showcase_appmonitor_fragment">Monitor your Apps!</string>
-    <string name="showcase_appmonitor_fragment_sum">AppMonitor displays you useful information about your used apps. You will be informed once we collected enough data to show you something. Your data belongs to you, no information will be send to someone else.</string>
+    <string name="showcase_appmonitor_fragment_summary">AppMonitor displays you useful information about your used apps. You will be informed once we collected enough data to show you something. Your data belongs to you, no information will be send to someone else.</string>
     <string name="showcase_cpu_fragment_governor">CPU Governor</string>
-    <string name="showcase_cpu_fragment_governor_sum">Click this symbol to get the full access of governor control! You can tweak every parameter for every governor out there to gain performance.</string>
+    <string name="showcase_cpu_fragment_governor_summary">Click this symbol to get the full access of governor control! You can tweak every parameter for every governor out there to gain performance.</string>
     <string name="showcase_hidden_feature">Congratulations!</string>
-    <string name="showcase_hidden_feature_sum">You have found a secret feature! Be sure to tell nobody about this and if you have any troubles using it, don\'t worry. Its our little secret.</string>
+    <string name="showcase_hidden_feature_summary">You have found a secret feature! Be sure to tell nobody about this and if you have any troubles using it, don\'t worry. Its our little secret.</string>
     <string name="showcase_memory_fragment_trim">Trim Options</string>
-    <string name="showcase_memory_fragment_trim_sum">In order to maintain the device performance, you can trim several parts of your Operating System. This can take a while, especially when you stored lots of data.</string>
+    <string name="showcase_memory_fragment_trim_summary">In order to maintain the device performance, you can trim several parts of your Operating System. This can take a while, especially when you stored lots of data.</string>
     <string name="showcase_perapp_profiles">Assign profiles to your apps!</string>
-    <string name="showcase_perapp_profiles_sum">Want a certain profile only apply to certain apps? No problem, click to the right on the small icon and assign your profile to your favorite apps. Be sure to enable the service in the settings.</string>
+    <string name="showcase_perapp_profiles_summary">Want a certain profile only apply to certain apps? No problem, click to the right on the small icon and assign your profile to your favorite apps. Be sure to enable the service in the settings.</string>
     <string name="showcase_profile_fragment">Add Profiles!</string>
-    <string name="showcase_profile_fragment_sum">Just click on this little button and add a profile. All your current settings will be saved into this new Profile. If you have added multiple Profiles you can simply load them by clicking on them.</string>
+    <string name="showcase_profile_fragment_summary">Just click on this little button and add a profile. All your current settings will be saved into this new Profile. If you have added multiple Profiles you can simply load them by clicking on them.</string>
     <string name="showcase_statistics_fragment">Refresh your Statistics</string>
-    <string name="showcase_statistics_fragment_sum">This panel will show you your current CPU Time consuming statistics. It displays how long your device has spend time in each CPU frequency. You might to want to check this later and see if your device performs as it should.</string>
+    <string name="showcase_statistics_fragment_summary">This panel will show you your current CPU Time consuming statistics. It displays how long your device has spend time in each CPU frequency. You might to want to check this later and see if your device performs as it should.</string>
     <string name="showcase_your_settings">Your Settings</string>
-    <string name="showcase_your_settings_sum">Click this symbol to get a simple filemanager. You can choose any file you wish and add your very own tunables. With the left icon you can delete those settings.</string>
+    <string name="showcase_your_settings_summary">Click this symbol to get a simple filemanager. You can choose any file you wish and add your very own tunables. With the left icon you can delete those settings.</string>
 
     <!-- ========================================================= -->
     <!-- Easter Egg Loading Jokes                                   -->

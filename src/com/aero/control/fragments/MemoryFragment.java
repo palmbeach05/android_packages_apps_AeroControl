@@ -67,7 +67,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mDynFSync = new CustomPreference(getActivity());
         this.mDynFSync.setName("dynFsync");
         this.mDynFSync.setTitle(R.string.pref_dynamic_fsync);
-        this.mDynFSync.setSummary(R.string.pref_dynamic_fsync_sum);
+        this.mDynFSync.setSummary(R.string.pref_dynamic_fsync_summary);
         this.mDynFSync.setLookUpDefault(FilePath.DYANMIC_FSYNC);
         this.mDynFSync.setOrder(15);
         memorySettingsCategory.addPreference(this.mDynFSync);
@@ -83,7 +83,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mFsync = new CustomPreference(getActivity());
         this.mFsync.setName("fsync");
         this.mFsync.setTitle(R.string.pref_fsync);
-        this.mFsync.setSummary(R.string.pref_fsync_sum);
+        this.mFsync.setSummary(R.string.pref_fsync_summary);
         this.mFsync.setLookUpDefault(FilePath.FSYNC);
         this.mFsync.setOrder(14);
         memorySettingsCategory.addPreference(this.mFsync);
@@ -100,7 +100,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mKSMSettings = new CustomPreference(getActivity());
         this.mKSMSettings.setName("ksm");
         this.mKSMSettings.setTitle(R.string.pref_ksm);
-        this.mKSMSettings.setSummary(R.string.pref_ksm_sum);
+        this.mKSMSettings.setSummary(R.string.pref_ksm_summary);
         this.mKSMSettings.setLookUpDefault(FilePath.KSM_SETTINGS);
         this.mKSMSettings.setOrder(16);
         memorySettingsCategory.addPreference(this.mKSMSettings);
@@ -117,7 +117,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mWriteBackControl = new CustomPreference(getActivity());
         this.mWriteBackControl.setName("writeback");
         this.mWriteBackControl.setTitle(R.string.pref_dynamic_writeback);
-        this.mWriteBackControl.setSummary(R.string.pref_dynamic_writeback_sum);
+        this.mWriteBackControl.setSummary(R.string.pref_dynamic_writeback_summary);
         this.mWriteBackControl.setLookUpDefault(FilePath.WRITEBACK);
         this.mWriteBackControl.setOrder(20);
         memorySettingsCategory.addPreference(this.mWriteBackControl);
@@ -230,7 +230,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_memory_fragment_trim, R.string.showcase_memory_fragment_trim_sum, FilePath.FILENAME);
+            DrawFirstStart(R.string.showcase_memory_fragment_trim, R.string.showcase_memory_fragment_trim_summary, FilePath.FILENAME);
         }
     }
 

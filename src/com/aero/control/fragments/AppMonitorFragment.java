@@ -63,7 +63,7 @@ public class AppMonitorFragment extends Fragment {
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_appmonitor_fragment, R.string.showcase_appmonitor_fragment_sum);
+            DrawFirstStart(R.string.showcase_appmonitor_fragment, R.string.showcase_appmonitor_fragment_summary);
         }
     }
 
