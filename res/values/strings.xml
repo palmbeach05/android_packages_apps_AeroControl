@@ -13,7 +13,7 @@
     <string name="cancel">Cancel</string>
     <string name="default_values">Default Values</string>
     <string name="disabled">Disabled</string>
-    <string name="dont_show_again">Don't show this again</string>
+    <string name="dont_show_again">Don\'t show this again</string>
     <string name="enabled">Enabled</string>
     <string name="folder_empty">Folder is empty</string>
     <string name="got_it">Got it</string>
@@ -70,7 +70,7 @@
     <string name="add_a_name">Profile name</string>
     <string name="apply_profile">Applying Per-App Profile:</string>
     <string name="define_a_name">Define a name for this profile.</string>
-    <string name="nothing_added_yet">Whoop! You haven't added any profiles yet.</string>
+    <string name="nothing_added_yet">Whoop! You haven\'t added any profiles yet.</string>
     <string name="per_app_active">Per-App: Active</string>
     <string name="per_app_not_active">Per-App: Not active</string>
     <string name="profile_assign_to_apps">Assign to apps</string>
@@ -191,7 +191,7 @@
     <string name="pref_misc_tcp_congestion">TCP Congestion Algorithm</string>
     <string name="pref_misc_delete_misc">Delete your settings</string>
     <string name="pref_misc_your_settings">Your Settings</string>
-    <string name="pref_misc_no_settings">You haven't added any settings yet!</string>
+    <string name="pref_misc_no_settings">You haven\'t added any settings yet!</string>
     <string name="pref_per_app_service">Per-App Profile Service</string>
     <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
     <string name="pref_perapp_monitor">Per-App Monitor</string>
@@ -204,8 +204,8 @@
     <string name="pref_profile_import">Import</string>
     <string name="pref_profile_import_select">Select profiles for import</string>
     <string name="pref_profile_name_exists">This name already exists.</string>
-    <string name="pref_profile_no_changes">You haven't changed any settings yet!</string>
-    <string name="pref_profile_no_import">I couldn't find anything to import.</string>
+    <string name="pref_profile_no_changes">You haven\'t changed any settings yet!</string>
+    <string name="pref_profile_no_import">I couldn\'t find anything to import.</string>
     <string name="pref_profile_per_app">Choose your apps</string>
     <string name="pref_profile_reset">Reset your current profile</string>
     <string name="pref_profile_reset_summary">This will completely reset your current profile. Just like if you freshly installed Aero Control.</string>
@@ -257,15 +257,15 @@
     <!-- Dialog Frameworks, Alerts, System Stability Errors        -->
     <!-- ========================================================= -->
     <string name="error_detected">Error ?</string>
-    <string name="has_journal_dialog">Looks like your /data partition doesn't have the has_journal Feature enabled. Please reboot into recovery and run the following command via adb shell:    tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
+    <string name="has_journal_dialog">Looks like your /data partition doesn\'t have the has_journal Feature enabled. Please reboot into recovery and run the following command via adb shell:    tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
     <string name="has_journal_dialog_header">Problem detected</string>
-    <string name="no_cpu_data">Couldn't find any CPU data.</string>
-    <string name="no_data_found">I couldn't find any relevant data :(</string>
-    <string name="no_gpu_data">Couldn't find any GPU related data</string>
+    <string name="no_cpu_data">Couldn\'t find any CPU data.</string>
+    <string name="no_data_found">I couldn\'t find any relevant data :(</string>
+    <string name="no_gpu_data">Couldn\'t find any GPU related data</string>
     <string name="not_rooted">No Root?</string>
     <string name="reboot_notifier">Looks like the kernel crashed. Be sure to check out \n/proc/last_kmsg  \nand send this file to your favorite developer. Seriously, send it! \n We apologize for any inconvenience!</string>
-    <string name="reboot_notifier_header">Oops, this shouldn't happen</string>
-    <string name="root_required">It looks like your device is not rooted. This app won't work correctly without root. If you think this is a mistake, please let me know and send me an email!</string>
+    <string name="reboot_notifier_header">Oops, this shouldn\'t happen</string>
+    <string name="root_required">It looks like your device is not rooted. This app won\'t work correctly without root. If you think this is a mistake, please let me know and send me an email!</string>
 
     <!-- ========================================================= -->
     <!-- About Screen & Social / Legal Open Source Notice Items    -->
@@ -298,13 +298,13 @@
     <!-- Interactive App Tutorials (Showcase Views)               -->
     <!-- ========================================================= -->
     <string name="showcase_aero_fragment">Welcome to Aero Control!</string>
-    <string name="showcase_aero_fragment_summary">Swipe from the left to the right to show the navigation drawer. The page you are currently looking at is the main overview panel. There is a small summary of some kernel settings. They are live, you don't have to refresh anything!</string>
+    <string name="showcase_aero_fragment_summary">Swipe from the left to the right to show the navigation drawer. The page you are currently looking at is the main overview panel. There is a small summary of some kernel settings. They are live, you don\'t have to refresh anything!</string>
     <string name="showcase_app_monitor_fragment">Monitor your Apps!</string>
     <string name="showcase_app_monitor_fragment_summary">App Monitor displays you useful information about your used apps. You will be informed once we collected enough data to show you something. Your data belongs to you, no information will be send to someone else.</string>
     <string name="showcase_cpu_fragment_governor">CPU Governor</string>
     <string name="showcase_cpu_fragment_governor_summary">Click this symbol to get the full access of governor control! You can tweak every parameter for every governor out there to gain performance.</string>
     <string name="showcase_hidden_feature">Congratulations!</string>
-    <string name="showcase_hidden_feature_summary">You have found a secret feature! Be sure to tell nobody about this and if you have any troubles using it, don't worry. Its our little secret.</string>
+    <string name="showcase_hidden_feature_summary">You have found a secret feature! Be sure to tell nobody about this and if you have any troubles using it, don\'t worry. Its our little secret.</string>
     <string name="showcase_memory_fragment_trim">Trim Options</string>
     <string name="showcase_memory_fragment_trim_summary">In order to maintain the device performance, you can trim several parts of your Operating System. This can take a while, especially when you stored lots of data.</string>
     <string name="showcase_perapp_profiles">Assign profiles to your apps!</string>
@@ -342,9 +342,9 @@
     <string name="help_text_dirty_background_bytes">Contains the amount of dirty memory at which the background kernel flusher threads will start writeback.\n Note: dirty_background_bytes is the counterpart of dirty_background_ratio. Only one of them may be specified at a time. When one sysctl is written it is immediately taken into account to evaluate the dirty memory limits and the other appears as 0 when read.</string>
     <string name="help_text_dirty_background_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which the background kernel flusher threads will start writing out dirty data.</string>
     <string name="help_text_dirty_bytes">Contains the amount of dirty memory at which a process generating disk writes will itself start writeback.\nNote: the minimum value allowed for dirty_bytes is two pages (in bytes); any value lower than this limit will be ignored and the old configuration will be retained.</string>
-    <string name="help_text_dirty_expire_centisecs">This tunable is used to define when dirty data is old enough to be eligible for writeout by the kernel flusher threads. It is expressed in 100'ths of a second. Data which has been dirty in-memory for longer than this interval will be written out next time a flusher thread wakes up.</string>
+    <string name="help_text_dirty_expire_centisecs">This tunable is used to define when dirty data is old enough to be eligible for writeout by the kernel flusher threads. It is expressed in 100ths of a second. Data which has been dirty in-memory for longer than this interval will be written out next time a flusher thread wakes up.</string>
     <string name="help_text_dirty_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which a process which is generating disk writes will itself start writing out dirty data.</string>
-    <string name="help_text_dirty_writeback_centisecs">The kernel flusher threads will periodically wake up and write 'old' data out to disk. This tunable expresses the interval between those wakeups, in 100'ths of a second.\nSetting this to zero disables periodic writeback altogether.</string>
+    <string name="help_text_dirty_writeback_centisecs">The kernel flusher threads will periodically wake up and write 'old' data out to disk. This tunable expresses the interval between those wakeups, in 100ths of a second.\nSetting this to zero disables periodic writeback altogether.</string>
     <string name="help_text_drop_caches">Writing to this will cause the kernel to drop clean caches, as well as reclaimable slab objects like dentries and inodes. Once dropped, their memory becomes free. (1 = free pagecache, 2 = free reclaimable slab objects, 3 = free slab objects and pagecache)</string>
     <string name="help_text_entropy_settings">The entropy pool stores random numbers for various applications. Higher values for read/write can help in some cases, but can also increase the batterydrain. In general your pool should be always above 200 at any point of time.</string>
     <string name="help_text_extfrag_threshold">This parameter affects whether the kernel will compact memory or direct reclaim to satisfy a high-order allocation. Values tending towards 0 imply allocations would fail due to lack of memory, values towards 1000 imply failures are due to fragmentation and -1 implies that the allocation will succeed as long as watermarks are met.</string>
@@ -385,7 +385,7 @@
     <string name="help_text_overcommit_memory">This value contains a flag that enables memory overcommitment.\nWhen this flag is 0, the kernel attempts to estimate the amount of free memory left when userspace requests more memory.\nWhen this flag is 1, the kernel pretends there is always enough memory until it actually runs out.\nWhen this flag is 2, the kernel uses a never overcommit policy that attempts to prevent any overcommit of memory.</string>
     <string name="help_text_overcommit_ratio">When overcommit_memory is set to 2, the committed address space is not permitted to exceed swap plus this percentage of physical RAM.</string>
     <string name="help_text_panic_on_oom">This enables or disables panic on out-of-memory feature.</string>
-    <string name="help_text_percpu_pagelist_fraction">This is the fraction of pages at most (high mark pcp-&gt;high) in each zone that are allocated for each per cpu page list. The min value for this is 8. It means that we don't allow more than 1/8th of pages in each zone to be allocated in any single per_cpu_pagelist.</string>
+    <string name="help_text_percpu_pagelist_fraction">This is the fraction of pages at most (high mark pcp-&gt;high) in each zone that are allocated for each per cpu page list. The min value for this is 8. It means that we don\'t allow more than 1/8th of pages in each zone to be allocated in any single per_cpu_pagelist.</string>
     <string name="help_text_powersave_bias" formatted="false">This parameter takes a value between 0 to 1000. It defines the percentage (times 10) value of the target frequency that will be shaved off of the target. For example, when set to 100 -&gt; 10%, when ondemand governor would have targeted 1000 MHz, it will target 1000 MHz - (10% of 1000 MHz) = 900 MHz instead. This is set to 0 (disabled) by default.</string>
     <string name="help_text_read_ahead">The kernel tries to readahead past requested data blocks and stores them in the cache to save potential disk I/O. The default value is 128 kB. A higher value can increase app loadtime.</string>
     <string name="help_text_read_expire">When a read request first enters the io scheduler, it is assigned a deadline that is the current time + the read_expire value in units of milliseconds.</string>
