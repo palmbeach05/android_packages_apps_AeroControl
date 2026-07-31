@@ -92,48 +92,11 @@
     </attr>
     <attr name="showcaseViewStyle" format="reference">
     </attr>
-    <attr name="rv_alpha" format="integer">
-    </attr>
-    <attr name="rv_framerate" format="integer">
-    </attr>
-    <attr name="rv_rippleDuration" format="integer">
-    </attr>
-    <attr name="rv_zoomDuration" format="integer">
-    </attr>
-    <attr name="rv_color" format="color">
-    </attr>
-    <attr name="rv_centered" format="boolean">
-    </attr>
-    <attr name="rv_type">
-        <enum name="doubleRipple" value="1" />
-        <enum name="rectangle" value="2" />
-        <enum name="simpleRipple" value="0" />
-    </attr>
-    <attr name="rv_ripplePadding" format="dimension">
-    </attr>
-    <attr name="rv_zoom" format="boolean">
-    </attr>
-    <attr name="rv_zoomScale" format="float">
-    </attr>
     <attr name="vpiCirclePageIndicatorStyle" format="reference">
-    </attr>
-    <attr name="centered" format="boolean">
     </attr>
     <attr name="selectedColor" format="color">
     </attr>
-    <attr name="strokeWidth" format="dimension">
-    </attr>
     <attr name="unselectedColor" format="color">
-    </attr>
-    <attr name="fillColor" format="color">
-    </attr>
-    <attr name="pageColor" format="color">
-    </attr>
-    <attr name="radius" format="dimension">
-    </attr>
-    <attr name="snap" format="boolean">
-    </attr>
-    <attr name="strokeColor" format="color">
     </attr>
     <attr name="showNumberIndicator" format="boolean">
     </attr>
@@ -141,8 +104,35 @@
     </attr>
     <attr name="min" format="integer">
     </attr>
-    <attr name="cardTitle" format="string">
-    </attr>
-    <attr name="cardContent" format="string">
-    </attr>
+    <declare-styleable name="RippleView">
+        <attr name="rv_alpha" format="integer" />
+        <attr name="rv_framerate" format="integer" />
+        <attr name="rv_rippleDuration" format="integer" />
+        <attr name="rv_zoomDuration" format="integer" />
+        <attr name="rv_color" format="color" />
+        <attr name="rv_centered" format="boolean" />
+        <attr name="rv_type">
+            <enum name="doubleRipple" value="1" />
+            <enum name="rectangle" value="2" />
+            <enum name="simpleRipple" value="0" />
+        </attr>
+        <attr name="rv_ripplePadding" format="dimension" />
+        <attr name="rv_zoom" format="boolean" />
+        <attr name="rv_zoomScale" format="float" />
+    </declare-styleable>
+    <declare-styleable name="CirclePageIndicator">
+        <attr name="android:orientation" />
+        <attr name="android:background" />
+        <attr name="centered" format="boolean" />
+        <attr name="strokeWidth" format="dimension" />
+        <attr name="fillColor" format="color" />
+        <attr name="pageColor" format="color" />
+        <attr name="radius" format="dimension" />
+        <attr name="snap" format="boolean" />
+        <attr name="strokeColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="CardBox">
+        <attr name="cardTitle" format="string" />
+        <attr name="cardContent" format="string" />
+    </declare-styleable>
 </resources>

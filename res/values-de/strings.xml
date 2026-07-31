@@ -185,7 +185,7 @@
     <string name="pref_beta_program_text">Wenn du möchtest, kannst du Beta-Tester werden. Dadurch erhältst du Aero-Control-Updates früher.\nUm Beta-Tester zu werden, führe die folgenden Schritte aus:\n\nDer Google+-Community beitreten\n\nBeta-Tester werden\n\nDu kannst das Beta-Programm jederzeit wieder verlassen, indem du auf den zweiten Link klickst.</string>
     <string name="pref_boot_delay">Startverzögerung</string>
     <string name="pref_boot_delay_dialog">Verzögerung in Minuten</string>
-    <string name="pref_finishing_settings">Einstellung übernommen.</string>
+    <string name="finishing_settings">Einstellung übernommen.</string>
     <string name="pref_lollipop_usage_warning">Damit der Per-App-Dienst funktioniert, musst du Aero Control den Zugriff auf Nutzungsdaten erlauben. Dies ist eine Einschränkung von Android ab Version 5.0. Du kannst diese Berechtigung jederzeit wieder entziehen. Wenn du bereit bist, klicke auf „Weiter“.</string>
     <string name="pref_misc_settings">Sonstige Einstellungen</string>
     <string name="pref_misc_tcp_congestion">TCP-Staukontrollalgorithmus</string>

@@ -121,9 +121,9 @@ public class AppMonitorFragment extends Fragment {
 
         /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2$1, reason: invalid class name */
         class AnonymousClass1 implements Runnable {
-            final /* synthetic */ List val$appData;
+            final /* synthetic */ List<AppElement> val$appData;
 
-            AnonymousClass1(List list) {
+            AnonymousClass1(List<AppElement> list) {
                 this.val$appData = list;
             }
 
