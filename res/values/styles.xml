@@ -38,7 +38,7 @@
         <item name="android:paddingRight">16dp</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">match_parent</item>
-        <item name="android:text">Undo</item>
+        <item name="android:text">@string/undo</item>
         <item name="android:drawableLeft">@drawable/ic_undobar_undo</item>
         <item name="android:drawablePadding">12dp</item>
     </style>
