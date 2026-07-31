@@ -19,7 +19,7 @@ public class MemoryDalvikFragment extends PlaceHolderFragment {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.layout.empty_preference);
         this.root = getPreferenceScreen();
-        setTitle(getActivity().getText(R.string.pref_dalvik_setttings).toString());
+        setTitle(getActivity().getText(R.string.pref_dalvik_settings).toString());
         loadDalvik();
     }
 
@@ -29,7 +29,7 @@ public class MemoryDalvikFragment extends PlaceHolderFragment {
             this.root.removePreference(this.PrefCat);
         }
         this.PrefCat = new PreferenceCategory(getActivity());
-        this.PrefCat.setTitle(R.string.pref_dalvik_setttings_heading);
+        this.PrefCat.setTitle(R.string.pref_dalvik_settings_heading);
         this.root.addPreference(this.PrefCat);
         try {
             PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
