@@ -44,7 +44,7 @@
     <string name="slider_profile">Perfiles</string>
     <string name="slider_statistics">Estadísticas de la CPU</string>
     <string name="slider_misc_settings">Ajustes varios</string>
-    <string name="slider_testsuite_settings">TestSuite</string>
+    <string name="slider_test_suite_settings">TestSuite</string>
     <string name="kernel_version">Núcleo:</string>
     <string name="current_cpu_speed">Frecuencia de la CPU:</string>
     <string name="current_gpu_speed">Frecuencia de la GPU:</string>
