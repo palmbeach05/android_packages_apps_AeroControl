@@ -63,7 +63,7 @@ public class settingsHelper {
                     h.post(new Runnable() { // from class: com.aero.control.helpers.settingsHelper.1.1
                         @Override // java.lang.Runnable
                         public void run() {
-                            Toast.makeText(context, ((Object) context.getText(R.string.app_name)) + ": " + ((Object) context.getText(R.string.finishing_settings)), 1).show();
+                            Toast.makeText(context, ((Object) context.getText(R.string.app_name)) + ": " + ((Object) context.getText(R.string.pref_finishing_settings)), 1).show();
                         }
                     });
                 }
