@@ -58,7 +58,7 @@
             fab:fab_colorPressed="#388e3c"
             fab:fab_colorNormal="#4caf50"
             fab:fab_icon="@drawable/ic_fab_star"
-            fab:fab_title="@string/pref_profile_showSystem"/>
+            fab:fab_title="@string/pref_profile_show_system"/>
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/add_button"
             android:layout_width="wrap_content"

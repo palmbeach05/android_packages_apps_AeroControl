@@ -105,10 +105,10 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                 String systemStatus2 = ProfileFragment.this.mPerAppPrefs.getString("systemStatus", "false");
                 if (systemStatus2.equals("false")) {
                     systemStatus = "true";
-                    Toast.makeText(ProfileFragment.this.mContext, ((Object) ProfileFragment.this.getText(R.string.pref_profile_showSystem)) + ": " + ((Object) ProfileFragment.this.getText(R.string.enabled)), 0).show();
+                    Toast.makeText(ProfileFragment.this.mContext, ((Object) ProfileFragment.this.getText(R.string.pref_profile_show_system)) + ": " + ((Object) ProfileFragment.this.getText(R.string.enabled)), 0).show();
                 } else {
                     systemStatus = "false";
-                    Toast.makeText(ProfileFragment.this.mContext, ((Object) ProfileFragment.this.getText(R.string.pref_profile_showSystem)) + ": " + ((Object) ProfileFragment.this.getText(R.string.disabled)), 0).show();
+                    Toast.makeText(ProfileFragment.this.mContext, ((Object) ProfileFragment.this.getText(R.string.pref_profile_show_system)) + ": " + ((Object) ProfileFragment.this.getText(R.string.disabled)), 0).show();
                 }
                 ProfileFragment.this.mPerAppPrefs.edit().putString("systemStatus", systemStatus).commit();
                 ProfileFragment.this.mPerAppDialogVisible = false;
