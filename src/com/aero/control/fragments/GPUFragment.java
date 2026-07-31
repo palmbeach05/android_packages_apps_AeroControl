@@ -85,9 +85,9 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         gpuCategory.addPreference(this.mDoubletap2Wake);
         this.mGPUControlFrequencies = new CustomListPreference(getActivity());
         this.mGPUControlFrequencies.setName("gpu_max_freq");
-        this.mGPUControlFrequencies.setTitle(R.string.pref_gpu_max_freq);
-        this.mGPUControlFrequencies.setDialogTitle(R.string.pref_gpu_max_freq);
-        this.mGPUControlFrequencies.setSummary(R.string.pref_gpu_max_freq_summary);
+        this.mGPUControlFrequencies.setTitle(R.string.pref_max_freq_gpu);
+        this.mGPUControlFrequencies.setDialogTitle(R.string.pref_max_freq_gpu);
+        this.mGPUControlFrequencies.setSummary(R.string.pref_max_freq_gpu_summary);
         this.mGPUControlFrequencies.setOrder(20);
         gpuCategory.addPreference(this.mGPUControlFrequencies);
         this.mGPUGovernor = new CustomListPreference(getActivity());
@@ -240,7 +240,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         }
         this.mGPUControlFrequencies.setDialogIcon(R.drawable.gpu);
         if (gpuCategory.getPreferenceCount() <= 0) {
-            gpuCategory.setTitle(R.string.nogpu_data);
+            gpuCategory.setTitle(R.string.no_gpu_data);
         }
     }
 

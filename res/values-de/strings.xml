@@ -1,253 +1,413 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Aero Control</string>
-    <string name="drawer_open">Öffnen</string>
-    <string name="drawer_close">Schließen</string>
-    <string name="error_detected">Fehler ?</string>
-    <string name="cancel">Abbrechen</string>
-    <string name="save">Speichern</string>
-    <string name="github">Github</string>
-    <string name="donation_blechdose">Blechdose</string>
-    <string name="donation_quarx">Quarx</string>
-    <string name="default_values">Standardwerte</string>
-    <string name="need_reboot">Benötige Reboot.</string>
-    <string name="unavailable">Nicht verfügbar</string>
-    <string name="got_it">Verstanden</string>
-    <string name="back_for_close">Drücke noch einmal Zurück um die App zu schließen.</string>
-    <string name="define_a_name">Definiere Deinen Profilnamen. Deine momentanen Einstellungen werden diesem Profil zugewiesen.</string>
-    <string name="add_a_name">Profilname</string>
+
+    <!-- ========================================================= -->
+    <!-- Application / Brand / Global UI Actions                    -->
+    <!-- ========================================================= -->
     <string name="add">Hinzufügen</string>
-    <string name="nothing_added_yet">Whoop! Du hast bis jetzt keine Profile hinzugefügt.</string>
-    <string name="not_rooted">Kein Rootzugriff?</string>
+    <string name="aero_continue">Weiter</string>
+    <string name="app_name">Aero Control</string>
     <string name="apply">Anwenden</string>
-    <string name="refresh">Neuladen</string>
-    <string name="reload">Zurücksetzen</string>
-    <string name="legal">Rechtliche Hinweise</string>
-    <string name="send_email">Sende eine Email</string>
-    <string name="nocpu_data">Konnte keine CPU Daten finden.</string>
+    <string name="average">Ø Durchschnitt</string>
+    <string name="back_for_close">Drücken Sie erneut auf „Zurück“, um die App zu schließen.</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="default_values">Standardwerte</string>
+    <string name="disabled">Deaktiviert</string>
+    <string name="dont_show_again">Nicht mehr anzeigen</string>
+    <string name="enabled">Aktiviert</string>
+    <string name="folder_empty">Ordner ist leer</string>
+    <string name="got_it">Verstanden</string>
+    <string name="loading">Wird geladen...</string>
     <string name="maybe_later">Vielleicht später</string>
-    <string name="successful">Erfolg!</string>
+    <string name="minute">Minute</string>
+    <string name="minutes">Minuten</string>
+    <string name="module">Modul</string>
+    <string name="need_reboot">Neustart erforderlich.</string>
+    <string name="ok">OK</string>
+    <string name="proceed_with_reset">Möchten Sie wirklich fortfahren?</string>
+    <string name="rate_it">Tippe hier, um diese App zu bewerten!</string>
+    <string name="refresh">Aktualisieren</string>
+    <string name="reload">Neu laden</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="save">Speichern</string>
+    <string name="skip_splash">Überspringen</string>
+    <string name="successful">Erfolgreich!</string>
+    <string name="unavailable">Nicht verfügbar</string>
+    <string name="undo">Rückgängig</string>
+    <string name="usage_time">Nutzungszeit</string>
+    <string name="warning">Warnung!</string>
+
+    <!-- ========================================================= -->
+    <!-- Navigation / Slider Drawer                                -->
+    <!-- ========================================================= -->
+    <string name="drawer_close">Schließen</string>
+    <string name="drawer_open">Öffnen</string>
+    <string name="slider_app_monitor">App-Monitor</string>
+    <string name="slider_backup_restore">Sichern & Wiederherstellen</string>
+    <string name="slider_cpu_settings">CPU-Einstellungen</string>
+    <string name="slider_defy_parts">Defy-Einstellungen</string>
+    <string name="slider_gpu_settings">GPU-Einstellungen</string>
+    <string name="slider_memory_settings">Speichereinstellungen</string>
+    <string name="slider_misc_settings">Verschiedene Einstellungen</string>
+    <string name="slider_overview">Übersicht</string>
+    <string name="slider_profile">Profile</string>
+    <string name="slider_statistics">CPU-Statistiken</string>
+    <string name="slider_test_suite_settings">Test Suite</string>
+
+    <!-- ========================================================= -->
+    <!-- Overview & Live Hardware Information                      -->
+    <!-- ========================================================= -->
+    <string name="available_memory">Verfügbarer RAM:</string>
+    <string name="current_cpu_speed">CPU-Frequenz:</string>
+    <string name="current_governor">Governor:</string>
+    <string name="current_gpu_speed">GPU-Frequenz:</string>
+    <string name="current_io_governor">I/O-Scheduler:</string>
+    <string name="kernel_version">Kernel:</string>
+
+    <!-- ========================================================= -->
+    <!-- Profile & Per-App Control                                  -->
+    <!-- ========================================================= -->
+    <string name="add_a_name">Profilname</string>
+    <string name="apply_profile">Per-App-Profil anwenden:</string>
+    <string name="define_a_name">Gib einen Profilnamen ein. Deine aktuellen Einstellungen werden diesem Profil zugewiesen.</string>
+    <string name="nothing_added_yet">Hoppla! Du hast bisher noch keine Profile hinzugefügt.</string>
     <string name="per_app_active">Per-App: Aktiv</string>
     <string name="per_app_not_active">Per-App: Nicht aktiv</string>
-    <string name="nogpu_data">Konnte keine GPU relevanten Daten finden</string>
-    <string name="enabled">Aktiviert</string>
-    <string name="disabled">Deaktiviert</string>
-    <string name="folder_empty">Ordner ist leer</string>
-    <string name="no_data_found">Ich konnte keine Daten finden :(</string>
-    <string name="setonboot_settings">Wende Einstellungen an.</string>
-    <string name="finishing_settings">Einstellung angewandt.</string>
-    <string name="minutes">Minuten</string>
-    <string name="minute">Minute</string>
-    <string name="dont_show_again">Nicht mehr anzeigen</string>
-    <string name="skip_splash">Überspringen</string>
-    <string name="aero_continue">Weiter</string>
-    <string name="warning">Warnung!</string>
-    <string name="average">Ø Durchschnitt</string>
-    <string name="module">Modul</string>
-    <string name="usage_time">Nutzungszeit</string>
-    <string name="return_to_normal">Beende Per-App Profil</string>
-    <string name="apply_profile">Wende Per-App Profil an:</string>
-    <string name="slider_overview">Überblick</string>
-    <string name="slider_cpu_settings">CPU Leistung</string>
-    <string name="slider_gpu_settings">GPU Kontrolle</string>
-    <string name="slider_memory_settings">Speichereinstellungen</string>
-    <string name="slider_defy_parts">Defy Einstellungen</string>
-    <string name="slider_backup_restore">Backup/Wiederherstellung</string>
-    <string name="slider_profile">Profile</string>
-    <string name="slider_statistics">CPU Statistik</string>
-    <string name="slider_misc_settings">Misc Einstellungen</string>
-    <string name="kernel_version">Kernel:</string>
-    <string name="current_cpu_speed">CPU Frequenz:</string>
-    <string name="current_gpu_speed">GPU Frequenz:</string>
-    <string name="current_governor">Governor:</string>
-    <string name="current_io_governor">I/O-Scheduler:</string>
-    <string name="available_memory">Verfügbarer RAM:</string>
-    <string name="about">Über</string>
-    <string name="aero_settings">Einstellungen</string>
-    <string name="pref_appspecific">App spezifisch</string>
-    <string name="pref_setatboot">Beim Hochfahren setzen</string>
-    <string name="pref_setatboot_summary">Achtung: Das setzt die Einstellungen beim Hochfahren.</string>
-    <string name="pref_rebootcheck">Random Reboot Checker</string>
-    <string name="pref_rebootcheck_summary">Wird dich informieren, wenn Du einen zufälligen Reboot hattest.</string>
-    <string name="pref_updatepath">Updatepfad</string>
-    <string name="pref_updatepath_summary">Gewünschter Updatepfad.</string>
-    <string name="pref_app_theme">App Aussehen</string>
-    <string name="pref_app_theme_summary">Setzt den Style der App fest.</string>
-    <string name="pref_per_app_service">Per-App Profil Service</string>
-    <string name="pref_per_app_service_summary">Aktiviere oder deaktiviere hier den Per-App Profil Service.</string>
-    <string name="pref_reset_tutorials">Tutorials zurücksetzen</string>
-    <string name="pref_reset_tutorials_title">Es gibt kein zurück</string>
-    <string name="pref_reset_tutorials_dialog">Das wird deine Tutorials zurücksetzen.</string>
-    <string name="pref_beta_program">Werde ein Beta-Tester</string>
-    <string name="pref_beta_program_text">Wenn Du möchtest, kannst Du Beta-Tester werden. Das bedeutet, Du bekommst Aero Control Updates früher.\nUm ein Beta-Tester zu werden, musst Du die folgenden Schritte ausführen:\n\n Trete der Google+ Community bei\n\n Werde Beta-Tester  \n\nDu kannst den Beta Kanal jederzeit verlassen, wenn Du den zweiten Link nochmals anklickst. </string>
-    <string name="pref_lollipop_usage_warning">Damit der PerApp Service bei dir funktioniert, musst du den Nutzungsdatenzugriff für Aero Control freischalten. Dies ist eine Limitierung von Android seit der Version 5.0(+). Du kannst dieses Recht jederzeit wieder deaktivieren. Wenn Du bereit bist, klicke auf Weiter.</string>
-    <string name="app_theme_red">Rot - Light Holo mit rotem Akzent</string>
-    <string name="app_theme_light">Light - Light Holo mit blauem Akzent</string>
-    <string name="app_theme_dark">Dark - Light Holo mit blauem Akzent und dunkler Actionbar</string>
-    <string name="pref_boot_delay">Hochfahrverzögerung</string>
-    <string name="pref_boot_delay_dialog">Verzögerung in Minuten</string>
-    <string name="pref_perapp_monitor">Per-App Monitor</string>
-    <string name="pref_perapp_toasts">Per-App Toasts</string>
-    <string name="about_dialog">Hallo. Danke, dass Du meine App nutzt. Mein Name ist Alexander Christ (Blechd0se) und ich habe diese App aus Spaß und in meiner Freizeit geschrieben. Alles ist Quelloffen, Du kannst Dir also den Quellcode herunterladen und verändern wie Du möchstest. Wenn Du möchstest, kannst du entweder für Quarx Arbeit an der ROM spenden oder an mich. The joy of living is in the giving. </string>
-    <string name="root_required">Sieht so aus als wäre dein Gerät nicht gerootet. Diese App wird ohne Root nicht korrekt funktionieren. Wenn Du meinst, dass dies ein Fehler ist, sende mir eine Email!</string>
+    <string name="profile_assign_to_apps">Apps zuweisen</string>
+    <string name="profile_remove">Dieses Profil entfernen</string>
+    <string name="return_to_normal">Per-App-Profil beenden</string>
+
+    <!-- ========================================================= -->
+    <!-- CPU & Hotplug Configuration Strings                       -->
+    <!-- ========================================================= -->
+    <string name="perf_cpu_boost_control">CPU-Boost</string>
+    <string name="perf_cpu_boost_control_summary">Hier können die CPU-Boost-Werte eingestellt werden</string>
+    <string name="perf_cpu_hotplug">Hotplug-Einstellungen</string>
+    <string name="perf_cpu_hotplug_driver">Hotplug-Treiber</string>
+    <string name="perf_cpu_hotplug_summary">Hier kann der Hotplug-Treiber ausgewählt werden</string>
+    <string name="perf_live_oc_uc">Echtzeit-OC/UC</string>
+    <string name="perf_live_oc_uc_summary">Echtzeit-Einstellungen für Spannung und Frequenz</string>
+    <string name="perf_voltage_control">Spannungssteuerung</string>
+    <string name="perf_voltage_control_summary">Hier kann die CPU-Spannung eingestellt werden</string>
+    <string name="pref_max_freq_cpu_big">Max. Frequenz (big)</string>
+    <string name="pref_min_freq_cpu_big">Min. Frequenz (big)</string>
     <string name="pref_cpu_freq">Frequenzen</string>
-    <string name="pref_cpu_freqmax">Max. Frequenz</string>
-    <string name="pref_cpu_freqmin">Min. Frequenz</string>
-    <string name="pref_big_cpu_freqmax">Max. Frequenz (big)</string>
-    <string name="pref_big_cpu_freqmin">Min. Frequenz (big)</string>
-    <string name="pref_cpu_governor">Governor Einstellungen</string>
-    <string name="perf_live_oc_uc">Echtzeit OC/UC</string>
-    <string name="perf_live_oc_uc_summary">Echtzeiteinstellungen von Spannung und Frequenz</string>
-    <string name="pref_gov_choose">Governor Einstellungen</string>
-    <string name="pref_gov_choose_summary">Setzt den gewünschten Governor</string>
-    <string name="pref_gov_set">Governor spezfische Einstellungen</string>
-    <string name="pref_gov_set_summary">Setzt Governor spezfische Einstellungen</string>
-    <string name="pref_gov_set_no_parameter">Sieht so aus, als gäbe es keine Parameter für diesen Governor?</string>
-    <string name="perf_cpu_hotplug">Hotplug Einstellungen</string>
-    <string name="perf_cpu_hotplug_driver">Hotplug Treiber</string>
-    <string name="perf_cpu_hotplug_summary">Stelle hier den Hotplug-Treiber ein</string>
-    <string name="perf_voltage_control">Spannungskontrolle</string>
-    <string name="perf_voltage_control_summary">Stelle hier die Spannung der CPU ein</string>
-    <string name="perf_cpu_boost_control">CPU Boost</string>
-    <string name="perf_cpu_boost_control_summary">Stelle hier die Werte von CPU Boost ein</string>
-    <string name="pref_memory_settings">Speichereinstellungen</string>
+    <string name="pref_max_freq_cpu">Max. Frequenz</string>
+    <string name="pref_min_freq_cpu">Min. Frequenz</string>
+    <string name="pref_cpu_governor">Governor-Einstellungen</string>
+    <string name="pref_gov_choose">Governor-Einstellungen</string>
+    <string name="pref_gov_choose_summary">Legt den gewünschten Governor fest</string>
+    <string name="pref_gov_set">Governor-spezifische Einstellungen</string>
+    <string name="pref_gov_set_no_parameter">Für diesen Governor sind keine Parameter verfügbar.</string>
+    <string name="pref_gov_set_summary">Legt Governor-spezifische Einstellungen fest</string>
+    <string name="mv_minus">-25 mV</string>
+    <string name="mv_plus">+25 mV</string>
+
+    <!-- ========================================================= -->
+    <!-- GPU Control Strings                                       -->
+    <!-- ========================================================= -->
+    <string name="perf_gpu_gov">GPU-Governor</string>
+    <string name="perf_gpu_gov_settings">GPU-Governor-Einstellungen</string>
+    <string name="perf_gpu_gov_settings_summary">Passe die Governor-Parameter deiner GPU an.</string>
+    <string name="pref_gpu_control_enable">GPU-Steuerung</string>
+    <string name="pref_gpu_control_enable_summary">Aktiviert den GPU-Steuerungstreiber. Dieser übernimmt Übertaktung/Unterspannung sowie einige grundlegende Planungsfunktionen für die GPU.</string>
+    <string name="pref_max_freq_gpu">Max. Frequenz</string>
+    <string name="pref_max_freq_gpu_summary">Legt die maximale GPU-Frequenz fest. Standardwert ist 200 MHz.</string>
+
+    <!-- ========================================================= -->
+    <!-- Memory & Virtual Machine Settings                        -->
+    <!-- ========================================================= -->
+    <string name="io_scheduler">I/O-Scheduler</string>
+    <string name="pref_dalvik_settings">VM-Einstellungen</string>
+    <string name="pref_dalvik_settings_heading">Virtuelle Maschine</string>
+    <string name="pref_dalvik_settings_summary">Hier können Einstellungen der virtuellen Maschine geändert werden.</string>
     <string name="pref_dynamic_fsync">Dynamisches FSync</string>
-    <string name="pref_dynamic_fsync_summary">Dynamisches FSync aktiviert FSync nur während der Bildschirm aus ist.</string>
-    <string name="pref_readahead">Readahead Größe</string>
-    <string name="pref_readahead_dialog">Readahead Größe in KB</string>
+    <string name="pref_dynamic_fsync_summary">Dynamisches FSync aktiviert FSync nur bei ausgeschaltetem Bildschirm.</string>
+    <string name="pref_dynamic_writeback">Writeback-Steuerung</string>
+    <string name="pref_dynamic_writeback_summary">Der Writeback-Daemon arbeitet nur, wenn der Bildschirm ausgeschaltet ist.</string>
     <string name="pref_entropy_settings">Entropie</string>
-    <string name="pref_entropy_settings_summary">Ändere hier den Lese- und Schreibschwellwert für die Entropie.</string>
-    <string name="pref_ksm">KSM</string>
-    <string name="pref_ksm_summary">Enables or disabled the KSM deamon completely.</string>
+    <string name="pref_entropy_settings_summary">Hier können die Lese- und Schreibschwellenwerte für die Entropie angepasst werden.</string>
     <string name="pref_fsync">FSync</string>
-    <string name="pref_fsync_summary">Schaltet den fsync-Aufruf an oder aus.</string>
+    <string name="pref_fsync_summary">Aktiviert oder deaktiviert den FSync-Aufruf.</string>
+    <string name="pref_fstrim">TRIM-Optionen</string>
+    <string name="pref_fstrim_no_busybox">Hierfür wird BusyBox benötigt!</string>
+    <string name="pref_fstrim_summary">TRIM kann Partitionen optimieren, um die Leistung zu verbessern. Dies kann einige Zeit dauern.</string>
+    <string name="pref_io_scheduler">I/O-Scheduler-Parameter</string>
+    <string name="pref_io_scheduler_no_parameter">Für diesen Scheduler sind keine Parameter verfügbar.</string>
+    <string name="pref_ksm">KSM</string>
+    <string name="pref_ksm_summary">Aktiviert oder deaktiviert den KSM-Daemon vollständig.</string>
+    <string name="pref_low_mem_option">Low Memory Option</string>
+    <string name="pref_low_mem_option_summary">Low Memory optimiert das System für Geräte mit wenig Arbeitsspeicher. Hierfür wird Android 4.4+ (KitKat) benötigt.</string>
+    <string name="pref_memory_settings">Speichereinstellungen</string>
     <string name="pref_memory_swap">Swap</string>
     <string name="pref_memory_swap_summary">Erstellt eine Swap-Partition.</string>
     <string name="pref_memory_zcache">zCache</string>
-    <string name="pref_memory_zcache_summary">zCache verwendet die CPU für eine bessere Speicherverwaltung.</string>
-    <string name="pref_memory_zcache_compression">zCache Kompression</string>
-    <string name="pref_memory_zcache_compression_summary">Einstellung der zCache Kompressions-Methode.</string>
-    <string name="pref_dynamic_writeback">Writeback Kontrolle</string>
-    <string name="pref_dynamic_writeback_summary">Der writeback-Deamon wird nur arbeiten, während der Bildschrim ausgeschalten ist.</string>
-    <string name="pref_low_mem_option">Low Memory Option</string>
-    <string name="pref_low_mem_option_summary">Low Memory optimiert das System auf Geräten mit wenig Arbeitsspeicher. Hierfür brauchst Du 4.4+ (Kitkat).</string>
-    <string name="pref_fstrim">Trim Optionen</string>
-    <string name="pref_fstrim_summary">Mit Trim lassen sich Partition trimmen, um die Performance zu erhöhen. Das kann eine Weile dauern.</string>
-    <string name="pref_fstrim_no_busybox">BusyBox wird hiefür benötigt!</string>
-    <string name="pref_dalvik_setttings">VM Einstellungen</string>
-    <string name="pref_dalvik_setttings_heading">Virtuelle Maschine</string>
-    <string name="pref_dalvik_setttings_summary">Ändere hier Einstellungen der virtuellen Maschine.</string>
-    <string name="has_journal_dialog_header">Problem gefunden</string>
-    <string name="has_journal_dialog">Sieht so aus als hätte Deine /data Partition das has_journal Feature nicht aktiviert. Bitte boote in die Recovery und führe folgendes Kommando via adb shell aus:   tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
-    <string name="reboot_notifier_header">Oops, das war nicht beabsichtigt</string>
-    <string name="reboot_notifier">Sieht so aus als wäre dein Kernel gecrasht. Schau Dir bitte folgende Datei an \n/proc/last_kmsg  \nund sende sie deinem Lieblingsentwickler. Nein wirklich, tu das! \n Wir entschuldigen uns für die Unanehmlichkeiten!</string>
-    <string name="io_scheduler">IO Scheduler</string>
-    <string name="pref_io_scheduler">IO Scheduler Parameter</string>
-    <string name="pref_io_scheduler_no_parameter">Sieht so aus, als gäbe es keine Parameter für diesen Scheduler?</string>
-    <string name="pref_gpu_control_enable">GPU Kontrolle</string>
-    <string name="pref_gpu_control_enable_summary">Dieser Haken aktiviert den GPU Kontrolltreiber. Er erlaubt übertakten/untertakten sowie einige Basis Algorithmen für die GPU.</string>
-    <string name="pref_gpu_max_freq">Max. Frequenz</string>
-    <string name="pref_gpu_max_freq_summary">Setzt die maximale GPU Frequenz. Standard ist 200 MHz.</string>
-    <string name="pref_display_color">Bildschirmfarben</string>
-    <string name="pref_display_color_summary">Stelle die Bildschirmfarben hier ein.</string>
-    <string name="defy_red_colors">Defy Rot Farbprofil</string>
-    <string name="defy_green_colors">Defy Grün Farbprofil</string>
-    <string name="defy_energy_saver">Energiesparer</string>
-    <string name="pref_sweeptowake">Sweep2Wake</string>
-    <string name="pref_sweeptowake_summary">Könnte etwas auf die Akkulaufzeit gehen.</string>
-    <string name="pref_doubletaptowake">Doubletap2Wake</string>
-    <string name="pref_doubletaptowake_summary">Wecke Dein Gerät mit einer Geste.</string>
-    <string name="perf_gpu_gov">GPU Governor</string>
-    <string name="perf_gpu_gov_settings">GPU Governor Einstellungen</string>
-    <string name="perf_gpu_gov_settings_summary">Stelle hier die Parameter der GPU ein.</string>
-    <string name="pref_updater">Kernel Updater und Backup</string>
-    <string name="pref_backup_kernel">Backup des Kernels</string>
-    <string name="pref_backup_kernel_summary">Das macht eine Kopie deines momentanen Kernel.</string>
-    <string name="pref_updater_kernel">Update Kernel</string>
-    <string name="pref_updater_kernel_summary">Das wird deinen Kernel updaten.</string>
-    <string name="pref_restore">Backup Wiederherstellung</string>
-    <string name="pref_restore_kernel">Wiederherstellung</string>
-    <string name="pref_restore_kernel_summary">Stelle aus einem Backup den Kernel wieder her.</string>
-    <string name="last_backup_from">Letztes Backup von</string>
-    <string name="backup_from">Backup von</string>
-    <string name="restore_from_backup">Möchtest Du folgendes Backup wiederherstellen</string>
-    <string name="proceed_backup">Fortfahren mit Backup? Das wird deinen momentanen Kernel sichern.</string>
-    <string name="proceed_with_reset">Forfahren?</string>
-    <string name="delete_statistics">Deine momentane Statistik wird zurückgesetzt so als hättest du dein Gerät neugestartet.</string>
-    <string name="showcase_aero_fragment">Willkommen bei Aero Control!</string>
-    <string name="showcase_aero_fragment_summary">Swipe von links nach rechts um zum Menu zu gelangen. Die Seite, die Du momentan siehst ist die Übersichtsseite. Dort gibt es eine kleine Zusammenfassung über dein System. Diese aktualsieren sich selbstständig, Du musst nirgends klicken!</string>
-    <string name="showcase_memory_fragment_trim">Trim Optionen</string>
-    <string name="showcase_memory_fragment_trim_summary">Um die Performance deines Gerätes dauerhaft aufrecht zu erhalten, kannst Du verschiedene Teile deines Systems mit dem trim-Kommando trimmen. Das könnte ein wenig dauern, besonders wenn Du viele Daten hast.</string>
-    <string name="showcase_cpu_fragment_governor">CPU Governor</string>
-    <string name="showcase_cpu_fragment_governor_summary">Klicke dieses Symbol um vollen Zugang zu den CPU Governor Parametern zu erhalten! Du kannst jeden Parameter eines beliebigen Governors ändern um noch ein bisschen mehr Leistung zu erhalten.</string>
-    <string name="showcase_hidden_feature">Herzlichen Glückwunsch!</string>
-    <string name="showcase_hidden_feature_summary">Du hast eine geheime Funktion gefunden! Bitte erzähl niemandem davon und wundere dich nicht falls Du Probleme hast. Das ist unser kleines Geheimnis.</string>
-    <string name="showcase_profile_fragment">Füge Profile hinzu!</string>
-    <string name="showcase_profile_fragment_summary">Mit nur einem Klick auf diesen Button kannst Du ein neues Profil hinzufügen. Deine momentanen Einstellungen werden in diesem neuen Profil gespeichert. Wenn Du bereits Profile hinzugefügt hast, kannst Du diese mit einem Klick laden.</string>
-    <string name="showcase_perapp_profiles">Weise deine Profile Apps zu!</string>
-    <string name="showcase_perapp_profiles_summary">Du willst ein Profil nur für bestimmte Apps nutzen? Kein Problem, klicke auf das kleine Icon rechts und weise dein Profil deinen Apps zu. Vergewissere dich, dass du den Service in den Einstellungen aktiviert hast.</string>
-    <string name="showcase_statistics_fragment">Deine CPU Statistik</string>
-    <string name="showcase_statistics_fragment_summary">Diese Seite zeigt dir an, wie lange dein Gerät in welcher Frequenz war. Du kannst später auf diese Seite zurückkehren, um sicherzustellen, dass dein Gerät so läuft wie Du es möchtest.</string>
-    <string name="showcase_your_settings">Deine Einstellungen</string>
-    <string name="showcase_your_settings_summary">Klicke dieses Symbol um einen einfachen Dateibrowser zu erhalten. Damit kannst Du deine ganz persönlichen Einstellungen vornehmen. Mit dem linken Icon kannst Du diese wieder löschen.</string>
-    <string name="showcase_appmonitor_fragment">Überwache deine Apps!</string>
-    <string name="showcase_appmonitor_fragment_summary">AppMonitor zeigt dir nützliche Informationen zu deinen Apps. Sobald wir genug Informationen gesammelt haben informieren wir dich. Die gesammelten Daten gehören dabei ganz alleine Dir und werden nicht zentral gesammelt.</string>
-    <string name="pref_general_settings_defy">Allgemeine Einstellungen</string>
-    <string name="pref_charging_led">Lade-LED Farbe</string>
-    <string name="pref_charging_led_summary">Farbe der LED während des Ladens</string>
-    <string name="pref_button_brightness">Tasten-Helligkeit</string>
-    <string name="pref_button_brightness_summary">Helligkeit deiner Softtasten.</string>
-    <string name="pref_multitouch">Multitouch-Punkte</string>
-    <string name="pref_multitouch_summary">Anzahl der gleichzeitig registrierten Multitouch-Punkte.</string>
+    <string name="pref_memory_zcache_compression">zCache-Komprimierung</string>
+    <string name="pref_memory_zcache_compression_summary">Einstellungen für die zCache-Komprimierungsmethode.</string>
+    <string name="pref_memory_zcache_summary">zCache verwendet die CPU für eine effizientere Speicherverwaltung.</string>
+    <string name="pref_readahead">Readahead-Größe</string>
+    <string name="pref_readahead_dialog">Readahead-Größe in kB</string>
+
+    <!-- ========================================================= -->
+    <!-- Custom Device Tweaks (Defy Parts / Screen Options)       -->
+    <!-- ========================================================= -->
+    <string name="defy_energy_saver">Energiesparmodus</string>
+    <string name="defy_green_colors">Defy-Grün</string>
+    <string name="defy_red_colors">Defy-Rot</string>
+    <string name="pref_button_brightness">Tastenbeleuchtung</string>
+    <string name="pref_button_brightness_summary">Hier kann die Helligkeit der Tastenbeleuchtung angepasst werden.</string>
+    <string name="pref_charging_led">Lade-LED-Farbe</string>
+    <string name="pref_charging_led_summary">Farbe der LED während des Ladevorgangs</string>
     <string name="pref_charge_led_mode_white">Weiße LED</string>
     <string name="pref_charge_led_mode_rgb">Gemischte LED (rot/grün)</string>
     <string name="pref_charge_led_mode_off">Aus</string>
-    <string name="pref_misc_settings">Misc Einstellungen</string>
-    <string name="pref_misc_tcp_congestion">TCP Verdichtungsalgorithmus</string>
-    <string name="pref_misc_delete_misc">Lösche deine Einstellungen</string>
+    <string name="pref_display_color">Displayfarbe</string>
+    <string name="pref_display_color_summary">Hier kann die Displayfarbe angepasst werden.</string>
+    <string name="pref_doubletaptowake">DoubleTap2Wake</string>
+    <string name="pref_doubletaptowake_summary">Aktiviert das Einschalten des Geräts durch doppeltes Antippen.</string>
+    <string name="pref_general_settings_defy">Allgemeine Einstellungen</string>
+    <string name="pref_multitouch">Multitouch-Punkte</string>
+    <string name="pref_multitouch_summary">Anzahl der Multitouch-Punkte.</string>
+    <string name="pref_sweeptowake">Sweep2Wake</string>
+    <string name="pref_sweeptowake_summary">Kann den Akkuverbrauch leicht erhöhen.</string>
+
+    <!-- ========================================================= -->
+    <!-- Settings Screen Configuration Elements                     -->
+    <!-- ========================================================= -->
+    <string name="aero_settings">Einstellungen</string>
+    <string name="app_theme_dark">Dunkel – Helles Holo-Design mit blauem Akzent und dunkler Aktionsleiste</string>
+    <string name="app_theme_light">Hell – Helles Holo-Design mit blauem Akzent</string>
+    <string name="app_theme_red">Rot – Helles Holo-Design mit rotem Akzent</string>
+    <string name="pref_app_specific">App-spezifisch</string>
+    <string name="pref_app_theme">App-Design</string>
+    <string name="pref_app_theme_summary">Legt das Erscheinungsbild der App fest.</string>
+    <string name="pref_beta_program">Beta-Tester werden</string>
+    <string name="pref_beta_program_text">Wenn du möchtest, kannst du Beta-Tester werden. Dadurch erhältst du Aero-Control-Updates früher.\nUm Beta-Tester zu werden, führe die folgenden Schritte aus:\n\nDer Google+-Community beitreten\n\nBeta-Tester werden\n\nDu kannst das Beta-Programm jederzeit wieder verlassen, indem du auf den zweiten Link klickst.</string>
+    <string name="pref_boot_delay">Startverzögerung</string>
+    <string name="pref_boot_delay_dialog">Verzögerung in Minuten</string>
+    <string name="pref_finishing_settings">Einstellung übernommen.</string>
+    <string name="pref_lollipop_usage_warning">Damit der Per-App-Dienst funktioniert, musst du Aero Control den Zugriff auf Nutzungsdaten erlauben. Dies ist eine Einschränkung von Android ab Version 5.0. Du kannst diese Berechtigung jederzeit wieder entziehen. Wenn du bereit bist, klicke auf „Weiter“.</string>
+    <string name="pref_misc_settings">Sonstige Einstellungen</string>
+    <string name="pref_misc_tcp_congestion">TCP-Staukontrollalgorithmus</string>
+    <string name="pref_misc_delete_misc">Einstellungen löschen</string>
     <string name="pref_misc_your_settings">Deine Einstellungen</string>
     <string name="pref_misc_no_settings">Du hast noch keine Einstellungen hinzugefügt!</string>
-    <string name="pref_profile_enter_name">Du musst einen Namen eingeben.</string>
-    <string name="pref_profile_name_exists">Dieser name existiert bereits.</string>
-    <string name="pref_profile_change_name">Ändere den Namen</string>
+    <string name="pref_per_app_service">Per-App-Profil-Dienst</string>
+    <string name="pref_per_app_service_summary">Aktiviere oder deaktiviere hier den Per-App-Profil-Dienst.</string>
+    <string name="pref_perapp_monitor">Per-App-Monitor</string>
+    <string name="pref_perapp_toasts">Per-App-Benachrichtigungen</string>
+    <string name="pref_profile_change_name">Namen ändern</string>
     <string name="pref_profile_change_name_summary">Ändere den Namen deines Profils.</string>
-    <string name="pref_profile_reset">Zurücksetzen des Standardprofils</string>
-    <string name="pref_profile_reset_summary">Dein momentanes Profil wird zurückgesetzt. So als ob du Aero Control frisch installiert hast.</string>
-    <string name="pref_profile_perApp">Wähle Deine Apps aus</string>
-    <string name="pref_profile_showSystem">System Apps</string>
     <string name="pref_profile_deleted">Gelöscht</string>
-    <string name="pref_profile_undo">Rückgangig</string>
-    <string name="pref_profile_no_changes">Es wurden noch keine Einstellungen vorgenommen!</string>
-    <string name="pref_profile_service_not_running">Per-App Service ist nicht gestartet, es wurden aber Apps zu Profilen zugewiesen!</string>
+    <string name="pref_profile_enter_name">Du musst einen Namen eingeben.</string>
     <string name="pref_profile_export">Exportieren</string>
     <string name="pref_profile_import">Importieren</string>
-    <string name="pref_profile_import_select">Profile für Import auswählen</string>
-    <string name="pref_profile_no_import">Ich habe keine Profile zum Importieren gefunden.</string>
-    <string name="pref_no_appmonitor_data">Es sind noch keine Daten verfügbar, schaue später nochmal vorbei.</string>
-    <string name="pref_appmonitor_disabled">AppMonitor ist deaktiviert. Aktiviere ihn in den Einstellungen, um Daten zu sehen.</string>
-    <string name="pref_cpu_frequency">CPU Frequenz</string>
-    <string name="pref_cpu_number">CPU Kerne</string>
-    <string name="pref_gpu_frequency">GPU Frequenz</string>
+    <string name="pref_profile_import_select">Profile zum Import auswählen</string>
+    <string name="pref_profile_name_exists">Dieser Name existiert bereits.</string>
+    <string name="pref_profile_no_changes">Du hast noch keine Einstellungen geändert!</string>
+    <string name="pref_profile_no_import">Es konnten keine Daten zum Importieren gefunden werden.</string>
+    <string name="pref_profile_per_app">Apps auswählen</string>
+    <string name="pref_profile_reset">Aktuelles Profil zurücksetzen</string>
+    <string name="pref_profile_reset_summary">Dadurch wird dein aktuelles Profil vollständig zurückgesetzt. So, als hättest du Aero Control gerade neu installiert.</string>
+    <string name="pref_profile_service_not_running">Der Per-App-Dienst läuft nicht, obwohl Apps mit Profilen verknüpft sind!</string>
+    <string name="pref_profile_show_system">System-Apps</string>
+    <string name="pref_profile_undo">Rückgängig</string>
+    <string name="pref_reboot_check">Zufällige Neustarts erkennen</string>
+    <string name="pref_reboot_check_summary">Informiert dich, wenn ein unerwarteter Neustart aufgetreten ist.</string>
+    <string name="pref_reset_tutorials">Tutorials zurücksetzen</string>
+    <string name="pref_reset_tutorials_dialog">Dadurch werden alle Tutorials zurückgesetzt.</string>
+    <string name="pref_reset_tutorials_title">Es gibt kein Zurück</string>
+    <string name="pref_set_at_boot">Beim Start anwenden</string>
+    <string name="pref_set_at_boot_summary">Achtung: Diese Einstellungen werden beim Gerätestart automatisch angewendet.</string>
+    <string name="pref_set_at_boot_settings">Beim Start anwenden</string>
+    <string name="pref_update_path">Update-Kanal</string>
+    <string name="pref_update_path_summary">Gewünschter Update-Kanal.</string>
+
+    <!-- ========================================================= -->
+    <!-- App Monitor & CPU Statistics Tracker                      -->
+    <!-- ========================================================= -->
+    <string name="delete_statistics">Dadurch werden deine aktuellen Nutzungsstatistiken zurückgesetzt. Es ist, als hättest du dein Telefon gerade neu gestartet.</string>
+    <string name="notify_app_monitor_data">Es wurden genügend Daten gesammelt. Schau sie dir im Bereich App-Monitor an!</string>
+    <string name="pref_cpu_frequency">CPU-Frequenzen</string>
+    <string name="pref_cpu_number">CPU-Kerne</string>
+    <string name="pref_gpu_frequency">GPU-Frequenzen</string>
+    <string name="pref_no_app_monitor_data">Noch keine Daten verfügbar. Schau in ein paar Minuten erneut vorbei.</string>
+    <string name="pref_app_monitor_disabled">App-Monitor ist deaktiviert. Aktiviere ihn in den Einstellungen, um Daten anzuzeigen.</string>
     <string name="pref_ram_usage">Freier RAM</string>
+    <string name="pref_reset_stats_for_app">Möchtest du die Statistiken für diese App wirklich zurücksetzen?</string>
     <string name="pref_temp_usage">Temperatur</string>
-    <string name="pref_reset_stats_for_app">Bist Du sicher, dass Du die Statistiken für diese App zurücksetzen möchtest?</string>
-    <string name="rate_It">Klick mich und bewerte diese App!</string>
-    <string name="introduction_welcome_heading">Willkommen zu \nAero Control</string>
-    <string name="introduction_welcome_content">Du bist kurz davor richtig loszulegen. Wenn Du dich bereit fühlst, swipe von rechts nach links. Alle Einstellungen, die Du in diesem Assistent vornimmst, kannst Du später abändern.</string>
-    <string name="introduction_perapp_heading">Per-App Profile</string>
-    <string name="introduction_perapp_check">Möchtest Du diesen Service aktivieren?</string>
-    <string name="introduction_perapp_content">Lasse Profile automatisch für bestimmte Apps aktivieren. Hierfür überprüft ein Service von Zeit zu Zeit die aktuell laufende App und aktiviert Dein gewünschtes Profil automatisch.\n Das könnte dir helfen in weniger aufwändigen Apps etwas Energie zu sparen oder es gibt Dir ein Leistungsvorteil in deinem Lieblingsspiel.</string>
-    <string name="introduction_setonboot_heading">Beim Hochfahren setzen!</string>
-    <string name="introduction_setonboot_content">Mit dem kleinen Kästchen neben dem eigentlichen Feld kannst Du deine Wert beim Hochfahren individuell setzen. Dieses Kästchen definiert außerdem dein aktuelles Profil.</string>
+
+    <!-- ========================================================= -->
+    <!-- Flasher / Kernel Backup Elements                          -->
+    <!-- ========================================================= -->
+    <string name="backup_from">Sicherung von</string>
+    <string name="last_backup_from">Letzte Sicherung von</string>
+    <string name="pref_backup_kernel">Kernel sichern</string>
+    <string name="pref_backup_kernel_summary">Erstellt eine Sicherungskopie deines aktuellen Kernels.</string>
+    <string name="pref_restore">Sicherung wiederherstellen</string>
+    <string name="pref_restore_kernel">Wiederherstellen</string>
+    <string name="pref_restore_kernel_summary">Aus einer Kernel-Sicherung wiederherstellen.</string>
+    <string name="pref_updater">Kernel-Updater und Sicherung</string>
+    <string name="pref_updater_kernel">Kernel aktualisieren</string>
+    <string name="pref_updater_kernel_summary">Aktualisiert deinen Kernel.</string>
+    <string name="proceed_backup">Mit der Sicherung fortfahren? Dadurch wird dein aktueller Kernel gesichert.</string>
+    <string name="restore_from_backup">Möchtest du die Sicherung wiederherstellen von</string>
+
+    <!-- ========================================================= -->
+    <!-- Dialog Frameworks, Alerts, System Stability Errors        -->
+    <!-- ========================================================= -->
+    <string name="error_detected">Fehler erkannt?</string>
+    <string name="has_journal_dialog">Es sieht so aus, als wäre das Feature „has_journal“ für deine /data-Partition nicht aktiviert. Bitte starte in die Recovery und führe anschließend folgenden Befehl über adb shell aus:\n\ntune2fs -O has_journal /dev/block/mmcblk1p25</string>
+    <string name="has_journal_dialog_header">Problem erkannt</string>
+    <string name="no_cpu_data">Keine CPU-Daten gefunden.</string>
+    <string name="no_data_found">Keine Daten gefunden. :(</string>
+    <string name="no_gpu_data">Keine GPU-Daten gefunden.</string>
+    <string name="not_rooted">Kein Root-Zugriff?</string>
+    <string name="reboot_notifier">Es sieht so aus, als wäre dein Kernel abgestürzt. Bitte sieh dir die folgende Datei an:\n\n/proc/last_kmsg\n\nund sende sie deinem bevorzugten Entwickler. Nein, wirklich – tu das!\n\nWir entschuldigen uns für die Unannehmlichkeiten.</string>
+    <string name="reboot_notifier_header">Ups, das war nicht beabsichtigt</string>
+    <string name="root_required">Es sieht so aus, als wäre dein Gerät nicht gerootet. Diese App funktioniert ohne Root nicht korrekt. Wenn du glaubst, dass dies ein Fehler ist, sende uns bitte eine E-Mail.</string>
+
+    <!-- ========================================================= -->
+    <!-- About Screen & Social / Legal Open Source Notice Items    -->
+    <!-- ========================================================= -->
+    <string name="about">Über</string>
+    <string name="about_dialog">Hallo. Danke, dass du meine App nutzt. Mein Name ist Alexander Christ (Blechd0se) und ich habe diese App aus Spaß und in meiner Freizeit entwickelt. Alles ist Open Source, daher kannst du den Quellcode herunterladen und nach Belieben verändern. Wenn du möchtest, kannst du entweder Quarx für seine Arbeit an der ROM unterstützen oder mich. The joy of living is in the giving.</string>
+    <string name="donation_blechdose">Blechd0se</string>
+    <string name="donation_quarx">Quarx</string>
+    <string name="github">GitHub</string>
+    <string name="legal">Rechtliche Hinweise</string>
+    <string name="legal_dialog">Diese App ist unter der Apache-Lizenz lizenziert. Eine Kopie der Lizenz kann hier heruntergeladen werden:\n<a href="http://www.apache.org/licenses/LICENSE-2.0\n" target="_blank" rel="noopener noreferrer" title="http://www.apache.org/licenses/LICENSE-2.0\n">http://www.apache.org/licenses/LICENSE-2.0\n</a>\n\nDie ShowCase Library von Alex Curran ist unter der Apache-2.0-Lizenz lizenziert.\nDie HoloGraph Library von Daniel Nadeau ist unter der Apache-2.0-Lizenz lizenziert.</string>
+    <string name="send_email">E-Mail senden</string>
+    <string name="xda">XDA-Thread</string>
+
+    <!-- ========================================================= -->
+    <!-- Introduction Guide System Walkthrough                     -->
+    <!-- ========================================================= -->
+    <string name="introduction_perapp_check">Möchtest du diesen Dienst aktivieren?</string>
+    <string name="introduction_perapp_heading">Per-App-Profile</string>
+    <string name="introduction_perapp_content">Lege deine Einstellungen automatisch für einzelne Apps fest. Dazu überprüft ein Dienst regelmäßig die aktuell geöffnete App und wendet automatisch das gewünschte Profil an.\nDadurch kannst du Akkulaufzeit sparen oder die Leistung für deine bevorzugten Apps erhöhen.</string>
+    <string name="introduction_set_on_boot_heading">Einstellungen beim Start anwenden</string>
+    <string name="introduction_set_on_boot_content">Mit dem kleinen Kontrollkästchen neben jeder Einstellung kannst du Werte individuell beim Start anwenden. Aktiviere es einfach, und deine Einstellungen werden gespeichert. Dadurch werden auch die Werte deines aktuellen Profils festgelegt.</string>
+    <string name="introduction_tutorial_check">Möchtest du die Tutorials aktivieren?</string>
+    <string name="introduction_tutorial_content">Während der Verwendung von Aero Control werden Tutorials eingeblendet. Sie können hilfreiche Hinweise geben. Wenn du ein fortgeschrittener Benutzer bist, benötigst du sie wahrscheinlich nicht.</string>
     <string name="introduction_tutorial_heading">Tutorials</string>
-    <string name="introduction_tutorial_check">Möchtest Du Tutorials aktivieren?</string>
-    <string name="introduction_tutorial_content">Tutorials erscheinen Dir beim Benutzen von Aero Control. Sie können Dir ein paar Tipps und Tricks verraten. Wenn Du ein fortgeschrittener Benutzer bist, wirst Du sie vermutlich nicht brauchen.</string>
-    <string name="random_nsa_loading">Sende alle Daten zur NSA...</string>
-    <string name="random_programming_flux">Programmierung des Flux-Kompensators...</string>
-    <string name="random_shovelling_coal">Schaufele Kohle in die CPU...</string>
-    <string name="random_testing_patience">Überprüfe deine Geduld...</string>
-    <string name="random_data_somewhere">Einen Moment bitte, Ich weiß die Daten sind hier irgendwo...</string>
-    <string name="random_working_you_know">Am Arbeiten... Naja... Du weißt schon...</string>
-    <string name="random_prepare_awesomeness">Bereite Dich auf was tolles vor!</string>
-    <string name="notify_app_monitor_data">Wir haben genug Daten gesammelt, schaue jetzt in der App nach!</string>
+    <string name="introduction_welcome_content">Wir legen jetzt los. Wenn du bereit bist, wische einfach von rechts nach links. Alle Einstellungen, die du in diesem Assistenten festlegst, können später jederzeit geändert werden.</string>
+    <string name="introduction_welcome_heading">Willkommen bei\nAero Control</string>
+
+    <!-- ========================================================= -->
+    <!-- Interactive App Tutorials (Showcase Views)               -->
+    <!-- ========================================================= -->
+    <string name="showcase_aero_fragment">Willkommen bei Aero Control!</string>
+    <string name="showcase_aero_fragment_summary">Wische von links nach rechts, um das Navigationsmenü zu öffnen. Die Seite, die du gerade siehst, ist die Hauptübersicht. Hier findest du eine kurze Zusammenfassung einiger Kernel-Einstellungen. Die Daten werden in Echtzeit aktualisiert – ein manuelles Aktualisieren ist nicht erforderlich!</string>
+    <string name="showcase_app_monitor_fragment">Überwache deine Apps!</string>
+    <string name="showcase_app_monitor_fragment_summary">AppMonitor zeigt nützliche Informationen über deine verwendeten Apps an. Du wirst benachrichtigt, sobald genügend Daten gesammelt wurden. Deine Daten gehören dir – es werden keine Informationen an Dritte übertragen.</string>
+    <string name="showcase_cpu_fragment_governor">CPU-Governor</string>
+    <string name="showcase_cpu_fragment_governor_summary">Tippe auf dieses Symbol, um auf die vollständige Governor-Steuerung zuzugreifen. Du kannst die Parameter aller verfügbaren Governor anpassen, um die Leistung zu optimieren.</string>
+    <string name="showcase_hidden_feature">Glückwunsch!</string>
+    <string name="showcase_hidden_feature_summary">Du hast eine geheime Funktion entdeckt! Verrate sie niemandem. Und falls etwas nicht funktioniert, keine Sorge – das bleibt unser kleines Geheimnis.</string>
+    <string name="showcase_memory_fragment_trim">TRIM-Optionen</string>
+    <string name="showcase_memory_fragment_trim_summary">Um die Leistung des Geräts aufrechtzuerhalten, kannst du verschiedene Bereiche des Betriebssystems optimieren. Dies kann einige Zeit dauern, insbesondere wenn viele Daten gespeichert sind.</string>
+    <string name="showcase_perapp_profiles">Profile deinen Apps zuweisen!</string>
+    <string name="showcase_perapp_profiles_summary">Möchtest du bestimmte Profile nur für bestimmte Apps verwenden? Kein Problem. Tippe rechts auf das kleine Symbol und ordne dein Profil deinen bevorzugten Apps zu. Vergiss nicht, den Dienst in den Einstellungen zu aktivieren.</string>
+    <string name="showcase_profile_fragment">Profile hinzufügen!</string>
+    <string name="showcase_profile_fragment_summary">Tippe einfach auf diese Schaltfläche, um ein Profil hinzuzufügen. Alle aktuellen Einstellungen werden in diesem neuen Profil gespeichert. Wenn du mehrere Profile erstellt hast, kannst du sie durch Antippen jederzeit laden.</string>
+    <string name="showcase_statistics_fragment">Statistiken aktualisieren</string>
+    <string name="showcase_statistics_fragment_summary">Dieses Fenster zeigt die aktuelle CPU-Nutzungsstatistik an. Es wird dargestellt, wie viel Zeit das Gerät in jeder CPU-Frequenz verbracht hat. So kannst du überprüfen, ob dein Gerät wie erwartet arbeitet.</string>
+    <string name="showcase_your_settings">Deine Einstellungen</string>
+    <string name="showcase_your_settings_summary">Tippe auf dieses Symbol, um einen einfachen Dateimanager zu öffnen. Du kannst beliebige Dateien auswählen und eigene Tuning-Parameter hinzufügen. Mit dem linken Symbol lassen sich diese Einstellungen wieder löschen.</string>
+
+    <!-- ========================================================= -->
+    <!-- Easter Egg Loading Jokes                                   -->
+    <!-- ========================================================= -->
+    <string name="random_data_somewhere">Einen Moment, ich weiß, dass deine Daten irgendwo sind...</string>
+    <string name="random_nsa_loading">Sende alle Daten an die NSA...</string>
+    <string name="random_prepare_awesomeness">Mach dich auf etwas Großartiges gefasst!</string>
+    <string name="random_programming_flux">Programmiere den Fluxkompensator...</string>
+    <string name="random_shovelling_coal">Schaufle Kohle in die CPU...</string>
+    <string name="random_testing_patience">Teste deine Geduld...</string>
+    <string name="random_working_you_know">Arbeite daran... na ja... du weißt schon...</string>
+
+	<!-- ========================================================= -->
+    <!-- Tooltip & Advanced Tuning Help Documentation             -->
+    <!-- ========================================================= -->
+    <string name="help_text_above_hispeed_delay">Wartezeit, bevor die Frequenz über die „hispeed“-Frequenz erhöht wird. Standardmäßig entspricht dies einem einzelnen Timerintervall.</string>
+    <string name="help_text_align_windows">Legt fest, ob die Timer-Fenster über alle CPUs hinweg synchronisiert werden. Wenn „use_sched_load“ aktiviert ist, wird diese Einstellung ignoriert und die Fenster werden immer ausgerichtet.</string>
+    <string name="help_text_all_cpus_threshold">Schwellenwert für die durchschnittliche Auslastung aller aktuell aktiven CPUs, ab dem der nächste Prozessorkern aktiviert wird. Ein niedrigerer Wert führt dazu, dass zusätzliche Kerne schneller aktiviert werden.</string>
+    <string name="help_text_amp">Mit diesem Wert kann die Stärke des Vibrationsmotors erhöht oder verringert werden. Normalerweise ist 100 der Maximalwert.</string>
+    <string name="help_text_battery_saver">Wenn aktiviert (1), bleibt nach dem Ausschalten des Bildschirms nur ein CPU-Kern aktiv. Falls bei ausgeschaltetem Bildschirm Probleme mit der Audioqualität auftreten, versuche diese Funktion mit dem Wert 0 zu deaktivieren. Dadurch bleiben während des Suspend-Modus beide Kerne aktiv.</string>
+    <string name="help_text_block_dump">„block_dump“ aktiviert das Block-I/O-Debugging, wenn ein Wert ungleich 0 gesetzt ist.</string>
+    <string name="help_text_boostpulse_duration">Dauer des Eingabe-Boosts.</string>
+    <string name="help_text_dalvik_settings">Dieses Untermenü ermöglicht die Anpassung der virtuellen Maschine des Geräts. Die meisten Optionen beziehen sich auf den Arbeitsspeicher.</string>
+    <string name="help_text_debug">Debug-Option für Entwickler. Hier gibt es nichts einzustellen!</string>
+	<string name="help_text_dirty_background_bytes">Legt die Menge an „dirty memory“ fest, ab der die Kernel-Flusher-Threads im Hintergrund mit dem Zurückschreiben von Daten beginnen.\nHinweis: „dirty_background_bytes“ ist das Gegenstück zu „dirty_background_ratio“. Es kann jeweils nur einer dieser Werte verwendet werden. Wird einer der beiden Sysctl-Werte gesetzt, wird er sofort zur Berechnung der Dirty-Memory-Grenzen verwendet, während der andere beim Auslesen als 0 erscheint.</string>
+	<string name="help_text_dirty_background_ratio">Legt als Prozentsatz des verfügbaren Speichers (einschließlich freier und wiederverwendbarer Seiten) die Anzahl der Seiten fest, ab der die Kernel-Flusher-Threads im Hintergrund mit dem Schreiben von Dirty-Daten beginnen.</string>
+    <string name="help_text_dirty_bytes">Legt die Menge an „dirty memory“ fest, ab der ein Prozess, der Schreibvorgänge auf Datenträger ausführt, selbst mit dem Zurückschreiben der Daten beginnt.\nHinweis: Der Mindestwert für „dirty_bytes“ beträgt zwei Speicherseiten (in Bytes). Werte unterhalb dieses Limits werden ignoriert und die bisherige Konfiguration bleibt erhalten.</string>
+    <string name="help_text_dirty_expire_centisecs">Diese Einstellung legt fest, wann Dirty-Daten alt genug sind, um von den Kernel-Flusher-Threads auf den Datenträger geschrieben zu werden. Der Wert wird in Hundertstelsekunden angegeben. Daten, die länger als dieses Intervall im Speicher als Dirty-Daten vorliegen, werden beim nächsten Aufwachen eines Flusher-Threads geschrieben.</string>
+	<string name="help_text_dirty_ratio">Legt als Prozentsatz des verfügbaren Speichers (einschließlich freier und wiederverwendbarer Seiten) die Anzahl der Seiten fest, ab der ein Prozess, der Schreibvorgänge auf Datenträger ausführt, selbst beginnt, Dirty-Daten zurückzuschreiben.</string>
+	<string name="help_text_dirty_writeback_centisecs">Die Kernel-Flusher-Threads werden periodisch aktiviert und schreiben „alte“ Daten auf den Datenträger. Diese Einstellung definiert das Intervall zwischen diesen Aktivierungen in Hundertstelsekunden.\nWird der Wert auf 0 gesetzt, wird das periodische Zurückschreiben vollständig deaktiviert.</string>
+	<string name="help_text_drop_caches">Beim Schreiben auf diesen Wert verwirft der Kernel saubere Caches sowie wiederverwendbare Slab-Objekte wie Dentries und Inodes. Nach dem Freigeben steht der entsprechende Speicher wieder zur Verfügung. (1 = Pagecache freigeben, 2 = wiederverwendbare Slab-Objekte freigeben, 3 = Slab-Objekte und Pagecache freigeben)</string>
+	<string name="help_text_entropy_settings">Der Entropie-Pool speichert Zufallswerte für verschiedene Anwendungen. Höhere Lese-/Schreibwerte können in einigen Fällen helfen, erhöhen jedoch möglicherweise auch den Akkuverbrauch. Im Allgemeinen sollte der Wert dauerhaft über 200 liegen.</string>
+	<string name="help_text_extfrag_threshold">Dieser Parameter beeinflusst, ob der Kernel zur Erfüllung einer Speicheranforderung höherer Ordnung den Speicher komprimiert oder Direct Reclaim durchführt. Werte nahe 0 bedeuten, dass Zuweisungen aufgrund von Speichermangel fehlschlagen würden. Werte nahe 1000 bedeuten, dass Fehler auf Fragmentierung zurückzuführen sind. Ein Wert von -1 bedeutet, dass die Zuweisung erfolgreich ist, solange die Watermark-Grenzen eingehalten werden.</string>
+	<string name="help_text_extra_free_kbytes">Dieser Parameter weist die VM an, zusätzlichen freien Speicher zwischen dem Schwellenwert für Background Reclaim (kswapd) und dem Schwellenwert für Direct Reclaim (durch Speicher anfordernde Prozesse) freizuhalten.</string>
+	<string name="help_text_fifo_batch">Steuert die maximale Anzahl von Anfragen pro Stapel. Dieser Parameter bestimmt das Gleichgewicht zwischen der Latenz einzelner Anfragen und dem Gesamtdurchsatz. Wenn eine geringe Latenz wichtiger ist, sind kleinere Werte besser. Eine Erhöhung von „fifo_batch“ verbessert normalerweise den Durchsatz, allerdings auf Kosten einer höheren Latenzschwankung.</string>
+	<string name="help_text_front_merges">Diese Einstellung akzeptiert entweder 0 (= aus) oder 1 (= an). Manchmal erreicht eine Anfrage den I/O-Scheduler, die direkt an eine bereits in der Warteschlange befindliche Anfrage angrenzt. Sie kann dabei entweder hinter oder vor dieser Anfrage zusammengeführt werden.</string>
+	<string name="help_text_fsync">Der Aufruf „fsync()“ erzwingt das physische Schreiben von Daten aus dem Puffer-Cache auf den Datenträger. Das Deaktivieren dieser Funktion kann die Leistung verbessern, erhöht jedoch das Risiko von Datenverlust bei einem Systemabsturz.</string>
+	<string name="help_text_go_hispeed_load">Wechselt zur „hispeed“-Frequenz, sobald die CPU-Auslastung diesen Wert erreicht oder überschreitet.</string>
+	<string name="help_text_gpu_gov_settings">Der GPU-Governor verfügt über spezielle Einstellungen zur Feinabstimmung seines Verhaltens. Dies funktioniert ähnlich wie bei einem CPU-Governor.</string>
+	<string name="help_text_gpu_max_freq">Mit dieser Einstellung kann die maximale GPU-Frequenz angepasst werden. Ein niedrigerer Wert kann Akkuleistung sparen, allerdings auf Kosten der Grafikleistung.</string>
+	<string name="help_text_highmem_is_dirtyable">Der Standardwert ist 0 (false). Das bedeutet, dass die Werte „dirty_ratio“ und „dirty_background_ratio“ nur als Prozentsatz des Low-Memory-Bereichs berechnet werden. Dies schützt vor übermäßigem Scannen bei der Speicherfreigabe, dem Auslagern von Speicher (Swapping) und allgemeinen Problemen der virtuellen Speicherverwaltung.</string>
+	<string name="help_text_hispeed_freq">Die „hispeed“-Frequenz, auf die bei hoher Auslastung von niedrigeren Frequenzen gewechselt wird.</string>
+	<string name="help_text_hotplug_control">Durch Tippen auf dieses Element können verschiedene Werte des Hotplug-Treibers angepasst werden. Der Hotplug-Treiber entscheidet, wann ein CPU-Kern aktiviert oder deaktiviert werden soll.</string>
+	<string name="help_text_hotplug_sampling">Die Abtastrate des Hotplug-Treibers. Je niedriger dieser Wert ist, desto schneller werden Entscheidungen darüber getroffen, ob ein CPU-Kern aktiviert oder deaktiviert werden soll.</string>
+	<string name="help_text_ignore_nice_load">Dieser Parameter akzeptiert die Werte „0“ oder „1“. Ist er auf „0“ gesetzt (Standard), werden alle Prozesse bei der Berechnung der CPU-Auslastung berücksichtigt. Ist er auf „1“ gesetzt, werden Prozesse mit einem „nice“-Wert bei der Berechnung der Gesamtauslastung ignoriert.</string>
+	<string name="help_text_input_boost_freq">Die Frequenz, auf die die CPU erhöht wird, sobald eine Berührung des Displays erkannt wird.</string>
+	<string name="help_text_io_is_busy">Dieses Flag legt fest, ob Wartezeiten auf verschiedene I/O-Vorgänge die CPU-Auslastung erhöhen sollen, um die CPU-Frequenz anzuheben. Wird dieser Wert auf 0 gesetzt, erhöht der Governor die Frequenz seltener.</string>
+	<string name="help_text_io_scheduler_list">Der I/O-Scheduler verarbeitet die Ein-/Ausgabeanforderungen eines Geräts, um eine effiziente Verarbeitung zu ermöglichen. Eine Änderung dieser Einstellung hat auf den meisten Android-Systemen nur geringe Auswirkungen.</string>
+	<string name="help_text_ksm">KSM (Kernel Samepage Merging) ermöglicht die Deduplizierung von Speicherinhalten. Diese Funktion ist auf Android sehr nützlich und kann Arbeitsspeicher sparen, allerdings auf Kosten zusätzlicher CPU-Auslastung.</string>
+	<string name="help_text_laptop_mode">„laptop_mode“ ist eine Einstellung zur Steuerung des Laptop-Modus.</string>
+	<string name="help_text_legacy_va_layout">Ist dieser Wert ungleich 0, wird das neue 32-Bit-mmap-Speicherlayout deaktiviert. Der Kernel verwendet dann für alle Prozesse das ältere Layout aus Kernel-Version 2.4.</string>
+	<string name="help_text_live_oc_uc">Sei vorsichtig mit dieser Einstellung. Du kannst die aufgeführten Frequenzstufen übertakten oder untertakten und die jeweils passende Spannung festlegen. Diese Werte werden aus Sicherheitsgründen nicht auf Per-App-Profile angewendet.</string>
+	<string name="help_text_low_latency">Wenn aktiviert (1), reagiert der Hotplug-Treiber sehr schnell auf kurze Lastspitzen (100 % CPU-Auslastung) und aktiviert zusätzliche CPU-Kerne entsprechend.</string>
+	<string name="help_text_lowmem_reserve_ratio">Bei einigen spezialisierten Arbeitslasten auf Systemen mit Highmem kann es problematisch sein, wenn der Kernel Prozessspeicher aus der Lowmem-Zone zuweist. Dieser Speicher kann beispielsweise durch den Systemaufruf „mlock()“ oder durch fehlenden Swap-Speicher dauerhaft belegt werden.</string>
+	<string name="help_text_max_config_files" />
+	<string name="help_text_max_freq_cpu">Mit dieser Einstellung kann die maximale CPU-Frequenz angepasst werden. Ein niedrigerer Wert kann Energie sparen, geht jedoch zulasten der Leistung.</string>
+	<string name="help_text_max_freq_cpu_big">Mit dieser Einstellung kann die maximale CPU-Frequenz der großen (leistungsstärkeren) CPU-Kerne angepasst werden.</string>
+	<string name="help_text_max_freq_hysteresis">Verbleibt nach Erreichen der maximalen Frequenz mindestens für diesen Zeitraum auf dieser Frequenz, bevor sie wieder reduziert wird.</string>
+	<string name="help_text_max_map_count">Diese Datei enthält die maximale Anzahl von Speicherabbildungsbereichen (Memory Maps), die ein Prozess besitzen darf. Solche Bereiche entstehen beispielsweise durch Aufrufe von malloc, mmap und mprotect sowie beim Laden gemeinsam genutzter Bibliotheken.</string>
+	<string name="help_text_min_free_kbytes">Wird verwendet, um die Linux-VM anzuweisen, stets eine minimale Anzahl von Kilobyte freien Speichers vorzuhalten.</string>
+	<string name="help_text_min_freq_cpu">Mit dieser Einstellung kann die minimale CPU-Frequenz angepasst werden. Ein höherer Wert kann die Leistung verbessern, erhöht jedoch den Akkuverbrauch.</string>
+	<string name="help_text_min_freq_cpu_big">Mit dieser Einstellung kann die minimale CPU-Frequenz der großen (leistungsstärkeren) CPU-Kerne angepasst werden.</string>
+	<string name="help_text_min_online_time">Verhindert ein zu häufiges Aktivieren und Deaktivieren von CPU-Kernen nahe dem Schwellenwert. Legt die minimale Aktivitätsdauer eines Kerns in Sekunden fest.</string>
+	<string name="help_text_min_sample_time">Die minimale Zeitspanne, die eine Frequenz beibehalten wird, bevor sie wieder reduziert werden kann.</string>
+	<string name="help_text_no_data_found">Für diesen Eintrag sind keine Informationen verfügbar.</string>
+	<string name="help_text_oom_dump_tasks">Aktiviert die Erstellung eines systemweiten Task-Dumps (ohne Kernel-Threads), wenn der Kernel einen OOM-Kill (Out of Memory) durchführt. Der Dump enthält Informationen wie PID, UID, TGID, VM-Größe, RSS, nr_ptes, nr_pmds, swapents, den oom_score_adj-Wert sowie den Namen des Prozesses. Dies hilft dabei, die Ursache für die Auslösung des OOM-Killers zu ermitteln, den verantwortlichen Prozess zu identifizieren und nachzuvollziehen, warum genau dieser Prozess beendet wurde.</string>
+	<string name="help_text_oom_kill_allocating_task">Aktiviert oder deaktiviert das Beenden des Prozesses, der einen Out-of-Memory-Zustand (OOM) ausgelöst hat. Der Standardwert ist 0.</string>
+	<string name="help_text_overcommit_memory">Dieser Wert enthält ein Flag zur Aktivierung der Speicher-Überbelegung (Memory Overcommit).\nIst dieser Wert 0, versucht der Kernel abzuschätzen, wie viel freier Speicher noch verfügbar ist, wenn Anwendungen zusätzlichen Speicher anfordern.\nIst dieser Wert 1, geht der Kernel davon aus, dass immer ausreichend Speicher vorhanden ist, bis der Speicher tatsächlich erschöpft ist.\nIst dieser Wert 2, verwendet der Kernel eine Richtlinie ohne Speicher-Überbelegung, um jede Form von Overcommit zu verhindern.</string>
+	<string name="help_text_overcommit_ratio">Wenn „overcommit_memory“ auf 2 gesetzt ist, darf der reservierte Adressraum den verfügbaren Swap-Speicher zuzüglich dieses Prozentsatzes des physischen RAMs nicht überschreiten.</string>
+	<string name="help_text_panic_on_oom">Aktiviert oder deaktiviert einen Kernel-Panic bei einem Out-of-Memory-Zustand.</string>
+	<string name="help_text_percpu_pagelist_fraction">Gibt den maximalen Anteil der Speicherseiten (high mark pcp->high) in jeder Zone an, der für die CPU-spezifischen Seitenlisten reserviert wird. Der Mindestwert beträgt 8. Das bedeutet, dass nicht mehr als 1/8 der Seiten einer Zone einer einzelnen „per_cpu_pagelist“ zugewiesen werden dürfen.</string>
+	<string name="help_text_powersave_bias" formatted="false">Dieser Parameter akzeptiert Werte zwischen 0 und 1000. Er definiert den Prozentsatz (mal 10), der von der Zielfrequenz abgezogen wird. Beispielsweise entspricht der Wert 100 einer Reduzierung um 10 %. Wenn der Ondemand-Governor normalerweise 1000 MHz wählen würde, werden stattdessen 1000 MHz - (10 % von 1000 MHz) = 900 MHz verwendet. Standardmäßig ist dieser Wert auf 0 gesetzt (deaktiviert).</string>
+	<string name="help_text_read_ahead">Der Kernel versucht, über die angeforderten Datenblöcke hinaus Daten vorab zu lesen und im Cache zu speichern, um mögliche Festplatten-I/O-Zugriffe zu reduzieren. Der Standardwert beträgt 128 kB. Ein höherer Wert kann die Ladezeit von Apps verbessern.</string>
+	<string name="help_text_read_expire">Wenn eine Leseanforderung den I/O-Scheduler erreicht, wird ihr eine Deadline zugewiesen. Diese berechnet sich aus der aktuellen Zeit plus dem Wert von „read_expire“ in Millisekunden.</string>
+	<string name="help_text_rgb_values">Ermöglicht die Anpassung der RGB-Werte (Rot, Grün, Blau) des Displays zur Kalibrierung der Farbdarstellung.</string>
+	<string name="help_text_sampling_down_factor">Dieser Parameter steuert, wie häufig der Kernel entscheidet, die Frequenz bei maximaler Geschwindigkeit zu reduzieren. Bei einem Wert von 1 (Standard) erfolgt die Neubewertung der Auslastung unabhängig von der aktuellen Taktfrequenz in denselben Intervallen. Bei Werten größer als 1 (z. B. 100) wirkt der Wert als Multiplikator für das Überprüfungsintervall, wenn die CPU aufgrund hoher Auslastung mit ihrer maximalen Frequenz läuft.</string>
+	<string name="help_text_sampling_rate">Dieser Wert wird in µs (10^-6 Sekunden) angegeben und bestimmt, wie häufig der Kernel die CPU-Auslastung überprüft und Entscheidungen zur Frequenzanpassung trifft.</string>
+	<string name="help_text_set_governor">Der CPU-Governor steuert die Skalierung der CPU-Frequenz. Ein anderer Governor kann das Nutzererlebnis und die Akkulaufzeit erheblich beeinflussen.</string>
+	<string name="help_text_set_gpu_governor">Ermöglicht die Auswahl eines GPU-Governors. Dieser steuert die Frequenzskalierung der GPU und kann einen erheblichen Einfluss auf die Grafikleistung haben.</string>
+	<string name="help_text_single_core_threshold" formatted="false">Der Schwellenwert, ab dem ein einzelner CPU-Kern einen weiteren Kern aktiviert. Beispiel: Wenn Kern 1 zu 100 % ausgelastet ist und die durchschnittliche Auslastung über 60 % liegt, wird Kern 3 aktiviert.</string>
+	<string name="help_text_stat_interval">Das Zeitintervall, in dem die VM-Statistiken aktualisiert werden. Der Standardwert beträgt 1 Sekunde.</string>
+	<string name="help_text_swappiness">Diese Einstellung bestimmt, wie aggressiv der Kernel Speicherseiten in den Swap-Bereich auslagert. Höhere Werte erhöhen die Auslagerungsbereitschaft, niedrigere Werte verringern sie. Ein Wert von 0 weist den Kernel an, keinen Swap zu verwenden, solange die Menge an freiem Speicher und dateigestützten Seiten nicht unter die High-Watermark einer Speicherzone fällt.</string>
+	<string name="help_text_target_loads">Ab diesem Wert erhöht der Governor die Frequenz. Niedrigere Werte führen zu höheren CPU-Frequenzen. Ein Beispiel wäre „85 1200000:80 1500000:95“. Das bedeutet, dass die allgemeine Zielauslastung 85 beträgt. Liegt die Frequenz jedoch über 1,2 GHz, beträgt sie 80. Dasselbe gilt für 1,5 GHz, dort jedoch mit dem Wert 95.</string>
+    <string name="help_text_tcp_congestion">Wähle den Algorithmus für die Netzwerk-Staukontrolle. Standardmäßig wird meist „cubic“ oder „reno“ verwendet.</string>
+    <string name="help_text_temp_threshold">Temperaturschwellenwert, ab dem die CPU ihre Leistung reduziert, um eine Überhitzung zu verhindern. Dieser Wert wird normalerweise in °C angegeben.</string>
+    <string name="help_text_timer_rate">Abtastrate des Timers, der zum Erhöhen der Frequenz verwendet wird.</string>
+    <string name="help_text_timer_slack">Maximale zusätzliche Wartezeit im Leerlauf über „timer_rate“ hinaus, bei Frequenzen oberhalb des Minimums, bevor zum Reduzieren der Geschwindigkeit aufgeweckt wird. Verwende -1, wenn diese Einstellung nicht benötigt wird.</string>
+    <string name="help_text_up_frequency">Die minimale CPU-Frequenz, ab der Hotplug-Vorgänge ausgeführt werden. Liegt die aktuelle Frequenz unter diesem Wert, werden keine Hotplug-Vorgänge durchgeführt. Standardmäßig wird die maximale Frequenz verwendet.</string>
+    <string name="help_text_up_threshold">Legt fest, wie hoch die durchschnittliche CPU-Auslastung zwischen den durch „sampling_rate“ definierten Messintervallen sein muss, damit der Kernel entscheidet, die Frequenz zu erhöhen.</string>
+    <string name="help_text_vfs_cache_pressure">Dieser Prozentwert steuert, wie stark der Kernel Speicher zurückfordert, der für das Zwischenspeichern von Verzeichnis- und Inode-Objekten verwendet wird.</string>
+    <string name="help_text_voltage_values">In diesem Untermenü können die Spannungswerte der CPU angepasst werden. Dies kann die Akkulaufzeit verbessern oder höhere CPU-Frequenzen ermöglichen. Eine zu starke Anpassung kann jedoch zu erheblichen Problemen führen.</string>
+    <string name="help_text_volume_boost">Mit diesem Wert kann die Lautstärke der Lautsprecher oder Kopfhörer erhöht werden.</string>
+    <string name="help_text_write_expire">Ähnlich wie „read_expire“, jedoch für Schreibvorgänge.</string>
+    <string name="help_text_writes_starved">„writes_starved“ legt fest, wie oft Lesevorgänge gegenüber Schreibvorgängen bevorzugt werden. Nachdem dieser Wert erreicht wurde, werden Schreibvorgänge nach denselben Kriterien wie Lesevorgänge verarbeitet.</string>
+    <string name="help_text_vtg_level">Diese Einstellung steuert die Vibrationsstärke deines Geräts. Ein niedrigerer Wert bedeutet in der Regel eine schwächere Vibration.</string>
 </resources>

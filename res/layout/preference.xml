@@ -2,11 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <PreferenceCategory android:title="@string/pref_appspecific">
+    <PreferenceCategory android:title="@string/pref_app_specific">
         <CheckBoxPreference
-            android:title="@string/pref_rebootcheck"
+            android:title="@string/pref_reboot_check"
             android:key="reboot_checker"
-            android:summary="@string/pref_rebootcheck_summary"/>
+            android:summary="@string/pref_reboot_check_summary"/>
         <CheckBoxPreference
             android:title="@string/pref_per_app_service"
             android:key="per_app_service"

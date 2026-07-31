@@ -63,7 +63,7 @@ public class AppMonitorFragment extends Fragment {
             output = 1;
         }
         if (output == 0) {
-            DrawFirstStart(R.string.showcase_appmonitor_fragment, R.string.showcase_appmonitor_fragment_summary);
+            DrawFirstStart(R.string.showcase_app_monitor_fragment, R.string.showcase_app_monitor_fragment_summary);
         }
     }
 
@@ -137,12 +137,12 @@ public class AppMonitorFragment extends Fragment {
                     tmp.setVisibility(8);
                     iv.setVisibility(8);
                 } else {
-                    tmp.setText(AppMonitorFragment.this.getText(R.string.pref_no_appmonitor_data));
+                    tmp.setText(AppMonitorFragment.this.getText(R.string.pref_no_app_monitor_data));
                     tmp.setVisibility(0);
                     iv.setVisibility(0);
                 }
                 if (!AeroActivity.mJobManager.getJobManagerState()) {
-                    tmp.setText(AppMonitorFragment.this.getText(R.string.pref_appmonitor_disabled));
+                    tmp.setText(AppMonitorFragment.this.getText(R.string.pref_app_monitor_disabled));
                     tmp.setVisibility(0);
                     iv.setVisibility(0);
                     AppMonitorFragment.this.clearUI();

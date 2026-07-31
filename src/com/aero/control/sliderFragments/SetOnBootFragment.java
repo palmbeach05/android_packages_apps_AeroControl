@@ -32,10 +32,10 @@ public class SetOnBootFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.set_on_boot_fragment, container, false);
         TextView heading = (TextView) rootView.findViewById(R.id.text_heading);
-        heading.setText(R.string.introduction_setonboot_heading);
+        heading.setText(R.string.introduction_set_on_boot_heading);
         heading.setTypeface(kitkatFont);
         TextView content = (TextView) rootView.findViewById(R.id.text_content);
-        content.setText(R.string.introduction_setonboot_content);
+        content.setText(R.string.introduction_set_on_boot_content);
         content.setTypeface(kitkatFont);
         return rootView;
     }
