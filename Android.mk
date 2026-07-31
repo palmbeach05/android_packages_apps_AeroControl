@@ -12,13 +12,7 @@ LOCAL_SRC_FILES += \
 # packages must be told to aapt via --extra-packages so a matching R.java is
 # generated for each of them.
 LOCAL_RESOURCE_DIR := \
-    $(LOCAL_PATH)/res \
-    $(LOCAL_PATH)/library/floatingactionbutton/res \
-    $(LOCAL_PATH)/library/HoloGraphLibrary/res \
-    $(LOCAL_PATH)/library/WilliamChart/res \
-    $(LOCAL_PATH)/library/discreetapprate/res \
-    $(LOCAL_PATH)/library/showcase/res \
-    $(LOCAL_PATH)/library/ldrawer/src/main/res
+    $(LOCAL_PATH)/res
 
 LOCAL_AAPT_FLAGS := \
     --extra-packages com.getbase.floatingactionbutton:com.echo.holographlibrary:com.cocosw.undobar:com.db.williamchart:fr.nicolaspomepuy.discreetapprate:com.github.amlcurran.showcaseview:com.ikimuhendis.ldrawer
