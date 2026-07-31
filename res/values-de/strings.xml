@@ -43,7 +43,7 @@
     <string name="drawer_close">Schließen</string>
     <string name="drawer_open">Öffnen</string>
     <string name="slider_app_monitor">App-Monitor</string>
-    <string name="slider_backup_restore">Sichern & Wiederherstellen</string>
+    <string name="slider_backup_restore">Sichern &amp; Wiederherstellen</string>
     <string name="slider_cpu_settings">CPU-Einstellungen</string>
     <string name="slider_defy_parts">Defy-Einstellungen</string>
     <string name="slider_gpu_settings">GPU-Einstellungen</string>
