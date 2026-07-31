@@ -217,9 +217,9 @@
     <string name="pref_reset_tutorials">Reset Tutorials</string>
     <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
     <string name="pref_reset_tutorials_title">There is no way back</string>
-    <string name="pref_set_at_boot">Set at Boot</string>
-    <string name="pref_set_at_boot_summary">Caution: This will set your settings at boot.</string>
-    <string name="pref_set_at_boot_settings">set-on-boot settings.</string>
+    <string name="pref_set_on_boot">Set at Boot</string>
+    <string name="pref_set_on_boot_summary">Caution: This will set your settings at boot.</string>
+    <string name="pref_set_on_boot_settings">set-on-boot settings.</string>
     <string name="pref_update_path">Update location:</string>
     <string name="pref_update_path_summary">Set your desired update path.</string>
 
@@ -286,8 +286,8 @@
     <string name="introduction_perapp_check">Do you want to enable this service?</string>
     <string name="introduction_perapp_heading">Per-App Profiles</string>
     <string name="introduction_perapp_content">Choose your preferences for individual apps automatically. Therefore a service checks the foreground app every now and then and applies your desired profile automatically.\n This might save you some extra juice for your battery or give you a full performance boost on your favorite app.</string>
-    <string name="introduction_set_at_boot_heading">Set at boot!</string>
-    <string name="introduction_set_at_boot_content">With the little checkbox besides each settings you can set your values at boot individually. Just check it and your settings will be saved. This also defines your current profile values.</string>
+    <string name="introduction_set_on_boot_heading">Set at boot!</string>
+    <string name="introduction_set_on_boot_content">With the little checkbox besides each settings you can set your values at boot individually. Just check it and your settings will be saved. This also defines your current profile values.</string>
     <string name="introduction_tutorial_check">Do you want to enable tutorials?</string>
     <string name="introduction_tutorial_content">Tutorials pop up during your usage of Aero Control. They might give you some insights. If you are an advanced user, it is unlikely that you need them.</string>
     <string name="introduction_tutorial_heading">Tutorials</string>

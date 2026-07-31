@@ -35,8 +35,8 @@
     <string name="about">Sobre</string>
     <string name="aero_settings">Configurações</string>
     <string name="pref_app_specific">App specific</string>
-    <string name="pref_set_at_boot">Aplicar no Boot</string>
-    <string name="pref_set_at_boot_summary">Cuidado: Suas configurações serão aplicadas no Boot.</string>
+    <string name="pref_set_on_boot">Aplicar no Boot</string>
+    <string name="pref_set_on_boot_summary">Cuidado: Suas configurações serão aplicadas no Boot.</string>
     <string name="pref_reboot_check">Verificador de reinicializações aleatórias</string>
     <string name="pref_reboot_check_summary">Isso vai informá-lo caso seu dispositivo reinicie sozinho.</string>
     <string name="pref_update_path">Updatelocation:</string>

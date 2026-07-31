@@ -217,9 +217,9 @@
     <string name="pref_reset_tutorials">Tutorials zurücksetzen</string>
     <string name="pref_reset_tutorials_dialog">Dadurch werden alle Tutorials zurückgesetzt.</string>
     <string name="pref_reset_tutorials_title">Es gibt kein Zurück</string>
-    <string name="pref_set_at_boot">Beim Start anwenden</string>
-    <string name="pref_set_at_boot_summary">Achtung: Diese Einstellungen werden beim Gerätestart automatisch angewendet.</string>
-    <string name="pref_set_at_boot_settings">Beim Start anwenden</string>
+    <string name="pref_set_on_boot">Beim Start anwenden</string>
+    <string name="pref_set_on_boot_summary">Achtung: Diese Einstellungen werden beim Gerätestart automatisch angewendet.</string>
+    <string name="pref_set_on_boot_settings">Beim Start anwenden</string>
     <string name="pref_update_path">Update-Kanal</string>
     <string name="pref_update_path_summary">Gewünschter Update-Kanal.</string>
 

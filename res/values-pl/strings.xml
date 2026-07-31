@@ -39,8 +39,8 @@
     <string name="about">O programie</string>
     <string name="aero_settings">Ustawienia</string>
     <string name="pref_app_specific">Specyficzne programu</string>
-    <string name="pref_set_at_boot">Ustaw przy starcie systemu</string>
-    <string name="pref_set_at_boot_summary">Uwaga: ta opcja zastosuje twoje ustawienia przy starcie systemu.</string>
+    <string name="pref_set_on_boot">Ustaw przy starcie systemu</string>
+    <string name="pref_set_on_boot_summary">Uwaga: ta opcja zastosuje twoje ustawienia przy starcie systemu.</string>
     <string name="pref_reboot_check">Monitor losowego ponownego uruchomienia</string>
     <string name="pref_reboot_check_summary">Poinformuje cię gdy twoje urządzenie przypadkowo uruchomiło się ponownie.</string>
     <string name="pref_update_path">Lokalizacja aktualizacji:</string>

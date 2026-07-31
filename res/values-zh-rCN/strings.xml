@@ -39,8 +39,8 @@
     <string name="about">关于</string>
     <string name="aero_settings">设置</string>
     <string name="pref_app_specific">应用相关</string>
-    <string name="pref_set_at_boot">启动时设置</string>
-    <string name="pref_set_at_boot_summary">注意：这将使得系统启动时即采用你的设置</string>
+    <string name="pref_set_on_boot">启动时设置</string>
+    <string name="pref_set_on_boot_summary">注意：这将使得系统启动时即采用你的设置</string>
     <string name="pref_reboot_check">意外重启监测</string>
     <string name="pref_reboot_check_summary">如果你的设备意外重启，它将会通知你</string>
     <string name="pref_update_path">更新路径:</string>

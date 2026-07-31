@@ -40,8 +40,8 @@
     <string name="about">O</string>
     <string name="aero_settings">Postavke</string>
     <string name="pref_app_specific">Specifično</string>
-    <string name="pref_set_at_boot">Postavi pri pokretanju</string>
-    <string name="pref_set_at_boot_summary">Oprez: Postavlja Vaše postavke prilikom pokretanja uređaja.</string>
+    <string name="pref_set_on_boot">Postavi pri pokretanju</string>
+    <string name="pref_set_on_boot_summary">Oprez: Postavlja Vaše postavke prilikom pokretanja uređaja.</string>
     <string name="pref_reboot_check">Provjera neplaniranog reboota</string>
     <string name="pref_reboot_check_summary">Obavještava Vas ako se uređaj nenadano ponovno pokrene.</string>
     <string name="pref_update_path">Mjesto Ažuriranja:</string>

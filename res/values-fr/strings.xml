@@ -27,8 +27,8 @@
     <string name="about">À propos</string>
     <string name="aero_settings">Paramètres</string>
     <string name="pref_app_specific">Propres à l\'application</string>
-    <string name="pref_set_at_boot">Appliquer au démarrage</string>
-    <string name="pref_set_at_boot_summary">Attention: Les paramètres seront appliqués au démarrage.</string>
+    <string name="pref_set_on_boot">Appliquer au démarrage</string>
+    <string name="pref_set_on_boot_summary">Attention: Les paramètres seront appliqués au démarrage.</string>
     <string name="pref_update_path">Changer l\'emplacement</string>
     <string name="pref_update_path_summary">Choisissez votre répertoire de mise à jour.</string>
     <string name="pref_app_theme">Thème de l\'application</string>

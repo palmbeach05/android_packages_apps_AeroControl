@@ -42,8 +42,8 @@
     <string name="about">Info</string>
     <string name="aero_settings">Impostazioni</string>
     <string name="pref_app_specific">Specifiche</string>
-    <string name="pref_set_at_boot">Imposta all\'avvio</string>
-    <string name="pref_set_at_boot_summary">Attenzione: Applicherà le impostazioni all\'avvio</string>
+    <string name="pref_set_on_boot">Imposta all\'avvio</string>
+    <string name="pref_set_on_boot_summary">Attenzione: Applicherà le impostazioni all\'avvio</string>
     <string name="pref_reboot_check">Controllo riavvii improvvisi</string>
     <string name="pref_reboot_check_summary">Ti informerà in caso di riavvii improvvisi.</string>
     <string name="pref_update_path">Posizione dell\'update:</string>

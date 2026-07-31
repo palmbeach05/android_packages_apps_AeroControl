@@ -39,8 +39,8 @@
     <string name="about">Despre program</string>
     <string name="aero_settings">Setări</string>
     <string name="pref_app_specific">Specifice aplicației</string>
-    <string name="pref_set_at_boot">Stabilește setările la pornire</string>
-    <string name="pref_set_at_boot_summary">Atenție: Aceast lucru va stabili setările la pornirea sistemului.</string>
+    <string name="pref_set_on_boot">Stabilește setările la pornire</string>
+    <string name="pref_set_on_boot_summary">Atenție: Aceast lucru va stabili setările la pornirea sistemului.</string>
     <string name="pref_reboot_check">Random Reboot Checker</string>
     <string name="pref_reboot_check_summary">Aceasta vă va informa dacă dispozitivul s-a restartat brusc.</string>
     <string name="pref_update_path">Locație de actualizare:</string>
