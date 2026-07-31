@@ -185,7 +185,7 @@
     <string name="pref_beta_program_text">If you want, you can become a beta tester. This means you will receive Aero Control updates earlier.\nTo become a beta tester, you need to fulfill two steps:\n\n Join the Google+ Community\n\n Apply for beta testing  \n\nKeep in mind that you can always leave the beta channel if you click the second link again. </string>
     <string name="pref_boot_delay">Boot Timer Delay</string>
     <string name="pref_boot_delay_dialog">Delay in minutes</string>
-    <string name="finishing_settings">finished settings.</string>
+    <string name="pref_finishing_settings">finished settings.</string>
     <string name="pref_lollipop_usage_warning">Please notice that Google changed the way to check for the current foreground app for Lollipop(+). In order to make PerApp Service work on your device, you have to go into settings and enable usage statistics access for Aero Control. You can revoke this right at any point of time. If you are feeling ready, click continue.</string>
     <string name="pref_misc_settings">Misc Settings</string>
     <string name="pref_misc_tcp_congestion">TCP Congestion Algorithm</string>
