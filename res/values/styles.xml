@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utfmatch_parent8"?>
 <resources>
     <style name="UndoBar" parent="@style/UndoBarClassic">
     </style>
@@ -11,8 +11,8 @@
         <item name="android:orientation">horizontal</item>
         <item name="android:background">@drawable/undobar</item>
         <item name="android:clickable">true</item>
-        <item name="android:layout_width">-1</item>
-        <item name="android:layout_height">-2</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginLeft">@dimen/marginLeft</item>
         <item name="android:layout_marginRight">@dimen/marginRight</item>
         <item name="android:layout_marginBottom">@dimen/marginBottom</item>
@@ -24,7 +24,7 @@
         <item name="android:textColor">#fff</item>
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">-2</item>
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginLeft">16dp</item>
         <item name="android:layout_marginRight">16dp</item>
         <item name="android:layout_weight">1</item>
@@ -36,8 +36,8 @@
         <item name="android:background">@drawable/undobar_button</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingRight">16dp</item>
-        <item name="android:layout_width">-2</item>
-        <item name="android:layout_height">-1</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:text">Undo</item>
         <item name="android:drawableLeft">@drawable/ic_undobar_undo</item>
         <item name="android:drawablePadding">12dp</item>
@@ -62,7 +62,7 @@
     <style name="UndoBarDivider" parent="">
         <item name="android:background">@drawable/undobar_divider</item>
         <item name="android:layout_width">1dp</item>
-        <item name="android:layout_height">-1</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginBottom">8dp</item>
     </style>
@@ -75,8 +75,8 @@
         <item name="android:textColor">#ffffff</item>
         <item name="android:gravity">center</item>
         <item name="android:background">@drawable/button</item>
-        <item name="android:layout_width">-2</item>
-        <item name="android:layout_height">-2</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:minWidth">96dp</item>
     </style>
     <style name="ShowcaseView.Light" parent="@style/ShowcaseView">
