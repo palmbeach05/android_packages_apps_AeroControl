@@ -169,7 +169,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             Runnable runnable = new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.1
                 @Override // java.lang.Runnable
                 public void run() {
-                    final boolean fileSystemCheck = false;
+                    boolean fileSystemCheck = false;
                     String[] fileMount = AeroActivity.shell.getInfo("/proc/mounts", false);
                     boolean fileMountCheck = false;
                     int len$ = fileMount.length;

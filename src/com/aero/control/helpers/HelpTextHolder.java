@@ -39,7 +39,7 @@ public class HelpTextHolder {
         putInMap("set_governor", R.string.help_text_set_governor);
         putInMap("cpu_commands", R.string.help_text_live_oc_uc);
         putInMap("gpu_max_freq", R.string.help_text_gpu_max_freq);
-        putInMap("rgbValues", R.string.help_text_rgbValues);
+        putInMap("rgbValues", R.string.help_text_rgb_values);
         putInMap("set_gpu_governor", R.string.help_text_set_gpu_governor);
         putInMap("gpu_gov_settings", R.string.help_text_gpu_gov_settings);
         putInMap("read_ahead", R.string.help_text_read_ahead);
