@@ -359,7 +359,7 @@
     <string name="help_text_hispeed_freq">Hispeed to bump to from any smaller frequency when under heavy load.</string>
     <string name="help_text_hotplug_control">A tap on this element allows you to change various values of your hotplug driver. The hotplug driver decides when a CPU core should be online or offline.</string>
     <string name="help_text_hotplug_sampling">The sampling rate of the hotplug driver. Lower this value and decisions will be made quicker in regards if a core should be onlined or not.</string>
-    <string name="help_text_ignore_nice_load">This parameter takes a value of '0' or '1'. When set to '0' (its default), all processes are counted towards the 'CPU utilisation' value. When set to '1', the processes that are run with a 'nice' value will not count (and thus be ignored) in the overall usage calculation.</string>
+    <string name="help_text_ignore_nice_load">This parameter takes a value of \'0\' or \'1\'. When set to \'0\' (its default), all processes are counted towards the 'CPU utilisation' value. When set to '1', the processes that are run with a 'nice' value will not count (and thus be ignored) in the overall usage calculation.</string>
     <string name="help_text_input_boost_freq">The frequency the CPU will go to when a touch on the display is registered.</string>
     <string name="help_text_io_is_busy">This is a flag that determines if waiting for various IO should increase the CPU utilization in bump up the cpu frequency. Setting this to 0 will mean the governor will increase the frequency less often.</string>
     <string name="help_text_io_scheduler_list">The IO scheduler handles IO requests for a specific device to allow an efficient handling. Changing this value has a rather small impact on most android systems.</string>
@@ -367,7 +367,7 @@
     <string name="help_text_laptop_mode">laptop_mode is a knob that controls laptop mode.</string>
     <string name="help_text_legacy_va_layout">If non-zero, this sysctl disables the new 32-bit mmap layout - the kernel will use the legacy (2.4) layout for all processes.</string>
     <string name="help_text_live_oc_uc">Be careful with this option. You can overclock/underclock the listed frequency steps and set the correct voltage for it. Those values wont be applied to per-app profiles for your own safety.</string>
-    <string name="help_text_low_latency">If enabled (1) it let's the hotplug driver react really quickly to short load spikes (100% CPU load) and onlines cpus accordingly.</string>
+    <string name="help_text_low_latency">If enabled (1) it let\'s the hotplug driver react really quickly to short load spikes (100% CPU load) and onlines cpus accordingly.</string>
     <string name="help_text_lowmem_reserve_ratio">For some specialised workloads on highmem machines it is dangerous for the kernel to allow process memory to be allocated from the lowmem zone. This is because that memory could then be pinned via the mlock() system call, or by unavailability of swapspace.</string>
     <string name="help_text_max_config_files" />
     <string name="help_text_max_freq_cpu">This tunable lets you adjust the maximum CPU frequency. Lowering this value can save you power at the cost of performance.</string>
@@ -397,13 +397,13 @@
     <string name="help_text_single_core_threshold" formatted="false">The threshold for a single core to online another one. For example; if core 1 is at 100% and the average load is above 60% core 3 will get online.</string>
     <string name="help_text_stat_interval">The time interval between which vm statistics are updated. The default is 1 second.</string>
     <string name="help_text_swappiness">This control is used to define how aggressive the kernel will swap memory pages. Higher values will increase agressiveness, lower values decrease the amount of swap. A value of 0 instructs the kernel not to initiate swap until the amount of free and file-backed pages is less than the high water mark in a zone.</string>
-    <string name="help_text_target_loads">At or above this value, the governor will ramp up the frequency. Lower values result in higher CPU speeds. An example would be '85 1200000:80 1500000:95'. This means the overall target load is 85, but if the frequency is higher than 1.2Ghz its 80. The same applies for 1.5Ghz but with 95.</string>
-    <string name="help_text_tcp_congestion">Choose the algorithm behind your network congestion control. Usually the default is 'cubic' or 'reno'.</string>
+    <string name="help_text_target_loads">At or above this value, the governor will ramp up the frequency. Lower values result in higher CPU speeds. An example would be \'85 1200000:80 1500000:95\'. This means the overall target load is 85, but if the frequency is higher than 1.2Ghz its 80. The same applies for 1.5Ghz but with 95.</string>
+    <string name="help_text_tcp_congestion">Choose the algorithm behind your network congestion control. Usually the default is \'cubic\' or \'reno\'.</string>
     <string name="help_text_temp_threshold">The temperature threshold when your CPU starts to throttle to save it from overheating. Usually this value is in °C.</string>
     <string name="help_text_timer_rate">The sample rate of the timer used to increase frequency</string>
     <string name="help_text_timer_slack">Max additional time to wait in idle, beyond timer_rate, at speeds above minimum before wakeup to reduce speed, or -1 if unnecessary.</string>
     <string name="help_text_up_frequency">The minimum CPU frequency to start hotplug operations. If the current frequency is below this value, no hotplug operations will perform. Default is the maximum frequency.</string>
-    <string name="help_text_up_threshold">Defines what the average CPU usage between the samplings of 'sampling_rate' needs to be for the kernel to make a decision on whether it should increase the frequency.</string>
+    <string name="help_text_up_threshold">Defines what the average CPU usage between the samplings of \'sampling_rate\' needs to be for the kernel to make a decision on whether it should increase the frequency.</string>
     <string name="help_text_vfs_cache_pressure">This percentage value controls the tendency of the kernel to reclaim the memory which is used for caching of directory and inode objects.</string>
     <string name="help_text_voltage_values">In this submenu you can change the voltage values of your CPU. This might increase your battery life or allows your CPU to run on higher frequencies. However, this can cause massive issues if overdone too much.</string>
     <string name="help_text_volume_boost">This value gives your speakers or your headphone a boost to get them a little louder.</string>
