@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/action_mVPlus"
+        android:id="@+id/action_mV_Plus"
         android:title="@string/mv_plus"
         android:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/action_mVMinus"
+        android:id="@+id/action_mV_Minus"
         android:title="@string/mv_minus"
         android:showAsAction="ifRoom"/>
 </menu>
