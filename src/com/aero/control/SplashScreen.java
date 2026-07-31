@@ -79,7 +79,7 @@ public class SplashScreen extends FragmentActivity {
             @Override // android.view.View.OnClickListener
             public void onClick(View v) {
                 try {
-                    FileOutputStream fos = this.openFileOutput(SplashScreen.FIRSTRUN_AERO, 0);
+                    FileOutputStream fos = SplashScreen.this.openFileOutput(FIRSTRUN_AERO, 0);
                     fos.write("1".getBytes());
                     fos.close();
                 } catch (IOException e) {
@@ -87,9 +87,9 @@ public class SplashScreen extends FragmentActivity {
                 } catch (NullPointerException e2) {
                     Log.e("Aero", "OpenFileOutput probably was initialized on a null-object.", e2);
                 }
-                Intent i = new Intent(this, (Class<?>) AeroActivity.class);
+                Intent i = new Intent(SplashScreen.this, AeroActivity.class);
                 SplashScreen.this.startActivity(i);
-                this.finish();
+                SplashScreen.this.finish();
             }
         });
     }
