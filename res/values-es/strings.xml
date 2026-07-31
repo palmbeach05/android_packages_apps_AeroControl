@@ -107,8 +107,8 @@
     <string name="pref_low_mem_option_summary">Habilita o Deshabilita la opción de memoria de baja. Esto podría ayudar en los dispositivos con 4.4+(Kitkat).</string>
     <string name="pref_fstrim">Opción de Trim</string>
     <string name="pref_fstrim_summary">Ejecutar Trim en varias partes de su sistema! Esto podría demorar un poco.</string>
-    <string name="pref_dalvik_setttings">Configuración de VM</string>
-    <string name="pref_dalvik_setttings_summary">Cambie los parámetros de la máquina virtual.</string>
+    <string name="pref_dalvik_settings">Configuración de VM</string>
+    <string name="pref_dalvik_settings_summary">Cambie los parámetros de la máquina virtual.</string>
     <string name="has_journal_dialog_header">Problema detectado</string>
     <string name="has_journal_dialog">Parece que la partición /data no tiene la opción has_journal habilitada. Por favor, reiniciar en el recovery y ejecute el siguiente comando vía adb shell:   tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
     <string name="reboot_notifier_header">Oops, esto no debería ocurrir</string>
