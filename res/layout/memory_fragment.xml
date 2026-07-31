@@ -14,9 +14,9 @@
             android:key="fstrim_toggle"
             android:summary="@string/pref_fstrim_summary"/>
         <com.aero.control.helpers.Android.CustomPreference
-            android:title="@string/pref_dalvik_setttings"
+            android:title="@string/pref_dalvik_settings"
             android:key="dalvik_settings"
-            android:summary="@string/pref_dalvik_setttings_summary"/>
+            android:summary="@string/pref_dalvik_settings_summary"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/io_scheduler"
