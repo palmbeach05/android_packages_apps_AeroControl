@@ -369,7 +369,6 @@
 	<string name="help_text_live_oc_uc">Sei vorsichtig mit dieser Einstellung. Du kannst die aufgeführten Frequenzstufen übertakten oder untertakten und die jeweils passende Spannung festlegen. Diese Werte werden aus Sicherheitsgründen nicht auf Per-App-Profile angewendet.</string>
 	<string name="help_text_low_latency">Wenn aktiviert (1), reagiert der Hotplug-Treiber sehr schnell auf kurze Lastspitzen (100 % CPU-Auslastung) und aktiviert zusätzliche CPU-Kerne entsprechend.</string>
 	<string name="help_text_lowmem_reserve_ratio">Bei einigen spezialisierten Arbeitslasten auf Systemen mit Highmem kann es problematisch sein, wenn der Kernel Prozessspeicher aus der Lowmem-Zone zuweist. Dieser Speicher kann beispielsweise durch den Systemaufruf „mlock()“ oder durch fehlenden Swap-Speicher dauerhaft belegt werden.</string>
-	<string name="help_text_max_config_files" />
 	<string name="help_text_max_freq_cpu">Mit dieser Einstellung kann die maximale CPU-Frequenz angepasst werden. Ein niedrigerer Wert kann Energie sparen, geht jedoch zulasten der Leistung.</string>
 	<string name="help_text_max_freq_cpu_big">Mit dieser Einstellung kann die maximale CPU-Frequenz der großen (leistungsstärkeren) CPU-Kerne angepasst werden.</string>
 	<string name="help_text_max_freq_hysteresis">Verbleibt nach Erreichen der maximalen Frequenz mindestens für diesen Zeitraum auf dieser Frequenz, bevor sie wieder reduziert wird.</string>
