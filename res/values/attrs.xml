@@ -135,4 +135,68 @@
         <attr name="cardTitle" format="string" />
         <attr name="cardContent" format="string" />
     </declare-styleable>
+        <declare-styleable name="FloatingActionButton">
+        <attr name="fab_colorPressed" />
+        <attr name="fab_colorDisabled" />
+        <attr name="fab_colorNormal" />
+        <attr name="fab_icon" />
+        <attr name="fab_size" />
+        <attr name="fab_title" />
+        <attr name="fab_stroke_visible" />
+    </declare-styleable>
+
+    <declare-styleable name="AddFloatingActionButton">
+        <attr name="fab_plusIconColor" />
+    </declare-styleable>
+
+    <declare-styleable name="FloatingActionsMenu">
+        <attr name="fab_addButtonColorPressed" />
+        <attr name="fab_addButtonColorNormal" />
+        <attr name="fab_addButtonSize" />
+        <attr name="fab_addButtonPlusIconColor" />
+        <attr name="fab_addButtonStrokeVisible" />
+        <attr name="fab_labelStyle" />
+        <attr name="fab_labelsPosition" />
+        <attr name="fab_expandDirection" />
+    </declare-styleable>
+
+    <declare-styleable name="ShowcaseView">
+        <attr name="sv_backgroundColor" />
+        <attr name="sv_detailTextColor" />
+        <attr name="sv_titleTextColor" />
+        <attr name="sv_buttonBackgroundColor" />
+        <attr name="sv_buttonForegroundColor" />
+        <attr name="sv_buttonText" />
+        <attr name="sv_detailTextAppearance" />
+        <attr name="sv_titleTextAppearance" />
+        <attr name="sv_showcaseColor" />
+        <attr name="sv_tintButtonColor" />
+    </declare-styleable>
+
+    <declare-styleable name="CustomTheme">
+        <attr name="showcaseViewStyle" />
+    </declare-styleable>
+
+    <declare-styleable name="ChartAttrs">
+        <attr name="chart_axisThickness" />
+        <attr name="chart_axisColor" />
+        <attr name="chart_axisBorderSpacing" />
+        <attr name="chart_axisTopSpacing" />
+        <attr name="chart_labels" />
+        <attr name="chart_labelColor" />
+        <attr name="chart_fontSize" />
+        <attr name="chart_typeface" />
+        <attr name="chart_shadowColor" />
+        <attr name="chart_shadowDx" />
+        <attr name="chart_shadowDy" />
+        <attr name="chart_shadowRadius" />
+    </declare-styleable>
+
+    <declare-styleable name="BarChartAttrs">
+        <attr name="chart_barSpacing" />
+        <attr name="chart_setSpacing" />
+    </declare-styleable>
+
+    <item name="fab_expand_menu_button" type="id" />
+    <item name="fab_label" type="id" />
 </resources>

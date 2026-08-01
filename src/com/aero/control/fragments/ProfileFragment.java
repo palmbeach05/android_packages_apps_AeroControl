@@ -407,7 +407,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
         AlertDialog.Builder dialog = new AlertDialog.Builder(this.mContext);
         PerAppManager pam = new PerAppManager(this.mContext, null, perApp);
         dialog.setView(pam);
-        dialog.setTitle(R.string.pref_profile_perApp);
+        dialog.setTitle(R.string.pref_profile_per_app);
         dialog.setIcon(R.drawable.rocket);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.12

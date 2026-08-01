@@ -285,10 +285,10 @@ public abstract class BaseBarChartView extends ChartView {
 	    	hasBarBackground = false;
 	    	
 	    	barSpacing = attrs.getDimension(
-	    			R.styleable.BarChartAttrs_chart_barSpacing, 
+	    			R.styleable.BarChartAttrs_chart_setSpacing, 
 	    				getResources().getDimension(R.dimen.bar_spacing));
 	    	setSpacing = attrs.getDimension(
-	    			R.styleable.BarChartAttrs_chart_barSpacing, 
+	    			R.styleable.BarChartAttrs_chart_setSpacing, 
 	    				getResources().getDimension(R.dimen.set_spacing));
 	    	
 	    	mShadowRadius = attrs.getDimension(
