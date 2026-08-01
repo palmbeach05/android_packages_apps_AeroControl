@@ -522,7 +522,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                                 Log.e("Aero", "I couldn't get any files!", e);
                             }
                         }
-                        break;
                     } catch (NullPointerException e2) {
                         Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
                         Log.e("Aero", "Couldn't find any parameters for this governor!", e2);
