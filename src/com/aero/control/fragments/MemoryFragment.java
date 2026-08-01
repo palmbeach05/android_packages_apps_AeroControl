@@ -197,7 +197,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                         MemoryFragment.this.getActivity().runOnUiThread(new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.1.1
                             @Override // java.lang.Runnable
                             public void run() {
-                                if (!fileSystemCheck) {
+                                if (!hasJournal) {
                                     AlertDialog.Builder builder = new AlertDialog.Builder(MemoryFragment.this.getActivity());
                                     LayoutInflater inflater = MemoryFragment.this.getActivity().getLayoutInflater();
                                     View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
