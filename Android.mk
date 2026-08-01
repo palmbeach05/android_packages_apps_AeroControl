@@ -24,8 +24,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     aerocontrol-jetbrains-annotations
 
 LOCAL_PACKAGE_NAME := AeroControl
-LOCAL_CERTIFICATE := platform
-
+LOCAL_CERTIFICATE := testkey
 LOCAL_DEX_PREOPT := false
 
 include $(BUILD_PACKAGE)
