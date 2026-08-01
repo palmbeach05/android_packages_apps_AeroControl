@@ -519,11 +519,12 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
     public void renameProfile(CharSequence oldName, String newName, TextView txtView, TextView txtViewSummary) {
         File prefFile = new File(FilePath.sharedPrefsPath + oldName.toString() + ".xml");
         String newName2 = sanitizeProfileName(newName);
-        prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName2 + ".xml"));
-        prefFile.delete();
-        if (prefFile.exists()) {
-            String[] cmd = {"mv " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + sanitizeProfileName(oldName.toString()) + ".xml") + " " + escapeShellArg(FilePath.sharedPrefsPath + newName2 + ".xml")};
+        boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName2 + ".xml"));
+        if (!renameSuccess) {
+            String[] cmd = {"mv " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldName.toString() + ".xml") + " " + escapeShellArg(FilePath.sharedPrefsPath + newName2 + ".xml")};
             AeroActivity.shell.setRootInfo(cmd);
+        } else {
+            prefFile.delete();
         }
         String valueOld = this.mPerAppPrefs.getString(oldName.toString(), null);
         this.mPerAppPrefs.edit().remove(oldName.toString()).commit();

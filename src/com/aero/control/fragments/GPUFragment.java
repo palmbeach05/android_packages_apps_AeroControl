@@ -249,7 +249,11 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             this.mShell = new Shell("su", true);
         }
         this.mColorValues = AeroActivity.shell.getInfoArray(FilePath.COLOR_CONTROL, 0, 0);
-        if (this.mColorValues[0].equals(NO_DATA_FOUND)) {
+        if (this.mColorValues == null || this.mColorValues.length == 0 || this.mColorValues[0].equals(NO_DATA_FOUND)) {
+            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+            return;
+        }
+        if (this.mColorValues.length < 3) {
             Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
             return;
         }
