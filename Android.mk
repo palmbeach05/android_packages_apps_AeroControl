@@ -26,6 +26,8 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
 LOCAL_PACKAGE_NAME := AeroControl
 LOCAL_CERTIFICATE := platform
 
+LOCAL_DEX_PREOPT := false
+
 include $(BUILD_PACKAGE)
 
 # Support library v4
