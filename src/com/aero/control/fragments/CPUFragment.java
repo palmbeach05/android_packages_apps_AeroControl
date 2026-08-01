@@ -447,7 +447,6 @@ public class CPUFragment extends PlaceHolderFragment {
                     this.root.addPreference(this.PrefCat);
                     try {
                         Thread.sleep(200L);
-                        break;
                     } catch (InterruptedException e) {
                         Log.e("Aero", "Something interrupted the main Thread, try again.", e);
                     }
