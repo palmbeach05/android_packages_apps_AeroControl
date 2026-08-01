@@ -192,6 +192,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                         if (fileJournal.length() != 0 && fileJournal.contains("has_journal")) {
                             fileSystemCheck = true;
                         }
+                        
+						final boolean hasJournal = fileSystemCheck;
                         MemoryFragment.this.getActivity().runOnUiThread(new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.1.1
                             @Override // java.lang.Runnable
                             public void run() {
