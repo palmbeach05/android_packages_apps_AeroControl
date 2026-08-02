@@ -125,8 +125,9 @@ public final class shellHelper {
                         if (read == -1) {
                             return null;
                         }
-                        if (response.length() < MAX_RESULT_LEN) {
-                            response.append(buf, 0, read);
+                        int remaining = MAX_RESULT_LEN - response.length();
+                        if (remaining > 0) {
+                            response.append(buf, 0, Math.min(read, remaining));
                         }
                     } while (read >= 8192);
                     this.mShellOutput.flush();
