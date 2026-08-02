@@ -379,18 +379,21 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
     /* JADX INFO: Access modifiers changed from: private */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
-        int red = Integer.parseInt(redValue.getText().toString());
-        int green = Integer.parseInt(greenValue.getText().toString());
-        int blue = Integer.parseInt(blueValue.getText().toString());
-        if (red > 255 || blue > 255 || green > 255) {
+        int red;
+        int green;
+        int blue;
+        try {
+            red = Integer.parseInt(redValue.getText().toString());
+            green = Integer.parseInt(greenValue.getText().toString());
+            blue = Integer.parseInt(blueValue.getText().toString());
+        } catch (NumberFormatException e) {
+            return;
+        }
+        if (red > 255 || blue > 255 || green > 255 || red < 0 || blue < 0 || green < 0) {
             Toast.makeText(getActivity(), "The values are out of range!", 1).show();
             return;
         }
-        if (red < 10 && blue < 10 && green < 10) {
-            Toast.makeText(getActivity(), "Those values are pretty low, are you sure?", 1).show();
-            return;
-        }
-        String rgbValues = ((Object) redValue.getText()) + " " + ((Object) greenValue.getText()) + " " + ((Object) blueValue.getText());
+        String rgbValues = red + " " + green + " " + blue;
         this.mShell.addCommand("echo " + rgbValues + " > " + FilePath.COLOR_CONTROL);
         if (new File(FilePath.COLOR_CONTROL_BIT).exists()) {
             this.mShell.addCommand("echo 1 > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl");
