@@ -14,7 +14,15 @@ public class ThemeHelper {
 
     public static String getTheme(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(PREF_KEY, THEME_LIGHT);
+        String theme = prefs.getString(PREF_KEY, THEME_LIGHT);
+
+        // Validate theme against known constants; migrate legacy values to THEME_LIGHT
+        if (!THEME_LIGHT.equals(theme) && !THEME_DARK.equals(theme)) {
+            prefs.edit().putString(PREF_KEY, THEME_LIGHT).apply();
+            return THEME_LIGHT;
+        }
+
+        return theme;
     }
 
     public static void applyTheme(Activity activity) {
