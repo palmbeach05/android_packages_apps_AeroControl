@@ -76,12 +76,14 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String value = o.toString();
+                String summary = o.toString();
                 if (Build.MODEL.equals("DROIDX") && "white".equals(value)) {
                     value = "green";
+                    summary = getString(R.string.pref_charge_led_mode_green);
                 }
                 DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE);
                 DefyPartsFragment.this.led_charging.setValue(o.toString());
-                DefyPartsFragment.this.led_charging.setSummary(o.toString());
+                DefyPartsFragment.this.led_charging.setSummary(summary);
                 return true;
             }
         });
