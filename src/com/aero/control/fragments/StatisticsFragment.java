@@ -112,7 +112,14 @@ public class StatisticsFragment extends Fragment {
         Target homeTarget = new Target() { // from class: com.aero.control.fragments.StatisticsFragment.1
             @Override // com.github.amlcurran.showcaseview.targets.Target
             public Point getPoint() {
-                int actionBarSize = StatisticsFragment.this.getActivity().findViewById(R.id.action_refresh).getHeight();
+                int actionBarSize = 96;
+                try {
+                    int height = StatisticsFragment.this.getActivity().findViewById(R.id.action_refresh).getHeight();
+                    if (height > 0) {
+                        actionBarSize = height;
+                    }
+                } catch (NullPointerException e) {
+                }
                 int x = StatisticsFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
                 int y = actionBarSize / 2;
                 return new Point(x, y);
