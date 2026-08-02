@@ -76,7 +76,12 @@ public class CardBox extends LinearLayout {
         if (Build.VERSION.SDK_INT < 21 && drawable == R.drawable.card) {
             backgroundDrawable = createCardDrawableWithThemeAttr(getContext());
         } else {
-            backgroundDrawable = getResources().getDrawable(drawable);
+            // Use themed drawable resolution for API 21+
+            if (Build.VERSION.SDK_INT >= 21) {
+                backgroundDrawable = getContext().getResources().getDrawable(drawable, getContext().getTheme());
+            } else {
+                backgroundDrawable = getResources().getDrawable(drawable);
+            }
         }
 
         if (Build.VERSION.SDK_INT < 16) {
