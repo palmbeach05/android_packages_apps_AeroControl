@@ -26,7 +26,6 @@
     <string name="need_reboot">This may require a reboot.</string>
     <string name="ok">OK</string>
     <string name="proceed_with_reset">Are you sure you want to proceed?</string>
-    <string name="rate_it">Click me and rate this app!</string>
     <string name="refresh">Refresh</string>
     <string name="reload">Reset</string>
     <string name="retry">Retry</string>
