@@ -27,13 +27,13 @@
         <item>200 MHz</item>
         <item>266 MHz</item>
     </array>
-    <array name="gpu_frequency_list_values">
+    <string-array name="gpu_frequency_list_values">
         <item>100000000</item>
         <item>133333333</item>
         <item>160000000</item>
         <item>200000000</item>
         <item>266666666</item>
-    </array>
+    </string-array>
     <array name="charge_led_mode_entries">
         <item>@string/pref_charge_led_mode_white</item>
         <item>@string/pref_charge_led_mode_rgb</item>
@@ -44,25 +44,25 @@
         <item>rgb</item>
         <item>off</item>
     </array>
-    <array name="touch_point_values">
+    <string-array name="touch_point_values">
         <item>2</item>
         <item>3</item>
         <item>4</item>
         <item>5</item>
         <item>8</item>
         <item>10</item>
-    </array>
+    </string-array>
     <array name="app_themes">
         <item>@string/app_theme_red</item>
         <item>@string/app_theme_light</item>
         <item>@string/app_theme_dark</item>
     </array>
-    <array name="boot_delay">
+    <string-array name="boot_delay">
         <item>@string/disabled</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>
         <item>4</item>
         <item>5</item>
-    </array>
+    </string-array>
 </resources>
