@@ -3,7 +3,6 @@ package com.aero.control.settings;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,15 +22,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.AboutDialog;
 import com.aero.control.helpers.Util;
 import com.aero.control.service.PerAppServiceHelper;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /* JADX INFO: loaded from: classes.dex */
 public class PrefsActivity extends PreferenceActivity {
@@ -41,21 +37,13 @@ public class PrefsActivity extends PreferenceActivity {
     public TextView mActionBarTitle;
     public int mActionBarTitleID;
     private ListPreference mBootDelay;
-    private int mCounter;
     private CheckBoxPreference mPerAppMonitor;
     private CheckBoxPreference mPerAppToasts;
     private CheckBoxPreference mPer_app_check;
     private CheckBoxPreference mRebootChecker;
 
-    static /* synthetic */ int access$508(PrefsActivity x0) {
-        int i = x0.mCounter;
-        x0.mCounter = i + 1;
-        return i;
-    }
-
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
-        this.mCounter = 0;
         super.onCreate(savedInstanceState);
         if (getResources().getBoolean(R.bool.portrait_only)) {
             setRequestedOrientation(1);
@@ -280,31 +268,6 @@ public class PrefsActivity extends PreferenceActivity {
                 });
                 builder.show();
                 return true;
-            }
-        });
-        version.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.13
-            @Override // android.preference.Preference.OnPreferenceClickListener
-            public boolean onPreferenceClick(Preference preference) {
-                PrefsActivity.access$508(PrefsActivity.this);
-                if (PrefsActivity.this.mCounter >= 7) {
-                    PrefsActivity.this.mCounter = 0;
-                    ContextWrapper cw = new ContextWrapper(PrefsActivity.this.getBaseContext());
-                    File testsuite = new File(cw.getFilesDir() + "/testsuite");
-                    if (testsuite.exists()) {
-                        testsuite.delete();
-                        Toast.makeText(PrefsActivity.this.getApplicationContext(), "You have disabled the TestSuite!", 1).show();
-                    } else {
-                        try {
-                            FileOutputStream fos = PrefsActivity.this.getApplicationContext().openFileOutput("testsuite", 0);
-                            fos.write("1".getBytes());
-                            fos.close();
-                        } catch (IOException e2) {
-                            Log.e("Aero", "Could not save file. ", e2);
-                        }
-                        Toast.makeText(PrefsActivity.this.getApplicationContext(), "You have enabled the TestSuite!", 1).show();
-                    }
-                }
-                return false;
             }
         });
     }
