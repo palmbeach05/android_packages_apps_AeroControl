@@ -69,10 +69,8 @@ public class CheckBox extends CustomView {
         android.content.res.TypedArray ta = getContext().obtainStyledAttributes(attrs, attrsArray);
         try {
             if (ta.hasValue(0)) {
-                int backgroundColor = ta.getColor(0, -1);
-                if (backgroundColor != -1) {
-                    setBackgroundColor(backgroundColor);
-                }
+                int backgroundColor = ta.getColor(0, 0);
+                setBackgroundColor(backgroundColor);
             }
         } finally {
             ta.recycle();
