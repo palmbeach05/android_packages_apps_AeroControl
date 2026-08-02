@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr name="aeroDrawerLayoutBackground" format="color">
+    </attr>
+    <attr name="aeroDrawerListBackground" format="color">
+    </attr>
+    <attr name="aeroPrimaryTextColor" format="color">
+    </attr>
     <attr name="chart_axisThickness" format="dimension">
     </attr>
     <attr name="chart_axisColor" format="reference|color">

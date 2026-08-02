@@ -9,5 +9,5 @@
     <item
         android:color="@android:color/white"
         android:state_activated="true"/>
-    <item android:color="@color/light_grey"/>
+    <item android:color="@color/text_color"/>
 </selector>
