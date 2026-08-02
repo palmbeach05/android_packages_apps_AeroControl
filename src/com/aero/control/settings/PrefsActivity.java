@@ -90,10 +90,8 @@ public class PrefsActivity extends PreferenceActivity {
             this.mPerAppToasts = (CheckBoxPreference) root.findPreference("per_app_toast");
         }
         Preference resetTutorials = root.findPreference("reset_tutorials");
-        Preference beta = root.findPreference("beta");
         Preference about = root.findPreference("about");
         Preference version = root.findPreference("version");
-        Preference google = root.findPreference("google+");
         Preference legal = root.findPreference("legal");
         Preference xda = root.findPreference("xda_thread");
         Preference github = root.findPreference("github_link");
@@ -110,8 +108,6 @@ public class PrefsActivity extends PreferenceActivity {
         setCheckedState(this.mPer_app_check);
         setCheckedState(this.mPerAppMonitor);
         version.setIcon(R.drawable.rocket);
-        beta.setIcon(R.drawable.beta);
-        google.setIcon(R.drawable.google);
         xda.setIcon(R.drawable.xda);
         github.setIcon(R.drawable.github);
         if (AeroActivity.mJobManager != null) {
@@ -127,32 +123,6 @@ public class PrefsActivity extends PreferenceActivity {
         }
         about.setIcon(R.drawable.ic_action_about);
         legal.setIcon(R.drawable.ic_action_legal);
-        beta.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.1
-            @Override // android.preference.Preference.OnPreferenceClickListener
-            public boolean onPreferenceClick(Preference preference) {
-                AboutDialog alertDialog = new AboutDialog();
-                LayoutInflater inflater = PrefsActivity.this.getLayoutInflater();
-                View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
-                TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
-                alertDialog.setContext(PrefsActivity.context);
-                alertDialog.setTitle(R.string.pref_beta_program);
-                alertDialog.setIcon(R.drawable.beta);
-                alertDialog.setView(layout);
-                aboutText.setText(PrefsActivity.this.getText(R.string.pref_beta_program_text));
-                alertDialog.show(PrefsActivity.this.getFragmentManager(), "");
-                aboutText.setMovementMethod(LinkMovementMethod.getInstance());
-                return true;
-            }
-        });
-        google.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.2
-            @Override // android.preference.Preference.OnPreferenceClickListener
-            public boolean onPreferenceClick(Preference preference) {
-                Uri uri = Uri.parse("https://plus.google.com/117941672478859152986/");
-                Intent intent = new Intent("android.intent.action.VIEW", uri);
-                PrefsActivity.this.startActivity(intent);
-                return true;
-            }
-        });
         xda.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.3
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
