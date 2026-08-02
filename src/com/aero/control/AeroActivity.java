@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -213,7 +214,10 @@ public final class AeroActivity extends Activity {
                 text.setTypeface(AeroActivity.font);
                 if (icon != null) {
                     icon.setImageResource(item.drawable);
-                    icon.setColorFilter(AeroActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                    Drawable iconDrawable = icon.getDrawable();
+                    if (iconDrawable != null) {
+                        iconDrawable.mutate().setColorFilter(AeroActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                    }
                 }
                 if (text != null) {
                     text.setText(AeroActivity.this.getString(item.content));
