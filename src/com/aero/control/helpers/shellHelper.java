@@ -24,7 +24,6 @@ public final class shellHelper {
     private static final String NO_DATA_FOUND = "Unavailable";
     private static shellHelper mShellHelper;
     private List<String> mCommands;
-    private static final byte[] buffer = new byte[8192];
     private static final String LOG_TAG = shellHelper.class.getName();
     private ShellWorkqueue shWork = new ShellWorkqueue();
     private Process mProcess = null;
@@ -451,21 +450,26 @@ public final class shellHelper {
 
     public String getLegacyRootInfo(String command, String parameter) {
         Process process = null;
+        DataOutputStream os = null;
+        InputStream is = null;
         try {
             process = Runtime.getRuntime().exec("su");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+            os = new DataOutputStream(process.getOutputStream());
             os.writeBytes(command + " " + parameter + "\n");
-            InputStream is = process.getInputStream();
+            os.flush();
+            is = process.getInputStream();
+            byte[] localBuffer = new byte[BUFF_LEN];
             String result = "";
             while (true) {
-                int read = is.read(buffer);
+                int read = is.read(localBuffer);
                 if (read == -1) {
                     result = NO_DATA_FOUND;
                     break;
                 }
-                result = result + new String(buffer, 0, read);
+                result = result + new String(localBuffer, 0, read);
                 if (read < BUFF_LEN) {
                     os.writeBytes("exit\n");
+                    os.flush();
                     break;
                 }
             }
@@ -474,13 +478,25 @@ public final class shellHelper {
             Log.e(LOG_TAG, "Do you even root, bro? :/", e);
             return NO_DATA_FOUND;
         } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
             if (process != null) {
+                process.destroy();
                 try {
                     process.waitFor();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                process.destroy();
             }
         }
     }
@@ -489,8 +505,13 @@ public final class shellHelper {
         if (!new File("/proc/overclock/omap2_clk_init_cpufreq_table_addr").exists() || !new File("/proc/overclock/cpufreq_stats_update_addr").exists()) {
             return false;
         }
-        String omap_address = getLegacyRootInfo("busybox egrep \"omap2_clk_init_cpufreq_table$\"", "/proc/kallsyms").substring(0, 8);
-        String cpufreq_address = getLegacyRootInfo("busybox egrep \"cpufreq_stats_update$\"", "/proc/kallsyms").substring(0, 8);
+        String omap_result = getLegacyRootInfo("busybox egrep \"omap2_clk_init_cpufreq_table$\"", "/proc/kallsyms");
+        String cpufreq_result = getLegacyRootInfo("busybox egrep \"cpufreq_stats_update$\"", "/proc/kallsyms");
+        if (omap_result.length() < 8 || cpufreq_result.length() < 8) {
+            return false;
+        }
+        String omap_address = omap_result.substring(0, 8);
+        String cpufreq_address = cpufreq_result.substring(0, 8);
         String[] commands = {"echo 0x" + omap_address + " > /proc/overclock/omap2_clk_init_cpufreq_table_addr", "echo 0x" + cpufreq_address + " > /proc/overclock/cpufreq_stats_update_addr"};
         setRootInfo(commands);
         return true;
