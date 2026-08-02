@@ -113,6 +113,7 @@
     <string name="pref_multitouch">Pontos de multitouch</string>
     <string name="pref_multitouch_summary">Muda o número de pontos reconhecidos pelo multitouch.</string>
     <string name="pref_charge_led_mode_white">LED Branco</string>
+    <string name="pref_charge_led_mode_green">LED Verde</string>
     <string name="pref_charge_led_mode_rgb">LED misto (vermelho/branco/verde)</string>
     <string name="pref_charge_led_mode_off">Desligado</string>
     <string name="pref_profile_enter_name">Você precisa colocar um nome.</string>

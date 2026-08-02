@@ -159,6 +159,7 @@
     <string name="pref_charging_led">Charging LED Color</string>
     <string name="pref_charging_led_summary">Color of your LED while charging</string>
     <string name="pref_charge_led_mode_white">White LED</string>
+    <string name="pref_charge_led_mode_green">绿色LED</string>
     <string name="pref_charge_led_mode_rgb">Mixed LED (red/green)</string>
     <string name="pref_charge_led_mode_off">Off</string>
     <string name="pref_display_color">Display Color</string>

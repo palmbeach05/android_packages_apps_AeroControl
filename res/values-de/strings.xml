@@ -159,6 +159,7 @@
     <string name="pref_charging_led">Lade-LED-Farbe</string>
     <string name="pref_charging_led_summary">Farbe der LED während des Ladevorgangs</string>
     <string name="pref_charge_led_mode_white">Weiße LED</string>
+    <string name="pref_charge_led_mode_green">Grüne LED</string>
     <string name="pref_charge_led_mode_rgb">Gemischte LED (rot/grün)</string>
     <string name="pref_charge_led_mode_off">Aus</string>
     <string name="pref_display_color">Displayfarbe</string>
