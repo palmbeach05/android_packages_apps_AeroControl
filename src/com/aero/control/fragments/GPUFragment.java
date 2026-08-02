@@ -393,10 +393,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             Toast.makeText(getActivity(), "The values are out of range!", 1).show();
             return;
         }
-        if (red < 10 && blue < 10 && green < 10) {
-            Toast.makeText(getActivity(), "Those values are pretty low, are you sure?", 1).show();
-            return;
-        }
         String rgbValues = red + " " + green + " " + blue;
         this.mShell.addCommand("echo " + rgbValues + " > " + FilePath.COLOR_CONTROL);
         if (new File(FilePath.COLOR_CONTROL_BIT).exists()) {
