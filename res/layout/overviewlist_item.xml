@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="6dp"
                 android:padding="6dp"
-                android:background="@drawable/card">
+                android:background="?attr/aeroCardBackground">
                 <TextView
                     android:textSize="20sp"
                     android:textColor="?attr/aeroPrimaryTextColor"

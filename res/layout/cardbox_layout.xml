@@ -7,7 +7,7 @@
         android:minWidth="96dp">
         <TextView
             android:textSize="12sp"
-            android:textColor="?attr/aeroPrimaryTextColor"
+            android:textColor="?attr/aeroSecondaryTextColor"
             android:gravity="start"
             android:id="@+id/card_title"
             android:padding="3dp"
