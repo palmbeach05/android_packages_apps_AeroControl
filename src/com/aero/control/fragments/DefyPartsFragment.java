@@ -1,5 +1,6 @@
 package com.aero.control.fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -74,7 +75,11 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         this.led_charging.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.DefyPartsFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_CHARGE_LED_MODE);
+                String value = o.toString();
+                if (Build.MODEL.equals("DROIDX") && "white".equals(value)) {
+                    value = "green";
+                }
+                DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE);
                 DefyPartsFragment.this.led_charging.setValue(o.toString());
                 DefyPartsFragment.this.led_charging.setSummary(o.toString());
                 return true;
