@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -136,12 +137,21 @@ public class AppMonitorDetailFragment extends Fragment {
         ((AeroActivity) getActivity()).setActionBarTitle(title);
     }
 
+    private int resolveThemeDrawable(int attrResId, int fallbackResId) {
+        TypedValue typedValue = new TypedValue();
+        if (getActivity().getTheme().resolveAttribute(attrResId, typedValue, true)) {
+            return typedValue.resourceId;
+        }
+        return fallbackResId;
+    }
+
     /* JADX INFO: Access modifiers changed from: private */
     public void clearUI() {
         this.mMaxValue = 0;
         this.mRoot.invalidate();
+        int cardBackground = resolveThemeDrawable(R.attr.aeroCardBackground, R.drawable.card);
         for (CardBox b : this.mCards) {
-            b.setBackground(R.drawable.card);
+            b.setBackground(cardBackground);
         }
         this.mCards.get(this.mPositionModule).setBackground(R.drawable.card_clicked);
         if (this.mLineTooltip != null) {

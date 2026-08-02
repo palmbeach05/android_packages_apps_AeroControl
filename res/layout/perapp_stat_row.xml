@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
-    android:background="@drawable/card"
+    android:background="?attr/aeroCardBackground"
     android:padding="5dp"
     android:descendantFocusability="beforeDescendants"
     android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         android:layout_alignParentLeft="true"/>
     <TextView
         android:textSize="16sp"
-        android:textColor="?attr/aeroPrimaryTextColor"
+        android:textColor="?attr/aeroSecondaryTextColor"
         android:id="@+id/rowtext"
         android:padding="10dp"
         android:layout_width="wrap_content"
