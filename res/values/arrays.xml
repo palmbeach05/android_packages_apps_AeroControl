@@ -36,11 +36,13 @@
     </string-array>
     <array name="charge_led_mode_entries">
         <item>@string/pref_charge_led_mode_white</item>
+        <item>@string/pref_charge_led_mode_green</item>
         <item>@string/pref_charge_led_mode_rgb</item>
         <item>@string/pref_charge_led_mode_off</item>
     </array>
     <array name="charge_led_mode_values">
         <item>white</item>
+        <item>green</item>
         <item>rgb</item>
         <item>off</item>
     </array>

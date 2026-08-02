@@ -80,8 +80,8 @@ public class DefyPartsFragment extends PlaceHolderFragment {
                     value = "green";
                 }
                 DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE);
-                DefyPartsFragment.this.led_charging.setValue(o.toString());
-                DefyPartsFragment.this.led_charging.setSummary(o.toString());
+                DefyPartsFragment.this.led_charging.setValue(value);
+                DefyPartsFragment.this.led_charging.setSummary(value);
                 return true;
             }
         });
