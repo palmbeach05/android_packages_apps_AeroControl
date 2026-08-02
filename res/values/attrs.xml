@@ -6,6 +6,8 @@
     </attr>
     <attr name="aeroPrimaryTextColor" format="color">
     </attr>
+    <attr name="aeroCardBackground" format="color">
+    </attr>
     <attr name="chart_axisThickness" format="dimension">
     </attr>
     <attr name="chart_axisColor" format="reference|color">

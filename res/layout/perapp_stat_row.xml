@@ -14,7 +14,7 @@
         android:layout_alignParentLeft="true"/>
     <TextView
         android:textSize="16sp"
-        android:textColor="@color/light_grey"
+        android:textColor="?attr/aeroPrimaryTextColor"
         android:id="@+id/rowtext"
         android:padding="10dp"
         android:layout_width="wrap_content"

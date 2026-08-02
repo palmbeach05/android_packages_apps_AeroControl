@@ -22,4 +22,5 @@
     <color name="drawer_layout_background">#e3e3e3</color>
     <color name="drawer_list_background">#d8d8d8</color>
     <color name="dark_drawer_list_background">#1e1e1e</color>
+    <color name="dark_card_background">#1e1e1e</color>
 </resources>
