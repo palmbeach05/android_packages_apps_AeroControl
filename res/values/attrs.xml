@@ -14,6 +14,8 @@
     </attr>
     <attr name="aeroGraphBackground" format="reference">
     </attr>
+    <attr name="aeroTooltipBackground" format="reference">
+    </attr>
     <attr name="aeroIconTint" format="color">
     </attr>
     <attr name="aeroDividerColor" format="color">
