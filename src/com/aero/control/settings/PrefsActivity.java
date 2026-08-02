@@ -231,7 +231,9 @@ public class PrefsActivity extends PreferenceActivity {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(PrefsActivity.context);
                 dialog.setTitle(R.string.pref_reset_tutorials_title);
                 dialog.setMessage(R.string.pref_reset_tutorials_dialog);
-                dialog.setIcon(R.drawable.warning);
+                Drawable warningIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.warning).mutate();
+                warningIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                dialog.setIcon(warningIcon);
                 dialog.setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.10.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -257,7 +259,9 @@ public class PrefsActivity extends PreferenceActivity {
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 alertDialog.setContext(PrefsActivity.context);
                 alertDialog.setTitle(R.string.about);
-                alertDialog.setIcon(R.drawable.beer);
+                Drawable beerIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.beer).mutate();
+                beerIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                alertDialog.setIcon(beerIcon);
                 alertDialog.setView(layout);
                 alertDialog.setPayPalIcons(true);
                 alertDialog.setNeutralButton(R.string.donation_quarx);
@@ -275,7 +279,9 @@ public class PrefsActivity extends PreferenceActivity {
                 View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 builder.setTitle(R.string.legal);
-                builder.setIcon(R.drawable.email);
+                Drawable emailIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.email).mutate();
+                emailIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                builder.setIcon(emailIcon);
                 aboutText.setText(PrefsActivity.this.getText(R.string.legal_dialog));
                 aboutText.setTextSize(13.0f);
                 builder.setView(layout).setPositiveButton(R.string.send_email, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.12.1

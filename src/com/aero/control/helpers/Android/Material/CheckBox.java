@@ -65,14 +65,17 @@ public class CheckBox extends CustomView {
         setBackgroundResource(R.drawable.background_checkbox);
         setMinimumHeight(dpToPx(48.0f, getResources()));
         setMinimumWidth(dpToPx(48.0f, getResources()));
-        int backgroundColor = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "background", -1);
-        if (backgroundColor != -1) {
-            setBackgroundColor(getResources().getColor(backgroundColor));
-        } else {
-            int background = attrs.getAttributeIntValue("http://schemas.android.com/apk/res/android", "background", -1);
-            if (background != -1) {
-                setBackgroundColor(background);
+        int[] attrsArray = new int[] { android.R.attr.background };
+        android.content.res.TypedArray ta = getContext().obtainStyledAttributes(attrs, attrsArray);
+        try {
+            if (ta.hasValue(0)) {
+                int backgroundColor = ta.getColor(0, -1);
+                if (backgroundColor != -1) {
+                    setBackgroundColor(backgroundColor);
+                }
             }
+        } finally {
+            ta.recycle();
         }
         this.mPaint = new Paint();
         this.mPaint.setAntiAlias(true);
