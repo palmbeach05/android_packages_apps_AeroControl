@@ -249,7 +249,11 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             this.mShell = new Shell("su", true);
         }
         this.mColorValues = AeroActivity.shell.getInfoArray(FilePath.COLOR_CONTROL, 0, 0);
-        if (this.mColorValues[0].equals(NO_DATA_FOUND)) {
+        if (this.mColorValues == null || this.mColorValues.length == 0 || this.mColorValues[0].equals(NO_DATA_FOUND)) {
+            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+            return;
+        }
+        if (this.mColorValues.length < 3) {
             Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
             return;
         }
@@ -263,9 +267,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         final EditText redValue = (EditText) layout.findViewById(R.id.redValue);
         final EditText greenValue = (EditText) layout.findViewById(R.id.greenValue);
         final EditText blueValue = (EditText) layout.findViewById(R.id.blueValue);
-        redValues.setProgress(Integer.parseInt(this.mColorValues[0]));
-        greenValues.setProgress(Integer.parseInt(this.mColorValues[1]));
-        blueValues.setProgress(Integer.parseInt(this.mColorValues[2]));
+        try {
+            redValues.setProgress(Integer.parseInt(this.mColorValues[0]));
+            greenValues.setProgress(Integer.parseInt(this.mColorValues[1]));
+            blueValues.setProgress(Integer.parseInt(this.mColorValues[2]));
+        } catch (NumberFormatException e) {
+            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+            return;
+        }
         redValue.setText(this.mColorValues[0]);
         greenValue.setText(this.mColorValues[1]);
         blueValue.setText(this.mColorValues[2]);

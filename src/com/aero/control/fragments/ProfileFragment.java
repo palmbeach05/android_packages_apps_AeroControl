@@ -177,7 +177,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog2, int which) {
                 String allProfiles = Arrays.asList(ProfileFragment.this.mCompleteProfiles).toString();
-                String profileTitle = editText.getText().toString();
+                String profileTitle = ProfileFragment.sanitizeProfileName(editText.getText().toString());
                 if (profileTitle.equals("")) {
                     Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_enter_name, 1).show();
                     return;
@@ -185,9 +185,6 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                 if (allProfiles.contains(profileTitle + ".xml")) {
                     Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_name_exists, 1).show();
                     return;
-                }
-                if (profileTitle.contains("/")) {
-                    profileTitle = profileTitle.replace("/", "-");
                 }
                 ProfileFragment.this.addProfile(profileTitle, true);
                 int output = 0;
@@ -453,7 +450,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
         prefFile.delete();
         if (prefFile.exists()) {
             Log.e(LOG_TAG, "Whoop, it still exists, something went wrong");
-            String[] cmd = {"rm \"/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml\""};
+            String[] cmd = {"rm " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml")};
             AeroActivity.shell.setRootInfo(cmd);
             try {
                 Thread.sleep(350L);
@@ -462,6 +459,27 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
             }
         }
         return true;
+    }
+
+    /**
+     * Restricts profile names to a safe character set (letters, digits, spaces,
+     * underscore and hyphen) so they cannot be used to inject shell metacharacters
+     * (e.g. ", ;, |, $(), `, &&) or path traversal sequences (.., /) into the
+     * privileged shell commands built from them.
+     */
+    private static String sanitizeProfileName(String name) {
+        if (name == null) {
+            return "";
+        }
+        return name.replaceAll("[^a-zA-Z0-9 _-]", "").trim();
+    }
+
+    /**
+     * Wraps a value in single quotes for safe use as a single argument in a
+     * shell command, escaping any embedded single quotes.
+     */
+    private static String escapeShellArg(String value) {
+        return "'" + value.replace("'", "'\\''") + "'";
     }
 
     private void saveNewProfile(SharedPreferences AeroProfile) {
@@ -500,12 +518,13 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
     /* JADX INFO: Access modifiers changed from: private */
     public void renameProfile(CharSequence oldName, String newName, TextView txtView, TextView txtViewSummary) {
         File prefFile = new File(FilePath.sharedPrefsPath + oldName.toString() + ".xml");
-        String newName2 = newName.replace("/", "-");
-        prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName2 + ".xml"));
-        prefFile.delete();
-        if (prefFile.exists()) {
-            String[] cmd = {"mv \"/data/data/com.aero.control/shared_prefs/" + ((Object) oldName) + ".xml\" \"" + FilePath.sharedPrefsPath + newName2 + ".xml\""};
+        String newName2 = sanitizeProfileName(newName);
+        boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName2 + ".xml"));
+        if (!renameSuccess) {
+            String[] cmd = {"mv " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldName.toString() + ".xml") + " " + escapeShellArg(FilePath.sharedPrefsPath + newName2 + ".xml")};
             AeroActivity.shell.setRootInfo(cmd);
+        } else {
+            prefFile.delete();
         }
         String valueOld = this.mPerAppPrefs.getString(oldName.toString(), null);
         this.mPerAppPrefs.edit().remove(oldName.toString()).commit();
@@ -592,7 +611,11 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                 AlertDialog dialog = new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.pref_profile_change_name).setMessage(R.string.pref_profile_change_name_summary).setView(editText).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.14.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog2, int which) {
-                        String newName = editText.getText().toString();
+                        String newName = ProfileFragment.sanitizeProfileName(editText.getText().toString());
+                        if (newName.equals("")) {
+                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_enter_name, 1).show();
+                            return;
+                        }
                         String allProfiles = Arrays.asList(ProfileFragment.this.mCompleteProfiles).toString();
                         if (allProfiles.contains(newName + ".xml")) {
                             Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_name_exists, 1).show();

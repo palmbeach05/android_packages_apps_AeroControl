@@ -47,18 +47,28 @@ public class VoltageFragment extends PlaceHolderFragment {
             case R.id.action_mv_plus /* 2131099754 */:
                 this.voltList.clear();
                 for (String a : voltArray) {
-                    int tmp = Integer.parseInt(a) + 25;
-                    this.voltList.add("" + tmp);
-                    exec = exec + " " + tmp;
+                    try {
+                        int tmp = Integer.parseInt(a) + 25;
+                        this.voltList.add("" + tmp);
+                        exec = exec + " " + tmp;
+                    } catch (NumberFormatException e) {
+                        this.voltList.add(a);
+                        exec = exec + " " + a;
+                    }
                 }
                 executeVolt(exec);
                 break;
             case R.id.action_mv_minus /* 2131099755 */:
                 this.voltList.clear();
                 for (String a2 : voltArray) {
-                    int tmp2 = Integer.parseInt(a2) - 25;
-                    this.voltList.add("" + tmp2);
-                    exec = exec + " " + tmp2;
+                    try {
+                        int tmp2 = Integer.parseInt(a2) - 25;
+                        this.voltList.add("" + tmp2);
+                        exec = exec + " " + tmp2;
+                    } catch (NumberFormatException e) {
+                        this.voltList.add(a2);
+                        exec = exec + " " + a2;
+                    }
                 }
                 executeVolt(exec);
                 break;
