@@ -53,10 +53,13 @@
         <item>10</item>
     </string-array>
     <array name="app_themes">
-        <item>@string/app_theme_red</item>
         <item>@string/app_theme_light</item>
         <item>@string/app_theme_dark</item>
     </array>
+    <string-array name="app_theme_values">
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
     <string-array name="boot_delay">
         <item>@string/disabled</item>
         <item>1</item>

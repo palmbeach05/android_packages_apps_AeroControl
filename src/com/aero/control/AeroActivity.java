@@ -44,6 +44,7 @@ import com.aero.control.fragments.StatisticsFragment;
 import com.aero.control.fragments.UpdaterFragment;
 import com.aero.control.helpers.GenericHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
+import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.navItems.NavBarItems;
@@ -84,6 +85,7 @@ public final class AeroActivity extends Activity {
     private TestSuiteFragment mTestSuiteFragment;
     private CharSequence mTitle;
     private UpdaterFragment mUpdaterFragement;
+    private String mCurrentTheme;
     private static int mBackCounter = 0;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -92,6 +94,8 @@ public final class AeroActivity extends Activity {
 
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
+        this.mCurrentTheme = ThemeHelper.getTheme(this);
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (getResources().getBoolean(R.bool.portrait_only)) {
@@ -229,6 +233,10 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     protected void onResume() {
         super.onResume();
+        if (!ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
+            recreate();
+            return;
+        }
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
             selectItemByResourceId(R.string.slider_app_monitor);

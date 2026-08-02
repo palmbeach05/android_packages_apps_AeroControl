@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.AboutDialog;
+import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.service.PerAppServiceHelper;
 import java.io.File;
@@ -36,6 +37,7 @@ public class PrefsActivity extends PreferenceActivity {
     private ActionBar mActionBar;
     public TextView mActionBarTitle;
     public int mActionBarTitleID;
+    private ListPreference mAppTheme;
     private ListPreference mBootDelay;
     private CheckBoxPreference mPerAppMonitor;
     private CheckBoxPreference mPerAppToasts;
@@ -44,6 +46,7 @@ public class PrefsActivity extends PreferenceActivity {
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         if (getResources().getBoolean(R.bool.portrait_only)) {
             setRequestedOrientation(1);
@@ -71,6 +74,9 @@ public class PrefsActivity extends PreferenceActivity {
         if (this.mBootDelay == null) {
             this.mBootDelay = (ListPreference) root.findPreference("boot_delay");
         }
+        if (this.mAppTheme == null) {
+            this.mAppTheme = (ListPreference) root.findPreference("app_theme");
+        }
         if (this.mPerAppMonitor == null) {
             this.mPerAppMonitor = (CheckBoxPreference) root.findPreference("per_app_monitor");
         }
@@ -92,6 +98,9 @@ public class PrefsActivity extends PreferenceActivity {
         this.mPerAppToasts.setIcon(R.drawable.ic_action_toast);
         setCheckedState(this.mPerAppToasts);
         setMinutes(this.mBootDelay, this.mBootDelay.getValue());
+        this.mAppTheme.setIcon(R.drawable.gear);
+        this.mAppTheme.setDialogIcon(R.drawable.gear);
+        setThemeSummary(this.mAppTheme, this.mAppTheme.getValue());
         resetTutorials.setIcon(R.drawable.ic_action_warning);
         setCheckedState(this.mPer_app_check);
         setCheckedState(this.mPerAppMonitor);
@@ -148,6 +157,14 @@ public class PrefsActivity extends PreferenceActivity {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PrefsActivity.this.setMinutes(PrefsActivity.this.mBootDelay, newValue.toString());
                 return false;
+            }
+        });
+        this.mAppTheme.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.settings.PrefsActivity.13
+            @Override // android.preference.Preference.OnPreferenceChangeListener
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                PrefsActivity.this.setThemeSummary(PrefsActivity.this.mAppTheme, newValue.toString());
+                PrefsActivity.this.recreate();
+                return true;
             }
         });
         this.mPer_app_check.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.8
@@ -301,6 +318,15 @@ public class PrefsActivity extends PreferenceActivity {
         preference.setSummary(R.string.disabled);
         preference.setValue("0");
         preference.setValueIndex(0);
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public void setThemeSummary(ListPreference preference, String value) {
+        int index = preference.findIndexOfValue(value);
+        CharSequence[] entries = preference.getEntries();
+        if (index >= 0 && index < entries.length) {
+            preference.setSummary(entries[index]);
+        }
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
