@@ -51,8 +51,13 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         this.multi_touch.setDialogTitle(R.string.pref_multitouch);
         this.multi_touch.setOrder(10);
         defyParts.addPreference(this.multi_touch);
-        this.led_charging.setEntryValues(R.array.charge_led_mode_values);
-        this.led_charging.setEntries(R.array.charge_led_mode_entries);
+        if (Build.MODEL.equals("DROIDX")) {
+            this.led_charging.setEntryValues(R.array.charge_led_mode_values_droidx);
+            this.led_charging.setEntries(R.array.charge_led_mode_entries_droidx);
+        } else {
+            this.led_charging.setEntryValues(R.array.charge_led_mode_values);
+            this.led_charging.setEntries(R.array.charge_led_mode_entries);
+        }
         if (charger.length() > 1) {
             this.led_charging.setValue(charger);
             this.led_charging.setSummary(charger);
@@ -76,9 +81,6 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String value = o.toString();
-                if (Build.MODEL.equals("DROIDX") && "white".equals(value)) {
-                    value = "green";
-                }
                 DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE);
                 DefyPartsFragment.this.led_charging.setValue(value);
                 DefyPartsFragment.this.led_charging.setSummary(value);
