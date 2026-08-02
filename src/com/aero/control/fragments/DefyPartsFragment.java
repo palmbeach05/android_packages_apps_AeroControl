@@ -55,7 +55,11 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         this.led_charging.setEntries(R.array.charge_led_mode_entries);
         if (charger.length() > 1) {
             this.led_charging.setValue(charger);
-            this.led_charging.setSummary(charger);
+            String summary = charger;
+            if (Build.MODEL.equals("DROIDX") && "green".equals(charger)) {
+                summary = getString(R.string.pref_charge_led_mode_green);
+            }
+            this.led_charging.setSummary(summary);
         } else {
             this.led_charging.setEnabled(false);
         }
