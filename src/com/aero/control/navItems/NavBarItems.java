@@ -22,7 +22,7 @@ public class NavBarItems {
         addItem(new PreferenceItem(R.string.slider_gpu_settings, R.drawable.gpu));
         addItem(new PreferenceItem(R.string.slider_memory_settings, R.drawable.memory));
         addItem(new PreferenceItem(R.string.slider_misc_settings, R.drawable.mixer));
-        if (Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) {
+        if (Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526") || Build.MODEL.equals("DROIDX")) {
             addItem(new PreferenceItem(R.string.slider_defy_parts, R.drawable.gear));
         }
         addItem(new PreferenceItem(R.string.slider_backup_restore, R.drawable.update));
