@@ -47,6 +47,7 @@
     <string name="slider_backup_restore">Backup/Restore</string>
     <string name="slider_cpu_settings">CPU Performance</string>
     <string name="slider_defy_parts">Defy Parts</string>
+    <string name="slider_droid_x_parts</string>
     <string name="slider_gpu_settings">GPU Control</string>
     <string name="slider_memory_settings">Memory Tuning</string>
     <string name="slider_misc_settings">Misc. Settings</string>
@@ -152,9 +153,9 @@
     <!-- ========================================================= -->
     <!-- Custom Device Tweaks (Defy Parts / Screen Options)       -->
     <!-- ========================================================= -->
-    <string name="defy_energy_saver">Energy Saver</string>
-    <string name="defy_green_colors">Defy Green Colors</string>
-    <string name="defy_red_colors">Defy Red Colors</string>
+    <string name="defy_energy_saver">Energy/Droid X Saver</string>
+    <string name="defy_green_colors">Defy/Droid X Green Colors</string>
+    <string name="defy_red_colors">Defy/Droid X Red Colors</string>
     <string name="pref_button_brightness">Button Brightness</string>
     <string name="pref_button_brightness_summary">Change the button brightness here.</string>
     <string name="pref_charging_led">Charging LED Color</string>
