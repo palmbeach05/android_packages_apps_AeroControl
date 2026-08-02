@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:fab="http://schemas.android.com/apk/res/com.aero.control"
     android:orientation="horizontal"
-    android:background="@color/bg_grey"
+    android:background="?attr/aeroDrawerLayoutBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
@@ -34,52 +34,17 @@
         </RelativeLayout>
         <LinearLayout
             android:orientation="horizontal"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:textSize="16sp"
-                    android:textColor="@color/white"
-                    android:id="@+id/topHeading"
-                    android:paddingLeft="16dp"
-                    android:paddingTop="20dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/average"/>
-                <TextView
-                    android:textSize="22sp"
-                    android:textColor="@color/white"
-                    android:id="@+id/topValue"
-                    android:paddingLeft="16dp"
-                    android:paddingTop="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            </LinearLayout>
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:textSize="16sp"
-                    android:textColor="@color/white"
-                    android:id="@+id/topModule"
-                    android:paddingLeft="16dp"
-                    android:paddingTop="20dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/module"/>
-                <TextView
-                    android:textSize="22sp"
-                    android:textColor="@color/white"
-                    android:id="@+id/topModuleName"
-                    android:paddingLeft="16dp"
-                    android:paddingTop="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            </LinearLayout>
+            <TextView
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:id="@+id/topValue"
+                android:paddingLeft="16dp"
+                android:paddingTop="20dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"/>
             <RelativeLayout
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
@@ -100,7 +65,7 @@
     </LinearLayout>
     <com.db.chart.view.LineChartView
         android:id="@+id/graph"
-        android:background="@drawable/card_rect"
+        android:background="?attr/aeroGraphBackground"
         android:padding="5dp"
         android:layout_width="match_parent"
         android:layout_height="230dp"
