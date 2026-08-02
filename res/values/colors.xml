@@ -16,4 +16,7 @@
     <color name="default_circle_indicator_fill_color">#ffffffff</color>
     <color name="default_circle_indicator_page_color">#00000000</color>
     <color name="default_circle_indicator_stroke_color">#ffdddddd</color>
+    <color name="dark_window_background">#121212</color>
+    <color name="dark_actionbar_color">#000000</color>
+    <color name="dark_text_color">#eeeeee</color>
 </resources>
