@@ -172,7 +172,11 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         Target homeTarget = new Target() { // from class: com.aero.control.fragments.MiscSettingsFragment.4
             @Override // com.github.amlcurran.showcaseview.targets.Target
             public Point getPoint() {
-                int actionBarSize = MiscSettingsFragment.this.getActivity().findViewById(R.id.action_add_item).getHeight();
+                int actionBarSize = 96;
+                try {
+                    actionBarSize = MiscSettingsFragment.this.getActivity().findViewById(R.id.action_add_item).getHeight();
+                } catch (NullPointerException e) {
+                }
                 int x = MiscSettingsFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
                 int y = actionBarSize / 2;
                 return new Point(x, y);

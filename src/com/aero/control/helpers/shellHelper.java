@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 /* JADX INFO: loaded from: classes.dex */
 public final class shellHelper {
     private static final int BUFF_LEN = 8192;
+    private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
     private static shellHelper mShellHelper;
     private List<String> mCommands;
@@ -124,7 +125,9 @@ public final class shellHelper {
                         if (read == -1) {
                             return null;
                         }
-                        response.append(buf, 0, read);
+                        if (response.length() < MAX_RESULT_LEN) {
+                            response.append(buf, 0, read);
+                        }
                     } while (read >= 8192);
                     this.mShellOutput.flush();
                 }

@@ -557,7 +557,11 @@ public class CPUFragment extends PlaceHolderFragment {
         Target homeTarget = new Target() { // from class: com.aero.control.fragments.CPUFragment.10
             @Override // com.github.amlcurran.showcaseview.targets.Target
             public Point getPoint() {
-                int actionBarSize = CPUFragment.this.getActivity().findViewById(R.id.action_governor_settings).getHeight();
+                int actionBarSize = 96;
+                try {
+                    actionBarSize = CPUFragment.this.getActivity().findViewById(R.id.action_governor_settings).getHeight();
+                } catch (NullPointerException e) {
+                }
                 int x = CPUFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
                 int y = actionBarSize / 2;
                 return new Point(x, y);
