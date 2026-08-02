@@ -235,6 +235,7 @@
     <string name="pref_app_monitor_disabled">App-Monitor ist deaktiviert. Aktiviere ihn in den Einstellungen, um Daten anzuzeigen.</string>
     <string name="pref_ram_usage">Freier RAM</string>
     <string name="pref_reset_stats_for_app">Möchtest du die Statistiken für diese App wirklich zurücksetzen?</string>
+    <string name="pref_app_monitor_average_summary">%1$s %2$s - %3$s</string>
     <string name="pref_temp_usage">Temperatur</string>
 
     <!-- ========================================================= -->

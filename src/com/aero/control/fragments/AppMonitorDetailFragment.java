@@ -47,7 +47,6 @@ public class AppMonitorDetailFragment extends Fragment {
     private TextView mHeader;
     private Paint mLineGridPaint;
     private TextView mLineTooltip;
-    private TextView mModuleName;
     private FloatingActionButton mResetButton;
     private ViewGroup mRoot;
     private final TimeInterpolator enterInterpolator = new DecelerateInterpolator(1.5f);
@@ -111,7 +110,6 @@ public class AppMonitorDetailFragment extends Fragment {
         this.mAppName = null;
         this.mHeader = (TextView) this.mRoot.findViewById(R.id.usageTimer);
         this.mAverage = (TextView) this.mRoot.findViewById(R.id.topValue);
-        this.mModuleName = (TextView) this.mRoot.findViewById(R.id.topModuleName);
         this.mCards = new ArrayList();
         this.mResetButton = (FloatingActionButton) this.mRoot.findViewById(R.id.reset_stats);
         if (getActivity().getWindowManager().getDefaultDisplay().getWidth() <= 480) {
@@ -190,8 +188,7 @@ public class AppMonitorDetailFragment extends Fragment {
         for (AppModule module : AeroActivity.mJobManager.getModules()) {
             if (this.mModule == module.getIdentifier()) {
                 suffix = module.getSuffix();
-                this.mAverage.setText(data.getChildData().get(i + 1).getContent());
-                this.mModuleName.setText(data.getChildData().get(i + 1).getTitle());
+                this.mAverage.setText(getString(R.string.pref_app_monitor_average_summary, getString(R.string.average), data.getChildData().get(i + 1).getTitle(), data.getChildData().get(i + 1).getContent()));
             }
             this.mCards.get(i).setContent(module.getDrawable());
             this.mCards.get(i).setTitle(data.getChildData().get(i + 1).getTitle());

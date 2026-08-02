@@ -124,4 +124,5 @@
     <string name="pref_memory_swappiness_summary">Define o modo como o kernel vai substituir as páginas de memória.</string>
     <string name="pref_min_free_ram">Quantidade de RAM livre</string>
     <string name="pref_min_free_ram_summary">COnfigure a quantidade de RAM que deve estar livre (in kb).</string>
+    <string name="pref_app_monitor_average_summary">%1$s %2$s - %3$s</string>
 </resources>
