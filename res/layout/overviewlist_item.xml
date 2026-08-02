@@ -22,14 +22,17 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/CardStyle">
+                android:layout_margin="6dp"
+                android:padding="12dp"
+                android:background="@drawable/card">
                 <TextView
                     android:textSize="20sp"
                     android:textColor="#263238"
                     android:id="@+id/header"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
+                    android:layout_marginRight="8dp"
+                    android:layout_toLeftOf="@+id/right_header"/>
                 <TextView
                     android:textSize="20sp"
                     android:textColor="#263238"
@@ -41,9 +44,10 @@
                     android:textSize="14sp"
                     android:textColor="#263238"
                     android:id="@+id/content"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="25dp"/>
+                    android:layout_below="@+id/header"
+                    android:layout_marginTop="16dp"/>
             </RelativeLayout>
         </LinearLayout>
     </com.aero.control.helpers.CardLayout>
