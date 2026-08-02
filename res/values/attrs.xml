@@ -14,6 +14,12 @@
     </attr>
     <attr name="aeroGraphBackground" format="reference">
     </attr>
+    <attr name="aeroIconTint" format="color">
+    </attr>
+    <attr name="aeroDividerColor" format="color">
+    </attr>
+    <attr name="aeroPreferenceControlBackground" format="color">
+    </attr>
     <attr name="chart_axisThickness" format="dimension">
     </attr>
     <attr name="chart_axisColor" format="reference|color">

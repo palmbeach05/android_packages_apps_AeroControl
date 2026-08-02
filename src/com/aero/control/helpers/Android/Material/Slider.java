@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.aero.control.R;
+import com.aero.control.helpers.ThemeHelper;
 import com.nineoldandroids.view.ViewHelper;
 
 /* JADX INFO: loaded from: classes.dex */
@@ -295,7 +296,7 @@ public class Slider extends CustomView {
         public Ball(Context context) {
             super(context);
             if (!isInEditMode()) {
-                setBackgroundResource(R.drawable.background_switch_ball_uncheck);
+                setBackgroundResource(ThemeHelper.THEME_DARK.equals(ThemeHelper.getTheme(context)) ? R.drawable.background_switch_ball_uncheck_dark : R.drawable.background_switch_ball_uncheck);
             } else {
                 setBackgroundResource(android.R.drawable.radiobutton_off_background);
             }
@@ -310,7 +311,7 @@ public class Slider extends CustomView {
                     shape.setColor(Slider.this.backgroundColor);
                     return;
                 }
-                setBackgroundResource(R.drawable.background_switch_ball_uncheck);
+                setBackgroundResource(ThemeHelper.THEME_DARK.equals(ThemeHelper.getTheme(getContext())) ? R.drawable.background_switch_ball_uncheck_dark : R.drawable.background_switch_ball_uncheck);
             }
         }
     }

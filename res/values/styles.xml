@@ -143,6 +143,9 @@
         <item name="aeroCardBackground">@drawable/card</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked</item>
         <item name="aeroGraphBackground">@drawable/card_rect</item>
+        <item name="aeroIconTint">@color/text_color</item>
+        <item name="aeroDividerColor">@android:color/darker_gray</item>
+        <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
     </style>
     <style name="AeroActionBar.Dark" parent="@android:style/Widget.Holo.ActionBar">
         <item name="android:background">@color/dark_actionbar_color</item>
@@ -161,5 +164,8 @@
         <item name="aeroCardBackground">@drawable/card_dark</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked_dark</item>
         <item name="aeroGraphBackground">@drawable/card_rect_dark</item>
+        <item name="aeroIconTint">@color/dark_text_color</item>
+        <item name="aeroDividerColor">@color/dark_secondary_text_color</item>
+        <item name="aeroPreferenceControlBackground">@color/dark_card_background</item>
     </style>
 </resources>

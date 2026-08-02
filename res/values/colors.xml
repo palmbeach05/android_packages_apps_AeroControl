@@ -25,4 +25,5 @@
     <color name="dark_card_background">#2a2a2a</color>
     <color name="dark_card_shadow">#ff000000</color>
     <color name="dark_secondary_text_color">#b0b0b0</color>
+    <color name="checkbox_stroke_dark">#b0b0b0</color>
 </resources>

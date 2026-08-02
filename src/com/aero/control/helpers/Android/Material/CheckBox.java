@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 import com.aero.control.R;
+import com.aero.control.helpers.ThemeHelper;
 
 /* JADX INFO: loaded from: classes.dex */
 public class CheckBox extends CustomView {
@@ -64,14 +65,15 @@ public class CheckBox extends CustomView {
         setBackgroundResource(R.drawable.background_checkbox);
         setMinimumHeight(dpToPx(48.0f, getResources()));
         setMinimumWidth(dpToPx(48.0f, getResources()));
-        int backgroundColor = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "background", -1);
-        if (backgroundColor != -1) {
-            setBackgroundColor(getResources().getColor(backgroundColor));
-        } else {
-            int background = attrs.getAttributeIntValue("http://schemas.android.com/apk/res/android", "background", -1);
-            if (background != -1) {
-                setBackgroundColor(background);
+        int[] attrsArray = new int[] { android.R.attr.background };
+        android.content.res.TypedArray ta = getContext().obtainStyledAttributes(attrs, attrsArray);
+        try {
+            if (ta.hasValue(0)) {
+                int backgroundColor = ta.getColor(0, 0);
+                setBackgroundColor(backgroundColor);
             }
+        } finally {
+            ta.recycle();
         }
         this.mPaint = new Paint();
         this.mPaint.setAntiAlias(true);
@@ -181,7 +183,7 @@ public class CheckBox extends CustomView {
             this.forceReDraw = false;
             this.mOpt = new BitmapFactory.Options();
             this.mOpt.inPreferredConfig = Bitmap.Config.RGB_565;
-            setBackgroundResource(R.drawable.background_checkbox_uncheck);
+            setBackgroundResource(ThemeHelper.THEME_DARK.equals(ThemeHelper.getTheme(context)) ? R.drawable.background_checkbox_uncheck_dark : R.drawable.background_checkbox_uncheck);
             this.mOpt.inScaled = false;
             this.sprite = BitmapFactory.decodeResource(context.getResources(), R.drawable.sprite_check, this.mOpt);
         }
@@ -194,7 +196,7 @@ public class CheckBox extends CustomView {
                 shape.setColor(CheckBox.this.backgroundColor);
                 return;
             }
-            setBackgroundResource(R.drawable.background_checkbox_uncheck);
+            setBackgroundResource(ThemeHelper.THEME_DARK.equals(ThemeHelper.getTheme(getContext())) ? R.drawable.background_checkbox_uncheck_dark : R.drawable.background_checkbox_uncheck);
         }
 
         private void drawRect() {

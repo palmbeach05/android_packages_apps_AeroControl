@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,11 +46,15 @@ public class PrefsActivity extends PreferenceActivity {
     private CheckBoxPreference mPerAppToasts;
     private CheckBoxPreference mPer_app_check;
     private CheckBoxPreference mRebootChecker;
+    private int mIconTintColor;
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        TypedValue tintTypedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.aeroIconTint, tintTypedValue, true);
+        this.mIconTintColor = tintTypedValue.data;
         if (getResources().getBoolean(R.bool.portrait_only)) {
             setRequestedOrientation(1);
         }
@@ -89,24 +96,24 @@ public class PrefsActivity extends PreferenceActivity {
         Preference legal = root.findPreference("legal");
         Preference xda = root.findPreference("xda_thread");
         Preference github = root.findPreference("github_link");
-        this.mRebootChecker.setIcon(R.drawable.ic_action_phone);
+        setTintedIcon(this.mRebootChecker, R.drawable.ic_action_phone);
         setCheckedState(this.mRebootChecker);
-        this.mPer_app_check.setIcon(R.drawable.ic_action_person);
-        this.mPerAppMonitor.setIcon(R.drawable.ic_action_appmonitor);
-        this.mBootDelay.setIcon(R.drawable.timer);
-        this.mBootDelay.setDialogIcon(R.drawable.timer);
-        this.mPerAppToasts.setIcon(R.drawable.ic_action_toast);
+        setTintedIcon(this.mPer_app_check, R.drawable.ic_action_person);
+        setTintedIcon(this.mPerAppMonitor, R.drawable.ic_action_appmonitor);
+        setTintedIcon(this.mBootDelay, R.drawable.timer);
+        setTintedDialogIcon(this.mBootDelay, R.drawable.timer);
+        setTintedIcon(this.mPerAppToasts, R.drawable.ic_action_toast);
         setCheckedState(this.mPerAppToasts);
         setMinutes(this.mBootDelay, this.mBootDelay.getValue());
-        this.mAppTheme.setIcon(R.drawable.gear);
-        this.mAppTheme.setDialogIcon(R.drawable.gear);
+        setTintedIcon(this.mAppTheme, R.drawable.gear);
+        setTintedDialogIcon(this.mAppTheme, R.drawable.gear);
         setThemeSummary(this.mAppTheme, this.mAppTheme.getValue());
-        resetTutorials.setIcon(R.drawable.ic_action_warning);
+        setTintedIcon(resetTutorials, R.drawable.ic_action_warning);
         setCheckedState(this.mPer_app_check);
         setCheckedState(this.mPerAppMonitor);
-        version.setIcon(R.drawable.rocket);
-        xda.setIcon(R.drawable.xda);
-        github.setIcon(R.drawable.github);
+        setTintedIcon(version, R.drawable.rocket);
+        setTintedIcon(xda, R.drawable.xda);
+        setTintedIcon(github, R.drawable.github);
         if (AeroActivity.mJobManager != null) {
             this.mPerAppMonitor.setChecked(AeroActivity.mJobManager.getJobManagerState());
         }
@@ -118,8 +125,8 @@ public class PrefsActivity extends PreferenceActivity {
             version.setSummary("Build: " + getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
         } catch (PackageManager.NameNotFoundException e) {
         }
-        about.setIcon(R.drawable.ic_action_about);
-        legal.setIcon(R.drawable.ic_action_legal);
+        setTintedIcon(about, R.drawable.ic_action_about);
+        setTintedIcon(legal, R.drawable.ic_action_legal);
         xda.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.3
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
@@ -224,7 +231,9 @@ public class PrefsActivity extends PreferenceActivity {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(PrefsActivity.context);
                 dialog.setTitle(R.string.pref_reset_tutorials_title);
                 dialog.setMessage(R.string.pref_reset_tutorials_dialog);
-                dialog.setIcon(R.drawable.warning);
+                Drawable warningIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.warning).mutate();
+                warningIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                dialog.setIcon(warningIcon);
                 dialog.setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.10.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -250,7 +259,9 @@ public class PrefsActivity extends PreferenceActivity {
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 alertDialog.setContext(PrefsActivity.context);
                 alertDialog.setTitle(R.string.about);
-                alertDialog.setIcon(R.drawable.beer);
+                Drawable beerIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.beer).mutate();
+                beerIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                alertDialog.setIcon(beerIcon);
                 alertDialog.setView(layout);
                 alertDialog.setPayPalIcons(true);
                 alertDialog.setNeutralButton(R.string.donation_quarx);
@@ -268,7 +279,9 @@ public class PrefsActivity extends PreferenceActivity {
                 View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 builder.setTitle(R.string.legal);
-                builder.setIcon(R.drawable.email);
+                Drawable emailIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.email).mutate();
+                emailIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+                builder.setIcon(emailIcon);
                 aboutText.setText(PrefsActivity.this.getText(R.string.legal_dialog));
                 aboutText.setTextSize(13.0f);
                 builder.setView(layout).setPositiveButton(R.string.send_email, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.12.1
@@ -287,6 +300,18 @@ public class PrefsActivity extends PreferenceActivity {
                 return true;
             }
         });
+    }
+
+    private void setTintedIcon(Preference preference, int resId) {
+        Drawable icon = getResources().getDrawable(resId).mutate();
+        icon.setColorFilter(this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+        preference.setIcon(icon);
+    }
+
+    private void setTintedDialogIcon(ListPreference preference, int resId) {
+        Drawable icon = getResources().getDrawable(resId).mutate();
+        icon.setColorFilter(this.mIconTintColor, PorterDuff.Mode.SRC_IN);
+        preference.setDialogIcon(icon);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
