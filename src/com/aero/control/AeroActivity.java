@@ -58,18 +58,7 @@ import java.util.Stack;
 
 /* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
-    private static final int APPSTATISTICS = 9;
-    private static final int CPU = 1;
-    private static final int DEFY = 6;
-    private static final int GPU = 3;
-    private static final int MEMORY = 4;
-    private static final int MISC = 5;
-    private static final int OVERVIEW = 0;
-    private static final int PROFILE = 8;
     private static final String SELECTED_ITEM = "SelectedItem";
-    private static final int STATISTICS = 2;
-    private static final int TESTSUITE = 10;
-    private static final int UPDATER = 7;
     public static Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
@@ -183,13 +172,13 @@ public final class AeroActivity extends Activity {
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
-                selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
+                selectItemByResourceId(R.string.slider_app_monitor);
                 return;
             }
             return;
         }
         if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
-            selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
+            selectItemByResourceId(R.string.slider_app_monitor);
         }
     }
 
@@ -242,7 +231,7 @@ public final class AeroActivity extends Activity {
         super.onResume();
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
-            selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
+            selectItemByResourceId(R.string.slider_app_monitor);
         }
         getIntent().putExtra("NOTIFY_STRING", new String());
     }
@@ -286,90 +275,112 @@ public final class AeroActivity extends Activity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void selectItem(int position) {
-        int j = position;
         if (this.mDrawerLayout != null) {
             this.mDrawerLayout.closeDrawers();
         }
         Fragment fragment = null;
-        if (!Build.MODEL.equals("MB525") && !Build.MODEL.equals("MB526") && position >= 6) {
-            j++;
+
+        // Get the item's resource ID to identify it, rather than using position
+        NavBarItems.PreferenceItem item = this.mAdapter.getItem(position);
+        if (item == null) {
+            return;
         }
-        switch (j) {
-            case 0:
-                if (this.mAeroFragment == null) {
-                    this.mAeroFragment = new AeroFragment();
-                }
-                fragment = this.mAeroFragment;
-                break;
-            case 1:
-                if (this.mCPUFragement == null) {
-                    this.mCPUFragement = new CPUFragment();
-                }
-                fragment = this.mCPUFragement;
-                break;
-            case 2:
-                if (this.mStatisticsFragment == null) {
-                    this.mStatisticsFragment = new StatisticsFragment();
-                }
-                fragment = this.mStatisticsFragment;
-                break;
-            case 3:
-                if (this.mGPUFragement == null) {
-                    this.mGPUFragement = new GPUFragment();
-                }
-                fragment = this.mGPUFragement;
-                break;
-            case 4:
-                if (this.mMemoryFragment == null) {
-                    this.mMemoryFragment = new MemoryFragment();
-                }
-                fragment = this.mMemoryFragment;
-                break;
-            case 5:
-                if (this.mMiscSettingsFragment == null) {
-                    this.mMiscSettingsFragment = new MiscSettingsFragment();
-                }
-                fragment = this.mMiscSettingsFragment;
-                break;
-            case 6:
-                if (this.mDefyPartsFragment == null) {
-                    this.mDefyPartsFragment = new DefyPartsFragment();
-                }
-                fragment = this.mDefyPartsFragment;
-                break;
-            case 7:
-                if (this.mUpdaterFragement == null) {
-                    this.mUpdaterFragement = new UpdaterFragment();
-                }
-                fragment = this.mUpdaterFragement;
-                break;
-            case 8:
-                if (this.mProfileFragment == null) {
-                    this.mProfileFragment = new ProfileFragment();
-                }
-                fragment = this.mProfileFragment;
-                break;
-            case 9:
-                if (this.mAppStatisticsFragment == null) {
-                    this.mAppStatisticsFragment = new AppMonitorFragment();
-                }
-                fragment = this.mAppStatisticsFragment;
-                break;
-            case 10:
-                if (this.mTestSuiteFragment == null) {
-                    this.mTestSuiteFragment = new TestSuiteFragment();
-                }
-                fragment = this.mTestSuiteFragment;
-                break;
+
+        int itemResourceId = item.content;
+
+        // Map resource ID to fragment
+        if (itemResourceId == R.string.slider_overview) {
+            if (this.mAeroFragment == null) {
+                this.mAeroFragment = new AeroFragment();
+            }
+            fragment = this.mAeroFragment;
+        } else if (itemResourceId == R.string.slider_cpu_settings) {
+            if (this.mCPUFragement == null) {
+                this.mCPUFragement = new CPUFragment();
+            }
+            fragment = this.mCPUFragement;
+        } else if (itemResourceId == R.string.slider_statistics) {
+            if (this.mStatisticsFragment == null) {
+                this.mStatisticsFragment = new StatisticsFragment();
+            }
+            fragment = this.mStatisticsFragment;
+        } else if (itemResourceId == R.string.slider_gpu_settings) {
+            if (this.mGPUFragement == null) {
+                this.mGPUFragement = new GPUFragment();
+            }
+            fragment = this.mGPUFragement;
+        } else if (itemResourceId == R.string.slider_memory_settings) {
+            if (this.mMemoryFragment == null) {
+                this.mMemoryFragment = new MemoryFragment();
+            }
+            fragment = this.mMemoryFragment;
+        } else if (itemResourceId == R.string.slider_misc_settings) {
+            if (this.mMiscSettingsFragment == null) {
+                this.mMiscSettingsFragment = new MiscSettingsFragment();
+            }
+            fragment = this.mMiscSettingsFragment;
+        } else if (itemResourceId == R.string.slider_defy_parts) {
+            if (this.mDefyPartsFragment == null) {
+                this.mDefyPartsFragment = new DefyPartsFragment();
+            }
+            fragment = this.mDefyPartsFragment;
+        } else if (itemResourceId == R.string.slider_backup_restore) {
+            if (this.mUpdaterFragement == null) {
+                this.mUpdaterFragement = new UpdaterFragment();
+            }
+            fragment = this.mUpdaterFragement;
+        } else if (itemResourceId == R.string.slider_profile) {
+            if (this.mProfileFragment == null) {
+                this.mProfileFragment = new ProfileFragment();
+            }
+            fragment = this.mProfileFragment;
+        } else if (itemResourceId == R.string.slider_app_monitor) {
+            if (this.mAppStatisticsFragment == null) {
+                this.mAppStatisticsFragment = new AppMonitorFragment();
+            }
+            fragment = this.mAppStatisticsFragment;
+        } else if (itemResourceId == R.string.slider_test_suite_settings) {
+            if (this.mTestSuiteFragment == null) {
+                this.mTestSuiteFragment = new TestSuiteFragment();
+            }
+            fragment = this.mTestSuiteFragment;
         }
+
         if (fragment != null) {
             switchContent(fragment);
         }
         this.mDrawerList.setItemChecked(position, true);
-        this.mPreviousTitle = j;
-        setTitle(this.mAeroTitle[j]);
+
+        // Find the position in the title array for this item
+        int titleIndex = findTitleIndex(itemResourceId);
+        this.mPreviousTitle = titleIndex;
+        setTitle(this.mAeroTitle[titleIndex]);
         mBackCounter = 0;
         this.mDrawerLayout.closeDrawer(this.mDrawerList);
+    }
+
+    private int findTitleIndex(int resourceId) {
+        // The aero_array in arrays.xml contains all items including defy_parts
+        // We need to find the index matching this resource ID
+        String[] titleArray = this.mAeroTitle;
+        String itemName = getString(resourceId);
+        for (int i = 0; i < titleArray.length; i++) {
+            if (titleArray[i].equals(itemName)) {
+                return i;
+            }
+        }
+        return 0; // Default to overview if not found
+    }
+
+    private void selectItemByResourceId(int resourceId) {
+        // Find the position of the item with this resource ID in the current adapter
+        for (int i = 0; i < this.mAdapter.getCount(); i++) {
+            NavBarItems.PreferenceItem item = this.mAdapter.getItem(i);
+            if (item != null && item.content == resourceId) {
+                selectItem(i);
+                return;
+            }
+        }
     }
 
     public void setActionBarTitle(String title) {
