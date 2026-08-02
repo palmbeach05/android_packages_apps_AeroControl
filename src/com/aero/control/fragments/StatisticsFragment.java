@@ -114,7 +114,10 @@ public class StatisticsFragment extends Fragment {
             public Point getPoint() {
                 int actionBarSize = 96;
                 try {
-                    actionBarSize = StatisticsFragment.this.getActivity().findViewById(R.id.action_refresh).getHeight();
+                    int height = StatisticsFragment.this.getActivity().findViewById(R.id.action_refresh).getHeight();
+                    if (height > 0) {
+                        actionBarSize = height;
+                    }
                 } catch (NullPointerException e) {
                 }
                 int x = StatisticsFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);

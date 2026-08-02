@@ -174,7 +174,10 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
             public Point getPoint() {
                 int actionBarSize = 96;
                 try {
-                    actionBarSize = MiscSettingsFragment.this.getActivity().findViewById(R.id.action_add_item).getHeight();
+                    int height = MiscSettingsFragment.this.getActivity().findViewById(R.id.action_add_item).getHeight();
+                    if (height > 0) {
+                        actionBarSize = height;
+                    }
                 } catch (NullPointerException e) {
                 }
                 int x = MiscSettingsFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);

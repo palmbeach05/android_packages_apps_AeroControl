@@ -559,7 +559,10 @@ public class CPUFragment extends PlaceHolderFragment {
             public Point getPoint() {
                 int actionBarSize = 96;
                 try {
-                    actionBarSize = CPUFragment.this.getActivity().findViewById(R.id.action_governor_settings).getHeight();
+                    int height = CPUFragment.this.getActivity().findViewById(R.id.action_governor_settings).getHeight();
+                    if (height > 0) {
+                        actionBarSize = height;
+                    }
                 } catch (NullPointerException e) {
                 }
                 int x = CPUFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
