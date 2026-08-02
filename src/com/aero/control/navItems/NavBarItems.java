@@ -2,6 +2,7 @@ package com.aero.control.navItems;
 
 import android.content.Context;
 import android.os.Build;
+import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import java.util.ArrayList;
 
@@ -28,7 +29,13 @@ public class NavBarItems {
         addItem(new PreferenceItem(R.string.slider_backup_restore, R.drawable.update));
         addItem(new PreferenceItem(R.string.slider_profile, R.drawable.profile));
         addItem(new PreferenceItem(R.string.slider_app_monitor, R.drawable.appmonitor));
-        addItem(new PreferenceItem(R.string.slider_test_suite_settings, R.drawable.dashboard));
+        int output = 0;
+        if (AeroActivity.genHelper.doesExist(this.mContext.getFilesDir().getAbsolutePath() + "/testsuite")) {
+            output = 1;
+        }
+        if (output > 0) {
+            addItem(new PreferenceItem(R.string.slider_test_suite_settings, R.drawable.dashboard));
+        }
     }
 
     public static class PreferenceItem {
