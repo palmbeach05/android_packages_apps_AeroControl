@@ -272,7 +272,7 @@
     <!-- About Screen & Social / Legal Open-Source Notice Items    -->
     <!-- ========================================================= -->
     <string name="about">About</string>
-    <string name="about_dialog">Hello. Thank you for using this App. My name is Alexander Christ (Blechd0se), and I have written this App for fun and in my spare time. It\’s also Open Source, so you can grab the Source Code and modify it as you want. If you want to, you can either donate to Quarx for his awesome rom or to me. The joy of living is in the giving.</string>
+    <string name="about_dialog">Aero Control was originally created and developed by Alexander Christ (Blechd0se), as he assisted Quarx and other developers in development for the Motorola Defy. It is Open Source and is compatible with other devices. If you want to, you can donate to either Blechd0se or Quarx for their hard work.</string>
     <string name="donation_blechdose">Blechd0se</string>
     <string name="donation_quarx">Quarx</string>
     <string name="github">GitHub</string>
