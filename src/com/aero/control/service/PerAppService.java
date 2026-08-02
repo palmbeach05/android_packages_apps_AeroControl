@@ -38,7 +38,7 @@ public final class PerAppService extends Service {
     private SharedPreferences mPerAppPrefs;
     private String mProfile;
     private Runnable mRunnable;
-    private boolean mDestroyed;
+    private volatile boolean mDestroyed;
     private static String mPreviousApp = null;
     private static String mCurrentApp = null;
     private static final settingsHelper settingsHelper = new settingsHelper();
