@@ -16,7 +16,7 @@ import com.aero.control.R;
 /* JADX INFO: loaded from: classes.dex */
 public class AboutDialog extends DialogFragment {
     private Context mContext;
-    private int mIcon;
+    private Drawable mIcon;
     private View mLayout;
     private String mNegativeText;
     private String mNeutralText;
@@ -36,8 +36,8 @@ public class AboutDialog extends DialogFragment {
         this.mLayout = v;
     }
 
-    public void setIcon(int i) {
-        this.mIcon = i;
+    public void setIcon(Drawable d) {
+        this.mIcon = d;
     }
 
     public void setPayPalIcons(boolean b) {
