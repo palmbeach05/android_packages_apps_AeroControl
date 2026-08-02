@@ -150,11 +150,10 @@ public class AppMonitorDetailFragment extends Fragment {
         this.mMaxValue = 0;
         this.mRoot.invalidate();
         int cardBackground = resolveThemeDrawable(R.attr.aeroCardBackground, R.drawable.card);
-        int cardBackgroundClicked = resolveThemeDrawable(R.attr.aeroCardBackgroundClicked, R.drawable.card_clicked);
         for (CardBox b : this.mCards) {
             b.setBackground(cardBackground);
         }
-        this.mCards.get(this.mPositionModule).setBackground(cardBackgroundClicked);
+        this.mCards.get(this.mPositionModule).setBackground(R.drawable.card_clicked);
         if (this.mLineTooltip != null) {
             mLineChart.dismissTooltip(this.mLineTooltip);
             this.mLineTooltip = null;
