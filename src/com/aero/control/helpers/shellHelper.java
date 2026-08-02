@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -448,98 +449,40 @@ public final class shellHelper {
         return (String[]) temp.toArray(new String[0]);
     }
 
-    /* JADX WARN: Removed duplicated region for block: B:40:0x008f A[EXC_TOP_SPLITTER, SYNTHETIC] */
-    /*
-        Code decompiled incorrectly, please refer to instructions dump.
-        To view partially-correct code enable 'Show inconsistent code' option in preferences
-    */
-    public java.lang.String getLegacyRootInfo(java.lang.String r11, java.lang.String r12) {
-        /*
-            r10 = this;
-            r3 = 0
-            java.lang.Runtime r6 = java.lang.Runtime.getRuntime()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r7 = "su"
-            java.lang.Process r3 = r6.exec(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.io.DataOutputStream r4 = new java.io.DataOutputStream     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.io.OutputStream r6 = r3.getOutputStream()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r4.<init>(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.StringBuilder r6 = new java.lang.StringBuilder     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r6.<init>()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.StringBuilder r6 = r6.append(r11)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r7 = " "
-            java.lang.StringBuilder r6 = r6.append(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.StringBuilder r6 = r6.append(r12)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r7 = "\n"
-            java.lang.StringBuilder r6 = r6.append(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r6 = r6.toString()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r4.writeBytes(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.io.InputStream r5 = r3.getInputStream()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r1 = ""
-        L3a:
-            byte[] r6 = com.aero.control.helpers.shellHelper.buffer     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            int r2 = r5.read(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r6 = -1
-            if (r2 != r6) goto L4e
-            java.lang.String r1 = "Unavailable"
-            if (r3 == 0) goto L4d
-            r3.waitFor()     // Catch: java.lang.InterruptedException -> L96
-        L4a:
-            r3.destroy()
-        L4d:
-            return r1
-        L4e:
-            java.lang.StringBuilder r6 = new java.lang.StringBuilder     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r6.<init>()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.StringBuilder r6 = r6.append(r1)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r7 = new java.lang.String     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            byte[] r8 = com.aero.control.helpers.shellHelper.buffer     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r9 = 0
-            r7.<init>(r8, r9, r2)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.StringBuilder r6 = r6.append(r7)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            java.lang.String r1 = r6.toString()     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            r6 = 8192(0x2000, float:1.148E-41)
-            if (r2 >= r6) goto L3a
-            java.lang.String r6 = "exit\n"
-            r4.writeBytes(r6)     // Catch: java.io.IOException -> L79 java.lang.Throwable -> L8c
-            if (r3 == 0) goto L4d
-            r3.waitFor()     // Catch: java.lang.InterruptedException -> L98
-        L75:
-            r3.destroy()
-            goto L4d
-        L79:
-            r0 = move-exception
-            java.lang.String r6 = com.aero.control.helpers.shellHelper.LOG_TAG     // Catch: java.lang.Throwable -> L8c
-            java.lang.String r7 = "Do you even root, bro? :/"
-            android.util.Log.e(r6, r7, r0)     // Catch: java.lang.Throwable -> L8c
-            if (r3 == 0) goto L89
-            r3.waitFor()     // Catch: java.lang.InterruptedException -> L9a
-        L86:
-            r3.destroy()
-        L89:
-            java.lang.String r1 = "Unavailable"
-            goto L4d
-        L8c:
-            r6 = move-exception
-            if (r3 == 0) goto L95
-            r3.waitFor()     // Catch: java.lang.InterruptedException -> L9c
-        L92:
-            r3.destroy()
-        L95:
-            throw r6
-        L96:
-            r6 = move-exception
-            goto L4a
-        L98:
-            r6 = move-exception
-            goto L75
-        L9a:
-            r6 = move-exception
-            goto L86
-        L9c:
-            r7 = move-exception
-            goto L92
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.aero.control.helpers.shellHelper.getLegacyRootInfo(java.lang.String, java.lang.String):java.lang.String");
+    public String getLegacyRootInfo(String command, String parameter) {
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec("su");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes(command + " " + parameter + "\n");
+            InputStream is = process.getInputStream();
+            String result = "";
+            while (true) {
+                int read = is.read(buffer);
+                if (read == -1) {
+                    result = NO_DATA_FOUND;
+                    break;
+                }
+                result = result + new String(buffer, 0, read);
+                if (read < BUFF_LEN) {
+                    os.writeBytes("exit\n");
+                    break;
+                }
+            }
+            return result;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Do you even root, bro? :/", e);
+            return NO_DATA_FOUND;
+        } finally {
+            if (process != null) {
+                try {
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                process.destroy();
+            }
+        }
     }
 
     public final boolean setOverclockAddress() {
