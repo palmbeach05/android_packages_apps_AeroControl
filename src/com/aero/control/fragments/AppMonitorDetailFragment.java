@@ -112,16 +112,13 @@ public class AppMonitorDetailFragment extends Fragment {
         this.mAverage = (TextView) this.mRoot.findViewById(R.id.topValue);
         this.mCards = new ArrayList();
         this.mResetButton = (FloatingActionButton) this.mRoot.findViewById(R.id.reset_stats);
-        if (getActivity().getWindowManager().getDefaultDisplay().getWidth() <= 480) {
-            this.mResetButton.setVisibility(8);
-        }
         LinearLayout layoutHolder = (LinearLayout) this.mRoot.findViewById(R.id.layouthorizontal);
         for (AppModule appModule : AeroActivity.mJobManager.getModules()) {
             CardBox cardbox = new CardBox(getActivity());
             cardbox.setOnClickListener(this.mCardListener);
             this.mCards.add(cardbox);
         }
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(-1, -2);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.setMargins(0, 0, 15, 0);
         for (CardBox c : this.mCards) {
             layoutHolder.addView(c, layoutParams);
@@ -143,6 +140,14 @@ public class AppMonitorDetailFragment extends Fragment {
         return fallbackResId;
     }
 
+    private int resolveThemeColor(int attrResId, int fallbackColorResId) {
+        TypedValue typedValue = new TypedValue();
+        if (getActivity().getTheme().resolveAttribute(attrResId, typedValue, true)) {
+            return typedValue.resourceId != 0 ? getResources().getColor(typedValue.resourceId) : typedValue.data;
+        }
+        return getResources().getColor(fallbackColorResId);
+    }
+
     /* JADX INFO: Access modifiers changed from: private */
     public void clearUI() {
         this.mMaxValue = 0;
@@ -151,7 +156,8 @@ public class AppMonitorDetailFragment extends Fragment {
         for (CardBox b : this.mCards) {
             b.setBackground(cardBackground);
         }
-        this.mCards.get(this.mPositionModule).setBackground(R.drawable.card_clicked);
+        int cardBackgroundClicked = resolveThemeDrawable(R.attr.aeroCardBackgroundClicked, R.drawable.card_clicked);
+        this.mCards.get(this.mPositionModule).setBackground(cardBackgroundClicked);
         if (this.mLineTooltip != null) {
             mLineChart.dismissTooltip(this.mLineTooltip);
             this.mLineTooltip = null;
@@ -204,7 +210,7 @@ public class AppMonitorDetailFragment extends Fragment {
         mLineChart.setOnEntryClickListener(this.lineEntryListener);
         mLineChart.setOnClickListener(this.lineClickListener);
         this.mLineGridPaint = new Paint();
-        this.mLineGridPaint.setColor(getResources().getColor(R.color.grey));
+        this.mLineGridPaint.setColor(resolveThemeColor(R.attr.aeroDividerColor, R.color.grey));
         this.mLineGridPaint.setPathEffect(new DashPathEffect(new float[]{5.0f, 5.0f}, 0.0f));
         this.mLineGridPaint.setStyle(Paint.Style.STROKE);
         this.mLineGridPaint.setAntiAlias(true);
