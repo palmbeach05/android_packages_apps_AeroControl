@@ -379,9 +379,17 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
     /* JADX INFO: Access modifiers changed from: private */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
-        int red = Integer.parseInt(redValue.getText().toString());
-        int green = Integer.parseInt(greenValue.getText().toString());
-        int blue = Integer.parseInt(blueValue.getText().toString());
+        int red;
+        int green;
+        int blue;
+        try {
+            red = Integer.parseInt(redValue.getText().toString());
+            green = Integer.parseInt(greenValue.getText().toString());
+            blue = Integer.parseInt(blueValue.getText().toString());
+        } catch (NumberFormatException e) {
+            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+            return;
+        }
         if (red > 255 || blue > 255 || green > 255) {
             Toast.makeText(getActivity(), "The values are out of range!", 1).show();
             return;

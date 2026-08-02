@@ -182,7 +182,7 @@ public final class AeroActivity extends Activity {
         }
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
+            if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
                 selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
                 return;
             }
@@ -241,7 +241,7 @@ public final class AeroActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
+        if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
             selectItem((Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) ? 9 : 8);
         }
         getIntent().putExtra("NOTIFY_STRING", new String());
