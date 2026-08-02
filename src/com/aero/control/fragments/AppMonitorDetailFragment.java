@@ -188,7 +188,7 @@ public class AppMonitorDetailFragment extends Fragment {
         for (AppModule module : AeroActivity.mJobManager.getModules()) {
             if (this.mModule == module.getIdentifier()) {
                 suffix = module.getSuffix();
-                this.mAverage.setText(getString(R.string.average) + " " + data.getChildData().get(i + 1).getTitle() + " - " + data.getChildData().get(i + 1).getContent());
+                this.mAverage.setText(getString(R.string.pref_app_monitor_average_summary, getString(R.string.average), data.getChildData().get(i + 1).getTitle(), data.getChildData().get(i + 1).getContent()));
             }
             this.mCards.get(i).setContent(module.getDrawable());
             this.mCards.get(i).setTitle(data.getChildData().get(i + 1).getTitle());
