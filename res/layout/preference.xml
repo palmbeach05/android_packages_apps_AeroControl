@@ -20,6 +20,14 @@
             android:key="per_app_toast"
             android:summary="Enable or disable toast-notifications"/>
         <ListPreference
+            android:entries="@array/app_themes"
+            android:title="@string/pref_app_theme"
+            android:key="app_theme"
+            android:summary="@string/pref_app_theme_summary"
+            android:dialogTitle="@string/pref_app_theme"
+            android:entryValues="@array/app_theme_values"
+            android:defaultValue="light"/>
+        <ListPreference
             android:entries="@array/boot_delay"
             android:title="@string/pref_boot_delay"
             android:key="boot_delay"

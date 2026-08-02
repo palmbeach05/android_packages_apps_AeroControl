@@ -176,7 +176,7 @@
     <!-- Settings Screen Configuration Elements                     -->
     <!-- ========================================================= -->
     <string name="aero_settings">Settings</string>
-    <string name="app_theme_dark">Dark - Light Holo with blue accent and black action bar</string>
+    <string name="app_theme_dark">Dark - Dark background with black action bar</string>
     <string name="app_theme_light">Light - Light Holo with blue accent</string>
     <string name="app_theme_red">Red - Light Holo with red accent</string>
     <string name="pref_app_specific">App specific</string>
