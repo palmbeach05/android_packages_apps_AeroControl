@@ -188,7 +188,7 @@ public class AppMonitorDetailFragment extends Fragment {
             i++;
         }
         loadGraph(data, suffix);
-        this.mHeader.setText(data.getChildData().get(0).getTitle() + " " + ((Object) getText(R.string.usage_time)));
+        this.mHeader.setText(((Object) getText(R.string.usage_time)) + " - " + data.getChildData().get(0).getTitle());
         this.mHeader.setTypeface(FilePath.kitkatFont);
     }
 
