@@ -26,9 +26,6 @@ public class NavBarItems {
         if (Build.MODEL.equals("MB525") || Build.MODEL.equals("MB526")) {
             addItem(new PreferenceItem(R.string.slider_defy_parts, R.drawable.gear));
         }
-        if (Build.MODEL.equals("DROIDX")) {
-            addItem(new PreferenceItem(R.string.slider_droid_x_parts, R.drawable.gear));
-        }
         addItem(new PreferenceItem(R.string.slider_backup_restore, R.drawable.update));
         addItem(new PreferenceItem(R.string.slider_profile, R.drawable.profile));
         addItem(new PreferenceItem(R.string.slider_app_monitor, R.drawable.appmonitor));
