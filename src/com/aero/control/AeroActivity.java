@@ -211,6 +211,7 @@ public final class AeroActivity extends Activity {
                 }
                 if (text != null) {
                     text.setText(AeroActivity.this.getString(item.content));
+                    text.setTextColor(AeroActivity.this.getResources().getColorStateList(ThemeHelper.THEME_DARK.equals(AeroActivity.this.mCurrentTheme) ? R.drawable.textview_drawer_dark : R.drawable.textview_drawer));
                 }
             }
             return v;

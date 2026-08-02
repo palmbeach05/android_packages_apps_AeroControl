@@ -3,8 +3,11 @@ package com.aero.control.helpers.Android.Material;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -67,10 +70,61 @@ public class CardBox extends LinearLayout {
     }
 
     public void setBackground(int drawable) {
-        if (Build.VERSION.SDK_INT < 16) {
-            setBackgroundDrawable(getResources().getDrawable(drawable));
+        Drawable backgroundDrawable;
+
+        // For API < 21, manually resolve theme attributes in card.xml
+        if (Build.VERSION.SDK_INT < 21 && drawable == R.drawable.card) {
+            backgroundDrawable = createCardDrawableWithThemeAttr(getContext());
         } else {
-            setBackground(getResources().getDrawable(drawable));
+            // Use themed drawable resolution for API 21+
+            if (Build.VERSION.SDK_INT >= 21) {
+                backgroundDrawable = getContext().getResources().getDrawable(drawable, getContext().getTheme());
+            } else {
+                backgroundDrawable = getResources().getDrawable(drawable);
+            }
         }
+
+        if (Build.VERSION.SDK_INT < 16) {
+            setBackgroundDrawable(backgroundDrawable);
+        } else {
+            setBackground(backgroundDrawable);
+        }
+    }
+
+    /**
+     * Creates the card drawable programmatically for API < 21,
+     * resolving the ?attr/aeroCardBackground theme attribute manually.
+     */
+    private Drawable createCardDrawableWithThemeAttr(Context context) {
+        // Resolve the aeroCardBackground theme attribute
+        TypedValue typedValue = new TypedValue();
+        context.getTheme().resolveAttribute(R.attr.aeroCardBackground, typedValue, true);
+        int cardBackgroundColor = typedValue.data;
+
+        // Get the card_grey color
+        int cardGreyColor = getResources().getColor(R.color.card_grey);
+
+        // Create the bottom layer (grey background)
+        GradientDrawable bottomShape = new GradientDrawable();
+        bottomShape.setShape(GradientDrawable.RECTANGLE);
+        bottomShape.setColor(cardGreyColor);
+        bottomShape.setCornerRadius(2 * getResources().getDisplayMetrics().density); // 2dp
+
+        // Create the top layer (theme background)
+        GradientDrawable topShape = new GradientDrawable();
+        topShape.setShape(GradientDrawable.RECTANGLE);
+        topShape.setColor(cardBackgroundColor);
+        topShape.setCornerRadius(2 * getResources().getDisplayMetrics().density); // 2dp
+
+        // Create layer list matching card.xml structure
+        Drawable[] layers = new Drawable[] { bottomShape, topShape };
+        LayerDrawable layerDrawable = new LayerDrawable(layers);
+
+        // Set insets for the top layer (1px left, 1px right, 2dp bottom)
+        int onePx = 1;
+        int twoDp = (int) (2 * getResources().getDisplayMetrics().density);
+        layerDrawable.setLayerInset(1, onePx, 0, onePx, twoDp);
+
+        return layerDrawable;
     }
 }
