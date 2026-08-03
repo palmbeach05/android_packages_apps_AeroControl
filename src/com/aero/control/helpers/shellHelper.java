@@ -24,7 +24,7 @@ public final class shellHelper {
     private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
     private static shellHelper mShellHelper;
-    private List<String> mCommands;
+    private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
     private ShellWorkqueue shWork = new ShellWorkqueue();
     private Process mProcess = null;
@@ -430,7 +430,7 @@ public final class shellHelper {
         return runCommands();
     }
 
-    public final boolean setRootInfo(String[] array) {
+    public final synchronized boolean setRootInfo(String[] array) {
         addCommands(array);
         return runCommands();
     }
