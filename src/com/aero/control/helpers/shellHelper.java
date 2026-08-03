@@ -169,7 +169,7 @@ public final class shellHelper {
                 } catch (IOException e) {
                 }
             }
-            return response.toString();
+            return response.toString().trim();
         } catch (IOException e2) {
             Log.e(LOG_TAG, "Something interrupted our operations...", e2);
             return null;
