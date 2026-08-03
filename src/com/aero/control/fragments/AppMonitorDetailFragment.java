@@ -177,7 +177,14 @@ public class AppMonitorDetailFragment extends Fragment {
         AppElement data = null;
         String suffix = "";
         if (this.mAppName == null) {
-            data = (AppElement) getActivity().getIntent().getExtras().getParcelable("aero_data");
+            Bundle args = getArguments();
+            data = args != null ? (AppElement) args.getParcelable("aero_data") : null;
+            if (data == null) {
+                if (isAdded()) {
+                    getActivity().onBackPressed();
+                }
+                return;
+            }
         } else {
             List<AppElement> AppData = AeroActivity.mJobManager.getParentChildData(getActivity());
             for (AppElement a : AppData) {
@@ -186,10 +193,14 @@ public class AppMonitorDetailFragment extends Fragment {
                 }
             }
         }
-        if (data != null) {
-            setTitle(data.getRealName());
-            this.mAppName = data.getName();
+        if (data == null) {
+            if (isAdded()) {
+                getActivity().onBackPressed();
+            }
+            return;
         }
+        setTitle(data.getRealName());
+        this.mAppName = data.getName();
         this.mResetButton.setOnClickListener(this.mResetListener);
         for (AppModule module : AeroActivity.mJobManager.getModules()) {
             if (this.mModule == module.getIdentifier()) {

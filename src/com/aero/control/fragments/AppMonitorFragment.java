@@ -3,7 +3,6 @@ package com.aero.control.fragments;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -129,6 +128,9 @@ public class AppMonitorFragment extends Fragment {
 
             @Override // java.lang.Runnable
             public void run() {
+                if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.mRoot == null) {
+                    return;
+                }
                 TextView tmp = (TextView) AppMonitorFragment.this.mRoot.findViewById(R.id.noData);
                 ImageView iv = (ImageView) AppMonitorFragment.this.mRoot.findViewById(R.id.empty_image);
                 AppMonitorFragment.this.mProgressDialog.dismiss();
@@ -162,14 +164,18 @@ public class AppMonitorFragment extends Fragment {
                 AppMonitorFragment.this.mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1
                     @Override // android.widget.AdapterView.OnItemClickListener
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Intent intent = AppMonitorFragment.this.getActivity().getIntent();
-                        intent.putExtra("aero_data", (Parcelable) AnonymousClass1.this.val$appData.get(position));
                         if (AppMonitorFragment.this.mAppMonitorDetailFragment == null) {
                             AppMonitorFragment.this.mAppMonitorDetailFragment = new AppMonitorDetailFragment();
                         }
+                        Bundle args = new Bundle();
+                        args.putParcelable("aero_data", (Parcelable) AnonymousClass1.this.val$appData.get(position));
+                        AppMonitorFragment.this.mAppMonitorDetailFragment.setArguments(args);
                         AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1.1
                             @Override // java.lang.Runnable
                             public void run() {
+                                if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getFragmentManager() == null) {
+                                    return;
+                                }
                                 AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, AppMonitorFragment.this.mAppMonitorDetailFragment).addToBackStack("AppDetail").commit();
                             }
                         }, AeroActivity.genHelper.getDefaultDelay());

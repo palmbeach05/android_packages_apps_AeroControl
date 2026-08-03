@@ -2,6 +2,7 @@ package fr.nicolaspomepuy.discreetapprate;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -462,7 +463,11 @@ public class AppRate {
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + activity.getPackageName())));
+                    try {
+                        activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + activity.getPackageName())));
+                    } catch (ActivityNotFoundException e) {
+                        Log.e("AppRate", "No activity found to handle market:// intent (Play Store not installed?)", e);
+                    }
                     hideAllViews(mainView);
                     editor.putBoolean(KEY_CLICKED, true);
                     editor.commit();
