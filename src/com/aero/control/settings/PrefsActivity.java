@@ -17,6 +17,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
+import android.support.v4.content.ContextCompat;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
@@ -231,7 +232,7 @@ public class PrefsActivity extends PreferenceActivity {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(PrefsActivity.context);
                 dialog.setTitle(R.string.pref_reset_tutorials_title);
                 dialog.setMessage(R.string.pref_reset_tutorials_dialog);
-                Drawable warningIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.warning).mutate();
+                Drawable warningIcon = ContextCompat.getDrawable(PrefsActivity.this, R.drawable.warning).mutate();
                 warningIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
                 dialog.setIcon(warningIcon);
                 dialog.setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.10.1
@@ -259,7 +260,7 @@ public class PrefsActivity extends PreferenceActivity {
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 alertDialog.setContext(PrefsActivity.context);
                 alertDialog.setTitle(R.string.about);
-                Drawable beerIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.beer).mutate();
+                Drawable beerIcon = ContextCompat.getDrawable(PrefsActivity.this, R.drawable.beer).mutate();
                 beerIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
                 alertDialog.setIcon(beerIcon);
                 alertDialog.setView(layout);
@@ -278,7 +279,7 @@ public class PrefsActivity extends PreferenceActivity {
                 View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 builder.setTitle(R.string.legal);
-                Drawable emailIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.email).mutate();
+                Drawable emailIcon = ContextCompat.getDrawable(PrefsActivity.this, R.drawable.email).mutate();
                 emailIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
                 builder.setIcon(emailIcon);
                 aboutText.setText(PrefsActivity.this.getText(R.string.legal_dialog));
@@ -302,13 +303,13 @@ public class PrefsActivity extends PreferenceActivity {
     }
 
     private void setTintedIcon(Preference preference, int resId) {
-        Drawable icon = getResources().getDrawable(resId).mutate();
+        Drawable icon = ContextCompat.getDrawable(this, resId).mutate();
         icon.setColorFilter(this.mIconTintColor, PorterDuff.Mode.SRC_IN);
         preference.setIcon(icon);
     }
 
     private void setTintedDialogIcon(ListPreference preference, int resId) {
-        Drawable icon = getResources().getDrawable(resId).mutate();
+        Drawable icon = ContextCompat.getDrawable(this, resId).mutate();
         icon.setColorFilter(this.mIconTintColor, PorterDuff.Mode.SRC_IN);
         preference.setDialogIcon(icon);
     }
