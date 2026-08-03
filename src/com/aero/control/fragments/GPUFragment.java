@@ -477,7 +477,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         String newSummary = "";
         String path = "";
         if (preference == this.mGPUControlFrequencies) {
-            if (this.mGPUFile == null) {
+            if (this.mGPUFile == null || !AeroActivity.genHelper.doesExist(this.mGPUFile)) {
                 Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
                 return false;
             }
