@@ -137,7 +137,9 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             return false;
         }
         String[] command = {"setprop " + file + " " + value};
-        AeroActivity.shell.setRootInfo(command);
+        if (!AeroActivity.shell.setRootInfo(command)) {
+            return false;
+        }
         Toast.makeText(getActivity(), R.string.need_reboot, 0).show();
         return true;
     }
