@@ -264,7 +264,6 @@ public class PrefsActivity extends PreferenceActivity {
                 alertDialog.setIcon(beerIcon);
                 alertDialog.setView(layout);
                 alertDialog.setPayPalIcons(true);
-                alertDialog.setNeutralButton(R.string.donation_quarx);
                 alertDialog.setPositiveButton(R.string.donation_blechdose);
                 aboutText.setText(PrefsActivity.this.getText(R.string.about_dialog));
                 alertDialog.show(PrefsActivity.this.getFragmentManager(), "");
