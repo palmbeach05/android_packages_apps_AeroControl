@@ -425,8 +425,13 @@ public final class AeroActivity extends Activity {
     public void onBackPressed() {
         if (mFragmentStack.size() > 1) {
             mFragmentStack.pop();
-            switchContent(mFragmentStack.peek(), false);
-            setTitle(this.mAeroTitle[this.mPreviousTitle]);
+            Fragment previousFragment = mFragmentStack.peek();
+            switchContent(previousFragment, false);
+            // Restore title by finding which fragment we're returning to
+            String restoredTitle = getTitleForFragment(previousFragment);
+            if (restoredTitle != null) {
+                setTitle(restoredTitle);
+            }
         }
         mBackCounter++;
         if (mBackCounter == 1) {
@@ -437,6 +442,34 @@ public final class AeroActivity extends Activity {
         }
     }
 
+    private String getTitleForFragment(Fragment fragment) {
+        // Map fragment instances back to their titles
+        if (fragment == this.mAeroFragment) {
+            return getString(R.string.slider_overview);
+        } else if (fragment == this.mCPUFragement) {
+            return getString(R.string.slider_cpu_settings);
+        } else if (fragment == this.mStatisticsFragment) {
+            return getString(R.string.slider_statistics);
+        } else if (fragment == this.mGPUFragement) {
+            return getString(R.string.slider_gpu_settings);
+        } else if (fragment == this.mMemoryFragment) {
+            return getString(R.string.slider_memory_settings);
+        } else if (fragment == this.mMiscSettingsFragment) {
+            return getString(R.string.slider_misc_settings);
+        } else if (fragment == this.mDefyPartsFragment) {
+            return getString(R.string.slider_defy_parts);
+        } else if (fragment == this.mUpdaterFragement) {
+            return getString(R.string.slider_backup_restore);
+        } else if (fragment == this.mProfileFragment) {
+            return getString(R.string.slider_profile);
+        } else if (fragment == this.mAppStatisticsFragment) {
+            return getString(R.string.slider_app_monitor);
+        } else if (fragment == this.mTestSuiteFragment) {
+            return getString(R.string.slider_test_suite_settings);
+        }
+        return null;
+    }
+
     public static void resetBackCounter() {
         mBackCounter = 0;
     }
@@ -445,7 +478,7 @@ public final class AeroActivity extends Activity {
         switchContent(fragment, true);
     }
 
-    private void switchContent(final Fragment fragment, boolean addToStack) {
+    private void switchContent(final Fragment fragment, final boolean addToStack) {
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
         }
@@ -457,6 +490,10 @@ public final class AeroActivity extends Activity {
                 }
                 try {
                     AeroActivity.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+                    // Only add to stack after the transaction has been committed
+                    if (addToStack) {
+                        mFragmentStack.push(fragment);
+                    }
                 } catch (IllegalStateException e) {
                     if (!AeroActivity.this.isFinishing()) {
                         AeroActivity.this.recreate();
@@ -465,9 +502,6 @@ public final class AeroActivity extends Activity {
             }
         };
         mHandler.postDelayed(this.mPendingSwitch, genHelper.getDefaultDelay());
-        if (addToStack) {
-            mFragmentStack.push(fragment);
-        }
     }
 
     @Override // android.app.Activity
