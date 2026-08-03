@@ -14,7 +14,6 @@
     <string name="default_values">Default Values</string>
     <string name="disabled">Disabled</string>
     <string name="dont_show_again">Don\'t show this again</string>
-    <string name="dra_rate_app">Like it? Rate it!</string>
     <string name="enabled">Enabled</string>
     <string name="folder_empty">Folder is empty</string>
     <string name="got_it">Got it</string>
@@ -26,7 +25,6 @@
     <string name="need_reboot">This may require a reboot.</string>
     <string name="ok">OK</string>
     <string name="proceed_with_reset">Are you sure you want to proceed?</string>
-	<string name="rate_it">Click me and rate this app!</string>
     <string name="refresh">Refresh</string>
     <string name="reload">Reset</string>
     <string name="retry">Retry</string>
