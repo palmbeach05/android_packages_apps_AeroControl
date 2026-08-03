@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -36,6 +37,7 @@ public class AppMonitorFragment extends Fragment {
     private final String mClassName = getClass().getName();
     private Context mContext;
     private ListView mListView;
+    private Runnable mPendingNavigationRunnable;
     private ProgressDialog mProgressDialog;
     private ViewGroup mRoot;
 
@@ -52,6 +54,28 @@ public class AppMonitorFragment extends Fragment {
         super.onResume();
         clearUI();
         loadUI();
+    }
+
+    @Override // android.app.Fragment
+    public void onPause() {
+        super.onPause();
+        if (this.mPendingNavigationRunnable != null) {
+            AeroActivity.mHandler.removeCallbacks(this.mPendingNavigationRunnable);
+        }
+    }
+
+    @Override // android.app.Fragment
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (this.mPendingNavigationRunnable != null) {
+            AeroActivity.mHandler.removeCallbacks(this.mPendingNavigationRunnable);
+            this.mPendingNavigationRunnable = null;
+        }
+        if (this.mProgressDialog != null && this.mProgressDialog.isShowing()) {
+            this.mProgressDialog.dismiss();
+        }
+        this.mRoot = null;
+        this.mListView = null;
     }
 
     @Override // android.app.Fragment
@@ -128,7 +152,7 @@ public class AppMonitorFragment extends Fragment {
 
             @Override // java.lang.Runnable
             public void run() {
-                if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.mRoot == null) {
+                if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getView() == null || AppMonitorFragment.this.mRoot == null) {
                     return;
                 }
                 TextView tmp = (TextView) AppMonitorFragment.this.mRoot.findViewById(R.id.noData);
@@ -170,15 +194,19 @@ public class AppMonitorFragment extends Fragment {
                         Bundle args = new Bundle();
                         args.putParcelable("aero_data", (Parcelable) AnonymousClass1.this.val$appData.get(position));
                         AppMonitorFragment.this.mAppMonitorDetailFragment.setArguments(args);
-                        AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1.1
+                        AppMonitorFragment.this.mPendingNavigationRunnable = new Runnable() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1.1
                             @Override // java.lang.Runnable
                             public void run() {
                                 if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getFragmentManager() == null) {
                                     return;
                                 }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && AppMonitorFragment.this.getFragmentManager().isStateSaved()) {
+                                    return;
+                                }
                                 AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, AppMonitorFragment.this.mAppMonitorDetailFragment).addToBackStack("AppDetail").commit();
                             }
-                        }, AeroActivity.genHelper.getDefaultDelay());
+                        };
+                        AeroActivity.mHandler.postDelayed(AppMonitorFragment.this.mPendingNavigationRunnable, AeroActivity.genHelper.getDefaultDelay());
                     }
                 });
             }
