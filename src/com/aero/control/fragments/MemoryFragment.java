@@ -347,7 +347,13 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MemoryFragment.3
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog, int which) {
-                String[] cmds = {"echo " + ((Object) editRandomRead.getText()) + " > " + FilePath.RANDOM_READ_WAKEUP, "echo " + ((Object) editRandomWrite.getText()) + " > " + FilePath.RANDOM_WRITE_WAKEUP};
+                String readValue = editRandomRead.getText().toString().trim();
+                String writeValue = editRandomWrite.getText().toString().trim();
+                if (!readValue.matches("^\\d+$") || !writeValue.matches("^\\d+$")) {
+                    Toast.makeText(MemoryFragment.this.getActivity(), "Please enter a valid non-negative number.", 1).show();
+                    return;
+                }
+                String[] cmds = {"echo " + readValue + " > " + FilePath.RANDOM_READ_WAKEUP, "echo " + writeValue + " > " + FilePath.RANDOM_WRITE_WAKEUP};
                 AeroActivity.shell.setRootInfo(cmds);
                 if (MemoryFragment.this.mRandomSettings.isChecked().booleanValue()) {
                     SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(MemoryFragment.this.getActivity().getBaseContext());

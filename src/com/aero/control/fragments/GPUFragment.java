@@ -205,8 +205,9 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         }
         try {
             if (this.mGPUFile != null) {
-                this.mGPUControlFrequencies.setValue(AeroActivity.shell.getInfoArray(this.mGPUFile, 0, 0)[0]);
-                this.mGPUControlFrequencies.setSummary(AeroActivity.shell.toMHz(AeroActivity.shell.getInfoArray(this.mGPUFile, 0, 0)[0].substring(0, AeroActivity.shell.getInfoArray(this.mGPUFile, 0, 0)[0].length() - 3)));
+                String currentFreq = AeroActivity.shell.getInfoArray(this.mGPUFile, 0, 0)[0];
+                this.mGPUControlFrequencies.setValue(currentFreq);
+                this.mGPUControlFrequencies.setSummary(formatFrequencySummary(currentFreq));
             }
             if (AeroActivity.shell.getInfo(FilePath.GPU_CONTROL_ACTIVE).equals("1")) {
                 checkGpuControl = true;
@@ -377,6 +378,20 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         this.mColorDialog.show();
     }
 
+    /**
+     * Safely converts a raw GPU frequency value (expected to be reported in Hz,
+     * with the driver-specific unit suffix trimmed) into a human readable MHz
+     * summary. Device kernels can report malformed, empty or unexpectedly short
+     * values, so the trailing-suffix trim is only attempted when the string is
+     * long enough, avoiding a StringIndexOutOfBoundsException/crash.
+     */
+    private String formatFrequencySummary(String value) {
+        if (value == null || value.length() <= 3) {
+            return NO_DATA_FOUND;
+        }
+        return AeroActivity.shell.toMHz(value.substring(0, value.length() - 3));
+    }
+
     /* JADX INFO: Access modifiers changed from: private */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
         int red;
@@ -462,16 +477,8 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         String newSummary = "";
         String path = "";
         if (preference == this.mGPUControlFrequencies) {
-            if (a == null || a.length() <= 3 || this.mGPUFile == null) {
-                Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-                return false;
-            }
             path = this.mGPUFile;
-            newSummary = AeroActivity.shell.toMHz(a.substring(0, a.length() - 3));
-            if (newSummary.equals(NO_DATA_FOUND)) {
-                Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-                return false;
-            }
+            newSummary = formatFrequencySummary(a);
         } else if (preference == this.mGPUGovernor) {
             if (this.PrefCat != null) {
                 this.root.removePreference(this.PrefCat);
