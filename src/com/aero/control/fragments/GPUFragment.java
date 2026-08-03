@@ -477,8 +477,16 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         String newSummary = "";
         String path = "";
         if (preference == this.mGPUControlFrequencies) {
-            path = this.mGPUFile;
+            if (this.mGPUFile == null || !AeroActivity.genHelper.doesExist(this.mGPUFile)) {
+                Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+                return false;
+            }
             newSummary = formatFrequencySummary(a);
+            if (newSummary.equals(NO_DATA_FOUND)) {
+                Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+                return false;
+            }
+            path = this.mGPUFile;
         } else if (preference == this.mGPUGovernor) {
             if (this.PrefCat != null) {
                 this.root.removePreference(this.PrefCat);
