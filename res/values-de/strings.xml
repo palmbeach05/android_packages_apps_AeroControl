@@ -272,15 +272,14 @@
     <!-- About Screen & Social / Legal Open Source Notice Items    -->
     <!-- ========================================================= -->
     <string name="about">Über</string>
-    <string name="about_dialog">Hallo. Danke, dass du meine App nutzt. Mein Name ist Alexander Christ (Blechd0se) und ich habe diese App aus Spaß und in meiner Freizeit entwickelt. Alles ist Open Source, daher kannst du den Quellcode herunterladen und nach Belieben verändern. Wenn du möchtest, kannst du entweder Quarx für seine Arbeit an der ROM unterstützen oder mich. The joy of living is in the giving.</string>
+    <string name="about_dialog">Aero Control was originally created by Alexander Christ (Blechd0se) while assisting Quarx and other developers with the Motorola Defy. It is open-source and compatible with a variety of devices. If you wish to show your support, you can donate to Blechd0se.</string>
     <string name="donation_blechdose">Blechd0se</string>
-    <string name="donation_quarx">Quarx</string>
     <string name="github">GitHub</string>
     <string name="legal">Rechtliche Hinweise</string>
     <string name="legal_dialog">Diese App ist unter der Apache-Lizenz lizenziert. Eine Kopie der Lizenz kann hier heruntergeladen werden:\n<a href="http://www.apache.org/licenses/LICENSE-2.0\n" target="_blank" rel="noopener noreferrer" title="http://www.apache.org/licenses/LICENSE-2.0\n">http://www.apache.org/licenses/LICENSE-2.0\n</a>\n\nDie ShowCase Library von Alex Curran ist unter der Apache-2.0-Lizenz lizenziert.\nDie HoloGraph Library von Daniel Nadeau ist unter der Apache-2.0-Lizenz lizenziert.</string>
     <string name="send_email">E-Mail senden</string>
     <string name="xda">XDA-Thread</string>
-
+    
     <!-- ========================================================= -->
     <!-- Introduction Guide System Walkthrough                     -->
     <!-- ========================================================= -->

@@ -8,7 +8,6 @@
     <string name="save">Salvar</string>
     <string name="github">Github AeroControl</string>
     <string name="donation_blechdose">Contribua com Blechdose</string>
-    <string name="donation_quarx">Contribua com Quarx</string>
     <string name="default_values">Valores padrão</string>
     <string name="need_reboot">Isso pode requerer um reinício.</string>
     <string name="unavailable">Indisponível</string>
@@ -46,7 +45,7 @@
     <string name="app_theme_red">Vermelho - Leve Holo com toques vermelhos</string>
     <string name="app_theme_light">Claro - Leve Holo com toques azuis</string>
     <string name="app_theme_dark">Escuro - Leve Holo com toques azuis e barra de ação preta</string>
-    <string name="about_dialog">Olá. Obrigado por usar este aplicativo. Meu nome é Alexander Christ (Blechd0se) e escrevi esse aplicativo por diversão, no meu tempo livre. Ele também é de código aberto, então você pode pegar o código-fonte e modificar o quanto quiser. Se você quiser, pode também contribuir com Quarx pelo seu incrível trabalho, ou contribuir comigo. A alegria da vida está em doar. </string>
+    <string name="about_dialog">Aero Control was originally created by Alexander Christ (Blechd0se) while assisting Quarx and other developers with the Motorola Defy. It is open-source and compatible with a variety of devices. If you wish to show your support, you can donate to Blechd0se.</string>
     <string name="root_required">O seu dispositivo não parece estar com root. Este aplicativo não irá funcionar corretamente sem root. Se você acha que estou errado, por favor me informe!</string>
     <string name="pref_cpu_freq">Frequências</string>
     <string name="pref_max_freq_cpu">Frequência máx.</string>
