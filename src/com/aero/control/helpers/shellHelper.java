@@ -410,7 +410,7 @@ public final class shellHelper {
     }
 
     public final synchronized void setRootInfo(String command, String content) {
-        if (command == null || command.isEmpty() || content == null) {
+        if (command == null || command.isEmpty() || command.trim().isEmpty() || content == null || content.isEmpty() || content.trim().isEmpty()) {
             Log.e(LOG_TAG, "setRootInfo called with invalid command or content, ignoring.");
             return;
         }
