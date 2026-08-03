@@ -3,8 +3,8 @@ package com.aero.control.fragments;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -36,7 +36,9 @@ public class AppMonitorFragment extends Fragment {
     private AppMonitorDetailFragment mAppMonitorDetailFragment;
     private final String mClassName = getClass().getName();
     private Context mContext;
+    private int mLoadGeneration = 0;
     private ListView mListView;
+    private Runnable mPendingNavigationRunnable;
     private ProgressDialog mProgressDialog;
     private ViewGroup mRoot;
 
@@ -53,6 +55,28 @@ public class AppMonitorFragment extends Fragment {
         super.onResume();
         clearUI();
         loadUI();
+    }
+
+    @Override // android.app.Fragment
+    public void onPause() {
+        super.onPause();
+        if (this.mPendingNavigationRunnable != null) {
+            AeroActivity.mHandler.removeCallbacks(this.mPendingNavigationRunnable);
+        }
+    }
+
+    @Override // android.app.Fragment
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (this.mPendingNavigationRunnable != null) {
+            AeroActivity.mHandler.removeCallbacks(this.mPendingNavigationRunnable);
+            this.mPendingNavigationRunnable = null;
+        }
+        if (this.mProgressDialog != null && this.mProgressDialog.isShowing()) {
+            this.mProgressDialog.dismiss();
+        }
+        this.mRoot = null;
+        this.mListView = null;
     }
 
     @Override // android.app.Fragment
@@ -102,33 +126,45 @@ public class AppMonitorFragment extends Fragment {
         }
         this.mProgressDialog.show();
         AeroActivity.resetBackCounter();
-        Runnable runnable = new AnonymousClass2();
+        this.mLoadGeneration++;
+        Runnable runnable = new AnonymousClass2(this.mLoadGeneration);
         new Thread(runnable).start();
     }
 
     /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2, reason: invalid class name */
     class AnonymousClass2 implements Runnable {
-        AnonymousClass2() {
+        final int mCapturedGeneration;
+
+        AnonymousClass2(int generation) {
+            this.mCapturedGeneration = generation;
         }
 
         @Override // java.lang.Runnable
         public void run() {
             List<AppElement> appData = AeroActivity.mJobManager.getParentChildData(AppMonitorFragment.this.mContext);
             if (AppMonitorFragment.this.getActivity() != null) {
-                AppMonitorFragment.this.getActivity().runOnUiThread(new AnonymousClass1(appData));
+                AppMonitorFragment.this.getActivity().runOnUiThread(new AnonymousClass1(appData, this.mCapturedGeneration));
             }
         }
 
         /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2$1, reason: invalid class name */
         class AnonymousClass1 implements Runnable {
             final /* synthetic */ List<AppElement> val$appData;
+            final int mCapturedGeneration;
 
-            AnonymousClass1(List<AppElement> list) {
+            AnonymousClass1(List<AppElement> list, int generation) {
                 this.val$appData = list;
+                this.mCapturedGeneration = generation;
             }
 
             @Override // java.lang.Runnable
             public void run() {
+                if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getView() == null || AppMonitorFragment.this.mRoot == null) {
+                    return;
+                }
+                if (this.mCapturedGeneration != AppMonitorFragment.this.mLoadGeneration) {
+                    return;
+                }
                 TextView tmp = (TextView) AppMonitorFragment.this.mRoot.findViewById(R.id.noData);
                 ImageView iv = (ImageView) AppMonitorFragment.this.mRoot.findViewById(R.id.empty_image);
                 AppMonitorFragment.this.mProgressDialog.dismiss();
@@ -162,17 +198,27 @@ public class AppMonitorFragment extends Fragment {
                 AppMonitorFragment.this.mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1
                     @Override // android.widget.AdapterView.OnItemClickListener
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Intent intent = AppMonitorFragment.this.getActivity().getIntent();
-                        intent.putExtra("aero_data", (Parcelable) AnonymousClass1.this.val$appData.get(position));
-                        if (AppMonitorFragment.this.mAppMonitorDetailFragment == null) {
-                            AppMonitorFragment.this.mAppMonitorDetailFragment = new AppMonitorDetailFragment();
+                        if (AppMonitorFragment.this.mPendingNavigationRunnable != null) {
+                            AeroActivity.mHandler.removeCallbacks(AppMonitorFragment.this.mPendingNavigationRunnable);
                         }
-                        AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1.1
+                        final AppMonitorDetailFragment detailFragment = new AppMonitorDetailFragment();
+                        Bundle args = new Bundle();
+                        args.putParcelable("aero_data", (Parcelable) AnonymousClass1.this.val$appData.get(position));
+                        detailFragment.setArguments(args);
+                        AppMonitorFragment.this.mPendingNavigationRunnable = new Runnable() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1.1
                             @Override // java.lang.Runnable
                             public void run() {
-                                AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, AppMonitorFragment.this.mAppMonitorDetailFragment).addToBackStack("AppDetail").commit();
+                                if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getFragmentManager() == null) {
+                                    return;
+                                }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && AppMonitorFragment.this.getFragmentManager().isStateSaved()) {
+                                    return;
+                                }
+                                AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, detailFragment).addToBackStack("AppDetail").commit();
+                                AppMonitorFragment.this.mPendingNavigationRunnable = null;
                             }
-                        }, AeroActivity.genHelper.getDefaultDelay());
+                        };
+                        AeroActivity.mHandler.postDelayed(AppMonitorFragment.this.mPendingNavigationRunnable, AeroActivity.genHelper.getDefaultDelay());
                     }
                 });
             }
