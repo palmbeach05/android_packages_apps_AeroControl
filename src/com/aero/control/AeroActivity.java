@@ -86,6 +86,7 @@ public final class AeroActivity extends Activity {
     private CharSequence mTitle;
     private UpdaterFragment mUpdaterFragement;
     private String mCurrentTheme;
+    private Runnable mPendingSwitch;
     private static int mBackCounter = 0;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -423,7 +424,8 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     public void onBackPressed() {
         if (mFragmentStack.size() > 1) {
-            switchContent(mFragmentStack.lastElement());
+            mFragmentStack.pop();
+            switchContent(mFragmentStack.peek(), false);
             setTitle(this.mAeroTitle[this.mPreviousTitle]);
         }
         mBackCounter++;
@@ -440,16 +442,39 @@ public final class AeroActivity extends Activity {
     }
 
     public final void switchContent(final Fragment fragment) {
-        mHandler.postDelayed(new Runnable() { // from class: com.aero.control.AeroActivity.3
+        switchContent(fragment, true);
+    }
+
+    private void switchContent(final Fragment fragment, boolean addToStack) {
+        if (this.mPendingSwitch != null) {
+            mHandler.removeCallbacks(this.mPendingSwitch);
+        }
+        this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                if (AeroActivity.this.isFinishing()) {
+                    return;
+                }
                 try {
                     AeroActivity.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, fragment).commitAllowingStateLoss();
                 } catch (IllegalStateException e) {
-                    AeroActivity.this.recreate();
+                    if (!AeroActivity.this.isFinishing()) {
+                        AeroActivity.this.recreate();
+                    }
                 }
             }
-        }, genHelper.getDefaultDelay());
-        mFragmentStack.push(fragment);
+        };
+        mHandler.postDelayed(this.mPendingSwitch, genHelper.getDefaultDelay());
+        if (addToStack) {
+            mFragmentStack.push(fragment);
+        }
+    }
+
+    @Override // android.app.Activity
+    protected void onDestroy() {
+        if (this.mPendingSwitch != null) {
+            mHandler.removeCallbacks(this.mPendingSwitch);
+        }
+        super.onDestroy();
     }
 }
