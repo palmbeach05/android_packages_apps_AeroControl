@@ -137,7 +137,7 @@ public final class shellHelper {
         }
     }
 
-    private String getRootResult() {
+    private synchronized String getRootResult() {
         int read;
         List<String> commands = Collections.synchronizedList(this.mCommands);
         char[] buf = new char[8192];
@@ -267,20 +267,22 @@ public final class shellHelper {
                 reader.close();
             }
         } catch (IOException e) {
-            openShell();
-            addCommand("ls -l " + s);
-            String tmp = getRootResult();
-            if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
-                addCommand("cat " + s);
-                String catResult = getRootResult();
-                if (catResult != null) {
-                    info = catResult;
+            synchronized (this) {
+                openShell();
+                addCommand("ls -l " + s);
+                String tmp = getRootResult();
+                if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
+                    addCommand("cat " + s);
+                    String catResult = getRootResult();
+                    if (catResult != null) {
+                        info = catResult;
+                    }
                 }
+                if (info.equals(NO_DATA_FOUND)) {
+                    Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+                }
+                return info;
             }
-            if (info.equals(NO_DATA_FOUND)) {
-                Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
-            }
-            return info;
         }
     }
 
@@ -381,16 +383,18 @@ public final class shellHelper {
                 reader.close();
             }
         } catch (IOException e) {
-            openShell();
-            String result = getRootInfo("ls -l", s);
-            if (result != null && result.length() > 10 && !result.substring(0, 10).equals("--w-------")) {
-                String tmp = getRootInfo("cat", s);
-                output = buildArray(tmp, flag, flag_io);
+            synchronized (this) {
+                openShell();
+                String result = getRootInfo("ls -l", s);
+                if (result != null && result.length() > 10 && !result.substring(0, 10).equals("--w-------")) {
+                    String tmp = getRootInfo("cat", s);
+                    output = buildArray(tmp, flag, flag_io);
+                }
+                if (output[0].equals(NO_DATA_FOUND)) {
+                    Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+                }
+                return output;
             }
-            if (output[0].equals(NO_DATA_FOUND)) {
-                Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
-            }
-            return output;
         }
     }
 
@@ -471,7 +475,7 @@ public final class shellHelper {
         runCommands();
     }
 
-    public final String getRootInfo(String command, String parameter) {
+    public final synchronized String getRootInfo(String command, String parameter) {
         addCommand(command + " " + parameter);
         String ret = getRootResult();
         if (ret == null) {
@@ -480,7 +484,7 @@ public final class shellHelper {
         return ret;
     }
 
-    public final String[] getRootArray(String command, String split) {
+    public final synchronized String[] getRootArray(String command, String split) {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
         String ret = getRootResult();
