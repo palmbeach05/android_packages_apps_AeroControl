@@ -32,6 +32,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
+    private LoadKernelInfoTask mLoadTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
     private static final String timeStamp = new SimpleDateFormat("ddMMyyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
     private static final File BACKUP_PATH = new File(SDPATH + "/com.aero.control/backup/" + timeStamp + "/zImage");
@@ -69,7 +70,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
         // below reports back and updates them on the main thread.
         this.mBackupKernel.setEnabled(false);
         this.mRestoreKernel.setEnabled(false);
-        new LoadKernelInfoTask().execute();
+        this.mLoadTask = new LoadKernelInfoTask();
+        this.mLoadTask.execute();
         this.mRestoreKernel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.UpdaterFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -139,6 +141,15 @@ public class UpdaterFragment extends PlaceHolderFragment {
         });
     }
 
+    @Override // android.preference.PreferenceFragment, android.app.Fragment
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (this.mLoadTask != null) {
+            this.mLoadTask.cancel(true);
+            AeroActivity.shell.closeShell();
+        }
+    }
+
     /**
      * Looks up whether a zImage backup is available and lists any existing
      * backup folders. This work can fall back to spawning a root shell
@@ -156,15 +167,21 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
         @Override // android.os.AsyncTask
         protected Result doInBackground(Void... params) {
+            if (isCancelled()) {
+                return null;
+            }
             Result result = new Result();
             result.zImageAvailable = !AeroActivity.shell.getInfo(FilePath.zImage).equals(UpdaterFragment.NO_DATA_FOUND);
+            if (isCancelled()) {
+                return null;
+            }
             result.backupEntries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
             return result;
         }
 
         @Override // android.os.AsyncTask
         protected void onPostExecute(Result result) {
-            if (!UpdaterFragment.this.isAdded()) {
+            if (result == null || !UpdaterFragment.this.isAdded()) {
                 return;
             }
             if (!result.zImageAvailable) {
@@ -180,10 +197,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (!result.zImageAvailable) {
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
-            try {
+            if (result.backupEntries != null && result.backupEntries.length > 0) {
                 UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + result.backupEntries[0]);
                 UpdaterFragment.this.mRestoreKernel.setEnabled(true);
-            } catch (NullPointerException e) {
+            } else {
                 UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }

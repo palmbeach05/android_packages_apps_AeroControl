@@ -89,6 +89,28 @@ public final class shellHelper {
         }
     }
 
+    public synchronized void closeShell() {
+        if (this.mShellOutput != null) {
+            try {
+                this.mShellOutput.close();
+            } catch (IOException e) {
+            }
+            this.mShellOutput = null;
+        }
+        if (this.mOutput != null) {
+            try {
+                this.mOutput.close();
+            } catch (IOException e) {
+            }
+            this.mOutput = null;
+        }
+        if (this.mProcess != null) {
+            this.mProcess.destroy();
+            this.mProcess = null;
+        }
+        this.mShellLoaded = false;
+    }
+
     private synchronized boolean runCommands() {
         openShell();
         if (this.mShellLoaded) {
@@ -123,8 +145,14 @@ public final class shellHelper {
         try {
             if (this.mShellLoaded) {
                 for (String cmd : commands) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        return null;
+                    }
                     this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
                     do {
+                        if (Thread.currentThread().isInterrupted()) {
+                            return null;
+                        }
                         read = this.mOutput.read(buf);
                         if (read == -1) {
                             return null;
