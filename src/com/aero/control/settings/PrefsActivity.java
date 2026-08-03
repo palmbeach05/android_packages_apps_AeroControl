@@ -260,7 +260,6 @@ public class PrefsActivity extends PreferenceActivity {
                 alertDialog.setContext(PrefsActivity.context);
                 alertDialog.setTitle(R.string.about);
                 Drawable beerIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.beer).mutate();
-                beerIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
                 alertDialog.setIcon(beerIcon);
                 alertDialog.setView(layout);
                 alertDialog.setPayPalIcons(true);
