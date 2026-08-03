@@ -89,6 +89,28 @@ public final class shellHelper {
         }
     }
 
+    public synchronized void closeShell() {
+        if (this.mShellOutput != null) {
+            try {
+                this.mShellOutput.close();
+            } catch (IOException e) {
+            }
+            this.mShellOutput = null;
+        }
+        if (this.mOutput != null) {
+            try {
+                this.mOutput.close();
+            } catch (IOException e) {
+            }
+            this.mOutput = null;
+        }
+        if (this.mProcess != null) {
+            this.mProcess.destroy();
+            this.mProcess = null;
+        }
+        this.mShellLoaded = false;
+    }
+
     private synchronized boolean runCommands() {
         openShell();
         if (this.mShellLoaded) {
@@ -123,8 +145,14 @@ public final class shellHelper {
         try {
             if (this.mShellLoaded) {
                 for (String cmd : commands) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        return null;
+                    }
                     this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
                     do {
+                        if (Thread.currentThread().isInterrupted()) {
+                            return null;
+                        }
                         read = this.mOutput.read(buf);
                         if (read == -1) {
                             return null;
@@ -244,7 +272,10 @@ public final class shellHelper {
             String tmp = getRootResult();
             if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
                 addCommand("cat " + s);
-                info = getRootResult();
+                String catResult = getRootResult();
+                if (catResult != null) {
+                    info = catResult;
+                }
             }
             if (info.equals(NO_DATA_FOUND)) {
                 Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
@@ -453,6 +484,9 @@ public final class shellHelper {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
         String ret = getRootResult();
+        if (ret == null) {
+            ret = NO_DATA_FOUND;
+        }
         String[] arr$ = ret.split(split);
         for (String a : arr$) {
             temp.add(a);
