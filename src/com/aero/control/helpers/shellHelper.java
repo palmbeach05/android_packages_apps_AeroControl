@@ -89,7 +89,7 @@ public final class shellHelper {
         }
     }
 
-    private synchronized void runCommands() {
+    private synchronized boolean runCommands() {
         openShell();
         if (this.mShellLoaded) {
             List<String> commands = Collections.synchronizedList(this.mCommands);
@@ -104,10 +104,14 @@ public final class shellHelper {
                 }
             } catch (IOException e2) {
                 Log.e(LOG_TAG, "Something interrupted our operations...", e2);
+                this.mCommands.clear();
+                return false;
             }
             this.mCommands.clear();
+            return true;
         } else {
             this.mCommands.clear();
+            return false;
         }
     }
 
@@ -409,10 +413,10 @@ public final class shellHelper {
         }
     }
 
-    public final synchronized void setRootInfo(String command, String content) {
+    public final synchronized boolean setRootInfo(String command, String content) {
         if (command == null || command.isEmpty() || command.trim().isEmpty() || content == null || content.isEmpty() || content.trim().isEmpty()) {
             Log.e(LOG_TAG, "setRootInfo called with invalid command or content, ignoring.");
-            return;
+            return false;
         }
         String tmp;
         String tmp2 = command.substring(command.length() - 1);
@@ -423,12 +427,12 @@ public final class shellHelper {
         }
         String[] commands = {"chmod 0666 " + content, "echo \"" + tmp + "\" > " + content};
         addCommands(commands);
-        runCommands();
+        return runCommands();
     }
 
-    public final void setRootInfo(String[] array) {
+    public final boolean setRootInfo(String[] array) {
         addCommands(array);
-        runCommands();
+        return runCommands();
     }
 
     public final void remountSystem() {
