@@ -86,6 +86,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String s2 = (String) o;
+                if (!isValidBackupName(s2)) {
+                    Log.e("Aero", "Refusing to restore from suspicious backup name: " + s2);
+                    Toast.makeText(UpdaterFragment.this.getActivity(), R.string.unavailable, 1).show();
+                    return false;
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(UpdaterFragment.this.getActivity());
                 LayoutInflater inflater = UpdaterFragment.this.getActivity().getLayoutInflater();
                 View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
