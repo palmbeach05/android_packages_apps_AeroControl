@@ -101,11 +101,17 @@ public class VoltageFragment extends PlaceHolderFragment {
             voltPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.VoltageFragment.1
                 @Override // android.preference.Preference.OnPreferenceChangeListener
                 public boolean onPreferenceChange(Preference preference, Object o) {
+                    String value = o.toString().trim();
+                    try {
+                        Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
                     String[] voltArray = (String[]) VoltageFragment.this.voltList.toArray(new String[0]);
                     String tmp = "";
-                    voltArray[preference.getOrder()] = o.toString();
-                    preference.setSummary(o.toString() + "mV");
-                    voltPref.setPrefSummary(o.toString() + "mV");
+                    voltArray[preference.getOrder()] = value;
+                    preference.setSummary(value + "mV");
+                    voltPref.setPrefSummary(value + "mV");
                     VoltageFragment.this.voltList.clear();
                     for (String a : voltArray) {
                         tmp = tmp + " " + a;

@@ -171,6 +171,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void restorezImage(String s) {
+        if (!isValidBackupName(s)) {
+            Log.e("Aero", "Refusing to restore from suspicious backup name: " + s);
+            Toast.makeText(getActivity(), R.string.unavailable, 1).show();
+            return;
+        }
         String[] commands = {"rm -f /system/bootstrap/2nd-boot/zImage", "cp /sdcard/com.aero.control/backup/" + s + "/zImage " + FilePath.zImage};
         AeroActivity.shell.setRootInfo(commands);
         Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
@@ -178,9 +183,26 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void restoreBoot(String s) {
+        if (!isValidBackupName(s)) {
+            Log.e("Aero", "Refusing to restore from suspicious backup name: " + s);
+            Toast.makeText(getActivity(), R.string.unavailable, 1).show();
+            return;
+        }
         String filepath = new File("/sdcard/com.aero.control/backup/" + s + "/boot.img").getPath();
         String[] commands = {"chmod 0777 " + filepath, "dd if=" + filepath + " of=" + this.mBackup};
         AeroActivity.shell.setRootInfo(commands);
         Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
+    }
+
+    /**
+     * Backup folder names are normally generated internally as a ddMMyyyy
+     * timestamp, but the restore list is populated from a directory listing
+     * on external storage, which is world-writable on legacy Android
+     * versions. Reject anything containing path traversal or shell
+     * metacharacters before it is concatenated into a privileged shell
+     * command.
+     */
+    private static boolean isValidBackupName(String name) {
+        return name != null && name.matches("[a-zA-Z0-9_-]+");
     }
 }
