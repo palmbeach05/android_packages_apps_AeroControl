@@ -35,7 +35,6 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
-import fr.nicolaspomepuy.discreetapprate.AppRate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -139,7 +138,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
             AeroActivity.perAppService = new PerAppServiceHelper(this.mContext);
         }
         if (!AeroActivity.perAppService.getState() && checkAllStates() && !this.mWarning) {
-            AppRate.with(getActivity()).text(R.string.pref_profile_service_not_running).fromTop(false).delay(1000).autoHide(15000).allowPlayLink(false).forceShow();
+            Toast.makeText(this.mContext, R.string.pref_profile_service_not_running, Toast.LENGTH_LONG).show();
             this.mWarning = true;
         }
     }
@@ -429,7 +428,7 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                     AeroActivity.perAppService = new PerAppServiceHelper(ProfileFragment.this.mContext);
                 }
                 if (!AeroActivity.perAppService.getState() && ProfileFragment.this.checkAllStates() && !ProfileFragment.this.mWarning) {
-                    AppRate.with(ProfileFragment.this.getActivity()).text(R.string.pref_profile_service_not_running).fromTop(false).delay(1000).autoHide(15000).allowPlayLink(false).forceShow();
+                    Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_service_not_running, Toast.LENGTH_LONG).show();
                     ProfileFragment.this.mWarning = true;
                 }
                 ProfileFragment.this.mPerAppDialogVisible = false;

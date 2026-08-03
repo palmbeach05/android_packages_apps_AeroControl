@@ -19,7 +19,6 @@ import com.aero.control.adapter.AeroData;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
-import fr.nicolaspomepuy.discreetapprate.AppRate;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -123,7 +122,6 @@ public class AeroFragment extends Fragment {
         if (!this.mExecuted) {
             setPermissions();
         }
-        AppRate.with(getActivity()).text(R.string.rate_it).fromTop(false).delay(2000).autoHide(10000).allowPlayLink(true).checkAndShow();
         return this.root;
     }
 

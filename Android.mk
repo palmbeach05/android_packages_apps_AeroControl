@@ -15,7 +15,7 @@ LOCAL_RESOURCE_DIR := \
     $(LOCAL_PATH)/res
 
 LOCAL_AAPT_FLAGS := \
-    --extra-packages com.getbase.floatingactionbutton:com.echo.holographlibrary:com.cocosw.undobar:com.db.williamchart:fr.nicolaspomepuy.discreetapprate:com.github.amlcurran.showcaseview:com.ikimuhendis.ldrawer
+    --extra-packages com.getbase.floatingactionbutton:com.echo.holographlibrary:com.cocosw.undobar:com.db.williamchart:com.github.amlcurran.showcaseview:com.ikimuhendis.ldrawer
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
     android-support-v4_13 \

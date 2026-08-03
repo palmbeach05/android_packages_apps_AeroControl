@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -211,10 +210,11 @@ public class AppMonitorFragment extends Fragment {
                                 if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getFragmentManager() == null) {
                                     return;
                                 }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && AppMonitorFragment.this.getFragmentManager().isStateSaved()) {
-                                    return;
+                                try {
+                                    AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, detailFragment).addToBackStack("AppDetail").commit();
+                                } catch (IllegalStateException e) {
+                                    Log.e(AppMonitorFragment.this.mClassName, "Could not commit fragment transaction, state already saved.", e);
                                 }
-                                AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, detailFragment).addToBackStack("AppDetail").commit();
                                 AppMonitorFragment.this.mPendingNavigationRunnable = null;
                             }
                         };
