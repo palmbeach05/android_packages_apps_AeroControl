@@ -11,9 +11,14 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
+import java.util.regex.Pattern;
 
 /* JADX INFO: loaded from: classes.dex */
 public class DefyPartsFragment extends PlaceHolderFragment {
+    // Only allow the characters property values for these settings can legitimately
+    // contain. This prevents shell metacharacters (;, |, &, $, `, etc.) supplied via
+    // a preference value from being injected into the "setprop" root command.
+    private static final Pattern SAFE_PROP_VALUE = Pattern.compile("^[a-zA-Z0-9_.:-]{1,64}$");
     private CustomTextPreference button_brightness;
     private CustomListPreference led_charging;
     private CustomListPreference multi_touch;
@@ -81,7 +86,9 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String value = o.toString();
-                DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE);
+                if (!DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE)) {
+                    return false;
+                }
                 DefyPartsFragment.this.led_charging.setValue(value);
                 DefyPartsFragment.this.led_charging.setSummary(value);
                 return true;
@@ -90,7 +97,9 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         this.multi_touch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.DefyPartsFragment.2
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_TOUCH_POINTS);
+                if (!DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_TOUCH_POINTS)) {
+                    return false;
+                }
                 DefyPartsFragment.this.multi_touch.setValue(o.toString());
                 DefyPartsFragment.this.multi_touch.setSummary(o.toString());
                 return true;
@@ -99,7 +108,9 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         this.button_brightness.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.DefyPartsFragment.3
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_BUTTON_BRIGHTNESS);
+                if (!DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_BUTTON_BRIGHTNESS)) {
+                    return false;
+                }
                 DefyPartsFragment.this.button_brightness.setText(o.toString());
                 DefyPartsFragment.this.button_brightness.setPrefSummary(o.toString());
                 return true;
@@ -107,10 +118,30 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         });
     }
 
+    /**
+     * Applies a preference-driven value via a root "setprop" call.
+     *
+     * The value is validated against a strict allow-list of characters before being
+     * concatenated into the shell command, since it previously flowed unsanitized from
+     * user-editable preferences straight into a privileged root command (command injection).
+     *
+     * @return true if the value was valid and the command was executed, false if the value
+     *         was rejected (in which case the calling listener should also return false so
+     *         the invalid value is not persisted).
+     */
     /* JADX INFO: Access modifiers changed from: private */
-    public void changePreference(Preference preference, Object o, String file) {
-        String[] command = {"setprop " + file + " " + o.toString()};
-        AeroActivity.shell.setRootInfo(command);
+    public boolean changePreference(Preference preference, Object o, String file) {
+        String value = o == null ? null : o.toString();
+        if (value == null || !SAFE_PROP_VALUE.matcher(value).matches()) {
+            Toast.makeText(getActivity(), R.string.error_detected, 0).show();
+            return false;
+        }
+        String[] command = {"setprop " + file + " " + value};
+        if (!AeroActivity.shell.setRootInfo(command)) {
+            Toast.makeText(getActivity(), R.string.error_detected, 0).show();
+            return false;
+        }
         Toast.makeText(getActivity(), R.string.need_reboot, 0).show();
+        return true;
     }
 }
