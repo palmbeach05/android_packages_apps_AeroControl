@@ -272,7 +272,10 @@ public final class shellHelper {
             String tmp = getRootResult();
             if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
                 addCommand("cat " + s);
-                info = getRootResult();
+                String catResult = getRootResult();
+                if (catResult != null) {
+                    info = catResult;
+                }
             }
             if (info.equals(NO_DATA_FOUND)) {
                 Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
@@ -481,6 +484,9 @@ public final class shellHelper {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
         String ret = getRootResult();
+        if (ret == null) {
+            ret = NO_DATA_FOUND;
+        }
         String[] arr$ = ret.split(split);
         for (String a : arr$) {
             temp.add(a);
