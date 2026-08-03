@@ -7,9 +7,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -88,7 +86,6 @@ public final class AeroActivity extends Activity {
     private CharSequence mTitle;
     private UpdaterFragment mUpdaterFragement;
     private String mCurrentTheme;
-    private int mIconTintColor;
     private static int mBackCounter = 0;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -100,9 +97,6 @@ public final class AeroActivity extends Activity {
         this.mCurrentTheme = ThemeHelper.getTheme(this);
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
-        TypedValue tintTypedValue = new TypedValue();
-        getTheme().resolveAttribute(R.attr.aeroIconTint, tintTypedValue, true);
-        this.mIconTintColor = tintTypedValue.data;
         setContentView(R.layout.activity_main);
         if (getResources().getBoolean(R.bool.portrait_only)) {
             setRequestedOrientation(1);
@@ -214,10 +208,6 @@ public final class AeroActivity extends Activity {
                 text.setTypeface(AeroActivity.font);
                 if (icon != null) {
                     icon.setImageResource(item.drawable);
-                    Drawable iconDrawable = icon.getDrawable();
-                    if (iconDrawable != null) {
-                        iconDrawable.mutate().setColorFilter(AeroActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
-                    }
                 }
                 if (text != null) {
                     text.setText(AeroActivity.this.getString(item.content));
