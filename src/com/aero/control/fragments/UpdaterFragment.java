@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -57,31 +58,18 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 this.mBackup = s;
             }
         }
-        if (AeroActivity.shell.getInfo(FilePath.zImage).equals(NO_DATA_FOUND)) {
-            this.mBackupKernel.setEnabled(false);
-        }
-        if (this.mBackup != null) {
-            this.mBackupKernel.setEnabled(true);
-        }
-        if (!this.mBackupKernel.isEnabled() && update.isWhiteListed(Build.MODEL) != null) {
-            this.mBackup = update.isWhiteListed(Build.MODEL);
-            this.mBackupKernel.setEnabled(true);
-        }
-        if (AeroActivity.shell.getInfo(FilePath.zImage).equals(NO_DATA_FOUND)) {
-            this.mRestoreKernel.setEnabled(false);
-        }
-        try {
-            this.mBackupKernel.setSummary(((Object) getText(R.string.last_backup_from)) + " " + AeroActivity.shell.getDirInfo(SDPATH + "/com.aero.control/backup/", false)[0]);
-            this.mRestoreKernel.setEnabled(true);
-        } catch (NullPointerException e) {
-            this.mBackupKernel.setSummary(((Object) getText(R.string.last_backup_from)) + " " + ((Object) getText(R.string.unavailable)));
-            this.mRestoreKernel.setEnabled(false);
-        }
         this.mBackupKernel.setIcon(R.drawable.ic_action_copy);
         this.mRestoreKernel.setIcon(R.drawable.ic_action_time);
-        this.mRestoreKernel.setEntries(AeroActivity.shell.getDirInfo(SDPATH + File.separator + "/com.aero.control/backup/", false));
-        this.mRestoreKernel.setEntryValues(AeroActivity.shell.getDirInfo(SDPATH + "/com.aero.control/backup/", false));
         this.mRestoreKernel.setDialogIcon(R.drawable.restore);
+        // AeroActivity.shell.getInfo()/getDirInfo() can fall back to spawning
+        // a root shell (Runtime.exec("su")) when a file can't be read
+        // directly, which used to run synchronously right here in onCreate()
+        // on the UI thread and could ANR the app while waiting on the su
+        // prompt. Disable both preferences until the background lookup
+        // below reports back and updates them on the main thread.
+        this.mBackupKernel.setEnabled(false);
+        this.mRestoreKernel.setEnabled(false);
+        new LoadKernelInfoTask().execute();
         this.mRestoreKernel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.UpdaterFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -149,6 +137,59 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 return true;
             }
         });
+    }
+
+    /**
+     * Looks up whether a zImage backup is available and lists any existing
+     * backup folders. This work can fall back to spawning a root shell
+     * (see {@link com.aero.control.helpers.shellHelper#getInfo(String)}),
+     * so it must not run on the UI thread.
+     */
+    private class LoadKernelInfoTask extends AsyncTask<Void, Void, LoadKernelInfoTask.Result> {
+        private class Result {
+            boolean zImageAvailable;
+            String[] backupEntries;
+
+            private Result() {
+            }
+        }
+
+        @Override // android.os.AsyncTask
+        protected Result doInBackground(Void... params) {
+            Result result = new Result();
+            result.zImageAvailable = !AeroActivity.shell.getInfo(FilePath.zImage).equals(UpdaterFragment.NO_DATA_FOUND);
+            result.backupEntries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
+            return result;
+        }
+
+        @Override // android.os.AsyncTask
+        protected void onPostExecute(Result result) {
+            if (!UpdaterFragment.this.isAdded()) {
+                return;
+            }
+            if (!result.zImageAvailable) {
+                UpdaterFragment.this.mBackupKernel.setEnabled(false);
+            }
+            if (UpdaterFragment.this.mBackup != null) {
+                UpdaterFragment.this.mBackupKernel.setEnabled(true);
+            }
+            if (!UpdaterFragment.this.mBackupKernel.isEnabled() && update.isWhiteListed(Build.MODEL) != null) {
+                UpdaterFragment.this.mBackup = update.isWhiteListed(Build.MODEL);
+                UpdaterFragment.this.mBackupKernel.setEnabled(true);
+            }
+            if (!result.zImageAvailable) {
+                UpdaterFragment.this.mRestoreKernel.setEnabled(false);
+            }
+            try {
+                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + result.backupEntries[0]);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+            } catch (NullPointerException e) {
+                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
+                UpdaterFragment.this.mRestoreKernel.setEnabled(false);
+            }
+            UpdaterFragment.this.mRestoreKernel.setEntries(result.backupEntries);
+            UpdaterFragment.this.mRestoreKernel.setEntryValues(result.backupEntries);
+        }
     }
 
     /* JADX INFO: Access modifiers changed from: private */
