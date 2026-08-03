@@ -124,7 +124,6 @@
     <style name="AeroActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">#263238</item>
         <item name="android:titleTextStyle">@style/AeroTheme.ActionBar.TitleTextStyle</item>
-        <item name="android:homeAsUpIndicator">@drawable/ic_ab_back_white</item>
     </style>
     <style name="AeroTheme.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textColor">#ffffff</item>
