@@ -36,6 +36,7 @@ public class AppMonitorFragment extends Fragment {
     private AppMonitorDetailFragment mAppMonitorDetailFragment;
     private final String mClassName = getClass().getName();
     private Context mContext;
+    private int mLoadGeneration = 0;
     private ListView mListView;
     private Runnable mPendingNavigationRunnable;
     private ProgressDialog mProgressDialog;
@@ -125,34 +126,43 @@ public class AppMonitorFragment extends Fragment {
         }
         this.mProgressDialog.show();
         AeroActivity.resetBackCounter();
-        Runnable runnable = new AnonymousClass2();
+        this.mLoadGeneration++;
+        Runnable runnable = new AnonymousClass2(this.mLoadGeneration);
         new Thread(runnable).start();
     }
 
     /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2, reason: invalid class name */
     class AnonymousClass2 implements Runnable {
-        AnonymousClass2() {
+        final int mCapturedGeneration;
+
+        AnonymousClass2(int generation) {
+            this.mCapturedGeneration = generation;
         }
 
         @Override // java.lang.Runnable
         public void run() {
             List<AppElement> appData = AeroActivity.mJobManager.getParentChildData(AppMonitorFragment.this.mContext);
             if (AppMonitorFragment.this.getActivity() != null) {
-                AppMonitorFragment.this.getActivity().runOnUiThread(new AnonymousClass1(appData));
+                AppMonitorFragment.this.getActivity().runOnUiThread(new AnonymousClass1(appData, this.mCapturedGeneration));
             }
         }
 
         /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2$1, reason: invalid class name */
         class AnonymousClass1 implements Runnable {
             final /* synthetic */ List<AppElement> val$appData;
+            final int mCapturedGeneration;
 
-            AnonymousClass1(List<AppElement> list) {
+            AnonymousClass1(List<AppElement> list, int generation) {
                 this.val$appData = list;
+                this.mCapturedGeneration = generation;
             }
 
             @Override // java.lang.Runnable
             public void run() {
                 if (!AppMonitorFragment.this.isAdded() || AppMonitorFragment.this.getView() == null || AppMonitorFragment.this.mRoot == null) {
+                    return;
+                }
+                if (this.mCapturedGeneration != AppMonitorFragment.this.mLoadGeneration) {
                     return;
                 }
                 TextView tmp = (TextView) AppMonitorFragment.this.mRoot.findViewById(R.id.noData);
@@ -188,12 +198,13 @@ public class AppMonitorFragment extends Fragment {
                 AppMonitorFragment.this.mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1
                     @Override // android.widget.AdapterView.OnItemClickListener
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        if (AppMonitorFragment.this.mAppMonitorDetailFragment == null) {
-                            AppMonitorFragment.this.mAppMonitorDetailFragment = new AppMonitorDetailFragment();
+                        if (AppMonitorFragment.this.mPendingNavigationRunnable != null) {
+                            AeroActivity.mHandler.removeCallbacks(AppMonitorFragment.this.mPendingNavigationRunnable);
                         }
+                        final AppMonitorDetailFragment detailFragment = new AppMonitorDetailFragment();
                         Bundle args = new Bundle();
                         args.putParcelable("aero_data", (Parcelable) AnonymousClass1.this.val$appData.get(position));
-                        AppMonitorFragment.this.mAppMonitorDetailFragment.setArguments(args);
+                        detailFragment.setArguments(args);
                         AppMonitorFragment.this.mPendingNavigationRunnable = new Runnable() { // from class: com.aero.control.fragments.AppMonitorFragment.2.1.1.1
                             @Override // java.lang.Runnable
                             public void run() {
@@ -203,7 +214,8 @@ public class AppMonitorFragment extends Fragment {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && AppMonitorFragment.this.getFragmentManager().isStateSaved()) {
                                     return;
                                 }
-                                AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, AppMonitorFragment.this.mAppMonitorDetailFragment).addToBackStack("AppDetail").commit();
+                                AppMonitorFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, detailFragment).addToBackStack("AppDetail").commit();
+                                AppMonitorFragment.this.mPendingNavigationRunnable = null;
                             }
                         };
                         AeroActivity.mHandler.postDelayed(AppMonitorFragment.this.mPendingNavigationRunnable, AeroActivity.genHelper.getDefaultDelay());
