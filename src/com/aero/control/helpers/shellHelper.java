@@ -470,7 +470,7 @@ public final class shellHelper {
         return runCommands();
     }
 
-    public final void remountSystem() {
+    public final synchronized void remountSystem() {
         addCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
         runCommands();
     }
