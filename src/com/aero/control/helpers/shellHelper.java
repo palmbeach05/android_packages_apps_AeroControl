@@ -410,6 +410,10 @@ public final class shellHelper {
     }
 
     public final synchronized void setRootInfo(String command, String content) {
+        if (command == null || command.isEmpty() || command.trim().isEmpty() || content == null || content.isEmpty() || content.trim().isEmpty()) {
+            Log.e(LOG_TAG, "setRootInfo called with invalid command or content, ignoring.");
+            return;
+        }
         String tmp;
         String tmp2 = command.substring(command.length() - 1);
         if (tmp2.matches("^\\s*$")) {
