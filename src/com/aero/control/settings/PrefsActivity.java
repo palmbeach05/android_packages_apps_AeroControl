@@ -105,8 +105,8 @@ public class PrefsActivity extends PreferenceActivity {
         setTintedIcon(this.mPerAppToasts, R.drawable.ic_action_toast);
         setCheckedState(this.mPerAppToasts);
         setMinutes(this.mBootDelay, this.mBootDelay.getValue());
-        setTintedIcon(this.mAppTheme, R.drawable.gear);
-        setTintedDialogIcon(this.mAppTheme, R.drawable.gear);
+        setTintedIcon(this.mAppTheme, R.drawable.theme);
+        setTintedDialogIcon(this.mAppTheme, R.drawable.theme);
         setThemeSummary(this.mAppTheme, this.mAppTheme.getValue());
         setTintedIcon(resetTutorials, R.drawable.ic_action_warning);
         setCheckedState(this.mPer_app_check);
