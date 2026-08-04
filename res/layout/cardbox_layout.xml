@@ -2,7 +2,7 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
     <RelativeLayout
         android:id="@+id/wrapper"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="96dp"
         android:minWidth="96dp">
         <TextView
@@ -17,6 +17,7 @@
             android:maxLines="2"
             android:textAllCaps="true"/>
         <View
+            android:id="@+id/card_divider"
             android:background="@color/card_shadow"
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -26,7 +27,7 @@
             android:padding="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="23dp"
+            android:layout_below="@+id/card_divider"
             android:scaleType="center"
             android:layout_centerHorizontal="true"/>
     </RelativeLayout>
