@@ -396,6 +396,11 @@ public final class AeroActivity extends Activity {
         setTitle(title);
     }
 
+    public void closeAppDetail() {
+        getFragmentManager().popBackStack("AppDetail", 0);
+        setActionBarTitle(getString(R.string.slider_app_monitor));
+    }
+
     @Override // android.app.Activity
     public final void setTitle(CharSequence title) {
         this.mTitle = title;

@@ -98,7 +98,7 @@ public class AppMonitorDetailFragment extends Fragment {
                 @Override // android.content.DialogInterface.OnClickListener
                 public void onClick(DialogInterface dialog2, int which) {
                     AeroActivity.mJobManager.forceCleanUp(AppMonitorDetailFragment.this.mAppName);
-                    AppMonitorDetailFragment.this.getFragmentManager().popBackStack();
+                    ((AeroActivity) AppMonitorDetailFragment.this.getActivity()).closeAppDetail();
                 }
             }).create();
             dialog.show();
@@ -217,7 +217,7 @@ public class AppMonitorDetailFragment extends Fragment {
             data = args != null ? (AppElement) args.getParcelable("aero_data") : null;
             if (data == null) {
                 if (isAdded()) {
-                    getFragmentManager().popBackStack();
+                    ((AeroActivity) getActivity()).closeAppDetail();
                 }
                 return;
             }
@@ -231,7 +231,7 @@ public class AppMonitorDetailFragment extends Fragment {
         }
         if (data == null) {
             if (isAdded()) {
-                getFragmentManager().popBackStack();
+                ((AeroActivity) getActivity()).closeAppDetail();
             }
             return;
         }
