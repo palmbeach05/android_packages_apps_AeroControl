@@ -77,12 +77,12 @@ public class TestSuiteFragment extends PreferenceFragment {
         super.onDestroyView();
     }
 
-    private static double runWorker(Linpack lp, long targetElapsedRealtimeMs) {
+    private static double runWorker(Linpack lp, long targetElapsedRealtimeMs, AsyncTask<?, ?, ?> task) {
         for (int i = 0; i < WARMUP_RUNS; i++) {
             lp.run_benchmark();
         }
         lp.resetBenchmark();
-        while (SystemClock.elapsedRealtime() < targetElapsedRealtimeMs) {
+        while (SystemClock.elapsedRealtime() < targetElapsedRealtimeMs && !task.isCancelled()) {
             lp.run_benchmark();
         }
         return lp.getMFlops();
@@ -107,18 +107,20 @@ public class TestSuiteFragment extends PreferenceFragment {
             final double[] results = new double[WORKER_COUNT];
             final CountDownLatch latch = new CountDownLatch(WORKER_COUNT);
             final long targetElapsedRealtimeMs = SystemClock.elapsedRealtime() + BENCHMARK_DURATION_MS;
+            final Thread[] workers = new Thread[WORKER_COUNT];
             for (int i = 0; i < WORKER_COUNT; i++) {
                 final int slot = i;
                 Thread mWorker = new Thread(new Runnable() { // from class: com.aero.control.testsuite.TestSuiteFragment.2
                     @Override // java.lang.Runnable
                     public void run() {
                         try {
-                            results[slot] = runWorker(new Linpack(), targetElapsedRealtimeMs);
+                            results[slot] = runWorker(new Linpack(), targetElapsedRealtimeMs, RunBenchmark.this);
                         } finally {
                             latch.countDown();
                         }
                     }
                 });
+                workers[i] = mWorker;
                 mWorker.start();
             }
             Log.e(LOG_TAG, "Running now!");
@@ -126,12 +128,16 @@ public class TestSuiteFragment extends PreferenceFragment {
                 latch.await();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                for (Thread worker : workers) {
+                    worker.interrupt();
+                }
+                return null;
             }
             double mflops = 0.0d;
             for (double result : results) {
                 mflops += result;
             }
-            Log.e(LOG_TAG, "Stopped the test. Average MFlop-Counter: " + mflops);
+            Log.i(LOG_TAG, "Stopped the test. Total MFlop sum: " + mflops);
             return Double.valueOf(mflops);
         }
 
@@ -140,6 +146,9 @@ public class TestSuiteFragment extends PreferenceFragment {
         public void onPostExecute(Double result) {
             super.onPostExecute(result);
             TestSuiteFragment.this.mBenchmarkRunning.set(false);
+            if (this.progressDialog != null && this.progressDialog.isShowing()) {
+                this.progressDialog.dismiss();
+            }
             if (!TestSuiteFragment.this.isAdded() || TestSuiteFragment.this.getActivity() == null) {
                 return;
             }
@@ -147,9 +156,6 @@ public class TestSuiteFragment extends PreferenceFragment {
             builder.setTitle("Result");
             builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops");
             builder.show();
-            if (this.progressDialog != null && this.progressDialog.isShowing()) {
-                this.progressDialog.dismiss();
-            }
         }
 
         @Override // android.os.AsyncTask

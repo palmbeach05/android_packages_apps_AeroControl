@@ -1,7 +1,5 @@
 package com.aero.control.testsuite;
 
-import android.os.SystemClock;
-
 import java.lang.reflect.Array;
 
 /* JADX INFO: loaded from: classes.dex */
@@ -41,9 +39,9 @@ public class Linpack {
 
     double second() {
         if (this.second_orig == -1.0d) {
-            this.second_orig = SystemClock.elapsedRealtime();
+            this.second_orig = System.nanoTime();
         }
-        return (SystemClock.elapsedRealtime() - this.second_orig) / 1000.0d;
+        return (System.nanoTime() - this.second_orig) / 1.0E9d;
     }
 
     public void run_benchmark() {
