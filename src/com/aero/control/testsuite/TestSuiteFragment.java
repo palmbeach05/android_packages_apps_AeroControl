@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -14,16 +15,20 @@ import android.util.Log;
 import android.widget.TextView;
 import com.aero.control.R;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /* JADX INFO: loaded from: classes.dex */
 public class TestSuiteFragment extends PreferenceFragment {
+    private static final int WARMUP_RUNS = 5;
+    private static final long BENCHMARK_DURATION_MS = 5000L;
+    private static final int WORKER_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+    private static final String LOG_TAG = TestSuiteFragment.class.getName();
+
     private ActionBar mActionBar;
-    private double mMFlops = 0.0d;
-    private int mProgress;
-    private double mStartTime;
-    private double mTargetTime;
     private PreferenceScreen root;
-    private static final int mNumProcessors = Runtime.getRuntime().availableProcessors();
-    private static final String LOG_TAG = PreferenceFragment.class.getName();
+    private RunBenchmark mRunBenchmark;
+    private final AtomicBoolean mBenchmarkRunning = new AtomicBoolean(false);
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
@@ -47,62 +52,43 @@ public class TestSuiteFragment extends PreferenceFragment {
         lpPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.testsuite.TestSuiteFragment.1
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                new RunBenchmark().execute(new Void[0]);
+                startBenchmark();
                 return false;
             }
         });
         TestSuiteCat.addPreference(lpPreference);
     }
 
-    public final void setUpBenchmark(int numThreads) {
-        this.mMFlops = 0.0d;
-        Runnable[] runWorker = new Runnable[numThreads];
-        for (int i = 0; i < numThreads; i++) {
-            final Linpack lp = new Linpack();
-            lp.resetBenchmark();
-            warmUp(lp);
-            lp.resetBenchmark();
-            runWorker[i] = new Runnable() { // from class: com.aero.control.testsuite.TestSuiteFragment.2
-                @Override // java.lang.Runnable
-                public void run() {
-                    synchronized (this) {
-                        TestSuiteFragment.this.runTest(lp);
-                    }
-                }
-            };
+    private void startBenchmark() {
+        if (!this.mBenchmarkRunning.compareAndSet(false, true)) {
+            Log.e(LOG_TAG, "Benchmark already running, ignoring request");
+            return;
         }
-        this.mStartTime = System.currentTimeMillis();
-        this.mTargetTime = this.mStartTime + 5000.0d;
-        for (int j = 0; j < numThreads; j++) {
-            Thread mWorker = new Thread(runWorker[j]);
-            mWorker.start();
-            Log.e(LOG_TAG, "Running now!");
-        }
+        this.mRunBenchmark = new RunBenchmark();
+        this.mRunBenchmark.execute(new Void[0]);
     }
 
-    public final void warmUp(Linpack lp) {
-        for (int i = 0; i < 50; i++) {
+    @Override // android.app.Fragment
+    public void onDestroyView() {
+        if (this.mRunBenchmark != null) {
+            this.mRunBenchmark.cancel(true);
+            this.mRunBenchmark = null;
+        }
+        super.onDestroyView();
+    }
+
+    private static double runWorker(Linpack lp, long targetElapsedRealtimeMs) {
+        for (int i = 0; i < WARMUP_RUNS; i++) {
             lp.run_benchmark();
         }
-    }
-
-    public final void runTest(Linpack lp) {
-        if (System.currentTimeMillis() < this.mTargetTime) {
+        lp.resetBenchmark();
+        while (SystemClock.elapsedRealtime() < targetElapsedRealtimeMs) {
             lp.run_benchmark();
-            runTest(lp);
-        } else {
-            Log.e(LOG_TAG, "Stopped the test");
-            gatherResults(lp);
         }
+        return lp.getMFlops();
     }
 
-    public final void gatherResults(Linpack lp) {
-        this.mMFlops += lp.getMFlops();
-        this.mProgress++;
-        Log.e(LOG_TAG, "Average MFLop-Counter: " + this.mMFlops + " Time Passed:" + lp.getTimePassed());
-    }
-
-    private class RunBenchmark extends AsyncTask<Void, Integer, Void> {
+    private class RunBenchmark extends AsyncTask<Void, Void, Double> {
         ProgressDialog progressDialog;
 
         private RunBenchmark() {
@@ -113,31 +99,66 @@ public class TestSuiteFragment extends PreferenceFragment {
             super.onPreExecute();
             this.progressDialog = ProgressDialog.show(TestSuiteFragment.this.getActivity(), "Running Linpack", "Burning your CPUs...", false);
             this.progressDialog.setIndeterminateDrawable(TestSuiteFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
-            TestSuiteFragment.this.mProgress = 0;
         }
 
         /* JADX INFO: Access modifiers changed from: protected */
         @Override // android.os.AsyncTask
-        public Void doInBackground(Void... params) {
-            while (TestSuiteFragment.this.mProgress < TestSuiteFragment.mNumProcessors) {
-                publishProgress(Integer.valueOf(TestSuiteFragment.this.mProgress));
-                TestSuiteFragment.this.setUpBenchmark(TestSuiteFragment.mNumProcessors);
-                while (TestSuiteFragment.this.mProgress < TestSuiteFragment.mNumProcessors) {
-                }
+        public Double doInBackground(Void... params) {
+            final double[] results = new double[WORKER_COUNT];
+            final CountDownLatch latch = new CountDownLatch(WORKER_COUNT);
+            final long targetElapsedRealtimeMs = SystemClock.elapsedRealtime() + BENCHMARK_DURATION_MS;
+            for (int i = 0; i < WORKER_COUNT; i++) {
+                final int slot = i;
+                Thread mWorker = new Thread(new Runnable() { // from class: com.aero.control.testsuite.TestSuiteFragment.2
+                    @Override // java.lang.Runnable
+                    public void run() {
+                        try {
+                            results[slot] = runWorker(new Linpack(), targetElapsedRealtimeMs);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                });
+                mWorker.start();
             }
-            return null;
+            Log.e(LOG_TAG, "Running now!");
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            double mflops = 0.0d;
+            for (double result : results) {
+                mflops += result;
+            }
+            Log.e(LOG_TAG, "Stopped the test. Average MFlop-Counter: " + mflops);
+            return Double.valueOf(mflops);
         }
 
         /* JADX INFO: Access modifiers changed from: protected */
         @Override // android.os.AsyncTask
-        public void onPostExecute(Void result) {
+        public void onPostExecute(Double result) {
             super.onPostExecute(result);
+            TestSuiteFragment.this.mBenchmarkRunning.set(false);
+            if (!TestSuiteFragment.this.isAdded() || TestSuiteFragment.this.getActivity() == null) {
+                return;
+            }
             AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
             builder.setTitle("Result");
-            builder.setMessage("Great! \nYou have achieved: \n" + TestSuiteFragment.this.mMFlops + " MFlops");
+            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops");
             builder.show();
-            TestSuiteFragment.this.mMFlops = 0.0d;
-            this.progressDialog.dismiss();
+            if (this.progressDialog != null && this.progressDialog.isShowing()) {
+                this.progressDialog.dismiss();
+            }
+        }
+
+        @Override // android.os.AsyncTask
+        protected void onCancelled() {
+            super.onCancelled();
+            TestSuiteFragment.this.mBenchmarkRunning.set(false);
+            if (this.progressDialog != null && this.progressDialog.isShowing()) {
+                this.progressDialog.dismiss();
+            }
         }
     }
 }
