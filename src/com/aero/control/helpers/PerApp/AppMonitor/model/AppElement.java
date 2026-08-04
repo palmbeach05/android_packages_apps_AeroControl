@@ -35,12 +35,7 @@ public class AppElement implements Parcelable {
 
     public AppElement(Parcel parcel) {
         this.mAppName = parcel.readString();
-        this.mAverageData = parcel.readArrayList(new ClassLoader() { // from class: com.aero.control.helpers.PerApp.AppMonitor.model.AppElement.1
-            @Override // java.lang.ClassLoader
-            protected Class<?> findClass(String className) throws ClassNotFoundException {
-                return super.findClass(className);
-            }
-        });
+        this.mAverageData = parcel.createTypedArrayList(AppElementDetail.CREATOR);
         this.mRealAppName = parcel.readString();
     }
 
@@ -80,7 +75,7 @@ public class AppElement implements Parcelable {
     @Override // android.os.Parcelable
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeString(this.mAppName);
-        parcel.writeList(this.mAverageData);
+        parcel.writeTypedList(this.mAverageData);
         parcel.writeString(this.mRealAppName);
     }
 }
