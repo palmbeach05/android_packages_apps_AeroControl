@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.widget.TextView;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TestSuiteFragment extends PreferenceFragment {
     private static final int WARMUP_RUNS = 5;
     private static final long BENCHMARK_DURATION_MS = 5000L;
-    private static final int WORKER_COUNT = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+    private static final String PREF_USE_ALL_CPUS = "linpack_use_all_cpus";
     private static final String LOG_TAG = TestSuiteFragment.class.getName();
 
     private ActionBar mActionBar;
@@ -64,7 +65,10 @@ public class TestSuiteFragment extends PreferenceFragment {
             Log.e(LOG_TAG, "Benchmark already running, ignoring request");
             return;
         }
-        this.mRunBenchmark = new RunBenchmark();
+        boolean useAllCpus = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(PREF_USE_ALL_CPUS, false);
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        int workerCount = useAllCpus ? Math.max(1, availableProcessors) : Math.max(1, availableProcessors - 1);
+        this.mRunBenchmark = new RunBenchmark(workerCount, useAllCpus);
         this.mRunBenchmark.execute(new Void[0]);
     }
 
@@ -90,8 +94,12 @@ public class TestSuiteFragment extends PreferenceFragment {
 
     private class RunBenchmark extends AsyncTask<Void, Void, Double> {
         ProgressDialog progressDialog;
+        private final int workerCount;
+        private final boolean useAllCpus;
 
-        private RunBenchmark() {
+        private RunBenchmark(int workerCount, boolean useAllCpus) {
+            this.workerCount = workerCount;
+            this.useAllCpus = useAllCpus;
         }
 
         @Override // android.os.AsyncTask
@@ -104,11 +112,11 @@ public class TestSuiteFragment extends PreferenceFragment {
         /* JADX INFO: Access modifiers changed from: protected */
         @Override // android.os.AsyncTask
         public Double doInBackground(Void... params) {
-            final double[] results = new double[WORKER_COUNT];
-            final CountDownLatch latch = new CountDownLatch(WORKER_COUNT);
+            final double[] results = new double[this.workerCount];
+            final CountDownLatch latch = new CountDownLatch(this.workerCount);
             final long targetElapsedRealtimeMs = SystemClock.elapsedRealtime() + BENCHMARK_DURATION_MS;
-            final Thread[] workers = new Thread[WORKER_COUNT];
-            for (int i = 0; i < WORKER_COUNT; i++) {
+            final Thread[] workers = new Thread[this.workerCount];
+            for (int i = 0; i < this.workerCount; i++) {
                 final int slot = i;
                 Thread mWorker = new Thread(new Runnable() { // from class: com.aero.control.testsuite.TestSuiteFragment.2
                     @Override // java.lang.Runnable
@@ -137,7 +145,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             for (double result : results) {
                 mflops += result;
             }
-            Log.i(LOG_TAG, "Stopped the test. Total MFlop sum: " + mflops);
+            Log.i(LOG_TAG, "Stopped the test. Mode: " + (this.useAllCpus ? "All CPUs" : "Responsive") + ", Workers: " + this.workerCount + ", Total MFlop sum: " + mflops);
             return Double.valueOf(mflops);
         }
 
@@ -154,7 +162,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             }
             AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
             builder.setTitle("Result");
-            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops");
+            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + (this.useAllCpus ? "All CPUs" : "Responsive") + "\nWorkers: " + this.workerCount);
             builder.show();
         }
 
