@@ -50,12 +50,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         this.mRestoreKernel.setHideOnBoot(true);
         this.mRestoreKernel.setHelpEnable(false);
         getPreferenceScreen().addPreference(this.mRestoreKernel);
-        String[] arr$ = FilePath.BACKUPPATH;
-        for (String s : arr$) {
-            if (AeroActivity.genHelper.doesExist(s)) {
-                this.mBackup = s;
-            }
-        }
         this.mBackupKernel.setIcon(R.drawable.ic_action_copy);
         this.mRestoreKernel.setIcon(R.drawable.ic_action_time);
         this.mRestoreKernel.setDialogIcon(R.drawable.restore);
@@ -107,6 +101,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         this.mBackupKernel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
+                Log.i("Aero", "Backup preference clicked. Source: " + (UpdaterFragment.this.mBackup != null ? UpdaterFragment.this.mBackup : FilePath.zImage));
                 AlertDialog.Builder builder = new AlertDialog.Builder(UpdaterFragment.this.getActivity());
                 LayoutInflater inflater = UpdaterFragment.this.getActivity().getLayoutInflater();
                 View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
@@ -139,14 +134,17 @@ public class UpdaterFragment extends PlaceHolderFragment {
     }
 
     /**
-     * Looks up whether a zImage backup is available and lists any existing
-     * backup folders. This work can fall back to spawning a root shell
-     * (see {@link com.aero.control.helpers.shellHelper#getInfo(String)}),
+     * Looks up whether a zImage backup is available, detects a readable
+     * boot-partition block device (if any), and lists any existing backup
+     * folders. This work can fall back to spawning a root shell (see
+     * {@link com.aero.control.helpers.shellHelper#getInfo(String)} and
+     * {@link com.aero.control.helpers.shellHelper#isReadableBlockDevice(String)}),
      * so it must not run on the UI thread.
      */
     private class LoadKernelInfoTask extends AsyncTask<Void, Void, LoadKernelInfoTask.Result> {
         private class Result {
             boolean zImageAvailable;
+            String bootSource;
             String[] backupEntries;
 
             private Result() {
@@ -163,6 +161,18 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (isCancelled()) {
                 return null;
             }
+            for (String candidate : FilePath.BACKUPPATH) {
+                if (isCancelled()) {
+                    return null;
+                }
+                if (AeroActivity.shell.isReadableBlockDevice(candidate)) {
+                    result.bootSource = candidate;
+                    break;
+                }
+            }
+            if (isCancelled()) {
+                return null;
+            }
             result.backupEntries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
             return result;
         }
@@ -172,14 +182,21 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (result == null || !UpdaterFragment.this.isAdded()) {
                 return;
             }
-            if (!result.zImageAvailable) {
-                UpdaterFragment.this.mBackupKernel.setEnabled(false);
+            if (result.bootSource != null) {
+                UpdaterFragment.this.mBackup = result.bootSource;
+                Log.i("Aero", "Detected readable boot-partition backup source: " + UpdaterFragment.this.mBackup);
             }
             if (UpdaterFragment.this.mBackup != null) {
                 UpdaterFragment.this.mBackupKernel.setEnabled(true);
+            } else if (result.zImageAvailable) {
+                Log.i("Aero", "No boot-partition source found; using zImage backup source: " + FilePath.zImage);
+                UpdaterFragment.this.mBackupKernel.setEnabled(true);
+            } else {
+                UpdaterFragment.this.mBackupKernel.setEnabled(false);
             }
             if (!UpdaterFragment.this.mBackupKernel.isEnabled() && update.isWhiteListed(Build.MODEL) != null) {
                 UpdaterFragment.this.mBackup = update.isWhiteListed(Build.MODEL);
+                Log.i("Aero", "Using whitelisted boot-partition backup source: " + UpdaterFragment.this.mBackup);
                 UpdaterFragment.this.mBackupKernel.setEnabled(true);
             }
             if (!result.zImageAvailable) {
