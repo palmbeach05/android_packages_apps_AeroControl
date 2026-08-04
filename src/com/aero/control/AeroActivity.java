@@ -174,12 +174,13 @@ public final class AeroActivity extends Activity {
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
-            // Reconnect restored fragments to activity fields before navigation restoration
-            reconnectRestoredFragments();
+            // Restore full fragment stack from saved resource IDs
+            int[] stackResourceIds = savedInstanceState.getIntArray("FRAGMENT_STACK_IDS");
+            reconnectRestoredFragments(stackResourceIds);
             // Restore using stable resource ID if available, otherwise fall back to position
             int savedItemId = savedInstanceState.getInt(SELECTED_ITEM_ID, -1);
             if (savedItemId != -1) {
-                selectItemByResourceId(savedItemId);
+                selectItemByResourceId(savedItemId, false);
             } else {
                 selectItem(savedInstanceState.getInt(SELECTED_ITEM), false);
             }
@@ -294,44 +295,78 @@ public final class AeroActivity extends Activity {
     }
 
     private void reconnectRestoredFragments() {
+        reconnectRestoredFragments(null);
+    }
+
+    private void reconnectRestoredFragments(int[] stackResourceIds) {
         // Reconnect any fragment restored by FragmentManager to activity fields
         android.app.FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.content_frame);
 
         if (fragment instanceof AeroFragment) {
             this.mAeroFragment = (AeroFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof CPUFragment) {
             this.mCPUFragement = (CPUFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof StatisticsFragment) {
             this.mStatisticsFragment = (StatisticsFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof GPUFragment) {
             this.mGPUFragement = (GPUFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof MemoryFragment) {
             this.mMemoryFragment = (MemoryFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof MiscSettingsFragment) {
             this.mMiscSettingsFragment = (MiscSettingsFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof DefyPartsFragment) {
             this.mDefyPartsFragment = (DefyPartsFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof UpdaterFragment) {
             this.mUpdaterFragement = (UpdaterFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof ProfileFragment) {
             this.mProfileFragment = (ProfileFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof AppMonitorFragment) {
             this.mAppStatisticsFragment = (AppMonitorFragment) fragment;
-            mFragmentStack.push(fragment);
         } else if (fragment instanceof TestSuiteFragment) {
             this.mTestSuiteFragment = (TestSuiteFragment) fragment;
+        }
+
+        // Rebuild mFragmentStack from saved resource IDs
+        if (stackResourceIds != null && stackResourceIds.length > 0) {
+            for (int resourceId : stackResourceIds) {
+                Fragment stackFragment = getFragmentByResourceId(resourceId);
+                if (stackFragment != null) {
+                    mFragmentStack.push(stackFragment);
+                }
+            }
+        } else if (fragment != null) {
+            // Fallback: just push the current fragment if no stack was saved
             mFragmentStack.push(fragment);
         }
+    }
+
+    private Fragment getFragmentByResourceId(int resourceId) {
+        // Map resource ID to fragment instance (must already exist from reconnection)
+        if (resourceId == R.string.slider_overview) {
+            return this.mAeroFragment;
+        } else if (resourceId == R.string.slider_cpu_settings) {
+            return this.mCPUFragement;
+        } else if (resourceId == R.string.slider_statistics) {
+            return this.mStatisticsFragment;
+        } else if (resourceId == R.string.slider_gpu_settings) {
+            return this.mGPUFragement;
+        } else if (resourceId == R.string.slider_memory_settings) {
+            return this.mMemoryFragment;
+        } else if (resourceId == R.string.slider_misc_settings) {
+            return this.mMiscSettingsFragment;
+        } else if (resourceId == R.string.slider_defy_parts) {
+            return this.mDefyPartsFragment;
+        } else if (resourceId == R.string.slider_backup_restore) {
+            return this.mUpdaterFragement;
+        } else if (resourceId == R.string.slider_profile) {
+            return this.mProfileFragment;
+        } else if (resourceId == R.string.slider_app_monitor) {
+            return this.mAppStatisticsFragment;
+        } else if (resourceId == R.string.slider_test_suite_settings) {
+            return this.mTestSuiteFragment;
+        }
+        return null;
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -442,11 +477,15 @@ public final class AeroActivity extends Activity {
     }
 
     private void selectItemByResourceId(int resourceId) {
+        selectItemByResourceId(resourceId, true);
+    }
+
+    private void selectItemByResourceId(int resourceId, boolean replaceFragment) {
         // Find the position of the item with this resource ID in the current adapter
         for (int i = 0; i < this.mAdapter.getCount(); i++) {
             NavBarItems.PreferenceItem item = this.mAdapter.getItem(i);
             if (item != null && item.content == resourceId) {
-                selectItem(i);
+                selectItem(i, replaceFragment);
                 return;
             }
         }
@@ -498,6 +537,14 @@ public final class AeroActivity extends Activity {
         if (item != null) {
             outState.putInt(SELECTED_ITEM_ID, item.content);
         }
+        // Persist the full fragment stack as stable resource IDs
+        int[] stackResourceIds = new int[mFragmentStack.size()];
+        for (int i = 0; i < mFragmentStack.size(); i++) {
+            Fragment frag = mFragmentStack.get(i);
+            int resourceId = getResourceIdForFragment(frag);
+            stackResourceIds[i] = resourceId;
+        }
+        outState.putIntArray("FRAGMENT_STACK_IDS", stackResourceIds);
     }
 
     @Override // android.app.Activity, android.content.ComponentCallbacks
@@ -573,6 +620,34 @@ public final class AeroActivity extends Activity {
             return getString(R.string.slider_test_suite_settings);
         }
         return null;
+    }
+
+    private int getResourceIdForFragment(Fragment fragment) {
+        // Map fragment instances to their resource IDs
+        if (fragment == this.mAeroFragment) {
+            return R.string.slider_overview;
+        } else if (fragment == this.mCPUFragement) {
+            return R.string.slider_cpu_settings;
+        } else if (fragment == this.mStatisticsFragment) {
+            return R.string.slider_statistics;
+        } else if (fragment == this.mGPUFragement) {
+            return R.string.slider_gpu_settings;
+        } else if (fragment == this.mMemoryFragment) {
+            return R.string.slider_memory_settings;
+        } else if (fragment == this.mMiscSettingsFragment) {
+            return R.string.slider_misc_settings;
+        } else if (fragment == this.mDefyPartsFragment) {
+            return R.string.slider_defy_parts;
+        } else if (fragment == this.mUpdaterFragement) {
+            return R.string.slider_backup_restore;
+        } else if (fragment == this.mProfileFragment) {
+            return R.string.slider_profile;
+        } else if (fragment == this.mAppStatisticsFragment) {
+            return R.string.slider_app_monitor;
+        } else if (fragment == this.mTestSuiteFragment) {
+            return R.string.slider_test_suite_settings;
+        }
+        return -1;
     }
 
     public final void switchContent(final Fragment fragment) {
