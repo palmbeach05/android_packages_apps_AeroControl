@@ -300,57 +300,57 @@ public final class AeroActivity extends Activity {
 
         // Map resource ID to fragment
         if (itemResourceId == R.string.slider_overview) {
-            if (this.mAeroFragment == null) {
+            if (this.mAeroFragment == null || !this.mAeroFragment.isAdded()) {
                 this.mAeroFragment = new AeroFragment();
             }
             fragment = this.mAeroFragment;
         } else if (itemResourceId == R.string.slider_cpu_settings) {
-            if (this.mCPUFragement == null) {
+            if (this.mCPUFragement == null || !this.mCPUFragement.isAdded()) {
                 this.mCPUFragement = new CPUFragment();
             }
             fragment = this.mCPUFragement;
         } else if (itemResourceId == R.string.slider_statistics) {
-            if (this.mStatisticsFragment == null) {
+            if (this.mStatisticsFragment == null || !this.mStatisticsFragment.isAdded()) {
                 this.mStatisticsFragment = new StatisticsFragment();
             }
             fragment = this.mStatisticsFragment;
         } else if (itemResourceId == R.string.slider_gpu_settings) {
-            if (this.mGPUFragement == null) {
+            if (this.mGPUFragement == null || !this.mGPUFragement.isAdded()) {
                 this.mGPUFragement = new GPUFragment();
             }
             fragment = this.mGPUFragement;
         } else if (itemResourceId == R.string.slider_memory_settings) {
-            if (this.mMemoryFragment == null) {
+            if (this.mMemoryFragment == null || !this.mMemoryFragment.isAdded()) {
                 this.mMemoryFragment = new MemoryFragment();
             }
             fragment = this.mMemoryFragment;
         } else if (itemResourceId == R.string.slider_misc_settings) {
-            if (this.mMiscSettingsFragment == null) {
+            if (this.mMiscSettingsFragment == null || !this.mMiscSettingsFragment.isAdded()) {
                 this.mMiscSettingsFragment = new MiscSettingsFragment();
             }
             fragment = this.mMiscSettingsFragment;
         } else if (itemResourceId == R.string.slider_defy_parts) {
-            if (this.mDefyPartsFragment == null) {
+            if (this.mDefyPartsFragment == null || !this.mDefyPartsFragment.isAdded()) {
                 this.mDefyPartsFragment = new DefyPartsFragment();
             }
             fragment = this.mDefyPartsFragment;
         } else if (itemResourceId == R.string.slider_backup_restore) {
-            if (this.mUpdaterFragement == null) {
+            if (this.mUpdaterFragement == null || !this.mUpdaterFragement.isAdded()) {
                 this.mUpdaterFragement = new UpdaterFragment();
             }
             fragment = this.mUpdaterFragement;
         } else if (itemResourceId == R.string.slider_profile) {
-            if (this.mProfileFragment == null) {
+            if (this.mProfileFragment == null || !this.mProfileFragment.isAdded()) {
                 this.mProfileFragment = new ProfileFragment();
             }
             fragment = this.mProfileFragment;
         } else if (itemResourceId == R.string.slider_app_monitor) {
-            if (this.mAppStatisticsFragment == null) {
+            if (this.mAppStatisticsFragment == null || !this.mAppStatisticsFragment.isAdded()) {
                 this.mAppStatisticsFragment = new AppMonitorFragment();
             }
             fragment = this.mAppStatisticsFragment;
         } else if (itemResourceId == R.string.slider_test_suite_settings) {
-            if (this.mTestSuiteFragment == null) {
+            if (this.mTestSuiteFragment == null || !this.mTestSuiteFragment.isAdded()) {
                 this.mTestSuiteFragment = new TestSuiteFragment();
             }
             fragment = this.mTestSuiteFragment;

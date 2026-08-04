@@ -92,7 +92,15 @@ public class AeroFragment extends Fragment {
     public void onResume() {
         super.onResume();
         this.mVisible = true;
+    }
+
+    @Override // android.app.Fragment
+    public void onDestroyView() {
+        super.onDestroyView();
+        this.mRefreshThread.interrupt();
         this.mAdapter = null;
+        this.mOverView = null;
+        this.root = null;
     }
 
     @Override // android.app.Fragment
