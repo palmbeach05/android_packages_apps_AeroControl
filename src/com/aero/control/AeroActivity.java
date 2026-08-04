@@ -60,7 +60,8 @@ import java.util.Stack;
 /* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
-    public static Stack<Fragment> mFragmentStack;
+    private static final String SELECTED_ITEM_ID = "SelectedItemId";
+    public Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
     private ActionBar mActionBar;
@@ -108,9 +109,8 @@ public final class AeroActivity extends Activity {
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
         }
-        if (mFragmentStack == null) {
-            mFragmentStack = new Stack<>();
-        }
+        // Always initialize a fresh stack for this Activity instance
+        mFragmentStack = new Stack<>();
         if (Build.VERSION.SDK_INT >= 19 && !ViewConfiguration.get(getBaseContext()).hasPermanentMenuKey()) {
             Window win = getWindow();
             WindowManager.LayoutParams winParams = win.getAttributes();
@@ -176,7 +176,13 @@ public final class AeroActivity extends Activity {
         } else {
             // Reconnect restored fragments to activity fields before navigation restoration
             reconnectRestoredFragments();
-            selectItem(savedInstanceState.getInt(SELECTED_ITEM), false);
+            // Restore using stable resource ID if available, otherwise fall back to position
+            int savedItemId = savedInstanceState.getInt(SELECTED_ITEM_ID, -1);
+            if (savedItemId != -1) {
+                selectItemByResourceId(savedItemId);
+            } else {
+                selectItem(savedInstanceState.getInt(SELECTED_ITEM), false);
+            }
         }
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -487,6 +493,11 @@ public final class AeroActivity extends Activity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_ITEM, this.mSelectedItemPosition);
+        // Save stable navigation item resource ID for robust restoration
+        NavBarItems.PreferenceItem item = this.mAdapter.getItem(this.mSelectedItemPosition);
+        if (item != null) {
+            outState.putInt(SELECTED_ITEM_ID, item.content);
+        }
     }
 
     @Override // android.app.Activity, android.content.ComponentCallbacks
