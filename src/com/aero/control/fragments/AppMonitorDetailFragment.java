@@ -108,7 +108,7 @@ public class AppMonitorDetailFragment extends Fragment {
     @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        AppLogger.print(this.mClassName, "Creating AppMonitorDetailFragment result view", 0);
+        AppLogger.print(this.mClassName, "Creating AppMonitorDetailFragment result view", -1);
         this.mRoot = (ViewGroup) inflater.inflate(R.layout.appmonitor_detail, (ViewGroup) null);
         this.mAppName = null;
         this.mHeader = (TextView) this.mRoot.findViewById(R.id.usageTimer);
@@ -133,7 +133,7 @@ public class AppMonitorDetailFragment extends Fragment {
 
     @Override // android.app.Fragment
     public void onDestroyView() {
-        AppLogger.print(this.mClassName, "Destroying AppMonitorDetailFragment result view", 0);
+        AppLogger.print(this.mClassName, "Destroying AppMonitorDetailFragment result view", -1);
         if (this.mLineTooltip != null) {
             this.mLineTooltip.animate().cancel();
             if (this.mLineChart != null) {
