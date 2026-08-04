@@ -124,7 +124,6 @@ public class AppMonitorFragment extends Fragment {
             this.mProgressDialog.setIndeterminateDrawable(getResources().getDrawable(R.drawable.spinner_animation));
         }
         this.mProgressDialog.show();
-        AeroActivity.resetBackCounter();
         this.mLoadGeneration++;
         Runnable runnable = new AnonymousClass2(this.mLoadGeneration);
         new Thread(runnable).start();

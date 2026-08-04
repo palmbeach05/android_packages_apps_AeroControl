@@ -85,7 +85,9 @@ public final class AeroActivity extends Activity {
     private UpdaterFragment mUpdaterFragement;
     private String mCurrentTheme;
     private Runnable mPendingSwitch;
-    private static int mBackCounter = 0;
+    private boolean mClosePending = false;
+    private Runnable mClearClosePending;
+    private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     public static final shellHelper shell = shellHelper.instance();
@@ -375,7 +377,7 @@ public final class AeroActivity extends Activity {
         this.mDrawerList.setItemChecked(position, true);
 
         setTitle(getString(itemResourceId));
-        mBackCounter = 0;
+        clearClosePending();
         this.mDrawerLayout.closeDrawer(this.mDrawerList);
     }
 
@@ -420,6 +422,10 @@ public final class AeroActivity extends Activity {
 
     @Override // android.app.Activity
     public void onBackPressed() {
+        if (this.mClosePending) {
+            finish();
+            return;
+        }
         if (mFragmentStack.size() > 1) {
             mFragmentStack.pop();
             Fragment previousFragment = mFragmentStack.peek();
@@ -430,12 +436,24 @@ public final class AeroActivity extends Activity {
                 setTitle(restoredTitle);
             }
         }
-        mBackCounter++;
-        if (mBackCounter == 1) {
-            Toast.makeText(this, R.string.back_for_close, 1).show();
+        this.mClosePending = true;
+        if (this.mClearClosePending != null) {
+            mHandler.removeCallbacks(this.mClearClosePending);
         }
-        if (mBackCounter == 2) {
-            finish();
+        this.mClearClosePending = new Runnable() { // from class: com.aero.control.AeroActivity.4
+            @Override // java.lang.Runnable
+            public void run() {
+                AeroActivity.this.mClosePending = false;
+            }
+        };
+        mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
+        Toast.makeText(this, R.string.back_for_close, 1).show();
+    }
+
+    private void clearClosePending() {
+        this.mClosePending = false;
+        if (this.mClearClosePending != null) {
+            mHandler.removeCallbacks(this.mClearClosePending);
         }
     }
 
@@ -465,10 +483,6 @@ public final class AeroActivity extends Activity {
             return getString(R.string.slider_test_suite_settings);
         }
         return null;
-    }
-
-    public static void resetBackCounter() {
-        mBackCounter = 0;
     }
 
     public final void switchContent(final Fragment fragment) {
@@ -505,6 +519,9 @@ public final class AeroActivity extends Activity {
     protected void onDestroy() {
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
+        }
+        if (this.mClearClosePending != null) {
+            mHandler.removeCallbacks(this.mClearClosePending);
         }
         super.onDestroy();
     }
