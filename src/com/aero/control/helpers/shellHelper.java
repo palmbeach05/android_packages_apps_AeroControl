@@ -528,7 +528,7 @@ public final class shellHelper {
         if (path == null) {
             return false;
         }
-        String command = "[ -b \"" + path + "\" ] && [ -r \"" + path + "\" ] && echo BLOCK_OK";
+        String command = "[ -b \"" + path + "\" ] && [ -r \"" + path + "\" ] && echo BLOCK_OK || echo BLOCK_FAIL";
         String output = runCommandAndWaitForOutput(command);
         return output != null && output.contains("BLOCK_OK");
     }
