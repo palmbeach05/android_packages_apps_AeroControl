@@ -484,6 +484,24 @@ public final class shellHelper {
         return ret;
     }
 
+    /**
+     * Sends a single command to the root shell and blocks until the shell
+     * produces a result for it (or the read fails/is interrupted), unlike
+     * {@link #setRootInfo(String[])} which only writes the command and
+     * returns immediately. Operations such as {@code dd} produce no output
+     * of their own, so the caller should chain an {@code echo} marker onto
+     * the command to give the blocking read something to return once the
+     * preceding operation has actually finished.
+     */
+    public final synchronized boolean runCommandAndWait(String command) {
+        openShell();
+        if (!this.mShellLoaded) {
+            return false;
+        }
+        addCommand(command);
+        return getRootResult() != null;
+    }
+
     public final synchronized String[] getRootArray(String command, String split) {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);

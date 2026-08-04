@@ -20,7 +20,6 @@ import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.updateHelper;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -35,8 +34,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private LoadKernelInfoTask mLoadTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
     private static final String timeStamp = new SimpleDateFormat("ddMMyyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
-    private static final File BACKUP_PATH = new File(SDPATH + "/com.aero.control/backup/" + timeStamp + "/zImage");
-    private static final File IMAGE = new File(FilePath.zImage);
     private static final updateHelper update = new updateHelper();
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
@@ -120,15 +117,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 builder.setView(layout).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2.2
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog, int id) {
-                        if (UpdaterFragment.this.mBackup != null) {
-                            UpdaterFragment.this.backupBoot();
-                        } else {
-                            UpdaterFragment.this.backupzImage();
-                        }
-                        UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + UpdaterFragment.timeStamp);
-                        UpdaterFragment.this.mRestoreKernel.setEntries(AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false));
-                        UpdaterFragment.this.mRestoreKernel.setEntryValues(AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false));
-                        UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                        UpdaterFragment.this.startKernelBackup();
                     }
                 }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2.1
                     @Override // android.content.DialogInterface.OnClickListener
@@ -146,7 +135,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         super.onDestroyView();
         if (this.mLoadTask != null) {
             this.mLoadTask.cancel(true);
-            AeroActivity.shell.closeShell();
         }
     }
 
@@ -210,26 +198,70 @@ public class UpdaterFragment extends PlaceHolderFragment {
     }
 
     /* JADX INFO: Access modifiers changed from: private */
-    public void backupzImage() {
-        try {
-            update.copyFile(IMAGE, BACKUP_PATH, false);
-            Toast.makeText(getActivity(), "Backup was successful!", 1).show();
-        } catch (IOException e) {
-            Log.e("Aero", "A problem occured while saving a backup.", e);
-        }
+    public void startKernelBackup() {
+        new KernelBackupTask().execute();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
-    public void backupBoot() {
-        String backuppath = "/sdcard/com.aero.control/backup/" + timeStamp;
-        if (!AeroActivity.genHelper.doesExist(AERO_PATH) && !new File(AERO_PATH).mkdir() && !new File(AERO_PATH).mkdirs()) {
-            Log.e("Aero", "Couldn't create file: /sdcard/com.aero.control/backup");
+    /**
+     * Runs a kernel backup (boot partition or zImage, depending on device)
+     * through the shared root shell on a background thread, blocks until the
+     * copy command finishes, and verifies the resulting file before
+     * reporting success. This avoids the previous fire-and-forget behaviour
+     * where {@link com.aero.control.helpers.shellHelper#setRootInfo(String[])}
+     * returned immediately after queuing the {@code dd} command, before the
+     * copy had actually completed.
+     */
+    private class KernelBackupTask extends AsyncTask<Void, Void, File> {
+        private static final String DONE_MARKER = "AERO_BACKUP_DONE";
+
+        @Override // android.os.AsyncTask
+        protected File doInBackground(Void... params) {
+            String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/" + UpdaterFragment.timeStamp;
+            if (!AeroActivity.genHelper.doesExist(AERO_PATH) && !new File(AERO_PATH).mkdir() && !new File(AERO_PATH).mkdirs()) {
+                Log.e("Aero", "Couldn't create file: " + AERO_PATH);
+            }
+            if (!AeroActivity.genHelper.doesExist(backupDir) && !new File(backupDir).mkdir() && !new File(backupDir).mkdirs()) {
+                Log.e("Aero", "Couldn't create file: " + backupDir);
+            }
+            String source;
+            String outputName;
+            if (UpdaterFragment.this.mBackup != null) {
+                source = UpdaterFragment.this.mBackup;
+                outputName = "boot.img";
+            } else {
+                source = FilePath.zImage;
+                outputName = "zImage";
+            }
+            File outputFile = new File(backupDir, outputName);
+            String command = "dd if=" + source + " of=" + outputFile.getPath() + " && chmod 777 " + outputFile.getPath() + " && echo " + DONE_MARKER;
+            if (!AeroActivity.shell.runCommandAndWait(command)) {
+                Log.e("Aero", "Kernel backup shell command was interrupted or failed to complete.");
+                return null;
+            }
+            if (outputFile.exists() && outputFile.length() > 0) {
+                return outputFile;
+            }
+            return null;
         }
-        if (!AeroActivity.genHelper.doesExist(backuppath) && !new File(backuppath).mkdir() && !new File(backuppath).mkdirs()) {
-            Log.e("Aero", "Couldn't create file: " + backuppath);
+
+        @Override // android.os.AsyncTask
+        protected void onPostExecute(File result) {
+            if (!UpdaterFragment.this.isAdded()) {
+                return;
+            }
+            if (result != null) {
+                Toast.makeText(UpdaterFragment.this.getActivity(), "Backup was successful!", 1).show();
+                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + UpdaterFragment.timeStamp);
+                String[] entries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
+                UpdaterFragment.this.mRestoreKernel.setEntries(entries);
+                UpdaterFragment.this.mRestoreKernel.setEntryValues(entries);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+            } else {
+                Log.e("Aero", "Kernel backup failed verification: output file missing or empty.");
+                Toast.makeText(UpdaterFragment.this.getActivity(), "Backup failed!", 1).show();
+                UpdaterFragment.this.mRestoreKernel.setEnabled(false);
+            }
         }
-        String[] commands = {"dd if=" + this.mBackup + " of=" + backuppath + "/boot.img", "chmod 777 " + backuppath + "/boot.img"};
-        AeroActivity.shell.setRootInfo(commands);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
