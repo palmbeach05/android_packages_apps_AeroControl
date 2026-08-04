@@ -68,7 +68,6 @@ public final class AeroActivity extends Activity {
     public int mActionBarTitleID;
     private ItemAdapter mAdapter;
     private AeroFragment mAeroFragment;
-    private String[] mAeroTitle;
     private AppMonitorFragment mAppStatisticsFragment;
     private CPUFragment mCPUFragement;
     private DefyPartsFragment mDefyPartsFragment;
@@ -79,7 +78,6 @@ public final class AeroActivity extends Activity {
     private GPUFragment mGPUFragement;
     private MemoryFragment mMemoryFragment;
     private MiscSettingsFragment mMiscSettingsFragment;
-    private int mPreviousTitle;
     private ProfileFragment mProfileFragment;
     private StatisticsFragment mStatisticsFragment;
     private TestSuiteFragment mTestSuiteFragment;
@@ -133,7 +131,6 @@ public final class AeroActivity extends Activity {
             this.mActionBarTitle.setTypeface(font);
         }
         this.mTitle = getTitle();
-        this.mAeroTitle = getResources().getStringArray(R.array.aero_array);
         this.mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         this.mDrawerList = (ListView) findViewById(R.id.left_drawer);
         if (actionBarHeight != 0) {
@@ -377,25 +374,9 @@ public final class AeroActivity extends Activity {
         }
         this.mDrawerList.setItemChecked(position, true);
 
-        // Find the position in the title array for this item
-        int titleIndex = findTitleIndex(itemResourceId);
-        this.mPreviousTitle = titleIndex;
-        setTitle(this.mAeroTitle[titleIndex]);
+        setTitle(getString(itemResourceId));
         mBackCounter = 0;
         this.mDrawerLayout.closeDrawer(this.mDrawerList);
-    }
-
-    private int findTitleIndex(int resourceId) {
-        // The aero_array in arrays.xml contains all items including defy_parts
-        // We need to find the index matching this resource ID
-        String[] titleArray = this.mAeroTitle;
-        String itemName = getString(resourceId);
-        for (int i = 0; i < titleArray.length; i++) {
-            if (titleArray[i].equals(itemName)) {
-                return i;
-            }
-        }
-        return 0; // Default to overview if not found
     }
 
     private void selectItemByResourceId(int resourceId) {
