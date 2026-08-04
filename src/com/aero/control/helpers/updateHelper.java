@@ -14,7 +14,7 @@ import java.util.Calendar;
 public class updateHelper {
     public static final String timeStamp = new SimpleDateFormat("ddMMyyyy").format(Calendar.getInstance().getTime());
     private static final String LOG_TAG = updateHelper.class.getName();
-    private static final String[][] WHITE_LIST_DEVICES = {new String[]{"Nexus 4", FilePath.BACKUPPATH[0]}, new String[]{"Nexus 5", FilePath.BACKUPPATH[0]}, new String[]{"ASUS_T00N", FilePath.BACKUPPATH[0]}, new String[]{"XT1032", FilePath.BACKUPPATH[0]}, new String[]{"XT1033", FilePath.BACKUPPATH[0]}, new String[]{"Nexus 7", FilePath.BACKUPPATH[1]}};
+    private static final String[][] WHITE_LIST_DEVICES = {new String[]{"Nexus 4", FilePath.BACKUPPATH[0]}, new String[]{"Nexus 5", FilePath.BACKUPPATH[0]}, new String[]{"ASUS_T00N", FilePath.BACKUPPATH[0]}, new String[]{"XT1032", FilePath.BACKUPPATH[0]}, new String[]{"XT1033", FilePath.BACKUPPATH[0]}, new String[]{"Nexus 7", FilePath.BACKUPPATH[1]}, new String[]{"MB860", "/dev/block/platform/sdhci-tegra.3/by-num/p11"}};
 
     public final void copyFile(File original, File copy, boolean rest) throws IOException {
         FileChannel input = null;
