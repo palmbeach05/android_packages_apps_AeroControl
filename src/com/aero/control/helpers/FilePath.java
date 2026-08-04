@@ -74,7 +74,7 @@ public final class FilePath {
     public static final String EXTERNAL_PATH = Environment.getExternalStorageDirectory().getPath();
     public static final String[] color_code = {"#009688", "#ff5722", "#8bc34a", "#03a9f4", "#e51c23", "#00bcd4", "#607d8b", "#e91e63"};
     public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);
-    public static final String[] BACKUPPATH = {"/dev/block/platform/msm_sdcc.1/by-name/boot", "/dev/block/platform/sdhci-tegra.3/by-name/LNX", "/dev/block/platform/omap/omap_hsmmc.0/by-name/boot", "dev/block/mmcblk*p*"};
+    public static final String[] BACKUPPATH = {"/dev/block/platform/msm_sdcc.1/by-name/boot", "/dev/block/platform/sdhci-tegra.3/by-name/LNX", "/dev/block/platform/omap/omap_hsmmc.0/by-name/boot"};
 
     private FilePath() {
     }
