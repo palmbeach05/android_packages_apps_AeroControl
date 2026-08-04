@@ -108,7 +108,9 @@ public final class AeroActivity extends Activity {
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
         }
-        mFragmentStack = new Stack<>();
+        if (mFragmentStack == null) {
+            mFragmentStack = new Stack<>();
+        }
         if (Build.VERSION.SDK_INT >= 19 && !ViewConfiguration.get(getBaseContext()).hasPermanentMenuKey()) {
             Window win = getWindow();
             WindowManager.LayoutParams winParams = win.getAttributes();
@@ -172,6 +174,8 @@ public final class AeroActivity extends Activity {
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
+            // Reconnect restored fragments to activity fields before navigation restoration
+            reconnectRestoredFragments();
             selectItem(savedInstanceState.getInt(SELECTED_ITEM), false);
         }
         if (savedInstanceState == null) {
@@ -281,6 +285,47 @@ public final class AeroActivity extends Activity {
             }
         }
         return false;
+    }
+
+    private void reconnectRestoredFragments() {
+        // Reconnect any fragment restored by FragmentManager to activity fields
+        android.app.FragmentManager fm = getFragmentManager();
+        Fragment fragment = fm.findFragmentById(R.id.content_frame);
+
+        if (fragment instanceof AeroFragment) {
+            this.mAeroFragment = (AeroFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof CPUFragment) {
+            this.mCPUFragement = (CPUFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof StatisticsFragment) {
+            this.mStatisticsFragment = (StatisticsFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof GPUFragment) {
+            this.mGPUFragement = (GPUFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof MemoryFragment) {
+            this.mMemoryFragment = (MemoryFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof MiscSettingsFragment) {
+            this.mMiscSettingsFragment = (MiscSettingsFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof DefyPartsFragment) {
+            this.mDefyPartsFragment = (DefyPartsFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof UpdaterFragment) {
+            this.mUpdaterFragement = (UpdaterFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof ProfileFragment) {
+            this.mProfileFragment = (ProfileFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof AppMonitorFragment) {
+            this.mAppStatisticsFragment = (AppMonitorFragment) fragment;
+            mFragmentStack.push(fragment);
+        } else if (fragment instanceof TestSuiteFragment) {
+            this.mTestSuiteFragment = (TestSuiteFragment) fragment;
+            mFragmentStack.push(fragment);
+        }
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -406,17 +451,16 @@ public final class AeroActivity extends Activity {
     }
 
     public void closeAppDetail() {
-        getFragmentManager().popBackStack("AppDetail", 0);
+        getFragmentManager().popBackStack("AppDetail", android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         setActionBarTitle(getString(R.string.slider_app_monitor));
     }
 
     private boolean hasAppDetailBackStackEntry() {
         android.app.FragmentManager fragmentManager = getFragmentManager();
         int backStackEntryCount = fragmentManager.getBackStackEntryCount();
-        for (int i = 0; i < backStackEntryCount; i++) {
-            if ("AppDetail".equals(fragmentManager.getBackStackEntryAt(i).getName())) {
-                return true;
-            }
+        if (backStackEntryCount > 0) {
+            // Check only the top entry
+            return "AppDetail".equals(fragmentManager.getBackStackEntryAt(backStackEntryCount - 1).getName());
         }
         return false;
     }
