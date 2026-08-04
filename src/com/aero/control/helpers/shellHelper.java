@@ -494,6 +494,10 @@ public final class shellHelper {
      * preceding operation has actually finished.
      */
     public final synchronized boolean runCommandAndWait(String command) {
+        openShell();
+        if (!this.mShellLoaded) {
+            return false;
+        }
         addCommand(command);
         return getRootResult() != null;
     }
