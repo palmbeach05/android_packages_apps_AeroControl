@@ -39,6 +39,7 @@ public final class PerAppService extends Service {
     private String mProfile;
     private Runnable mRunnable;
     private volatile boolean mDestroyed;
+    private Boolean mLastScreenOnState = null;
     private static String mPreviousApp = null;
     private static String mCurrentApp = null;
     private static final settingsHelper settingsHelper = new settingsHelper();
@@ -110,8 +111,8 @@ public final class PerAppService extends Service {
         if (mJobManager != null) {
             mJobManager.setContext(this.mContext);
             AppContext localContext = mJobManager.getAppContext(mCurrentApp);
-            mJobManager.setSleep(isScreenOn());
-            if (localContext == null && !mJobManager.getSleepState() && isScreenOn()) {
+            mJobManager.setSleep(!isScreenOn());
+            if (localContext == null && !mJobManager.getSleepState() && !isScreenOn()) {
                 AppLogger.print(this.mClassName, "Shutting down JobManager...", 0);
                 mJobManager = null;
             } else {
@@ -119,7 +120,7 @@ public final class PerAppService extends Service {
             }
             AeroActivity.mJobManager = mJobManager;
         }
-        if (!isScreenOn() && mPreviousApp != null && mCurrentApp != null && !mPreviousApp.equals(mCurrentApp)) {
+        if (isScreenOn() && mPreviousApp != null && mCurrentApp != null && !mPreviousApp.equals(mCurrentApp)) {
             if (this.mActive) {
                 if (this.mShowToasts) {
                     Toast.makeText(this.mContext, this.mContext.getText(R.string.return_to_normal), 1).show();
@@ -189,19 +190,24 @@ public final class PerAppService extends Service {
     }
 
     private boolean isScreenOn() {
+        boolean screenOn;
         if (Build.VERSION.SDK_INT > 19) {
-            Context context = this.mContext;
-            Context context2 = this.mContext;
-            DisplayManager dm = (DisplayManager) context.getSystemService("display");
-            Display[] arr$ = dm.getDisplays();
-            for (Display display : arr$) {
-                if (display.getState() != 1) {
-                    return false;
+            DisplayManager dm = (DisplayManager) this.mContext.getSystemService("display");
+            screenOn = false;
+            for (Display display : dm.getDisplays()) {
+                if (display.getState() != Display.STATE_OFF) {
+                    screenOn = true;
+                    break;
                 }
             }
-            return true;
+        } else {
+            PowerManager pm = (PowerManager) getSystemService("power");
+            screenOn = pm.isScreenOn();
         }
-        PowerManager pm = (PowerManager) getSystemService("power");
-        return !pm.isScreenOn();
+        if (this.mLastScreenOnState == null || this.mLastScreenOnState.booleanValue() != screenOn) {
+            AppLogger.print(this.mClassName, "Screen state changed, isScreenOn=" + screenOn, -1);
+            this.mLastScreenOnState = Boolean.valueOf(screenOn);
+        }
+        return screenOn;
     }
 }

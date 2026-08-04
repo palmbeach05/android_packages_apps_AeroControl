@@ -22,6 +22,7 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.Material.CardBox;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.PerApp.AppMonitor.AppLogger;
 import com.aero.control.helpers.PerApp.AppMonitor.AppModule;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
@@ -41,7 +42,8 @@ import java.util.List;
 
 /* JADX INFO: loaded from: classes.dex */
 public class AppMonitorDetailFragment extends Fragment {
-    private static LineChartView mLineChart;
+    private final String mClassName = getClass().getName();
+    private LineChartView mLineChart;
     private TextView mAverage;
     private List<CardBox> mCards;
     private TextView mHeader;
@@ -106,6 +108,7 @@ public class AppMonitorDetailFragment extends Fragment {
     @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppLogger.print(this.mClassName, "Creating AppMonitorDetailFragment result view", -1);
         this.mRoot = (ViewGroup) inflater.inflate(R.layout.appmonitor_detail, (ViewGroup) null);
         this.mAppName = null;
         this.mHeader = (TextView) this.mRoot.findViewById(R.id.usageTimer);
@@ -126,6 +129,39 @@ public class AppMonitorDetailFragment extends Fragment {
         clearUI();
         loadUI();
         return this.mRoot;
+    }
+
+    @Override // android.app.Fragment
+    public void onDestroyView() {
+        AppLogger.print(this.mClassName, "Destroying AppMonitorDetailFragment result view", -1);
+        if (this.mLineTooltip != null) {
+            this.mLineTooltip.animate().cancel();
+            if (this.mLineChart != null) {
+                this.mLineChart.dismissTooltip(this.mLineTooltip);
+            }
+            this.mLineTooltip = null;
+        }
+        if (this.mLineChart != null) {
+            this.mLineChart.setOnEntryClickListener(null);
+            this.mLineChart.setOnClickListener(null);
+            this.mLineChart.reset();
+            this.mLineChart = null;
+        }
+        if (this.mCards != null) {
+            for (CardBox c : this.mCards) {
+                c.setOnClickListener(null);
+            }
+            this.mCards.clear();
+            this.mCards = null;
+        }
+        if (this.mResetButton != null) {
+            this.mResetButton.setOnClickListener(null);
+            this.mResetButton = null;
+        }
+        this.mHeader = null;
+        this.mAverage = null;
+        this.mRoot = null;
+        super.onDestroyView();
     }
 
     public final void setTitle(String title) {
@@ -301,7 +337,10 @@ public class AppMonitorDetailFragment extends Fragment {
             this.mLineTooltip.animate().setDuration(100L).scaleX(0.0f).scaleY(0.0f).alpha(0.0f).setInterpolator(this.exitInterpolator).withEndAction(new Runnable() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.5
                 @Override // java.lang.Runnable
                 public void run() {
-                    AppMonitorDetailFragment.mLineChart.removeView(AppMonitorDetailFragment.this.mLineTooltip);
+                    if (!AppMonitorDetailFragment.this.isAdded() || AppMonitorDetailFragment.this.mLineChart == null || AppMonitorDetailFragment.this.mLineTooltip == null) {
+                        return;
+                    }
+                    AppMonitorDetailFragment.this.mLineChart.removeView(AppMonitorDetailFragment.this.mLineTooltip);
                     AppMonitorDetailFragment.this.mLineTooltip = null;
                     if (entryIndex != -1) {
                         AppMonitorDetailFragment.this.showLineTooltip(entryIndex, rect);
