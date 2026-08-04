@@ -13,8 +13,11 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,13 +38,13 @@ import com.db.chart.view.LineChartView;
 import com.db.chart.view.animation.Animation;
 import com.db.chart.view.animation.easing.cubic.CubicEaseOut;
 import com.db.chart.view.animation.style.DashAnimation;
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /* JADX INFO: loaded from: classes.dex */
 public class AppMonitorDetailFragment extends Fragment {
+    private static final int MIN_VISIBLE_TABS = 3;
     private final String mClassName = getClass().getName();
     private LineChartView mLineChart;
     private TextView mAverage;
@@ -49,7 +52,7 @@ public class AppMonitorDetailFragment extends Fragment {
     private TextView mHeader;
     private Paint mLineGridPaint;
     private TextView mLineTooltip;
-    private FloatingActionButton mResetButton;
+    private ImageButton mResetButton;
     private ViewGroup mRoot;
     private final TimeInterpolator enterInterpolator = new DecelerateInterpolator(1.5f);
     private final TimeInterpolator exitInterpolator = new AccelerateInterpolator();
@@ -114,7 +117,8 @@ public class AppMonitorDetailFragment extends Fragment {
         this.mHeader = (TextView) this.mRoot.findViewById(R.id.usageTimer);
         this.mAverage = (TextView) this.mRoot.findViewById(R.id.topValue);
         this.mCards = new ArrayList();
-        this.mResetButton = (FloatingActionButton) this.mRoot.findViewById(R.id.reset_stats);
+        this.mResetButton = (ImageButton) this.mRoot.findViewById(R.id.reset_stats);
+        final HorizontalScrollView horizontalScroll = (HorizontalScrollView) this.mRoot.findViewById(R.id.horizontalscreen);
         LinearLayout layoutHolder = (LinearLayout) this.mRoot.findViewById(R.id.layouthorizontal);
         for (AppModule appModule : AeroActivity.mJobManager.getModules()) {
             CardBox cardbox = new CardBox(getActivity());
@@ -122,10 +126,27 @@ public class AppMonitorDetailFragment extends Fragment {
             this.mCards.add(cardbox);
         }
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(0, 0, 15, 0);
         for (CardBox c : this.mCards) {
             layoutHolder.addView(c, layoutParams);
         }
+        horizontalScroll.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override // android.view.ViewTreeObserver.OnGlobalLayoutListener
+            public void onGlobalLayout() {
+                int viewportWidth = horizontalScroll.getWidth();
+                if (viewportWidth <= 0 || AppMonitorDetailFragment.this.mCards == null || AppMonitorDetailFragment.this.mCards.isEmpty()) {
+                    return;
+                }
+                int visibleTabs = Math.min(MIN_VISIBLE_TABS, AppMonitorDetailFragment.this.mCards.size());
+                int maxTabWidth = getResources().getDimensionPixelSize(R.dimen.appmonitor_tab_max_width);
+                int tabWidth = Math.min(viewportWidth / visibleTabs, maxTabWidth);
+                for (CardBox c : AppMonitorDetailFragment.this.mCards) {
+                    ViewGroup.LayoutParams lp = c.getLayoutParams();
+                    lp.width = tabWidth;
+                    c.setLayoutParams(lp);
+                }
+                horizontalScroll.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            }
+        });
         clearUI();
         loadUI();
         return this.mRoot;
@@ -256,6 +277,7 @@ public class AppMonitorDetailFragment extends Fragment {
         mLineChart = (LineChartView) this.mRoot.findViewById(R.id.graph);
         mLineChart.setOnEntryClickListener(this.lineEntryListener);
         mLineChart.setOnClickListener(this.lineClickListener);
+        mLineChart.setLabelColor(resolveThemeColor(R.attr.aeroGraphLabelColor, R.color.text_color));
         this.mLineGridPaint = new Paint();
         this.mLineGridPaint.setColor(resolveThemeColor(R.attr.aeroDividerColor, R.color.grey));
         this.mLineGridPaint.setPathEffect(new DashPathEffect(new float[]{5.0f, 5.0f}, 0.0f));
@@ -272,6 +294,7 @@ public class AppMonitorDetailFragment extends Fragment {
         int realPart;
         List<Integer> rawData = AeroActivity.mJobManager.getRawData(data.getName(), this.mModule);
         if (rawData != null) {
+            int lineColor = resolveThemeColor(R.attr.aeroGraphLineColor, R.color.material_blue);
             int size = rawData.size();
             int position = 0;
             int chunks = size / 10;
@@ -298,7 +321,7 @@ public class AppMonitorDetailFragment extends Fragment {
                     counter++;
                 }
                 dataSet.addPoint(position + "", average / Math.max(counter, 1));
-                dataSet.setDots(true).setDotsColor(getResources().getColor(R.color.material_orange)).setDotsRadius(Tools.fromDpToPx(5.0f)).setDotsStrokeThickness(Tools.fromDpToPx(2.0f)).setDotsStrokeColor(getResources().getColor(R.color.white)).setLineColor(getResources().getColor(R.color.material_orange)).setLineThickness(Tools.fromDpToPx(3.0f)).setSmooth(true);
+                dataSet.setDots(true).setDotsColor(lineColor).setDotsRadius(Tools.fromDpToPx(5.0f)).setDotsStrokeThickness(Tools.fromDpToPx(2.0f)).setDotsStrokeColor(getResources().getColor(R.color.white)).setLineColor(lineColor).setLineThickness(Tools.fromDpToPx(3.0f)).setSmooth(true);
                 position++;
                 average = 0;
                 i += realPart;

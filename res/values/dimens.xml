@@ -34,4 +34,5 @@
     <dimen name="showcase_radius">94dp</dimen>
     <dimen name="showcase_radius_inner">96dp</dimen>
     <dimen name="showcase_radius_outer">128dp</dimen>
+    <dimen name="appmonitor_tab_max_width">130dp</dimen>
 </resources>

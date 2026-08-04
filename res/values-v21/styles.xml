@@ -20,6 +20,8 @@
         <item name="aeroIconTint">@color/text_color</item>
         <item name="aeroDividerColor">@android:color/darker_gray</item>
         <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
+        <item name="aeroGraphLabelColor">@color/text_color</item>
+        <item name="aeroGraphLineColor">@color/material_blue</item>
     </style>
     <style name="AeroTheme.Dark" parent="@android:style/Theme.Material">
         <item name="android:actionBarStyle">@style/AeroActionBar.Dark</item>
@@ -38,5 +40,7 @@
         <item name="aeroIconTint">@color/dark_text_color</item>
         <item name="aeroDividerColor">@color/dark_secondary_text_color</item>
         <item name="aeroPreferenceControlBackground">@color/dark_card_background</item>
+        <item name="aeroGraphLabelColor">@color/dark_text_color</item>
+        <item name="aeroGraphLineColor">@color/material_blue</item>
     </style>
 </resources>
