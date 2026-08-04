@@ -3,7 +3,7 @@
     <RelativeLayout
         android:id="@+id/wrapper"
         android:layout_width="match_parent"
-        android:layout_height="96dp">
+        android:layout_height="@dimen/appmonitor_tab_height">
         <TextView
             android:textSize="12sp"
             android:textColor="?attr/aeroSecondaryTextColor"

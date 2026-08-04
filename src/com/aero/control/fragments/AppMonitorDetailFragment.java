@@ -324,7 +324,7 @@ public class AppMonitorDetailFragment extends Fragment {
                     counter++;
                 }
                 dataSet.addPoint(position + "", average / Math.max(counter, 1));
-                dataSet.setDots(true).setDotsColor(lineColor).setDotsRadius(Tools.fromDpToPx(5.0f)).setDotsStrokeThickness(Tools.fromDpToPx(2.0f)).setDotsStrokeColor(getResources().getColor(R.color.white)).setLineColor(lineColor).setLineThickness(Tools.fromDpToPx(3.0f)).setSmooth(true);
+                dataSet.setDots(true).setDotsColor(lineColor).setDotsRadius(Tools.fromDpToPx(5.0f)).setDotsStrokeThickness(Tools.fromDpToPx(2.0f)).setDotsStrokeColor(getResources().getColor(R.color.white)).setLineColor(lineColor).setLineThickness(Tools.fromDpToPx(3.0f)).setSmooth(false);
                 position++;
                 average = 0;
                 i += realPart;

@@ -37,5 +37,6 @@
     <dimen name="appmonitor_tab_max_width">130dp</dimen>
     <dimen name="appmonitor_tab_edge_spacing">8dp</dimen>
     <dimen name="appmonitor_tab_spacing">8dp</dimen>
+    <dimen name="appmonitor_tab_height">128dp</dimen>
     <dimen name="appmonitor_reset_icon_padding">12dp</dimen>
 </resources>

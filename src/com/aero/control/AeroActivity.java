@@ -86,6 +86,7 @@ public final class AeroActivity extends Activity {
     private String mCurrentTheme;
     private Runnable mPendingSwitch;
     private boolean mClosePending = false;
+    private int mSelectedItemPosition = 0;
     private Runnable mClearClosePending;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -171,7 +172,7 @@ public final class AeroActivity extends Activity {
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
-            selectItem(savedInstanceState.getInt(SELECTED_ITEM));
+            selectItem(savedInstanceState.getInt(SELECTED_ITEM), false);
         }
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -284,6 +285,10 @@ public final class AeroActivity extends Activity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void selectItem(int position) {
+        selectItem(position, true);
+    }
+
+    private void selectItem(int position, boolean replaceFragment) {
         if (this.mDrawerLayout != null) {
             this.mDrawerLayout.closeDrawers();
         }
@@ -295,6 +300,8 @@ public final class AeroActivity extends Activity {
         if (item == null) {
             return;
         }
+
+        this.mSelectedItemPosition = position;
 
         int itemResourceId = item.content;
 
@@ -372,7 +379,9 @@ public final class AeroActivity extends Activity {
             if (oldFragment != null && oldFragment != fragment && mFragmentStack.contains(oldFragment)) {
                 mFragmentStack.remove(oldFragment);
             }
-            switchContent(fragment);
+            if (replaceFragment) {
+                switchContent(fragment);
+            }
         }
         this.mDrawerList.setItemChecked(position, true);
 
@@ -401,6 +410,17 @@ public final class AeroActivity extends Activity {
         setActionBarTitle(getString(R.string.slider_app_monitor));
     }
 
+    private boolean hasAppDetailBackStackEntry() {
+        android.app.FragmentManager fragmentManager = getFragmentManager();
+        int backStackEntryCount = fragmentManager.getBackStackEntryCount();
+        for (int i = 0; i < backStackEntryCount; i++) {
+            if ("AppDetail".equals(fragmentManager.getBackStackEntryAt(i).getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override // android.app.Activity
     public final void setTitle(CharSequence title) {
         this.mTitle = title;
@@ -419,6 +439,12 @@ public final class AeroActivity extends Activity {
         this.mDrawerToggle.syncState();
     }
 
+    @Override // android.app.Activity
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SELECTED_ITEM, this.mSelectedItemPosition);
+    }
+
     @Override // android.app.Activity, android.content.ComponentCallbacks
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -427,6 +453,10 @@ public final class AeroActivity extends Activity {
 
     @Override // android.app.Activity
     public void onBackPressed() {
+        if (hasAppDetailBackStackEntry()) {
+            closeAppDetail();
+            return;
+        }
         if (this.mClosePending) {
             finish();
             return;
