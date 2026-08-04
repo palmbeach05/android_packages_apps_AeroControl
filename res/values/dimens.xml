@@ -35,4 +35,7 @@
     <dimen name="showcase_radius_inner">96dp</dimen>
     <dimen name="showcase_radius_outer">128dp</dimen>
     <dimen name="appmonitor_tab_max_width">130dp</dimen>
+    <dimen name="appmonitor_tab_edge_spacing">8dp</dimen>
+    <dimen name="appmonitor_tab_spacing">8dp</dimen>
+    <dimen name="appmonitor_reset_icon_padding">12dp</dimen>
 </resources>

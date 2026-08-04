@@ -137,8 +137,11 @@ public class AppMonitorDetailFragment extends Fragment {
                     return;
                 }
                 int visibleTabs = Math.min(MIN_VISIBLE_TABS, AppMonitorDetailFragment.this.mCards.size());
+                int edgeSpacing = getResources().getDimensionPixelSize(R.dimen.appmonitor_tab_edge_spacing);
+                int tabSpacing = getResources().getDimensionPixelSize(R.dimen.appmonitor_tab_spacing);
+                int availableWidth = viewportWidth - (edgeSpacing * 2) - (tabSpacing * (visibleTabs - 1));
                 int maxTabWidth = getResources().getDimensionPixelSize(R.dimen.appmonitor_tab_max_width);
-                int tabWidth = Math.min(viewportWidth / visibleTabs, maxTabWidth);
+                int tabWidth = Math.min(availableWidth / visibleTabs, maxTabWidth);
                 for (CardBox c : AppMonitorDetailFragment.this.mCards) {
                     ViewGroup.LayoutParams lp = c.getLayoutParams();
                     lp.width = tabWidth;

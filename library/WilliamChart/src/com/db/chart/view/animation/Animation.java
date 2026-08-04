@@ -426,6 +426,9 @@ public class Animation{
 	 */
 	public void cancel(){
 		mCancelled = true;
+		if(mChartView != null)
+			mChartView.removeCallbacks(mAnimator);
+		mPlaying = false;
 	}
 	
 	
