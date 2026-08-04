@@ -289,6 +289,7 @@ public final class AeroActivity extends Activity {
             this.mDrawerLayout.closeDrawers();
         }
         Fragment fragment = null;
+        Fragment oldFragment = null;
 
         // Get the item's resource ID to identify it, rather than using position
         NavBarItems.PreferenceItem item = this.mAdapter.getItem(position);
@@ -300,63 +301,78 @@ public final class AeroActivity extends Activity {
 
         // Map resource ID to fragment
         if (itemResourceId == R.string.slider_overview) {
-            if (this.mAeroFragment == null) {
+            oldFragment = this.mAeroFragment;
+            if (this.mAeroFragment == null || !this.mAeroFragment.isAdded()) {
                 this.mAeroFragment = new AeroFragment();
             }
             fragment = this.mAeroFragment;
         } else if (itemResourceId == R.string.slider_cpu_settings) {
-            if (this.mCPUFragement == null) {
+            oldFragment = this.mCPUFragement;
+            if (this.mCPUFragement == null || !this.mCPUFragement.isAdded()) {
                 this.mCPUFragement = new CPUFragment();
             }
             fragment = this.mCPUFragement;
         } else if (itemResourceId == R.string.slider_statistics) {
-            if (this.mStatisticsFragment == null) {
+            oldFragment = this.mStatisticsFragment;
+            if (this.mStatisticsFragment == null || !this.mStatisticsFragment.isAdded()) {
                 this.mStatisticsFragment = new StatisticsFragment();
             }
             fragment = this.mStatisticsFragment;
         } else if (itemResourceId == R.string.slider_gpu_settings) {
-            if (this.mGPUFragement == null) {
+            oldFragment = this.mGPUFragement;
+            if (this.mGPUFragement == null || !this.mGPUFragement.isAdded()) {
                 this.mGPUFragement = new GPUFragment();
             }
             fragment = this.mGPUFragement;
         } else if (itemResourceId == R.string.slider_memory_settings) {
-            if (this.mMemoryFragment == null) {
+            oldFragment = this.mMemoryFragment;
+            if (this.mMemoryFragment == null || !this.mMemoryFragment.isAdded()) {
                 this.mMemoryFragment = new MemoryFragment();
             }
             fragment = this.mMemoryFragment;
         } else if (itemResourceId == R.string.slider_misc_settings) {
-            if (this.mMiscSettingsFragment == null) {
+            oldFragment = this.mMiscSettingsFragment;
+            if (this.mMiscSettingsFragment == null || !this.mMiscSettingsFragment.isAdded()) {
                 this.mMiscSettingsFragment = new MiscSettingsFragment();
             }
             fragment = this.mMiscSettingsFragment;
         } else if (itemResourceId == R.string.slider_defy_parts) {
-            if (this.mDefyPartsFragment == null) {
+            oldFragment = this.mDefyPartsFragment;
+            if (this.mDefyPartsFragment == null || !this.mDefyPartsFragment.isAdded()) {
                 this.mDefyPartsFragment = new DefyPartsFragment();
             }
             fragment = this.mDefyPartsFragment;
         } else if (itemResourceId == R.string.slider_backup_restore) {
-            if (this.mUpdaterFragement == null) {
+            oldFragment = this.mUpdaterFragement;
+            if (this.mUpdaterFragement == null || !this.mUpdaterFragement.isAdded()) {
                 this.mUpdaterFragement = new UpdaterFragment();
             }
             fragment = this.mUpdaterFragement;
         } else if (itemResourceId == R.string.slider_profile) {
-            if (this.mProfileFragment == null) {
+            oldFragment = this.mProfileFragment;
+            if (this.mProfileFragment == null || !this.mProfileFragment.isAdded()) {
                 this.mProfileFragment = new ProfileFragment();
             }
             fragment = this.mProfileFragment;
         } else if (itemResourceId == R.string.slider_app_monitor) {
-            if (this.mAppStatisticsFragment == null) {
+            oldFragment = this.mAppStatisticsFragment;
+            if (this.mAppStatisticsFragment == null || !this.mAppStatisticsFragment.isAdded()) {
                 this.mAppStatisticsFragment = new AppMonitorFragment();
             }
             fragment = this.mAppStatisticsFragment;
         } else if (itemResourceId == R.string.slider_test_suite_settings) {
-            if (this.mTestSuiteFragment == null) {
+            oldFragment = this.mTestSuiteFragment;
+            if (this.mTestSuiteFragment == null || !this.mTestSuiteFragment.isAdded()) {
                 this.mTestSuiteFragment = new TestSuiteFragment();
             }
             fragment = this.mTestSuiteFragment;
         }
 
         if (fragment != null) {
+            // If a new fragment was created to replace an old one, remove the old one from the stack
+            if (oldFragment != null && oldFragment != fragment && mFragmentStack.contains(oldFragment)) {
+                mFragmentStack.remove(oldFragment);
+            }
             switchContent(fragment);
         }
         this.mDrawerList.setItemChecked(position, true);
