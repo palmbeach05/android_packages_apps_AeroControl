@@ -42,8 +42,9 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="8dp"
                 android:layout_alignParentRight="true"
-                android:background="?android:attr/selectableItemBackground"
-                android:scaleType="center"
+                android:background="@drawable/reset_button_background"
+                android:padding="@dimen/appmonitor_reset_icon_padding"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_refresh"
                 android:contentDescription="@string/refresh"/>
             <TextView
@@ -82,6 +83,10 @@
             android:orientation="horizontal"
             android:id="@+id/layouthorizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/appmonitor_tab_edge_spacing"
+            android:paddingRight="@dimen/appmonitor_tab_edge_spacing"
+            android:divider="@drawable/appmonitor_tab_divider"
+            android:showDividers="middle"/>
     </HorizontalScrollView>
 </RelativeLayout>

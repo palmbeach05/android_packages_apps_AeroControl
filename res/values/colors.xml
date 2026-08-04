@@ -27,4 +27,6 @@
     <color name="dark_card_shadow">#ff000000</color>
     <color name="dark_secondary_text_color">#b0b0b0</color>
     <color name="checkbox_stroke_dark">#b0b0b0</color>
+    <color name="reset_button_normal">#f44336</color>
+    <color name="reset_button_pressed">#c62828</color>
 </resources>

@@ -186,9 +186,10 @@ public class Animation{
 	 * @param end   X and Y end coordinates
 	 * @return Array of {@link ChartSet} containing the first values to be drawn.
 	 */
-	public ArrayList<ChartSet> prepareAnimation(ChartView chartView, 
+	public ArrayList<ChartSet> prepareAnimation(ChartView chartView,
 			ArrayList<float[][]> start, ArrayList<float[][]> end){
 
+		mCancelled = false;
 		final int nSets = start.size();
 		final int nEntries = start.get(0).length;
 		
@@ -426,6 +427,9 @@ public class Animation{
 	 */
 	public void cancel(){
 		mCancelled = true;
+		if(mChartView != null)
+			mChartView.removeCallbacks(mAnimator);
+		mPlaying = false;
 	}
 	
 	
