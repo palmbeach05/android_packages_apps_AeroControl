@@ -9,5 +9,10 @@
             android:title="Linpack Test"
             android:key="linpack_test"
             android:summary="Runs the linpack test."/>
+        <CheckBoxPreference
+            android:title="Use All CPUs"
+            android:key="linpack_use_all_cpus"
+            android:defaultValue="false"
+            android:summary="Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness."/>
     </PreferenceCategory>
 </PreferenceScreen>
