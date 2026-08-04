@@ -233,7 +233,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 outputName = "zImage";
             }
             File outputFile = new File(backupDir, outputName);
-            String command = "dd if=" + source + " of=" + outputFile.getPath() + " && chmod 777 " + outputFile.getPath() + " && echo " + DONE_MARKER;
+            String command = "dd if=" + source + " of=" + outputFile.getPath() + "; chmod 777 " + outputFile.getPath() + "; echo " + DONE_MARKER;
             if (!AeroActivity.shell.runCommandAndWait(command)) {
                 Log.e("Aero", "Kernel backup shell command was interrupted or failed to complete.");
                 return null;
