@@ -100,41 +100,44 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         // off the main thread so opening this screen can't ANR while
         // waiting for the su prompt, then apply the results only if the
         // fragment is still attached.
+        final AeroActivity activity = (AeroActivity) getActivity();
+        final String unavailableMarker = activity.getText(R.string.unavailable).toString();
         new Thread(new Runnable() {
             @Override // java.lang.Runnable
             public void run() {
                 final String charger = AeroActivity.shell.getRootInfo("getprop ", FilePath.PROP_CHARGE_LED_MODE);
                 final String multitouch = AeroActivity.shell.getRootInfo("getprop ", FilePath.PROP_TOUCH_POINTS);
                 final String brightness = AeroActivity.shell.getRootInfo("getprop", FilePath.PROP_BUTTON_BRIGHTNESS);
-                DefyPartsFragment.this.getActivity().runOnUiThread(new Runnable() {
+                activity.runOnUiThread(new Runnable() {
                     @Override // java.lang.Runnable
                     public void run() {
                         if (!DefyPartsFragment.this.isAdded()) {
                             return;
                         }
-                        if (charger.length() > 1) {
+                        if (charger != null && !charger.isEmpty() && !charger.equals(unavailableMarker)) {
                             DefyPartsFragment.this.led_charging.setEnabled(true);
                             DefyPartsFragment.this.led_charging.setValue(charger);
                             DefyPartsFragment.this.led_charging.setSummary(charger);
                         } else {
                             DefyPartsFragment.this.led_charging.setEnabled(false);
-                            DefyPartsFragment.this.led_charging.setSummary(DefyPartsFragment.this.getText(R.string.unavailable));
+                            DefyPartsFragment.this.led_charging.setSummary(unavailableMarker);
                         }
-                        if (multitouch.length() > 1) {
+                        if (multitouch != null && !multitouch.isEmpty() && !multitouch.equals(unavailableMarker)) {
                             DefyPartsFragment.this.multi_touch.setEnabled(true);
                             DefyPartsFragment.this.multi_touch.setValue(multitouch);
                             DefyPartsFragment.this.multi_touch.setSummary(multitouch);
                         } else {
                             DefyPartsFragment.this.multi_touch.setEnabled(false);
-                            DefyPartsFragment.this.multi_touch.setSummary(DefyPartsFragment.this.getText(R.string.unavailable));
+                            DefyPartsFragment.this.multi_touch.setSummary(unavailableMarker);
                         }
-                        if (charger.length() > 1) {
+                        if (brightness != null && !brightness.isEmpty() && !brightness.equals(unavailableMarker)) {
                             DefyPartsFragment.this.button_brightness.setEnabled(true);
                             DefyPartsFragment.this.button_brightness.setText(brightness);
                             DefyPartsFragment.this.button_brightness.setPrefSummary(brightness);
                             DefyPartsFragment.this.button_brightness.setSummary(brightness);
                         } else {
                             DefyPartsFragment.this.button_brightness.setEnabled(false);
+                            DefyPartsFragment.this.button_brightness.setSummary(unavailableMarker);
                         }
                     }
                 });
