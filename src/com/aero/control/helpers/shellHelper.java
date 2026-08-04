@@ -502,6 +502,20 @@ public final class shellHelper {
         return getRootResult() != null;
     }
 
+    /**
+     * Sends a single command to the root shell and blocks until the shell
+     * produces a result, returning the actual output. Returns null if the
+     * shell is not loaded or the command fails.
+     */
+    public final synchronized String runCommandAndWaitForOutput(String command) {
+        openShell();
+        if (!this.mShellLoaded) {
+            return null;
+        }
+        addCommand(command);
+        return getRootResult();
+    }
+
     public final synchronized String[] getRootArray(String command, String split) {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
