@@ -69,7 +69,7 @@
     <string name="add_a_name">Profile name</string>
     <string name="apply_profile">Applying Per-App Profile:</string>
     <string name="define_a_name">Define a name for this profile.</string>
-    <string name="nothing_added_yet">Whoop! You haven\'t added any profiles yet.</string>
+    <string name="nothing_added_yet">Whoops! You haven\'t added any profiles yet.</string>
     <string name="per_app_active">Per-App: Active</string>
     <string name="per_app_not_active">Per-App: Not active</string>
     <string name="profile_assign_to_apps">Assign to apps</string>
