@@ -334,6 +334,7 @@
     <string name="help_text_amp">This value lets you increase or decrease the strength of the vibration module. Usually 100 is the max.</string>
     <string name="help_text_battery_saver">If enabled (1), only one core will stay active as soon as you turn off your screen. If you are getting strange audio quality while the screen is off, try switching it off via 0. This will let both cores stay active during suspend.</string>
     <string name="help_text_block_dump">block_dump enables block I/O debugging when set to a nonzero value.</string>
+    <string name="help_text_button_brightness">Sets the backlight brightness level for the capacitive buttons.</string>
     <string name="help_text_boostpulse_duration">The duration of the input boost.</string>
     <string name="help_text_dalvik_settings">This submenu lets you interact with the virtual machine of your device. Mostly there are memory related options.</string>
     <string name="help_text_debug">A debug flag intended for the developer. Nothing to do here!</string>

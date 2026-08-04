@@ -109,6 +109,9 @@ public class HelpTextHolder {
         putInMap("ignore_nice_load", R.string.help_text_ignore_nice_load);
         putInMap("sampling_down_factor", R.string.help_text_sampling_down_factor);
         putInMap("powersave_bias", R.string.help_text_powersave_bias);
+        putInMap("led_charging", R.string.pref_charging_led_summary);
+        putInMap("multi_touch", R.string.pref_multitouch_summary);
+        putInMap("button_brightness", R.string.help_text_button_brightness);
     }
 
     public String getText(String key) {
