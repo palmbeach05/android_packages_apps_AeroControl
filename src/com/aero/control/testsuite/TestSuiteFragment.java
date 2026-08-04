@@ -68,7 +68,7 @@ public class TestSuiteFragment extends PreferenceFragment {
         boolean useAllCpus = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(PREF_USE_ALL_CPUS, false);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         int workerCount = useAllCpus ? Math.max(1, availableProcessors) : Math.max(1, availableProcessors - 1);
-        this.mRunBenchmark = new RunBenchmark(workerCount, useAllCpus);
+        this.mRunBenchmark = new RunBenchmark(workerCount, useAllCpus, availableProcessors);
         this.mRunBenchmark.execute(new Void[0]);
     }
 
@@ -96,10 +96,20 @@ public class TestSuiteFragment extends PreferenceFragment {
         ProgressDialog progressDialog;
         private final int workerCount;
         private final boolean useAllCpus;
+        private final int availableProcessors;
 
-        private RunBenchmark(int workerCount, boolean useAllCpus) {
+        private RunBenchmark(int workerCount, boolean useAllCpus, int availableProcessors) {
             this.workerCount = workerCount;
             this.useAllCpus = useAllCpus;
+            this.availableProcessors = availableProcessors;
+        }
+
+        private String getModeText() {
+            String mode = this.useAllCpus ? "All CPUs" : "Responsive";
+            if (this.availableProcessors == 1) {
+                mode += " (single CPU)";
+            }
+            return mode;
         }
 
         @Override // android.os.AsyncTask
@@ -139,13 +149,21 @@ public class TestSuiteFragment extends PreferenceFragment {
                 for (Thread worker : workers) {
                     worker.interrupt();
                 }
+                for (Thread worker : workers) {
+                    try {
+                        worker.join();
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
                 return null;
             }
             double mflops = 0.0d;
             for (double result : results) {
                 mflops += result;
             }
-            Log.i(LOG_TAG, "Stopped the test. Mode: " + (this.useAllCpus ? "All CPUs" : "Responsive") + ", Workers: " + this.workerCount + ", Total MFlop sum: " + mflops);
+            String modeText = getModeText();
+            Log.i(LOG_TAG, "Stopped the test. Mode: " + modeText + ", Workers: " + this.workerCount + ", Total MFlop sum: " + mflops);
             return Double.valueOf(mflops);
         }
 
@@ -162,7 +180,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             }
             AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
             builder.setTitle("Result");
-            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + (this.useAllCpus ? "All CPUs" : "Responsive") + "\nWorkers: " + this.workerCount);
+            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + getModeText() + "\nWorkers: " + this.workerCount);
             builder.show();
         }
 
