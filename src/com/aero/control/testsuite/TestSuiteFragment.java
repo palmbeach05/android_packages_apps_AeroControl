@@ -163,7 +163,7 @@ public class TestSuiteFragment extends PreferenceFragment {
                 mflops += result;
             }
             String modeText = getModeText();
-            Log.i(LOG_TAG, "Stopped the test. Mode: " + modeText + ", Workers: " + this.workerCount + ", Total MFlop sum: " + mflops);
+            Log.i(LOG_TAG, "Stopped the test. Mode: " + modeText + ", CPUs: " + this.workerCount + ", Total MFlop sum: " + mflops);
             return Double.valueOf(mflops);
         }
 
@@ -180,7 +180,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             }
             AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
             builder.setTitle("Result");
-            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + getModeText() + "\nWorkers: " + this.workerCount);
+            builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + getModeText() + "\nCPUs: " + this.workerCount);
             builder.show();
         }
 
