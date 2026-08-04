@@ -9,6 +9,11 @@ public class Linpack {
     private double mTimePassed;
     double second_orig = -1.0d;
 
+    private final double[][] a = (double[][]) Array.newInstance((Class<?>) Double.TYPE, 200, 201);
+    private final double[] b = new double[200];
+    private final double[] x = new double[200];
+    private final int[] ipvt = new int[200];
+
     public double getTimePassed() {
         return this.mTimePassed;
     }
@@ -34,16 +39,16 @@ public class Linpack {
 
     double second() {
         if (this.second_orig == -1.0d) {
-            this.second_orig = System.currentTimeMillis();
+            this.second_orig = System.nanoTime();
         }
-        return (System.currentTimeMillis() - this.second_orig) / 1000.0d;
+        return (System.nanoTime() - this.second_orig) / 1.0E9d;
     }
 
     public void run_benchmark() {
-        double[][] a = (double[][]) Array.newInstance((Class<?>) Double.TYPE, 200, 201);
-        double[] b = new double[200];
-        double[] x = new double[200];
-        int[] ipvt = new int[200];
+        double[][] a = this.a;
+        double[] b = this.b;
+        double[] x = this.x;
+        int[] ipvt = this.ipvt;
         double ops = ((2.0d * ((double) 1000000)) / 3.0d) + (2.0d * ((double) 10000));
         matgen(a, 201, 100, b);
         double time = second();
