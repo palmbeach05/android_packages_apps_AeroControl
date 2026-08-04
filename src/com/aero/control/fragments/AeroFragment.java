@@ -58,15 +58,15 @@ public class AeroFragment extends Fragment {
     };
 
     private class RefreshThread extends Thread {
-        private boolean mInterrupt;
+        private volatile boolean mInterrupt;
 
         private RefreshThread() {
             this.mInterrupt = false;
         }
 
-        @Override // java.lang.Thread
-        public void interrupt() {
+        public void cancel() {
             this.mInterrupt = true;
+            interrupt();
         }
 
         @Override // java.lang.Thread, java.lang.Runnable
@@ -97,7 +97,8 @@ public class AeroFragment extends Fragment {
     @Override // android.app.Fragment
     public void onDestroyView() {
         super.onDestroyView();
-        this.mRefreshThread.interrupt();
+        this.mRefreshThread.cancel();
+        this.mRefreshHandler.removeMessages(1);
         this.mAdapter = null;
         this.mOverView = null;
         this.root = null;
@@ -122,10 +123,10 @@ public class AeroFragment extends Fragment {
                 break;
             }
         }
-        if (!this.mRefreshThread.isAlive()) {
-            this.mRefreshThread.start();
-            this.mRefreshThread.setPriority(1);
-        }
+        // Always create a fresh thread for each view instance
+        this.mRefreshThread = new RefreshThread();
+        this.mRefreshThread.start();
+        this.mRefreshThread.setPriority(1);
         createList();
         if (!this.mExecuted) {
             setPermissions();
