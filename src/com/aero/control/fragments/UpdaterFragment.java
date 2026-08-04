@@ -212,7 +212,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
      * copy had actually completed.
      */
     private class KernelBackupTask extends AsyncTask<Void, Void, File> {
-        private static final String DONE_MARKER = "AERO_BACKUP_DONE";
+        private static final String SUCCESS_MARKER = "DD_SUCCESS";
+        private static final String FAILURE_MARKER = "DD_FAILURE";
 
         @Override // android.os.AsyncTask
         protected File doInBackground(Void... params) {
@@ -233,14 +234,20 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 outputName = "zImage";
             }
             File outputFile = new File(backupDir, outputName);
-            String command = "dd if=" + source + " of=" + outputFile.getPath() + " && chmod 777 " + outputFile.getPath() + " && echo " + DONE_MARKER;
-            if (!AeroActivity.shell.runCommandAndWait(command)) {
+            String command = "dd if=" + source + " of=" + outputFile.getPath() + " && { chmod 777 " + outputFile.getPath() + "; echo " + SUCCESS_MARKER + "; } || echo " + FAILURE_MARKER;
+            String output = AeroActivity.shell.runCommandAndWaitForOutput(command);
+            if (output == null) {
                 Log.e("Aero", "Kernel backup shell command was interrupted or failed to complete.");
+                return null;
+            }
+            if (!output.contains(SUCCESS_MARKER)) {
+                Log.e("Aero", "dd command failed - success marker not found in output. Output: " + output);
                 return null;
             }
             if (outputFile.exists() && outputFile.length() > 0) {
                 return outputFile;
             }
+            Log.e("Aero", "dd command reported success but output file is missing or empty.");
             return null;
         }
 
