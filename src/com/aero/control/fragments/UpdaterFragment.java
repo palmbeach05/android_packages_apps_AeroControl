@@ -145,6 +145,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         private class Result {
             boolean zImageAvailable;
             String bootSource;
+            String whitelistedSource;
             String[] backupEntries;
 
             private Result() {
@@ -173,6 +174,13 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (isCancelled()) {
                 return null;
             }
+            String whitelisted = update.isWhiteListed(Build.MODEL);
+            if (whitelisted != null && AeroActivity.shell.isReadableBlockDevice(whitelisted)) {
+                result.whitelistedSource = whitelisted;
+            }
+            if (isCancelled()) {
+                return null;
+            }
             result.backupEntries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
             return result;
         }
@@ -194,8 +202,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             } else {
                 UpdaterFragment.this.mBackupKernel.setEnabled(false);
             }
-            if (!UpdaterFragment.this.mBackupKernel.isEnabled() && update.isWhiteListed(Build.MODEL) != null) {
-                UpdaterFragment.this.mBackup = update.isWhiteListed(Build.MODEL);
+            if (!UpdaterFragment.this.mBackupKernel.isEnabled() && result.whitelistedSource != null) {
+                UpdaterFragment.this.mBackup = result.whitelistedSource;
                 Log.i("Aero", "Using whitelisted boot-partition backup source: " + UpdaterFragment.this.mBackup);
                 UpdaterFragment.this.mBackupKernel.setEnabled(true);
             }
