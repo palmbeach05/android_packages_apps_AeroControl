@@ -516,6 +516,23 @@ public final class shellHelper {
         return getRootResult();
     }
 
+    /**
+     * Root-aware check for whether a path is a readable block device.
+     * Unlike {@link com.aero.control.helpers.GenericHelper#doesExist(String)},
+     * which uses app-level {@code File.exists()} and can reject a boot
+     * partition that the app can't see directly but the root shell can,
+     * this runs the check through the shared root shell. Only intended for
+     * use with a fixed, application-controlled set of candidate paths.
+     */
+    public final synchronized boolean isReadableBlockDevice(String path) {
+        if (path == null) {
+            return false;
+        }
+        String command = "[ -b \"" + path + "\" ] && [ -r \"" + path + "\" ] && echo BLOCK_OK";
+        String output = runCommandAndWaitForOutput(command);
+        return output != null && output.contains("BLOCK_OK");
+    }
+
     public final synchronized String[] getRootArray(String command, String split) {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
