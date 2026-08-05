@@ -36,6 +36,7 @@ public class AeroFragment extends Fragment {
     private AeroAdapter mAdapter;
     private AeroData mFrequencyData;
     private AeroData mGPUData;
+    private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
     private final List<AeroData> mGovernorData = new ArrayList<>();
     private AeroData mIOSchedulerData;
     private AeroData mKernelData;
@@ -193,7 +194,7 @@ public class AeroFragment extends Fragment {
         } else {
             this.mKernelData.content = AeroActivity.shell.getKernel();
         }
-        List<CpuClusterHelper.Cluster> clusters = new CpuClusterHelper().getClusters();
+        List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
         for (int i = 0; i < clusters.size(); i++) {
             CpuClusterHelper.Cluster cluster = clusters.get(i);
             String governor = AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE);
