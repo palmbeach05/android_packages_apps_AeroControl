@@ -5,6 +5,11 @@
     <PreferenceCategory
         android:title="@string/pref_cpu_freq"
         android:key="cpu_settings">
+        <CheckBoxPreference
+            android:title="@string/pref_apply_to_all_cpu_clusters"
+            android:key="apply_to_all_cpu_clusters"
+            android:defaultValue="false"
+            android:summary="@string/pref_apply_to_all_cpu_clusters_summary"/>
         <com.aero.control.helpers.Android.CustomPreference
             android:title="@string/perf_live_oc_uc"
             android:key="cpu_commands"

@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
@@ -52,6 +53,7 @@ public class CPUFragment extends PlaceHolderFragment {
     private static final ArrayList<String> mVselList = new ArrayList<>();
     private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
     private final List<ClusterControls> mClusterControls = new ArrayList<>();
+    private CheckBoxPreference mApplyToAllClusters;
     private boolean mVisible = true;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() { // from class: com.aero.control.fragments.CPUFragment.11
@@ -72,12 +74,14 @@ public class CPUFragment extends PlaceHolderFragment {
 
     /** Holds the max-frequency, min-frequency and governor controls generated for a single cpufreq cluster. */
     private static final class ClusterControls {
+        private final int index;
         private final CpuClusterHelper.Cluster cluster;
         private final CustomListPreference maxFrequency;
         private final CustomListPreference minFrequency;
         private final CustomListPreference governor;
 
-        private ClusterControls(CpuClusterHelper.Cluster cluster, CustomListPreference maxFrequency, CustomListPreference minFrequency, CustomListPreference governor) {
+        private ClusterControls(int index, CpuClusterHelper.Cluster cluster, CustomListPreference maxFrequency, CustomListPreference minFrequency, CustomListPreference governor) {
+            this.index = index;
             this.cluster = cluster;
             this.maxFrequency = maxFrequency;
             this.minFrequency = minFrequency;
@@ -135,12 +139,29 @@ public class CPUFragment extends PlaceHolderFragment {
             governor.setOrder(i);
             cpuGovernor.addPreference(governor);
 
-            ClusterControls controls = new ClusterControls(cluster, maxFrequency, minFrequency, governor);
+            ClusterControls controls = new ClusterControls(i, cluster, maxFrequency, minFrequency, governor);
             this.mClusterControls.add(controls);
             attachFrequencyListeners(controls);
             attachGovernorListener(controls);
             if (i == 0) {
                 this.mCPUGovernor = governor;
+            }
+        }
+        this.mApplyToAllClusters = (CheckBoxPreference) cpuCategory.findPreference("apply_to_all_cpu_clusters");
+        if (this.mApplyToAllClusters != null) {
+            if (singleCluster) {
+                cpuCategory.removePreference(this.mApplyToAllClusters);
+                this.mApplyToAllClusters = null;
+            } else {
+                this.mApplyToAllClusters.setOrder(-1);
+                updateClusterControlsEnabled(this.mApplyToAllClusters.isChecked());
+                this.mApplyToAllClusters.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                    @Override // android.preference.Preference.OnPreferenceChangeListener
+                    public boolean onPreferenceChange(Preference preference, Object newValue) {
+                        CPUFragment.this.updateClusterControlsEnabled((Boolean) newValue);
+                        return true;
+                    }
+                });
             }
         }
         updateMaxFreq();
@@ -340,11 +361,17 @@ public class CPUFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String a = (String) o;
-                ArrayList<String> array = new ArrayList<>();
                 try {
                     if (Integer.parseInt(a) < Integer.parseInt(controls.minFrequency.getValue())) {
                         return false;
                     }
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+                if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
+                    CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
+                } else {
+                    ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
                         array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
                         array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
@@ -352,21 +379,25 @@ public class CPUFragment extends PlaceHolderFragment {
                     controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
                     String[] commands = (String[]) array.toArray(new String[0]);
                     AeroActivity.shell.setRootInfo(commands);
-                    return true;
-                } catch (NumberFormatException e) {
-                    return false;
                 }
+                return true;
             }
         });
         controls.minFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.7
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String a = (String) o;
-                ArrayList<String> array = new ArrayList<>();
                 try {
                     if (Integer.parseInt(a) > Integer.parseInt(controls.maxFrequency.getValue())) {
                         return false;
                     }
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+                if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
+                    CPUFragment.this.applyMinFrequencyToAllClusters(controls, a);
+                } else {
+                    ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
                         array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
                         array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
@@ -374,10 +405,8 @@ public class CPUFragment extends PlaceHolderFragment {
                     controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
                     String[] commands = (String[]) array.toArray(new String[0]);
                     AeroActivity.shell.setRootInfo(commands);
-                    return true;
-                } catch (NumberFormatException e) {
-                    return false;
                 }
+                return true;
             }
         });
     }
@@ -390,16 +419,84 @@ public class CPUFragment extends PlaceHolderFragment {
                 if (CPUFragment.this.PrefCat != null) {
                     CPUFragment.this.root.removePreference(CPUFragment.this.PrefCat);
                 }
-                CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
-                try {
-                    Thread.sleep(450L);
-                } catch (InterruptedException e) {
-                    Log.e("Aero", "Something interrupted the main Thread, try again.", e);
+                if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
+                    CPUFragment.this.applyGovernorToAllClusters(controls, a);
+                } else {
+                    CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
+                    try {
+                        Thread.sleep(450L);
+                    } catch (InterruptedException e) {
+                        Log.e("Aero", "Something interrupted the main Thread, try again.", e);
+                    }
+                    controls.governor.setSummary(AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + controls.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
                 }
-                controls.governor.setSummary(AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + controls.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
                 return true;
             }
         });
+    }
+
+    /** Whether changes made through the first cluster's controls should be mirrored to every detected cluster. */
+    private boolean isApplyToAllClustersEnabled() {
+        return this.mApplyToAllClusters != null && this.mApplyToAllClusters.isChecked();
+    }
+
+    /** Enables or disables the max-frequency, min-frequency and governor controls for every cluster after the first. */
+    private void updateClusterControlsEnabled(boolean applyToAll) {
+        for (int i = 1; i < this.mClusterControls.size(); i++) {
+            ClusterControls controls = this.mClusterControls.get(i);
+            controls.maxFrequency.setEnabled(!applyToAll);
+            controls.minFrequency.setEnabled(!applyToAll);
+            controls.governor.setEnabled(!applyToAll);
+        }
+    }
+
+    private void applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
+        ArrayList<String> array = new ArrayList<>();
+        for (ClusterControls target : this.mClusterControls) {
+            for (Integer cpu : target.cluster.getMembers()) {
+                array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+            }
+            target.maxFrequency.setSummary(AeroActivity.shell.toMHz(value));
+            if (target != source) {
+                target.maxFrequency.setValue(value);
+            }
+        }
+        String[] commands = array.toArray(new String[0]);
+        AeroActivity.shell.setRootInfo(commands);
+    }
+
+    private void applyMinFrequencyToAllClusters(ClusterControls source, String value) {
+        ArrayList<String> array = new ArrayList<>();
+        for (ClusterControls target : this.mClusterControls) {
+            for (Integer cpu : target.cluster.getMembers()) {
+                array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+            }
+            target.minFrequency.setSummary(AeroActivity.shell.toMHz(value));
+            if (target != source) {
+                target.minFrequency.setValue(value);
+            }
+        }
+        String[] commands = array.toArray(new String[0]);
+        AeroActivity.shell.setRootInfo(commands);
+    }
+
+    private void applyGovernorToAllClusters(ClusterControls source, String value) {
+        for (ClusterControls target : this.mClusterControls) {
+            setGovernor(value, target.cluster.getMembers());
+        }
+        try {
+            Thread.sleep(450L);
+        } catch (InterruptedException e) {
+            Log.e("Aero", "Something interrupted the main Thread, try again.", e);
+        }
+        for (ClusterControls target : this.mClusterControls) {
+            target.governor.setSummary(AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + target.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
+            if (target != source) {
+                target.governor.setValue(value);
+            }
+        }
     }
 
     @Override // android.app.Fragment
