@@ -22,7 +22,7 @@ public class CpuClusterHelper {
 
     public List<Cluster> getClusters() {
         if (mClusters == null) {
-            mClusters = detectClusters();
+            mClusters = Collections.unmodifiableList(detectClusters());
         }
         return mClusters;
     }
@@ -30,15 +30,25 @@ public class CpuClusterHelper {
     private List<Cluster> detectClusters() {
         List<Integer> cpuIds = enumerateCpuIds();
         List<List<Integer>> seenMemberLists = new ArrayList<>();
+        List<Integer> coveredCpuIds = new ArrayList<>();
         List<Cluster> clusters = new ArrayList<>();
         for (int cpu : cpuIds) {
-            List<Integer> members = readTopology(cpu);
-            if (members == null || members.isEmpty()) {
-                members = new ArrayList<>();
-                members.add(cpu);
-            }
-            if (!seenMemberLists.contains(members)) {
+            List<Integer> members = readTopology(cpu, cpuIds);
+            if (members != null && !members.isEmpty()
+                    && !seenMemberLists.contains(members)) {
                 seenMemberLists.add(members);
+                for (int member : members) {
+                    if (!coveredCpuIds.contains(member)) {
+                        coveredCpuIds.add(member);
+                    }
+                }
+                clusters.add(new Cluster(members));
+            }
+        }
+        for (int cpu : cpuIds) {
+            if (!coveredCpuIds.contains(cpu)) {
+                List<Integer> members = new ArrayList<>();
+                members.add(cpu);
                 clusters.add(new Cluster(members));
             }
         }
@@ -87,11 +97,14 @@ public class CpuClusterHelper {
         return cpuIds;
     }
 
-    private List<Integer> readTopology(int cpu) {
+    private List<Integer> readTopology(int cpu, List<Integer> validCpuIds) {
         String basePath = FilePath.CPU_BASE_PATH + cpu + "/cpufreq/";
-        List<Integer> members = parseCpuList(readFirstLine(basePath + RELATED_CPUS));
-        if (members == null) {
-            members = parseCpuList(readFirstLine(basePath + AFFECTED_CPUS));
+        List<Integer> members = parseCpuList(readFirstLine(basePath + RELATED_CPUS), validCpuIds);
+        if (members == null || !members.contains(cpu)) {
+            members = parseCpuList(readFirstLine(basePath + AFFECTED_CPUS), validCpuIds);
+            if (members != null && !members.contains(cpu)) {
+                members = null;
+            }
         }
         return members;
     }
@@ -117,7 +130,7 @@ public class CpuClusterHelper {
         }
     }
 
-    private List<Integer> parseCpuList(String raw) {
+    private List<Integer> parseCpuList(String raw, List<Integer> validCpuIds) {
         if (raw == null || raw.trim().length() == 0) {
             return null;
         }
@@ -128,15 +141,36 @@ public class CpuClusterHelper {
                 if (token.length() == 0) {
                     continue;
                 }
-                if (token.indexOf('-') > 0) {
-                    String[] range = token.split("-");
+                if (token.indexOf('-') >= 0) {
+                    String[] range = token.split("-", -1);
+                    if (range.length != 2 || range[0].trim().length() == 0
+                            || range[1].trim().length() == 0) {
+                        return null;
+                    }
                     int start = Integer.parseInt(range[0].trim());
                     int end = Integer.parseInt(range[1].trim());
-                    for (int cpu = start; cpu <= end; cpu++) {
+                    if (start < 0 || end < 0 || start > end) {
+                        return null;
+                    }
+                    int rangeSize = end - start + 1;
+                    if (rangeSize > validCpuIds.size()) {
+                        return null;
+                    }
+                    for (int cpu = start;; cpu++) {
+                        if (!validCpuIds.contains(cpu)) {
+                            return null;
+                        }
                         result.add(cpu);
+                        if (cpu == end) {
+                            break;
+                        }
                     }
                 } else {
-                    result.add(Integer.parseInt(token.trim()));
+                    int cpu = Integer.parseInt(token.trim());
+                    if (cpu < 0 || !validCpuIds.contains(cpu)) {
+                        return null;
+                    }
+                    result.add(cpu);
                 }
             }
         } catch (NumberFormatException e) {
