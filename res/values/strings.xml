@@ -59,6 +59,7 @@
     <string name="available_memory">Total Memory:</string>
     <string name="current_cpu_speed">CPU Frequency:</string>
     <string name="current_governor">Governor:</string>
+    <string name="current_governor_cluster">Governor (CPU %1$s):</string>
     <string name="current_gpu_speed">GPU Frequency:</string>
     <string name="current_io_governor">I/O-Scheduler:</string>
     <string name="kernel_version">Kernel:</string>
