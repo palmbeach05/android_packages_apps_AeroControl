@@ -6,6 +6,10 @@ import java.util.HashMap;
 
 /* JADX INFO: loaded from: classes.dex */
 public class HelpTextHolder {
+    private static final String CLUSTER_KEY_PREFIX = "cpu_cluster_";
+    private static final String CLUSTER_MAX_FREQUENCY_SUFFIX = "_max_frequency";
+    private static final String CLUSTER_MIN_FREQUENCY_SUFFIX = "_min_frequency";
+    private static final String CLUSTER_GOVERNOR_SUFFIX = "_governor";
     private static HelpTextHolder mHelpTextHolder;
     private Context mContext;
     private HashMap<String, String> mDataVault = new HashMap<>();
@@ -32,8 +36,6 @@ public class HelpTextHolder {
     private void loadData() {
         putInMap("max_frequency", R.string.help_text_max_freq_cpu);
         putInMap("min_frequency", R.string.help_text_min_freq_cpu);
-        putInMap("big_max_frequency", R.string.help_text_max_freq_cpu_big);
-        putInMap("big_min_frequency", R.string.help_text_min_freq_cpu_big);
         putInMap("hotplug_control", R.string.help_text_hotplug_control);
         putInMap("voltage_values", R.string.help_text_voltage_values);
         putInMap("set_governor", R.string.help_text_set_governor);
@@ -115,6 +117,35 @@ public class HelpTextHolder {
     }
 
     public String getText(String key) {
-        return this.mDataVault.containsKey(key) ? this.mDataVault.get(key) : this.mContext.getResources().getString(R.string.help_text_no_data_found);
+        if (this.mDataVault.containsKey(key)) {
+            return this.mDataVault.get(key);
+        }
+        String clusterKey = toClusterHelpKey(key);
+        if (clusterKey != null) {
+            return this.mDataVault.get(clusterKey);
+        }
+        return this.mContext.getResources().getString(R.string.help_text_no_data_found);
+    }
+
+    /**
+     * Maps a per-cluster preference key (e.g. "cpu_cluster_0_max_frequency")
+     * back onto the shared help text entry for that control type, since the
+     * number of clusters - and therefore the number of dynamic keys - isn't
+     * known ahead of time.
+     */
+    private String toClusterHelpKey(String key) {
+        if (key == null || !key.startsWith(CLUSTER_KEY_PREFIX)) {
+            return null;
+        }
+        if (key.endsWith(CLUSTER_MAX_FREQUENCY_SUFFIX)) {
+            return "max_frequency";
+        }
+        if (key.endsWith(CLUSTER_MIN_FREQUENCY_SUFFIX)) {
+            return "min_frequency";
+        }
+        if (key.endsWith(CLUSTER_GOVERNOR_SUFFIX)) {
+            return "set_governor";
+        }
+        return null;
     }
 }

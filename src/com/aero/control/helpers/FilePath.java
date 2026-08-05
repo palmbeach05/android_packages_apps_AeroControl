@@ -5,13 +5,12 @@ import android.os.Environment;
 
 /* JADX INFO: loaded from: classes.dex */
 public final class FilePath {
-    public static final String ALL_GOV_AVAILABLE = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors";
     public static final String CMDLINE_ZACHE = "/system/bootstrap/2nd-boot/cmdline";
     public static final String COLOR_CONTROL = "/sys/devices/platform/kcal_ctrl.0/kcal";
     public static final String COLOR_CONTROL_BIT = "/sys/devices/platform/kcal_ctrl.0/kcal_ctrl";
-    public static final String CPU_AVAILABLE_FREQ = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies";
+    public static final String CPU_AVAILABLE_FREQ_SUFFIX = "/cpufreq/scaling_available_frequencies";
+    public static final String CPU_AVAILABLE_GOV_SUFFIX = "/cpufreq/scaling_available_governors";
     public static final String CPU_BASE_PATH = "/sys/devices/system/cpu/cpu";
-    public static final String CPU_BIG_AVAILABLE_FREQ = "/sys/devices/system/cpu/cpu4/cpufreq/scaling_available_frequencies";
     public static final String CPU_BOOST = "/sys/module/cpu_boost/parameters";
     public static final String CPU_FREQ_TABLE = "/proc/overclock/freq_table";
     public static final String CPU_GOV_BASE = "/sys/devices/system/cpu/cpufreq/";
