@@ -412,34 +412,60 @@ public class CPUFragment extends PlaceHolderFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_governor_settings /* 2131099747 */:
-                String complete_path = FilePath.CPU_GOV_BASE + this.mCPUGovernor.getValue();
-                try {
-                    String[] completeParamterList = AeroActivity.shell.getDirInfo(complete_path, true);
-                    if (this.PrefCat != null) {
-                        this.root.removePreference(this.PrefCat);
-                    }
-                    if (completeParamterList.length == 0) {
-                        Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
-                        return true;
-                    }
-                    this.PrefCat = new PreferenceCategory(getActivity());
-                    this.PrefCat.setTitle(R.string.pref_gov_set);
-                    this.root.addPreference(this.PrefCat);
-                    try {
-                        Thread.sleep(200L);
-                    } catch (InterruptedException e) {
-                        Log.e("Aero", "Something interrupted the main Thread, try again.", e);
-                    }
-                    PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-                    h.genPrefFromDictionary(completeParamterList, complete_path);
-                    return true;
-                } catch (NullPointerException e2) {
-                    Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
-                    Log.e("Aero", "There isn't any folder i can check. Does this governor has parameters?", e2);
-                    return true;
+                if (this.mClusterControls.size() > 1) {
+                    showClusterSelectionForGovernorSettings();
+                } else if (!this.mClusterControls.isEmpty()) {
+                    showGovernorSettings(this.mClusterControls.get(0));
                 }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void showClusterSelectionForGovernorSettings() {
+        final CharSequence[] clusterLabels = new CharSequence[this.mClusterControls.size()];
+        for (int i = 0; i < this.mClusterControls.size(); i++) {
+            ClusterControls controls = this.mClusterControls.get(i);
+            String cpuRange = controls.cluster.getMemberRangeLabel();
+            String governor = controls.governor.getValue();
+            clusterLabels[i] = "CPU " + cpuRange + " (" + governor + ")";
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Select Cluster");
+        builder.setItems(clusterLabels, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                showGovernorSettings(CPUFragment.this.mClusterControls.get(which));
+            }
+        });
+        builder.show();
+    }
+
+    private void showGovernorSettings(ClusterControls controls) {
+        String complete_path = FilePath.CPU_GOV_BASE + controls.governor.getValue();
+        try {
+            String[] completeParamterList = AeroActivity.shell.getDirInfo(complete_path, true);
+            if (this.PrefCat != null) {
+                this.root.removePreference(this.PrefCat);
+            }
+            if (completeParamterList.length == 0) {
+                Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
+                return;
+            }
+            this.PrefCat = new PreferenceCategory(getActivity());
+            this.PrefCat.setTitle(R.string.pref_gov_set);
+            this.root.addPreference(this.PrefCat);
+            try {
+                Thread.sleep(200L);
+            } catch (InterruptedException e) {
+                Log.e("Aero", "Something interrupted the main Thread, try again.", e);
+            }
+            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+            h.genPrefFromDictionary(completeParamterList, complete_path);
+        } catch (NullPointerException e2) {
+            Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
+            Log.e("Aero", "There isn't any folder i can check. Does this governor has parameters?", e2);
         }
     }
 

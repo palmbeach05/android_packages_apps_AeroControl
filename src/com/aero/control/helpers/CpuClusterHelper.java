@@ -28,10 +28,10 @@ public class CpuClusterHelper {
     }
 
     private List<Cluster> detectClusters() {
-        int cpuCount = Runtime.getRuntime().availableProcessors();
+        List<Integer> cpuIds = enumerateCpuIds();
         List<List<Integer>> seenMemberLists = new ArrayList<>();
         List<Cluster> clusters = new ArrayList<>();
-        for (int cpu = 0; cpu < cpuCount; cpu++) {
+        for (int cpu : cpuIds) {
             List<Integer> members = readTopology(cpu);
             if (members == null || members.isEmpty()) {
                 members = new ArrayList<>();
@@ -49,6 +49,42 @@ public class CpuClusterHelper {
             }
         });
         return clusters;
+    }
+
+    private List<Integer> enumerateCpuIds() {
+        List<Integer> cpuIds = new ArrayList<>();
+        File cpuDir = new File(FilePath.CPU_BASE_PATH);
+        if (!cpuDir.exists() || !cpuDir.isDirectory()) {
+            // Fallback to JVM processor count if sysfs not available
+            int fallbackCount = Runtime.getRuntime().availableProcessors();
+            for (int i = 0; i < fallbackCount; i++) {
+                cpuIds.add(i);
+            }
+            return cpuIds;
+        }
+        File[] files = cpuDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                String name = file.getName();
+                if (name.startsWith("cpu") && name.length() > 3) {
+                    try {
+                        int cpuId = Integer.parseInt(name.substring(3));
+                        cpuIds.add(cpuId);
+                    } catch (NumberFormatException ignored) {
+                        // Not a cpu<N> directory, skip it
+                    }
+                }
+            }
+        }
+        if (cpuIds.isEmpty()) {
+            // Fallback if no cpu directories found
+            int fallbackCount = Runtime.getRuntime().availableProcessors();
+            for (int i = 0; i < fallbackCount; i++) {
+                cpuIds.add(i);
+            }
+        }
+        Collections.sort(cpuIds);
+        return cpuIds;
     }
 
     private List<Integer> readTopology(int cpu) {
@@ -85,7 +121,7 @@ public class CpuClusterHelper {
         if (raw == null || raw.trim().length() == 0) {
             return null;
         }
-        String[] tokens = raw.trim().split("\\s+");
+        String[] tokens = raw.trim().split("[,\\s]+");
         List<Integer> result = new ArrayList<>();
         try {
             for (String token : tokens) {
