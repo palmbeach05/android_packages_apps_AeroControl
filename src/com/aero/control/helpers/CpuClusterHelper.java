@@ -167,9 +167,24 @@ public class CpuClusterHelper {
 
         /** Human readable member range, e.g. "0" or "0-3". */
         public String getMemberRangeLabel() {
-            int min = mMembers.get(0);
-            int max = mMembers.get(mMembers.size() - 1);
-            return min == max ? String.valueOf(min) : min + "-" + max;
+            StringBuilder label = new StringBuilder();
+            for (int i = 0; i < mMembers.size();) {
+                int start = mMembers.get(i);
+                int end = start;
+                while (i + 1 < mMembers.size()
+                        && mMembers.get(i + 1) == end + 1) {
+                    end = mMembers.get(++i);
+                }
+                if (label.length() > 0) {
+                    label.append(',');
+                }
+                label.append(start);
+                if (start != end) {
+                    label.append('-').append(end);
+                }
+                i++;
+            }
+            return label.toString();
         }
     }
 }
