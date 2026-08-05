@@ -179,10 +179,19 @@ public final class AeroActivity extends Activity {
             reconnectRestoredFragments(stackResourceIds);
             // Restore using stable resource ID if available, otherwise fall back to position
             int savedItemId = savedInstanceState.getInt(SELECTED_ITEM_ID, -1);
+
+            // Check if the current fragment in content_frame matches the saved selection
+            Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+            Fragment expectedFragment = (savedItemId != -1) ? getFragmentByResourceId(savedItemId) : null;
+
+            // Enable replacement when restored content doesn't match saved selection
+            // Exception: AppDetail is handled via back stack, not drawer selection
+            boolean needsReplacement = (currentFragment != expectedFragment) && !hasAppDetailBackStackEntry();
+
             if (savedItemId != -1) {
-                selectItemByResourceId(savedItemId, false);
+                selectItemByResourceId(savedItemId, needsReplacement);
             } else {
-                selectItem(savedInstanceState.getInt(SELECTED_ITEM), false);
+                selectItem(savedInstanceState.getInt(SELECTED_ITEM), needsReplacement);
             }
         }
         if (savedInstanceState == null) {
@@ -327,10 +336,10 @@ public final class AeroActivity extends Activity {
             this.mTestSuiteFragment = (TestSuiteFragment) fragment;
         }
 
-        // Rebuild mFragmentStack from saved resource IDs
+        // Rebuild mFragmentStack from saved resource IDs, creating missing fragments
         if (stackResourceIds != null && stackResourceIds.length > 0) {
             for (int resourceId : stackResourceIds) {
-                Fragment stackFragment = getFragmentByResourceId(resourceId);
+                Fragment stackFragment = getFragmentByResourceId(resourceId, true);
                 if (stackFragment != null) {
                     mFragmentStack.push(stackFragment);
                 }
@@ -342,28 +351,65 @@ public final class AeroActivity extends Activity {
     }
 
     private Fragment getFragmentByResourceId(int resourceId) {
-        // Map resource ID to fragment instance (must already exist from reconnection)
+        return getFragmentByResourceId(resourceId, false);
+    }
+
+    private Fragment getFragmentByResourceId(int resourceId, boolean createIfMissing) {
+        // Map resource ID to fragment instance, optionally creating if missing
         if (resourceId == R.string.slider_overview) {
+            if (createIfMissing && this.mAeroFragment == null) {
+                this.mAeroFragment = new AeroFragment();
+            }
             return this.mAeroFragment;
         } else if (resourceId == R.string.slider_cpu_settings) {
+            if (createIfMissing && this.mCPUFragement == null) {
+                this.mCPUFragement = new CPUFragment();
+            }
             return this.mCPUFragement;
         } else if (resourceId == R.string.slider_statistics) {
+            if (createIfMissing && this.mStatisticsFragment == null) {
+                this.mStatisticsFragment = new StatisticsFragment();
+            }
             return this.mStatisticsFragment;
         } else if (resourceId == R.string.slider_gpu_settings) {
+            if (createIfMissing && this.mGPUFragement == null) {
+                this.mGPUFragement = new GPUFragment();
+            }
             return this.mGPUFragement;
         } else if (resourceId == R.string.slider_memory_settings) {
+            if (createIfMissing && this.mMemoryFragment == null) {
+                this.mMemoryFragment = new MemoryFragment();
+            }
             return this.mMemoryFragment;
         } else if (resourceId == R.string.slider_misc_settings) {
+            if (createIfMissing && this.mMiscSettingsFragment == null) {
+                this.mMiscSettingsFragment = new MiscSettingsFragment();
+            }
             return this.mMiscSettingsFragment;
         } else if (resourceId == R.string.slider_defy_parts) {
+            if (createIfMissing && this.mDefyPartsFragment == null) {
+                this.mDefyPartsFragment = new DefyPartsFragment();
+            }
             return this.mDefyPartsFragment;
         } else if (resourceId == R.string.slider_backup_restore) {
+            if (createIfMissing && this.mUpdaterFragement == null) {
+                this.mUpdaterFragement = new UpdaterFragment();
+            }
             return this.mUpdaterFragement;
         } else if (resourceId == R.string.slider_profile) {
+            if (createIfMissing && this.mProfileFragment == null) {
+                this.mProfileFragment = new ProfileFragment();
+            }
             return this.mProfileFragment;
         } else if (resourceId == R.string.slider_app_monitor) {
+            if (createIfMissing && this.mAppStatisticsFragment == null) {
+                this.mAppStatisticsFragment = new AppMonitorFragment();
+            }
             return this.mAppStatisticsFragment;
         } else if (resourceId == R.string.slider_test_suite_settings) {
+            if (createIfMissing && this.mTestSuiteFragment == null) {
+                this.mTestSuiteFragment = new TestSuiteFragment();
+            }
             return this.mTestSuiteFragment;
         }
         return null;
