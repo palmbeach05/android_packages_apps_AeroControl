@@ -22,7 +22,7 @@ public class CpuClusterHelper {
 
     public List<Cluster> getClusters() {
         if (mClusters == null) {
-            mClusters = detectClusters();
+            mClusters = Collections.unmodifiableList(detectClusters());
         }
         return mClusters;
     }
@@ -30,15 +30,25 @@ public class CpuClusterHelper {
     private List<Cluster> detectClusters() {
         List<Integer> cpuIds = enumerateCpuIds();
         List<List<Integer>> seenMemberLists = new ArrayList<>();
+        List<Integer> coveredCpuIds = new ArrayList<>();
         List<Cluster> clusters = new ArrayList<>();
         for (int cpu : cpuIds) {
             List<Integer> members = readTopology(cpu);
-            if (members == null || members.isEmpty()) {
-                members = new ArrayList<>();
-                members.add(cpu);
-            }
-            if (!seenMemberLists.contains(members)) {
+            if (members != null && !members.isEmpty()
+                    && !seenMemberLists.contains(members)) {
                 seenMemberLists.add(members);
+                for (int member : members) {
+                    if (!coveredCpuIds.contains(member)) {
+                        coveredCpuIds.add(member);
+                    }
+                }
+                clusters.add(new Cluster(members));
+            }
+        }
+        for (int cpu : cpuIds) {
+            if (!coveredCpuIds.contains(cpu)) {
+                List<Integer> members = new ArrayList<>();
+                members.add(cpu);
                 clusters.add(new Cluster(members));
             }
         }
@@ -128,15 +138,29 @@ public class CpuClusterHelper {
                 if (token.length() == 0) {
                     continue;
                 }
-                if (token.indexOf('-') > 0) {
-                    String[] range = token.split("-");
+                if (token.indexOf('-') >= 0) {
+                    String[] range = token.split("-", -1);
+                    if (range.length != 2 || range[0].trim().length() == 0
+                            || range[1].trim().length() == 0) {
+                        return null;
+                    }
                     int start = Integer.parseInt(range[0].trim());
                     int end = Integer.parseInt(range[1].trim());
-                    for (int cpu = start; cpu <= end; cpu++) {
+                    if (start < 0 || end < 0 || start > end) {
+                        return null;
+                    }
+                    for (int cpu = start;; cpu++) {
                         result.add(cpu);
+                        if (cpu == end) {
+                            break;
+                        }
                     }
                 } else {
-                    result.add(Integer.parseInt(token.trim()));
+                    int cpu = Integer.parseInt(token.trim());
+                    if (cpu < 0) {
+                        return null;
+                    }
+                    result.add(cpu);
                 }
             }
         } catch (NumberFormatException e) {
