@@ -16,6 +16,7 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.adapter.AeroAdapter;
 import com.aero.control.adapter.AeroData;
+import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
@@ -35,7 +36,7 @@ public class AeroFragment extends Fragment {
     private AeroAdapter mAdapter;
     private AeroData mFrequencyData;
     private AeroData mGPUData;
-    private AeroData mGovernorData;
+    private final List<AeroData> mGovernorData = new ArrayList<>();
     private AeroData mIOSchedulerData;
     private AeroData mKernelData;
     private ListView mOverView;
@@ -192,10 +193,18 @@ public class AeroFragment extends Fragment {
         } else {
             this.mKernelData.content = AeroActivity.shell.getKernel();
         }
-        if (this.mGovernorData == null) {
-            this.mGovernorData = new AeroData(getString(R.string.current_governor), AeroActivity.shell.getInfo(FilePath.GOV_FILE), null);
-        } else {
-            this.mGovernorData.content = AeroActivity.shell.getInfo(FilePath.GOV_FILE);
+        List<CpuClusterHelper.Cluster> clusters = new CpuClusterHelper().getClusters();
+        for (int i = 0; i < clusters.size(); i++) {
+            CpuClusterHelper.Cluster cluster = clusters.get(i);
+            String governor = AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE);
+            if (i < this.mGovernorData.size()) {
+                this.mGovernorData.get(i).content = governor;
+            } else {
+                this.mGovernorData.add(new AeroData(getString(R.string.current_governor_cluster, cluster.getMemberRangeLabel()), governor, null));
+            }
+        }
+        while (this.mGovernorData.size() > clusters.size()) {
+            this.mGovernorData.remove(this.mGovernorData.size() - 1);
         }
         if (this.mIOSchedulerData == null) {
             this.mIOSchedulerData = new AeroData(getString(R.string.current_io_governor), AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE), null);
@@ -234,7 +243,7 @@ public class AeroFragment extends Fragment {
         }
         fillData(gpu_freq);
         this.mOverviewData.add(this.mKernelData);
-        this.mOverviewData.add(this.mGovernorData);
+        this.mOverviewData.addAll(this.mGovernorData);
         this.mOverviewData.add(this.mIOSchedulerData);
         this.mOverviewData.add(this.mFrequencyData);
         this.mOverviewData.add(this.mGPUData);
