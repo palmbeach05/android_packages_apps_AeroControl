@@ -437,21 +437,55 @@ public class settingsHelper {
      * introduction of CpuClusterHelper only contain the legacy fixed keys.
      */
     private boolean hasDynamicClusterKeys(Map<String, ?> allPrefs) {
+        int clusterCount = new CpuClusterHelper().getClusters().size();
         for (String key : allPrefs.keySet()) {
-            if (isDynamicClusterKey(key)) {
+            if (isDynamicClusterKey(key, clusterCount)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isDynamicClusterKey(String key) {
+    private boolean isDynamicClusterKey(String key, int clusterCount) {
         if (key == null || !key.startsWith(PREF_CLUSTER_KEY_PREFIX)) {
             return false;
         }
-        return key.endsWith(PREF_CLUSTER_MAX_FREQ_SUFFIX)
-                || key.endsWith(PREF_CLUSTER_MIN_FREQ_SUFFIX)
-                || key.endsWith(PREF_CLUSTER_GOVERNOR_SUFFIX);
+        // Determine which suffix this key uses
+        String suffix = null;
+        if (key.endsWith(PREF_CLUSTER_MAX_FREQ_SUFFIX)) {
+            suffix = PREF_CLUSTER_MAX_FREQ_SUFFIX;
+        } else if (key.endsWith(PREF_CLUSTER_MIN_FREQ_SUFFIX)) {
+            suffix = PREF_CLUSTER_MIN_FREQ_SUFFIX;
+        } else if (key.endsWith(PREF_CLUSTER_GOVERNOR_SUFFIX)) {
+            suffix = PREF_CLUSTER_GOVERNOR_SUFFIX;
+        } else {
+            return false;
+        }
+        // Extract the cluster index between prefix and suffix
+        int prefixLen = PREF_CLUSTER_KEY_PREFIX.length();
+        int suffixStart = key.length() - suffix.length();
+        if (suffixStart <= prefixLen) {
+            // No room for an index between prefix and suffix
+            return false;
+        }
+        String indexStr = key.substring(prefixLen, suffixStart);
+        // Validate that indexStr is a valid non-negative decimal integer
+        if (indexStr.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < indexStr.length(); i++) {
+            char c = indexStr.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        // Parse the index and ensure it's within range
+        try {
+            int clusterIndex = Integer.parseInt(indexStr);
+            return clusterIndex >= 0 && clusterIndex < clusterCount;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private void setSubParameters(String mem_ios, String Profile, String gpu_gov) throws NullPointerException {
