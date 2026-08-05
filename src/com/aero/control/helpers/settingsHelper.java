@@ -178,6 +178,23 @@ public class settingsHelper {
                 freqMax = this.prefs.getString(PREF_CLUSTER_KEY_PREFIX + i + PREF_CLUSTER_MAX_FREQ_SUFFIX, null);
                 freqMin = this.prefs.getString(PREF_CLUSTER_KEY_PREFIX + i + PREF_CLUSTER_MIN_FREQ_SUFFIX, null);
                 governor = this.prefs.getString(PREF_CLUSTER_KEY_PREFIX + i + PREF_CLUSTER_GOVERNOR_SUFFIX, null);
+                // Fall back to legacy values for any missing dynamic keys
+                boolean isBigCluster = false;
+                for (Integer member : members) {
+                    if (member >= 4) {
+                        isBigCluster = true;
+                        break;
+                    }
+                }
+                if (freqMax == null) {
+                    freqMax = isBigCluster && legacyBigMaxFreq != null ? legacyBigMaxFreq : legacyMaxFreq;
+                }
+                if (freqMin == null) {
+                    freqMin = isBigCluster && legacyBigMinFreq != null ? legacyBigMinFreq : legacyMinFreq;
+                }
+                if (governor == null) {
+                    governor = legacyGovernor;
+                }
             } else {
                 freqMax = legacyMaxFreq;
                 freqMin = legacyMinFreq;
@@ -201,10 +218,15 @@ public class settingsHelper {
             if (freqMax != null) {
                 String rollbackMax = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ);
                 for (Integer cpu : members) {
-                    shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
+                    if (hasOnlineControl) {
+                        shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    }
                     shell.queueWork("chmod 0666 " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
                     if (Profile != null) {
-                        defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        if (hasOnlineControl) {
+                            defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        }
                         defaultProfile.add("echo " + rollbackMax + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
                     }
                     shell.queueWork("echo " + freqMax + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
@@ -213,10 +235,15 @@ public class settingsHelper {
             if (freqMin != null) {
                 String rollbackMin = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ);
                 for (Integer cpu : members) {
-                    shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
+                    if (hasOnlineControl) {
+                        shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    }
                     shell.queueWork("chmod 0666 " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
                     if (Profile != null) {
-                        defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        if (hasOnlineControl) {
+                            defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        }
                         defaultProfile.add("echo " + rollbackMin + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
                     }
                     shell.queueWork("echo " + freqMin + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
@@ -226,12 +253,17 @@ public class settingsHelper {
                 governorApplied = true;
                 String rollbackGovernor = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CURRENT_GOV_AVAILABLE);
                 for (Integer cpu : members) {
+                    boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
                     shell.queueWork("chmod 0666 " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
                     if (Profile != null) {
-                        defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        if (hasOnlineControl) {
+                            defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        }
                         defaultProfile.add("echo " + rollbackGovernor + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
                     }
-                    shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    if (hasOnlineControl) {
+                        shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    }
                     shell.queueWork("echo " + governor + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
                 }
             }
