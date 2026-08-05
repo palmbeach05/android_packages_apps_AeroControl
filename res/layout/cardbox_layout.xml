@@ -7,11 +7,11 @@
         <TextView
             android:textSize="12sp"
             android:textColor="?attr/aeroSecondaryTextColor"
-            android:gravity="center_horizontal"
+            android:gravity="center"
             android:id="@+id/card_title"
             android:padding="3dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/appmonitor_tab_title_height"
             android:layout_margin="1dp"
             android:maxLines="2"
             android:textAllCaps="true"/>
@@ -21,13 +21,19 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_below="@+id/card_title"/>
-        <ImageView
-            android:id="@+id/card_content"
-            android:padding="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <RelativeLayout
+            android:id="@+id/card_icon_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_below="@+id/card_divider"
-            android:scaleType="center"
-            android:layout_centerHorizontal="true"/>
+            android:layout_alignParentBottom="true">
+            <ImageView
+                android:id="@+id/card_content"
+                android:padding="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="center"
+                android:layout_centerInParent="true"/>
+        </RelativeLayout>
     </RelativeLayout>
 </merge>
