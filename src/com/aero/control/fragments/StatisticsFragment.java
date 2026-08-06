@@ -181,21 +181,6 @@ public class StatisticsFragment extends Fragment {
         File a = new File(FilePath.OFFSET_STAT);
         if (a.exists() && this.cpuResetTime == null) {
             this.cpuResetTime = new ArrayList<>();
-            String[] array = AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0);
-            for (String b : array) {
-                if (array.length > 1) {
-                    this.cpuResetTime.add(Long.valueOf(Long.parseLong(b)));
-                }
-            }
-            try {
-                if (Long.parseLong(array[array.length - 1]) > SystemClock.elapsedRealtime() / 10) {
-                    a.delete();
-                    this.cpuResetTime = null;
-                }
-            } catch (NumberFormatException e) {
-                a.delete();
-                this.cpuResetTime = null;
-            }
         }
     }
 
@@ -479,9 +464,11 @@ public class StatisticsFragment extends Fragment {
      * Reads and validates the on-disk reset offsets so they can be applied to
      * {@code acceptedCount} accepted parsed entries, in source order. The offset file stores
      * one non-negative long per accepted entry followed by a trailing total-uptime offset
-     * (the format written by {@link #resetStatistics()}). Discards the on-disk reset state
-     * (matching the existing fallback behavior) and returns {@code null} when the file is
-     * missing, has fewer usable offsets than accepted entries, or contains a malformed value.
+     * (the format written by {@link #resetStatistics()}); the trailing total must equal the
+     * sum of the entry offsets and must not exceed the current elapsed uptime. Discards the
+     * on-disk reset state and returns {@code null} when the file does not contain exactly
+     * {@code acceptedCount + 1} values, any value is malformed or negative, the entry-offset
+     * sum overflows, or the trailing total does not match that sum or exceeds uptime.
      */
     private long[] readResetOffsets(int acceptedCount) {
         File offsetFile = new File(FilePath.OFFSET_STAT);
@@ -489,22 +476,54 @@ public class StatisticsFragment extends Fragment {
             return null;
         }
         String[] rawOffsets = AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0);
-        if (rawOffsets == null || rawOffsets.length < acceptedCount + 1) {
-            Log.w("Aero", "Offset file has fewer usable offsets than accepted entries; discarding reset state.");
+        if (rawOffsets == null || rawOffsets.length != acceptedCount + 1) {
+            Log.w("Aero", "Offset file does not contain exactly the expected number of offsets; discarding reset state.");
             offsetFile.delete();
             this.cpuResetTime = null;
             return null;
         }
         long[] offsets = new long[acceptedCount + 1];
+        long entryOffsetSum = 0L;
         for (int i = 0; i < offsets.length; i++) {
+            long value;
             try {
-                offsets[i] = Long.parseLong(rawOffsets[i]);
+                value = Long.parseLong(rawOffsets[i]);
             } catch (NumberFormatException e) {
                 Log.w("Aero", "Offset file contains a malformed value; discarding reset state.");
                 offsetFile.delete();
                 this.cpuResetTime = null;
                 return null;
             }
+            if (value < 0) {
+                Log.w("Aero", "Offset file contains a negative offset; discarding reset state.");
+                offsetFile.delete();
+                this.cpuResetTime = null;
+                return null;
+            }
+            offsets[i] = value;
+            if (i < acceptedCount) {
+                long newSum = entryOffsetSum + value;
+                if (newSum < entryOffsetSum) {
+                    Log.w("Aero", "Offset file entry-offset sum overflowed; discarding reset state.");
+                    offsetFile.delete();
+                    this.cpuResetTime = null;
+                    return null;
+                }
+                entryOffsetSum = newSum;
+            }
+        }
+        long trailingTotal = offsets[acceptedCount];
+        if (trailingTotal != entryOffsetSum) {
+            Log.w("Aero", "Offset file trailing total does not equal the entry-offset sum; discarding reset state.");
+            offsetFile.delete();
+            this.cpuResetTime = null;
+            return null;
+        }
+        if (trailingTotal > SystemClock.elapsedRealtime() / 10) {
+            Log.w("Aero", "Offset file trailing total exceeds elapsed uptime; discarding reset state.");
+            offsetFile.delete();
+            this.cpuResetTime = null;
+            return null;
         }
         return offsets;
     }
