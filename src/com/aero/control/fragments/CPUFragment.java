@@ -382,64 +382,104 @@ public class CPUFragment extends PlaceHolderFragment {
         controls.maxFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.6
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                String a = (String) o;
+                final String a = (String) o;
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
                     return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
                 } else {
+                    // Validate under lock, but perform shell I/O outside lock
+                    final String minFreqValue;
                     synchronized (mPreferenceLock) {
-                        try {
-                            if (Integer.parseInt(a) < Integer.parseInt(controls.minFrequency.getValue())) {
-                                return false;
-                            }
-                        } catch (NumberFormatException e) {
-                            return false;
-                        }
-                        ArrayList<String> array = new ArrayList<>();
-                        for (Integer cpu : controls.cluster.getMembers()) {
-                            array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                            array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
-                        }
-                        String[] commands = (String[]) array.toArray(new String[0]);
-                        if (AeroActivity.shell.setRootInfo(commands)) {
-                            controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
-                            controls.pendingMaxFrequency = a;
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        minFreqValue = controls.minFrequency.getValue();
                     }
+                    try {
+                        if (Integer.parseInt(a) < Integer.parseInt(minFreqValue)) {
+                            return false;
+                        }
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+
+                    final ArrayList<String> array = new ArrayList<>();
+                    for (Integer cpu : controls.cluster.getMembers()) {
+                        array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                    }
+                    final String[] commands = (String[]) array.toArray(new String[0]);
+
+                    final int lifecycleGeneration = mLifecycleGeneration.get();
+                    mMirrorExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            final boolean success = AeroActivity.shell.setRootInfo(commands);
+                            AeroActivity.mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                                        return;
+                                    }
+                                    if (success) {
+                                        synchronized (mPreferenceLock) {
+                                            controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.pendingMaxFrequency = a;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    return false;
                 }
             }
         });
         controls.minFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.7
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                String a = (String) o;
+                final String a = (String) o;
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
                     return CPUFragment.this.applyMinFrequencyToAllClusters(controls, a);
                 } else {
+                    // Validate under lock, but perform shell I/O outside lock
+                    final String maxFreqValue;
                     synchronized (mPreferenceLock) {
-                        try {
-                            if (Integer.parseInt(a) > Integer.parseInt(controls.maxFrequency.getValue())) {
-                                return false;
-                            }
-                        } catch (NumberFormatException e) {
-                            return false;
-                        }
-                        ArrayList<String> array = new ArrayList<>();
-                        for (Integer cpu : controls.cluster.getMembers()) {
-                            array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                            array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
-                        }
-                        String[] commands = (String[]) array.toArray(new String[0]);
-                        if (AeroActivity.shell.setRootInfo(commands)) {
-                            controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
-                            controls.pendingMinFrequency = a;
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        maxFreqValue = controls.maxFrequency.getValue();
                     }
+                    try {
+                        if (Integer.parseInt(a) > Integer.parseInt(maxFreqValue)) {
+                            return false;
+                        }
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+
+                    final ArrayList<String> array = new ArrayList<>();
+                    for (Integer cpu : controls.cluster.getMembers()) {
+                        array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                    }
+                    final String[] commands = (String[]) array.toArray(new String[0]);
+
+                    final int lifecycleGeneration = mLifecycleGeneration.get();
+                    mMirrorExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            final boolean success = AeroActivity.shell.setRootInfo(commands);
+                            AeroActivity.mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                                        return;
+                                    }
+                                    if (success) {
+                                        synchronized (mPreferenceLock) {
+                                            controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.pendingMinFrequency = a;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    return false;
                 }
             }
         });
@@ -459,7 +499,10 @@ public class CPUFragment extends PlaceHolderFragment {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
+                            boolean writeSucceeded = CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
+                            if (!writeSucceeded) {
+                                Log.e("Aero", "Failed to write governor " + a + " to cluster " + controls.index);
+                            }
                             // Poll for governor change completion (max 10 attempts * 50ms = 500ms)
                             final String governorPath = FilePath.CPU_BASE_PATH + controls.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE;
                             String currentGovernor = null;
@@ -729,7 +772,10 @@ public class CPUFragment extends PlaceHolderFragment {
             @Override
             public void run() {
                 for (ClusterControls target : CPUFragment.this.mClusterControls) {
-                    setGovernor(value, target.cluster.getMembers());
+                    boolean writeSucceeded = setGovernor(value, target.cluster.getMembers());
+                    if (!writeSucceeded) {
+                        Log.e("Aero", "Failed to write governor " + value + " to cluster " + target.index);
+                    }
                 }
 
                 // Poll for governor change completion on all clusters
@@ -757,8 +803,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 }
 
                 if (!allComplete) {
-                    Log.e("Aero", "Governor mirror to all clusters did not complete (" + (interrupted ? "interrupted" : "timed out") + "); preserving current UI state");
-                    return;
+                    Log.e("Aero", "Governor mirror to all clusters did not complete (" + (interrupted ? "interrupted" : "timed out") + "); applying captured values to UI");
                 }
 
                 AeroActivity.mHandler.post(new Runnable() {
@@ -774,8 +819,11 @@ public class CPUFragment extends PlaceHolderFragment {
                             for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
                                 ClusterControls target = CPUFragment.this.mClusterControls.get(j);
                                 String currentGovernor = capturedGovernors[j];
-                                target.governor.setSummary(currentGovernor);
-                                target.governor.setValue(currentGovernor);
+                                // Only apply valid values (skip null or NO_DATA_FOUND)
+                                if (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) {
+                                    target.governor.setSummary(currentGovernor);
+                                    target.governor.setValue(currentGovernor);
+                                }
                             }
                         }
                     }
@@ -876,31 +924,43 @@ public class CPUFragment extends PlaceHolderFragment {
         super.onDestroy();
     }
 
-    /** Writes the governor only to the CPUs belonging to a single cluster. */
-    public void setGovernor(String s, List<Integer> members) {
+    /** Writes the governor only to the CPUs belonging to a single cluster. Returns true if the shell write succeeded, false otherwise. */
+    public boolean setGovernor(String s, List<Integer> members) {
         ArrayList<String> array = new ArrayList<>();
         for (Integer cpu : members) {
             array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
             array.add("echo " + s + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
         }
         String[] commands = (String[]) array.toArray(new String[0]);
-        AeroActivity.shell.setRootInfo(commands);
+        return AeroActivity.shell.setRootInfo(commands);
     }
 
     public void updateMinFreq() {
-        synchronized (mPreferenceLock) {
-            for (ClusterControls controls : this.mClusterControls) {
-                int representativeCpu = controls.cluster.getRepresentativeCpu();
-                String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
-                controls.minFrequency.setEntries(AeroActivity.shell.getInfoArray(availablePath, 1, 0));
-                controls.minFrequency.setEntryValues(AeroActivity.shell.getInfoArray(availablePath, 0, 0));
-                String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ;
-                try {
-                    String currentValue = AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0];
+        // Read sysfs values outside lock to minimize critical section
+        for (ClusterControls controls : this.mClusterControls) {
+            int representativeCpu = controls.cluster.getRepresentativeCpu();
+            String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
+            CharSequence[] entries = AeroActivity.shell.getInfoArray(availablePath, 1, 0);
+            CharSequence[] entryValues = AeroActivity.shell.getInfoArray(availablePath, 0, 0);
+            String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ;
+            String currentValue = null;
+            String currentSummary = null;
+            try {
+                currentValue = AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0];
+                currentSummary = AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0];
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // Will be set to NO_DATA_FOUND below
+            }
+
+            // Apply updates under lock
+            synchronized (mPreferenceLock) {
+                controls.minFrequency.setEntries(entries);
+                controls.minFrequency.setEntryValues(entryValues);
+                if (currentValue != null) {
                     controls.minFrequency.setValue(currentValue);
-                    controls.minFrequency.setSummary(AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0]);
+                    controls.minFrequency.setSummary(currentSummary);
                     controls.pendingMinFrequency = currentValue;
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } else {
                     controls.minFrequency.setValue(NO_DATA_FOUND);
                     controls.minFrequency.setSummary(NO_DATA_FOUND);
                     controls.pendingMinFrequency = null;
@@ -910,19 +970,31 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     public void updateMaxFreq() {
-        synchronized (mPreferenceLock) {
-            for (ClusterControls controls : this.mClusterControls) {
-                int representativeCpu = controls.cluster.getRepresentativeCpu();
-                String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
-                controls.maxFrequency.setEntries(AeroActivity.shell.getInfoArray(availablePath, 1, 0));
-                controls.maxFrequency.setEntryValues(AeroActivity.shell.getInfoArray(availablePath, 0, 0));
-                String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ;
-                try {
-                    String currentValue = AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0];
+        // Read sysfs values outside lock to minimize critical section
+        for (ClusterControls controls : this.mClusterControls) {
+            int representativeCpu = controls.cluster.getRepresentativeCpu();
+            String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
+            CharSequence[] entries = AeroActivity.shell.getInfoArray(availablePath, 1, 0);
+            CharSequence[] entryValues = AeroActivity.shell.getInfoArray(availablePath, 0, 0);
+            String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ;
+            String currentValue = null;
+            String currentSummary = null;
+            try {
+                currentValue = AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0];
+                currentSummary = AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0];
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // Will be set to NO_DATA_FOUND below
+            }
+
+            // Apply updates under lock
+            synchronized (mPreferenceLock) {
+                controls.maxFrequency.setEntries(entries);
+                controls.maxFrequency.setEntryValues(entryValues);
+                if (currentValue != null) {
                     controls.maxFrequency.setValue(currentValue);
-                    controls.maxFrequency.setSummary(AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0]);
+                    controls.maxFrequency.setSummary(currentSummary);
                     controls.pendingMaxFrequency = currentValue;
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } else {
                     controls.maxFrequency.setValue(NO_DATA_FOUND);
                     controls.maxFrequency.setSummary(NO_DATA_FOUND);
                     controls.pendingMaxFrequency = null;
