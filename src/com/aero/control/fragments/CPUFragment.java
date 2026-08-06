@@ -395,14 +395,16 @@ public class CPUFragment extends PlaceHolderFragment {
                             array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
                             array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
                         }
-                        controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
                         String[] commands = (String[]) array.toArray(new String[0]);
                         if (AeroActivity.shell.setRootInfo(commands)) {
+                            controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
                             controls.pendingMaxFrequency = a;
+                            return true;
+                        } else {
+                            return false;
                         }
                     }
                 }
-                return true;
             }
         });
         controls.minFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.7
@@ -425,14 +427,16 @@ public class CPUFragment extends PlaceHolderFragment {
                             array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
                             array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
                         }
-                        controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
                         String[] commands = (String[]) array.toArray(new String[0]);
                         if (AeroActivity.shell.setRootInfo(commands)) {
+                            controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
                             controls.pendingMinFrequency = a;
+                            return true;
+                        } else {
+                            return false;
                         }
                     }
                 }
-                return true;
             }
         });
     }
@@ -512,7 +516,7 @@ public class CPUFragment extends PlaceHolderFragment {
 
     /** Captures the current mirror-request generation and enqueues the mirror operation on the shared serialized executor. */
     private void queueFrequencyMirrorOperation(final ClusterControls source, final String value, final boolean isMax) {
-        final int requestGeneration = (isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration).incrementAndGet();
+        final int requestGeneration = (isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration).get() + 1;
         final int lifecycleGeneration = mLifecycleGeneration.get();
         mMirrorExecutor.execute(new Runnable() {
             @Override
@@ -537,6 +541,33 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     /**
+     * Rolls back frequency preferences to the last committed state when a mirror operation
+     * fails or encounters unsupported frequencies. This ensures the UI reflects the actual
+     * committed state and prevents a failed later request from suppressing an earlier
+     * successful update.
+     */
+    private void rollbackFrequencyPreferences(final boolean isMax, final int lifecycleGeneration) {
+        AeroActivity.mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                    return;
+                }
+                synchronized (mPreferenceLock) {
+                    for (ClusterControls target : mClusterControls) {
+                        CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
+                        String committed = isMax ? target.pendingMaxFrequency : target.pendingMinFrequency;
+                        if (committed != null) {
+                            pref.setSummary(AeroActivity.shell.toMHz(committed));
+                            pref.setValue(committed);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * Mirrors a max- or min-frequency change from the first cluster's controls to every detected
      * cluster. Runs on the shared serialized mirror executor, so it always observes the
      * committed state of any preceding queued mirror operation rather than the preference's
@@ -546,6 +577,14 @@ public class CPUFragment extends PlaceHolderFragment {
      * to the UI thread for the clusters that were actually written.
      */
     private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax, final int requestGeneration, final int lifecycleGeneration) {
+        final AtomicInteger generationCounter = isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration;
+
+        // Check if this request is stale (a newer request was already queued)
+        if (requestGeneration <= generationCounter.get()) {
+            Log.e("Aero", "Discarding stale " + (isMax ? "max" : "min") + " frequency request (generation " + requestGeneration + " <= " + generationCounter.get() + ")");
+            return;
+        }
+
         // Build intersection of supported frequencies across all clusters
         HashSet<String> supportedFreqs = null;
         synchronized (mPreferenceLock) {
@@ -567,7 +606,8 @@ public class CPUFragment extends PlaceHolderFragment {
 
         // Validate the requested frequency is in the intersection
         if (supportedFreqs == null || !supportedFreqs.contains(value)) {
-            Log.e("Aero", (isMax ? "Max" : "Min") + " frequency " + value + " not supported by all clusters");
+            Log.e("Aero", (isMax ? "Max" : "Min") + " frequency " + value + " not supported by all clusters; rolling back to last committed state");
+            rollbackFrequencyPreferences(isMax, lifecycleGeneration);
             return;
         }
 
@@ -583,15 +623,17 @@ public class CPUFragment extends PlaceHolderFragment {
                     int requested = Integer.parseInt(value);
                     if (isMax ? requested < opposite : requested > opposite) {
                         if (isMax) {
-                            Log.e("Aero", "Max frequency " + value + " is lower than min frequency " + oppositeStr + " for cluster " + target.index);
+                            Log.e("Aero", "Max frequency " + value + " is lower than min frequency " + oppositeStr + " for cluster " + target.index + "; rolling back to last committed state");
                         } else {
-                            Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + oppositeStr + " for cluster " + target.index);
+                            Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + oppositeStr + " for cluster " + target.index + "; rolling back to last committed state");
                         }
+                        rollbackFrequencyPreferences(isMax, lifecycleGeneration);
                         return;
                     }
                 }
             } catch (NumberFormatException e) {
-                Log.e("Aero", "Invalid frequency format", e);
+                Log.e("Aero", "Invalid frequency format; rolling back to last committed state", e);
+                rollbackFrequencyPreferences(isMax, lifecycleGeneration);
                 return;
             }
 
@@ -604,12 +646,16 @@ public class CPUFragment extends PlaceHolderFragment {
         }
 
         if (array.isEmpty()) {
-            Log.e("Aero", "No valid clusters to apply " + (isMax ? "max" : "min") + " frequency");
+            Log.e("Aero", "No valid clusters to apply " + (isMax ? "max" : "min") + " frequency; rolling back to last committed state");
+            rollbackFrequencyPreferences(isMax, lifecycleGeneration);
             return;
         }
 
         String[] commands = array.toArray(new String[0]);
         if (AeroActivity.shell.setRootInfo(commands)) {
+            // Only increment generation counter after successful write
+            generationCounter.set(requestGeneration);
+
             for (ClusterControls target : eligibleClusters) {
                 if (isMax) {
                     target.pendingMaxFrequency = value;
@@ -623,7 +669,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (lifecycleGeneration != mLifecycleGeneration.get()) {
                         return;
                     }
-                    if (requestGeneration != (isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration).get()) {
+                    if (requestGeneration != generationCounter.get()) {
                         return;
                     }
                     synchronized (mPreferenceLock) {
@@ -635,6 +681,9 @@ public class CPUFragment extends PlaceHolderFragment {
                     }
                 }
             });
+        } else {
+            Log.e("Aero", "Failed to apply " + (isMax ? "max" : "min") + " frequency to all clusters; rolling back to last committed state");
+            rollbackFrequencyPreferences(isMax, lifecycleGeneration);
         }
     }
 
