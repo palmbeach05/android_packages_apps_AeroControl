@@ -391,12 +391,14 @@ public class CPUFragment extends PlaceHolderFragment {
                     synchronized (mPreferenceLock) {
                         minFreqValue = controls.minFrequency.getValue();
                     }
-                    try {
-                        if (Integer.parseInt(a) < Integer.parseInt(minFreqValue)) {
+                    if (minFreqValue != null && !minFreqValue.equals(NO_DATA_FOUND)) {
+                        try {
+                            if (Integer.parseInt(a) < Integer.parseInt(minFreqValue)) {
+                                return false;
+                            }
+                        } catch (NumberFormatException e) {
                             return false;
                         }
-                    } catch (NumberFormatException e) {
-                        return false;
                     }
 
                     final ArrayList<String> array = new ArrayList<>();
@@ -420,6 +422,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                     if (success) {
                                         synchronized (mPreferenceLock) {
                                             controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.maxFrequency.setValue(a);
                                             controls.pendingMaxFrequency = a;
                                         }
                                     }
@@ -443,12 +446,14 @@ public class CPUFragment extends PlaceHolderFragment {
                     synchronized (mPreferenceLock) {
                         maxFreqValue = controls.maxFrequency.getValue();
                     }
-                    try {
-                        if (Integer.parseInt(a) > Integer.parseInt(maxFreqValue)) {
+                    if (maxFreqValue != null && !maxFreqValue.equals(NO_DATA_FOUND)) {
+                        try {
+                            if (Integer.parseInt(a) > Integer.parseInt(maxFreqValue)) {
+                                return false;
+                            }
+                        } catch (NumberFormatException e) {
                             return false;
                         }
-                    } catch (NumberFormatException e) {
-                        return false;
                     }
 
                     final ArrayList<String> array = new ArrayList<>();
@@ -496,7 +501,8 @@ public class CPUFragment extends PlaceHolderFragment {
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
                     return CPUFragment.this.applyGovernorToAllClusters(controls, a);
                 } else {
-                    new Thread(new Runnable() {
+                    final int lifecycleGeneration = mLifecycleGeneration.get();
+                    mMirrorExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
                             boolean writeSucceeded = CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
@@ -518,20 +524,26 @@ public class CPUFragment extends PlaceHolderFragment {
                                     break;
                                 }
                             }
-                            final String finalGovernor = (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) ? currentGovernor : a;
+                            final String capturedGovernor = currentGovernor;
                             AeroActivity.mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    synchronized (mPreferenceLock) {
-                                        controls.governor.setSummary(finalGovernor);
-                                        controls.governor.setValue(finalGovernor);
+                                    if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                                        return;
+                                    }
+                                    // Only apply valid values (skip null or NO_DATA_FOUND)
+                                    if (capturedGovernor != null && !NO_DATA_FOUND.equals(capturedGovernor)) {
+                                        synchronized (mPreferenceLock) {
+                                            controls.governor.setSummary(capturedGovernor);
+                                            controls.governor.setValue(capturedGovernor);
+                                        }
                                     }
                                 }
                             });
                         }
-                    }).start();
+                    });
                 }
-                return true;
+                return false;
             }
         });
     }
