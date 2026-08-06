@@ -61,9 +61,13 @@ public class CPUFragment extends PlaceHolderFragment {
     private final Object mPreferenceLock = new Object();
     /** Serializes mirrored max-frequency, min-frequency and governor operations so they observe each other's committed state and run in submission order. */
     private final ExecutorService mMirrorExecutor = Executors.newSingleThreadExecutor();
-    /** Incremented every time an apply-all max-frequency mirror request is initiated; used to discard stale UI callbacks from superseded max-frequency requests. */
+    /** Monotonically increasing per-request sequence number for max-frequency requests, incremented at enqueue time to ensure each queued request gets a distinct ID. */
+    private final AtomicInteger mMaxFreqRequestSequence = new AtomicInteger(0);
+    /** Monotonically increasing per-request sequence number for min-frequency requests, incremented at enqueue time to ensure each queued request gets a distinct ID. */
+    private final AtomicInteger mMinFreqRequestSequence = new AtomicInteger(0);
+    /** Tracks the last committed max-frequency request sequence; used to discard stale UI callbacks from superseded max-frequency requests. */
     private final AtomicInteger mMaxFreqMirrorGeneration = new AtomicInteger(0);
-    /** Incremented every time an apply-all min-frequency mirror request is initiated; used to discard stale UI callbacks from superseded min-frequency requests. */
+    /** Tracks the last committed min-frequency request sequence; used to discard stale UI callbacks from superseded min-frequency requests. */
     private final AtomicInteger mMinFreqMirrorGeneration = new AtomicInteger(0);
     /** Incremented every time an apply-all governor mirror request is initiated; used to discard stale UI callbacks from superseded governor requests. */
     private final AtomicInteger mGovernorMirrorGeneration = new AtomicInteger(0);
@@ -514,14 +518,14 @@ public class CPUFragment extends PlaceHolderFragment {
         return false;
     }
 
-    /** Captures the current mirror-request generation and enqueues the mirror operation on the shared serialized executor. */
+    /** Captures a unique per-request sequence number and enqueues the mirror operation on the shared serialized executor. */
     private void queueFrequencyMirrorOperation(final ClusterControls source, final String value, final boolean isMax) {
-        final int requestGeneration = (isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration).get() + 1;
+        final int requestSequence = (isMax ? mMaxFreqRequestSequence : mMinFreqRequestSequence).incrementAndGet();
         final int lifecycleGeneration = mLifecycleGeneration.get();
         mMirrorExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                applyFrequencyToAllClusters(source, value, isMax, requestGeneration, lifecycleGeneration);
+                applyFrequencyToAllClusters(source, value, isMax, requestSequence, lifecycleGeneration);
             }
         });
     }
@@ -576,12 +580,12 @@ public class CPUFragment extends PlaceHolderFragment {
      * the new value for subsequent queued operations before posting the preference updates back
      * to the UI thread for the clusters that were actually written.
      */
-    private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax, final int requestGeneration, final int lifecycleGeneration) {
-        final AtomicInteger generationCounter = isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration;
+    private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax, final int requestSequence, final int lifecycleGeneration) {
+        final AtomicInteger committedGeneration = isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration;
 
-        // Check if this request is stale (a newer request was already queued)
-        if (requestGeneration <= generationCounter.get()) {
-            Log.e("Aero", "Discarding stale " + (isMax ? "max" : "min") + " frequency request (generation " + requestGeneration + " <= " + generationCounter.get() + ")");
+        // Check if this request is stale (a newer request was already committed)
+        if (requestSequence <= committedGeneration.get()) {
+            Log.e("Aero", "Discarding stale " + (isMax ? "max" : "min") + " frequency request (sequence " + requestSequence + " <= committed " + committedGeneration.get() + ")");
             return;
         }
 
@@ -653,8 +657,8 @@ public class CPUFragment extends PlaceHolderFragment {
 
         String[] commands = array.toArray(new String[0]);
         if (AeroActivity.shell.setRootInfo(commands)) {
-            // Only increment generation counter after successful write
-            generationCounter.set(requestGeneration);
+            // Mark this request sequence as committed
+            committedGeneration.set(requestSequence);
 
             for (ClusterControls target : eligibleClusters) {
                 if (isMax) {
@@ -669,7 +673,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (lifecycleGeneration != mLifecycleGeneration.get()) {
                         return;
                     }
-                    if (requestGeneration != generationCounter.get()) {
+                    if (requestSequence != committedGeneration.get()) {
                         return;
                     }
                     synchronized (mPreferenceLock) {
