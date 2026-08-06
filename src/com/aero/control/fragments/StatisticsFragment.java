@@ -275,7 +275,13 @@ public class StatisticsFragment extends Fragment {
                 this.cpuPercentage.add(0L);
             }
         }
-        createList(this.cpuFreq, this.cpuTime, this.cpuPercentage, acceptedEntries);
+        if (acceptedEntries.isEmpty()) {
+            this.statisticView = (ListView) this.root.findViewById(R.id.statisticListView);
+            StatisticAdapter adapter = new StatisticAdapter(getActivity(), R.layout.statistic_layout, this.mResult);
+            this.statisticView.setAdapter((ListAdapter) adapter);
+        } else {
+            createList(this.cpuFreq, this.cpuTime, this.cpuPercentage, acceptedEntries);
+        }
         if (firstView) {
             handleOnClick(cpuGraphValues);
         }
