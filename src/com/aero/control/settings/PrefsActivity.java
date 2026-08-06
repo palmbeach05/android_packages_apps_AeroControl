@@ -278,7 +278,6 @@ public class PrefsActivity extends PreferenceActivity {
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 builder.setTitle(R.string.legal);
                 Drawable emailIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.email).mutate();
-                emailIcon.setColorFilter(PrefsActivity.this.mIconTintColor, PorterDuff.Mode.SRC_IN);
                 builder.setIcon(emailIcon);
                 aboutText.setText(PrefsActivity.this.getText(R.string.legal_dialog));
                 aboutText.setTextSize(13.0f);
