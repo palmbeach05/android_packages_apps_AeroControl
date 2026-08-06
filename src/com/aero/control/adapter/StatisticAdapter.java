@@ -88,11 +88,6 @@ public class StatisticAdapter extends ArrayAdapter<statisticInit> {
             holder.frequency.setTypeface(mFont);
             holder.timeInState.setTypeface(mFont);
             holder.percentage.setTypeface(mFont);
-            int initialColor = getColorForIndex(this.mIndex);
-            holder.frequency.setTextColor(initialColor);
-            holder.timeInState.setTextColor(initialColor);
-            holder.percentage.setTextColor(initialColor);
-            this.mIndex++;
             row.setTag(holder);
         } else {
             holder = (Holder) row.getTag();
