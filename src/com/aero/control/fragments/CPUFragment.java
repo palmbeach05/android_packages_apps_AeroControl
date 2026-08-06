@@ -594,16 +594,18 @@ public class CPUFragment extends PlaceHolderFragment {
         synchronized (mPreferenceLock) {
             for (ClusterControls controls : this.mClusterControls) {
                 CharSequence[] entries = (isMax ? controls.maxFrequency : controls.minFrequency).getEntryValues();
-                if (entries != null) {
-                    HashSet<String> clusterFreqs = new HashSet<>();
-                    for (CharSequence entry : entries) {
-                        clusterFreqs.add(entry.toString());
-                    }
-                    if (supportedFreqs == null) {
-                        supportedFreqs = clusterFreqs;
-                    } else {
-                        supportedFreqs.retainAll(clusterFreqs);
-                    }
+                if (entries == null) {
+                    Log.e("Aero", "Cluster " + controls.index + " has no " + (isMax ? "max" : "min") + " frequency capability entries; rejecting apply-all request");
+                    return;
+                }
+                HashSet<String> clusterFreqs = new HashSet<>();
+                for (CharSequence entry : entries) {
+                    clusterFreqs.add(entry.toString());
+                }
+                if (supportedFreqs == null) {
+                    supportedFreqs = clusterFreqs;
+                } else {
+                    supportedFreqs.retainAll(clusterFreqs);
                 }
             }
         }
@@ -660,11 +662,13 @@ public class CPUFragment extends PlaceHolderFragment {
             // Mark this request sequence as committed
             committedGeneration.set(requestSequence);
 
-            for (ClusterControls target : eligibleClusters) {
-                if (isMax) {
-                    target.pendingMaxFrequency = value;
-                } else {
-                    target.pendingMinFrequency = value;
+            synchronized (mPreferenceLock) {
+                for (ClusterControls target : eligibleClusters) {
+                    if (isMax) {
+                        target.pendingMaxFrequency = value;
+                    } else {
+                        target.pendingMinFrequency = value;
+                    }
                 }
             }
             AeroActivity.mHandler.post(new Runnable() {
@@ -697,16 +701,18 @@ public class CPUFragment extends PlaceHolderFragment {
         synchronized (mPreferenceLock) {
             for (ClusterControls controls : this.mClusterControls) {
                 CharSequence[] entries = controls.governor.getEntryValues();
-                if (entries != null) {
-                    HashSet<String> clusterGovs = new HashSet<>();
-                    for (CharSequence entry : entries) {
-                        clusterGovs.add(entry.toString());
-                    }
-                    if (supportedGovs == null) {
-                        supportedGovs = clusterGovs;
-                    } else {
-                        supportedGovs.retainAll(clusterGovs);
-                    }
+                if (entries == null) {
+                    Log.e("Aero", "Cluster " + controls.index + " has no governor capability entries; rejecting apply-all request");
+                    return false;
+                }
+                HashSet<String> clusterGovs = new HashSet<>();
+                for (CharSequence entry : entries) {
+                    clusterGovs.add(entry.toString());
+                }
+                if (supportedGovs == null) {
+                    supportedGovs = clusterGovs;
+                } else {
+                    supportedGovs.retainAll(clusterGovs);
                 }
             }
         }
