@@ -473,76 +473,24 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     private void applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
-        // Build intersection of supported frequencies across all clusters
-        HashSet<String> supportedFreqs = null;
-        for (ClusterControls controls : this.mClusterControls) {
-            CharSequence[] entries = controls.maxFrequency.getEntryValues();
-            if (entries != null) {
-                HashSet<String> clusterFreqs = new HashSet<>();
-                for (CharSequence entry : entries) {
-                    clusterFreqs.add(entry.toString());
-                }
-                if (supportedFreqs == null) {
-                    supportedFreqs = clusterFreqs;
-                } else {
-                    supportedFreqs.retainAll(clusterFreqs);
-                }
-            }
-        }
-
-        // Validate the requested frequency is in the intersection
-        if (supportedFreqs == null || !supportedFreqs.contains(value)) {
-            Log.e("Aero", "Max frequency " + value + " not supported by all clusters");
-            return;
-        }
-
-        ArrayList<String> array = new ArrayList<>();
-        ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
-        for (ClusterControls target : this.mClusterControls) {
-            // Validate against min frequency limit
-            try {
-                String minFreqStr = target.minFrequency.getValue();
-                if (minFreqStr != null && !minFreqStr.equals(NO_DATA_FOUND)) {
-                    int minFreq = Integer.parseInt(minFreqStr);
-                    int maxFreq = Integer.parseInt(value);
-                    if (maxFreq < minFreq) {
-                        Log.e("Aero", "Max frequency " + value + " is lower than min frequency " + minFreqStr + " for cluster " + target.index);
-                        continue;
-                    }
-                }
-            } catch (NumberFormatException e) {
-                Log.e("Aero", "Invalid frequency format", e);
-                continue;
-            }
-
-            eligibleClusters.add(target);
-            for (Integer cpu : target.cluster.getMembers()) {
-                array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
-            }
-        }
-
-        if (array.isEmpty()) {
-            Log.e("Aero", "No valid clusters to apply max frequency");
-            return;
-        }
-
-        String[] commands = array.toArray(new String[0]);
-        if (AeroActivity.shell.setRootInfo(commands)) {
-            for (ClusterControls target : eligibleClusters) {
-                target.maxFrequency.setSummary(AeroActivity.shell.toMHz(value));
-                if (target != source) {
-                    target.maxFrequency.setValue(value);
-                }
-            }
-        }
+        applyFrequencyToAllClusters(source, value, true);
     }
 
     private void applyMinFrequencyToAllClusters(ClusterControls source, String value) {
+        applyFrequencyToAllClusters(source, value, false);
+    }
+
+    /**
+     * Mirrors a max- or min-frequency change from the first cluster's controls to every detected
+     * cluster. Validates the value against each cluster's supported frequencies and its opposite
+     * frequency limit, then runs the root commands on a worker thread and posts the resulting
+     * preference updates back to the UI thread for the clusters that were actually written.
+     */
+    private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax) {
         // Build intersection of supported frequencies across all clusters
         HashSet<String> supportedFreqs = null;
         for (ClusterControls controls : this.mClusterControls) {
-            CharSequence[] entries = controls.minFrequency.getEntryValues();
+            CharSequence[] entries = (isMax ? controls.maxFrequency : controls.minFrequency).getEntryValues();
             if (entries != null) {
                 HashSet<String> clusterFreqs = new HashSet<>();
                 for (CharSequence entry : entries) {
@@ -558,21 +506,25 @@ public class CPUFragment extends PlaceHolderFragment {
 
         // Validate the requested frequency is in the intersection
         if (supportedFreqs == null || !supportedFreqs.contains(value)) {
-            Log.e("Aero", "Min frequency " + value + " not supported by all clusters");
+            Log.e("Aero", (isMax ? "Max" : "Min") + " frequency " + value + " not supported by all clusters");
             return;
         }
 
-        ArrayList<String> array = new ArrayList<>();
-        ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
+        final ArrayList<String> array = new ArrayList<>();
+        final ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
         for (ClusterControls target : this.mClusterControls) {
-            // Validate against max frequency limit
+            // Validate against the opposite frequency limit
             try {
-                String maxFreqStr = target.maxFrequency.getValue();
-                if (maxFreqStr != null && !maxFreqStr.equals(NO_DATA_FOUND)) {
-                    int maxFreq = Integer.parseInt(maxFreqStr);
-                    int minFreq = Integer.parseInt(value);
-                    if (minFreq > maxFreq) {
-                        Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + maxFreqStr + " for cluster " + target.index);
+                String oppositeStr = (isMax ? target.minFrequency : target.maxFrequency).getValue();
+                if (oppositeStr != null && !oppositeStr.equals(NO_DATA_FOUND)) {
+                    int opposite = Integer.parseInt(oppositeStr);
+                    int requested = Integer.parseInt(value);
+                    if (isMax ? requested < opposite : requested > opposite) {
+                        if (isMax) {
+                            Log.e("Aero", "Max frequency " + value + " is lower than min frequency " + oppositeStr + " for cluster " + target.index);
+                        } else {
+                            Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + oppositeStr + " for cluster " + target.index);
+                        }
                         continue;
                     }
                 }
@@ -582,26 +534,38 @@ public class CPUFragment extends PlaceHolderFragment {
             }
 
             eligibleClusters.add(target);
+            String sysfsSuffix = isMax ? FilePath.CPU_MAX_FREQ : FilePath.CPU_MIN_FREQ;
             for (Integer cpu : target.cluster.getMembers()) {
                 array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + sysfsSuffix);
             }
         }
 
         if (array.isEmpty()) {
-            Log.e("Aero", "No valid clusters to apply min frequency");
+            Log.e("Aero", "No valid clusters to apply " + (isMax ? "max" : "min") + " frequency");
             return;
         }
 
-        String[] commands = array.toArray(new String[0]);
-        if (AeroActivity.shell.setRootInfo(commands)) {
-            for (ClusterControls target : eligibleClusters) {
-                target.minFrequency.setSummary(AeroActivity.shell.toMHz(value));
-                if (target != source) {
-                    target.minFrequency.setValue(value);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String[] commands = array.toArray(new String[0]);
+                if (AeroActivity.shell.setRootInfo(commands)) {
+                    AeroActivity.mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (ClusterControls target : eligibleClusters) {
+                                CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
+                                pref.setSummary(AeroActivity.shell.toMHz(value));
+                                if (target != source) {
+                                    pref.setValue(value);
+                                }
+                            }
+                        }
+                    });
                 }
             }
-        }
+        }).start();
     }
 
     private void applyGovernorToAllClusters(final ClusterControls source, final String value) {
