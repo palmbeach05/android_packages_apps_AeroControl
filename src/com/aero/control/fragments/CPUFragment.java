@@ -369,7 +369,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     return false;
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
+                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
                 } else {
                     ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
@@ -395,7 +395,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     return false;
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    CPUFragment.this.applyMinFrequencyToAllClusters(controls, a);
+                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
                 } else {
                     ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
@@ -420,7 +420,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     CPUFragment.this.root.removePreference(CPUFragment.this.PrefCat);
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    CPUFragment.this.applyGovernorToAllClusters(controls, a);
+                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
                 } else {
                     new Thread(new Runnable() {
                         @Override
@@ -472,7 +472,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
-    private void applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
+    private boolean applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
         // Build intersection of supported frequencies across all clusters
         HashSet<String> supportedFreqs = null;
         for (ClusterControls controls : this.mClusterControls) {
