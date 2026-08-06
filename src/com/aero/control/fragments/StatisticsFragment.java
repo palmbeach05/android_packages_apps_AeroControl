@@ -253,7 +253,7 @@ public class StatisticsFragment extends Fragment {
             Iterator<Long> it = this.cpuTime.iterator();
             while (it.hasNext()) {
                 long g = it.next().longValue();
-                String frequency = cpuFreqArray[i2].longValue() == 0 ? "DeepSleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
+                String frequency = acceptedEntries.get(i2).isDeepsleep ? "DeepSleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
                 String time_in_state = convertTime(g);
                 int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
                 this.cpuPercentage.add(Long.valueOf(percentage));
@@ -271,8 +271,11 @@ public class StatisticsFragment extends Fragment {
             }
         } else {
             Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage and pie calculations.");
+            for (int i = 0; i < acceptedEntries.size(); i++) {
+                this.cpuPercentage.add(0L);
+            }
         }
-        createList(this.cpuFreq, this.cpuTime, this.cpuPercentage);
+        createList(this.cpuFreq, this.cpuTime, this.cpuPercentage, acceptedEntries);
         if (firstView) {
             handleOnClick(cpuGraphValues);
         }
@@ -354,15 +357,20 @@ public class StatisticsFragment extends Fragment {
         return String.format("%02dh:%02dm:%02ds", Long.valueOf(TimeUnit.MILLISECONDS.toHours(msTime2)), Long.valueOf(TimeUnit.MILLISECONDS.toMinutes(msTime2) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(msTime2))), Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(msTime2) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(msTime2))));
     }
 
-    public final void createList(ArrayList<Long> cpuFreq, ArrayList<Long> cpuTime, ArrayList<Long> cpuPercentage) {
+    public final void createList(ArrayList<Long> cpuFreq, ArrayList<Long> cpuTime, ArrayList<Long> cpuPercentage, ArrayList<ParsedEntry> acceptedEntries) {
         cpuFreq.add(1L);
         cpuTime.add(Long.valueOf((long) this.mCompleteTime));
         cpuPercentage.add(100L);
+        boolean[] isDeepsleep = new boolean[cpuFreq.size()];
+        for (int i = 0; i < acceptedEntries.size(); i++) {
+            isDeepsleep[i] = acceptedEntries.get(i).isDeepsleep;
+        }
+        isDeepsleep[isDeepsleep.length - 1] = false;
         Long[] freq = (Long[]) cpuFreq.toArray(new Long[0]);
         Long[] time = (Long[]) cpuTime.toArray(new Long[0]);
         Long[] percentage = (Long[]) cpuPercentage.toArray(new Long[0]);
         ArrayDataLoader adl = new ArrayDataLoader();
-        adl.loadSingleEntry(freq, time, percentage);
+        adl.loadSingleEntry(freq, time, percentage, isDeepsleep);
         this.statisticView = (ListView) this.root.findViewById(R.id.statisticListView);
         StatisticAdapter adapter = new StatisticAdapter(getActivity(), R.layout.statistic_layout, this.mResult);
         this.statisticView.setAdapter((ListAdapter) adapter);
@@ -386,10 +394,12 @@ public class StatisticsFragment extends Fragment {
     private static final class ParsedEntry {
         private final long frequency;
         private final long residency;
+        private final boolean isDeepsleep;
 
-        private ParsedEntry(long frequency, long residency) {
+        private ParsedEntry(long frequency, long residency, boolean isDeepsleep) {
             this.frequency = frequency;
             this.residency = residency;
+            this.isDeepsleep = isDeepsleep;
         }
     }
 
@@ -435,7 +445,7 @@ public class StatisticsFragment extends Fragment {
                 Log.w("Aero", "Ignoring malformed time_in_state deep sleep row: " + rawRow);
                 return null;
             }
-            return new ParsedEntry(0L, duration);
+            return new ParsedEntry(0L, duration, true);
         }
         if (tokens.length == 2) {
             long frequency = parseNonNegativeLong(tokens[0]);
@@ -444,7 +454,7 @@ public class StatisticsFragment extends Fragment {
                 Log.w("Aero", "Ignoring malformed time_in_state frequency row: " + rawRow);
                 return null;
             }
-            return new ParsedEntry(frequency, residency);
+            return new ParsedEntry(frequency, residency, false);
         }
         Log.w("Aero", "Ignoring time_in_state row with an unexpected token count: " + rawRow);
         return null;
@@ -497,7 +507,7 @@ public class StatisticsFragment extends Fragment {
         private ArrayDataLoader() {
         }
 
-        public final void loadSingleEntry(Long[] freq, Long[] time, Long[] percentage) {
+        public final void loadSingleEntry(Long[] freq, Long[] time, Long[] percentage, boolean[] isDeepsleep) {
             int length = freq.length;
             for (int j = 0; j < length; j++) {
                 if (percentage[j].longValue() != 0 && percentage[j].longValue() >= 1) {
@@ -507,7 +517,7 @@ public class StatisticsFragment extends Fragment {
                     } else if (convertedFreq.length() < 7) {
                         convertedFreq = convertedFreq + "\t\t";
                     }
-                    if (j == 0) {
+                    if (isDeepsleep[j]) {
                         loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
                     } else if (j == length - 1) {
                         loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
