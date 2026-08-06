@@ -19,7 +19,6 @@ import java.util.List;
 public class StatisticAdapter extends ArrayAdapter<statisticInit> {
     private Context mContext;
     private List<statisticInit> mData;
-    private int mIndex;
     private boolean[] mIsVisible;
     private int mLayoutResourceId;
     private int[] mTags;
@@ -38,7 +37,6 @@ public class StatisticAdapter extends ArrayAdapter<statisticInit> {
     public StatisticAdapter(Context context, int layoutResourceId, statisticInit[] data) {
         super(context, layoutResourceId, data);
         this.mData = new ArrayList();
-        this.mIndex = 0;
         this.mLayoutResourceId = layoutResourceId;
         this.mContext = context;
         this.mIsVisible = new boolean[data.length];
