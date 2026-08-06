@@ -3,7 +3,6 @@ package com.aero.control.fragments;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -40,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 /* JADX INFO: loaded from: classes.dex */
 public class StatisticsFragment extends Fragment {
     public static final String FILENAME_STATISTICS = "firstrun_statistics";
-    private static final String NO_DATA_FOUND = "Unavailable";
     public ArrayList<Long> cpuResetTime;
     public String[] data;
     public ShowcaseView mShowCase;
@@ -202,101 +200,77 @@ public class StatisticsFragment extends Fragment {
     }
 
     private void loadUI(boolean firstView) {
-        String frequency;
-        long j;
         final ArrayList<String> cpuGraphValues = new ArrayList<>();
-        int cpuData = getCpuData();
+        getCpuData();
+        ArrayList<ParsedEntry> acceptedEntries = parseAcceptedEntries(this.data);
         this.mCompleteTime = 0.0d;
         this.pg = (PieGraph) this.root.findViewById(R.id.graph);
-        if (cpuData == 0) {
+        if (acceptedEntries.isEmpty()) {
             this.root.findViewById(R.id.noCpuData).setVisibility(0);
         } else {
             this.root.findViewById(R.id.noCpuData).setVisibility(8);
         }
-        for (int k = 0; k < cpuData; k++) {
-            String b = this.data[k];
-            String[] c = b.split(" ");
-            if (k == 0) {
-                j = Long.parseLong(c[0]);
-            } else {
-                j = Long.parseLong(c[1]);
-            }
-            double a = j;
-            this.cpuOverallTime.add(Long.valueOf((long) a));
-            this.mCompleteTime += a;
+        for (ParsedEntry entry : acceptedEntries) {
+            this.cpuOverallTime.add(Long.valueOf(entry.residency));
+            this.mCompleteTime += entry.residency;
         }
         this.cpuOverallTime.add(Long.valueOf((long) this.mCompleteTime));
-        if (this.cpuResetTime != null) {
-            String resetUptime = NO_DATA_FOUND;
-            long mResetTime = 0;
-            if (new File(FilePath.OFFSET_STAT).exists()) {
-                resetUptime = AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0)[AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0).length - 1];
-            }
-            if (!resetUptime.equals(NO_DATA_FOUND)) {
-                mResetTime = Long.parseLong(resetUptime);
-            }
-            this.mCompleteTime -= mResetTime;
-        }
-        for (int i = 0; i < cpuData; i++) {
-            String b2 = this.data[i];
-            String[] c2 = b2.split(" ");
-            Long offsetTime = 0L;
-            File offsetFile = new File(FilePath.OFFSET_STAT);
-            if (offsetFile.exists()) {
-                try {
-                    offsetTime = Long.valueOf(Long.parseLong(AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0)[i]));
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    Log.e("Aero", "The offset file might be smaller as assumed. " + e);
-                    offsetFile.delete();
-                } catch (NumberFormatException e2) {
-                    Log.e("Aero", "The offset file might be unavailable. " + e2);
-                    offsetFile.delete();
+
+        long[] resetOffsets = this.cpuResetTime != null ? readResetOffsets(acceptedEntries.size()) : null;
+        long[] adjustedResidencies = null;
+        if (resetOffsets != null) {
+            adjustedResidencies = new long[acceptedEntries.size()];
+            boolean resetValid = true;
+            for (int i = 0; i < acceptedEntries.size(); i++) {
+                long adjusted = acceptedEntries.get(i).residency - resetOffsets[i];
+                if (adjusted < 0) {
+                    resetValid = false;
+                    break;
                 }
+                adjustedResidencies[i] = adjusted;
             }
-            if (i == 0) {
-                this.cpuFreq.add(0L);
-                if (this.cpuResetTime != null) {
-                    this.cpuTime.add(Long.valueOf(((long) Integer.parseInt(c2[0])) - offsetTime.longValue()));
-                } else {
-                    this.cpuTime.add(Long.valueOf(Integer.parseInt(c2[0])));
-                }
+            if (resetValid) {
+                this.mCompleteTime -= resetOffsets[acceptedEntries.size()];
             } else {
-                this.cpuFreq.add(Long.valueOf(Integer.parseInt(c2[0])));
-                if (this.cpuResetTime != null) {
-                    this.cpuTime.add(Long.valueOf(((long) Integer.parseInt(c2[1])) - offsetTime.longValue()));
-                } else {
-                    this.cpuTime.add(Long.valueOf(Integer.parseInt(c2[1])));
-                }
+                Log.w("Aero", "A reset offset would produce a negative residency; discarding reset state.");
+                new File(FilePath.OFFSET_STAT).delete();
+                this.cpuResetTime = null;
+                adjustedResidencies = null;
             }
         }
+
+        for (int i = 0; i < acceptedEntries.size(); i++) {
+            ParsedEntry entry = acceptedEntries.get(i);
+            long residency = adjustedResidencies != null ? adjustedResidencies[i] : entry.residency;
+            this.cpuFreq.add(Long.valueOf(entry.frequency));
+            this.cpuTime.add(Long.valueOf(residency));
+        }
+
         Long[] cpuFreqArray = (Long[]) this.cpuFreq.toArray(new Long[0]);
-        int i2 = 0;
-        int j2 = 0;
-        Iterator<Long> it = this.cpuTime.iterator();
-        while (it.hasNext()) {
-            long g = it.next().longValue();
-            if (j2 == 8) {
-                j2 = 0;
+        if (this.mCompleteTime > 0.0d) {
+            int i2 = 0;
+            int j2 = 0;
+            Iterator<Long> it = this.cpuTime.iterator();
+            while (it.hasNext()) {
+                long g = it.next().longValue();
+                String frequency = cpuFreqArray[i2].longValue() == 0 ? "DeepSleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
+                String time_in_state = convertTime(g);
+                int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
+                this.cpuPercentage.add(Long.valueOf(percentage));
+                if (g != 0 && percentage >= 1) {
+                    PieSlice slice = new PieSlice();
+                    cpuGraphValues.add(frequency + " " + time_in_state + " " + percentage + "%");
+                    slice.setValue(10.0f);
+                    slice.setGoalValue(percentage);
+                    slice.setColor(StatisticAdapter.getColorForIndex(j2));
+                    this.pg.setThickness(30);
+                    this.pg.addSlice(slice);
+                    j2++;
+                }
+                i2++;
             }
-            if (cpuFreqArray[i2].longValue() == 0) {
-                frequency = "DeepSleep";
-            } else {
-                frequency = AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
-            }
-            String time_in_state = convertTime(g);
-            int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
-            this.cpuPercentage.add(Long.valueOf(percentage));
-            if (g != 0 && percentage >= 1) {
-                PieSlice slice = new PieSlice();
-                cpuGraphValues.add(frequency + " " + time_in_state + " " + percentage + "%");
-                slice.setValue(10.0f);
-                slice.setGoalValue(percentage);
-                slice.setColor(Color.parseColor(FilePath.color_code[j2]));
-                this.pg.setThickness(30);
-                this.pg.addSlice(slice);
-                j2++;
-            }
-            i2++;
+        } else {
+            Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage and pie calculations.");
         }
         createList(this.cpuFreq, this.cpuTime, this.cpuPercentage);
         if (firstView) {
@@ -350,9 +324,6 @@ public class StatisticsFragment extends Fragment {
                 this.mIndex = 0;
                 this.mColorIndex = 0;
             }
-            if (this.mColorIndex >= 8) {
-                this.mColorIndex = 0;
-            }
             String currentRow = list.get(this.mIndex);
             String[] tmp = currentRow.split(" ");
             this.txtFreq = (TextView) this.root.findViewById(R.id.statisticFreq);
@@ -369,9 +340,10 @@ public class StatisticsFragment extends Fragment {
             this.txtFreq.setTypeface(FilePath.kitkatFont);
             this.txtTime.setTypeface(FilePath.kitkatFont);
             this.txtPercentage.setTypeface(FilePath.kitkatFont);
-            this.txtFreq.setTextColor(Color.parseColor(FilePath.color_code[this.mColorIndex]));
-            this.txtTime.setTextColor(Color.parseColor(FilePath.color_code[this.mColorIndex]));
-            this.txtPercentage.setTextColor(Color.parseColor(FilePath.color_code[this.mColorIndex]));
+            int color = StatisticAdapter.getColorForIndex(this.mColorIndex);
+            this.txtFreq.setTextColor(color);
+            this.txtTime.setTextColor(color);
+            this.txtPercentage.setTextColor(color);
         }
         this.mColorIndex++;
         this.mIndex++;
@@ -405,6 +377,120 @@ public class StatisticsFragment extends Fragment {
             return this.data.length;
         }
         return 0;
+    }
+
+    /**
+     * A single accepted row from {@link FilePath#TIME_IN_STATE_PATH}: either a deep sleep
+     * duration or a frequency/residency pair.
+     */
+    private static final class ParsedEntry {
+        private final long frequency;
+        private final long residency;
+
+        private ParsedEntry(long frequency, long residency) {
+            this.frequency = frequency;
+            this.residency = residency;
+        }
+    }
+
+    /**
+     * Parses the raw rows of the legacy cpufreq {@code time_in_state} format:
+     * <ul>
+     *   <li>a single non-negative {@code long} token: a deep sleep residency duration
+     *       (frequency is reported as {@code 0})</li>
+     *   <li>two non-negative {@code long} tokens "frequency residency": a frequency
+     *       residency entry</li>
+     * </ul>
+     * Blank rows, rows with any other token count, negative values, and numeric-overflow
+     * values are ignored and logged (without a stack trace) rather than aborting the
+     * refresh. Accepted rows are returned in their original source order; a row's type is
+     * always determined by its own token count, never by its position.
+     */
+    private static ArrayList<ParsedEntry> parseAcceptedEntries(String[] rawRows) {
+        ArrayList<ParsedEntry> accepted = new ArrayList<>();
+        if (rawRows == null) {
+            return accepted;
+        }
+        for (String rawRow : rawRows) {
+            ParsedEntry entry = parseTimeInStateRow(rawRow);
+            if (entry != null) {
+                accepted.add(entry);
+            }
+        }
+        return accepted;
+    }
+
+    private static ParsedEntry parseTimeInStateRow(String rawRow) {
+        if (rawRow == null) {
+            return null;
+        }
+        String trimmed = rawRow.trim();
+        if (trimmed.length() == 0) {
+            return null;
+        }
+        String[] tokens = trimmed.split("\\s+");
+        if (tokens.length == 1) {
+            long duration = parseNonNegativeLong(tokens[0]);
+            if (duration < 0) {
+                Log.w("Aero", "Ignoring malformed time_in_state deep sleep row: " + rawRow);
+                return null;
+            }
+            return new ParsedEntry(0L, duration);
+        }
+        if (tokens.length == 2) {
+            long frequency = parseNonNegativeLong(tokens[0]);
+            long residency = parseNonNegativeLong(tokens[1]);
+            if (frequency < 0 || residency < 0) {
+                Log.w("Aero", "Ignoring malformed time_in_state frequency row: " + rawRow);
+                return null;
+            }
+            return new ParsedEntry(frequency, residency);
+        }
+        Log.w("Aero", "Ignoring time_in_state row with an unexpected token count: " + rawRow);
+        return null;
+    }
+
+    private static long parseNonNegativeLong(String token) {
+        try {
+            long value = Long.parseLong(token);
+            return value < 0 ? -1L : value;
+        } catch (NumberFormatException e) {
+            return -1L;
+        }
+    }
+
+    /**
+     * Reads and validates the on-disk reset offsets so they can be applied to
+     * {@code acceptedCount} accepted parsed entries, in source order. The offset file stores
+     * one non-negative long per accepted entry followed by a trailing total-uptime offset
+     * (the format written by {@link #resetStatistics()}). Discards the on-disk reset state
+     * (matching the existing fallback behavior) and returns {@code null} when the file is
+     * missing, has fewer usable offsets than accepted entries, or contains a malformed value.
+     */
+    private long[] readResetOffsets(int acceptedCount) {
+        File offsetFile = new File(FilePath.OFFSET_STAT);
+        if (!offsetFile.exists()) {
+            return null;
+        }
+        String[] rawOffsets = AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0);
+        if (rawOffsets == null || rawOffsets.length < acceptedCount + 1) {
+            Log.w("Aero", "Offset file has fewer usable offsets than accepted entries; discarding reset state.");
+            offsetFile.delete();
+            this.cpuResetTime = null;
+            return null;
+        }
+        long[] offsets = new long[acceptedCount + 1];
+        for (int i = 0; i < offsets.length; i++) {
+            try {
+                offsets[i] = Long.parseLong(rawOffsets[i]);
+            } catch (NumberFormatException e) {
+                Log.w("Aero", "Offset file contains a malformed value; discarding reset state.");
+                offsetFile.delete();
+                this.cpuResetTime = null;
+                return null;
+            }
+        }
+        return offsets;
     }
 
     private final class ArrayDataLoader {
