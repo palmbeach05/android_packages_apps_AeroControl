@@ -441,7 +441,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                     break;
                                 }
                             }
-                            final String finalGovernor = currentGovernor != null ? currentGovernor : a;
+                            final String finalGovernor = (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) ? currentGovernor : a;
                             AeroActivity.mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -497,6 +497,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
 
         ArrayList<String> array = new ArrayList<>();
+        ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
         for (ClusterControls target : this.mClusterControls) {
             // Validate against min frequency limit
             try {
@@ -514,6 +515,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 continue;
             }
 
+            eligibleClusters.add(target);
             for (Integer cpu : target.cluster.getMembers()) {
                 array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
                 array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
@@ -527,7 +529,7 @@ public class CPUFragment extends PlaceHolderFragment {
 
         String[] commands = array.toArray(new String[0]);
         if (AeroActivity.shell.setRootInfo(commands)) {
-            for (ClusterControls target : this.mClusterControls) {
+            for (ClusterControls target : eligibleClusters) {
                 target.maxFrequency.setSummary(AeroActivity.shell.toMHz(value));
                 if (target != source) {
                     target.maxFrequency.setValue(value);
@@ -561,6 +563,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
 
         ArrayList<String> array = new ArrayList<>();
+        ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
         for (ClusterControls target : this.mClusterControls) {
             // Validate against max frequency limit
             try {
@@ -578,6 +581,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 continue;
             }
 
+            eligibleClusters.add(target);
             for (Integer cpu : target.cluster.getMembers()) {
                 array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
                 array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
@@ -591,7 +595,7 @@ public class CPUFragment extends PlaceHolderFragment {
 
         String[] commands = array.toArray(new String[0]);
         if (AeroActivity.shell.setRootInfo(commands)) {
-            for (ClusterControls target : this.mClusterControls) {
+            for (ClusterControls target : eligibleClusters) {
                 target.minFrequency.setSummary(AeroActivity.shell.toMHz(value));
                 if (target != source) {
                     target.minFrequency.setValue(value);
@@ -632,6 +636,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 }
 
                 // Poll for governor change completion on all clusters
+                final String[] capturedGovernors = new String[CPUFragment.this.mClusterControls.size()];
                 boolean allComplete = false;
                 for (int i = 0; i < 10 && !allComplete; i++) {
                     try {
@@ -641,12 +646,13 @@ public class CPUFragment extends PlaceHolderFragment {
                         break;
                     }
                     allComplete = true;
-                    for (ClusterControls target : CPUFragment.this.mClusterControls) {
+                    for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
+                        ClusterControls target = CPUFragment.this.mClusterControls.get(j);
                         String governorPath = FilePath.CPU_BASE_PATH + target.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE;
                         String currentGovernor = AeroActivity.shell.getInfo(governorPath);
+                        capturedGovernors[j] = currentGovernor;
                         if (!value.equals(currentGovernor)) {
                             allComplete = false;
-                            break;
                         }
                     }
                 }
@@ -654,12 +660,14 @@ public class CPUFragment extends PlaceHolderFragment {
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        for (ClusterControls target : CPUFragment.this.mClusterControls) {
-                            String governorPath = FilePath.CPU_BASE_PATH + target.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE;
-                            String currentGovernor = AeroActivity.shell.getInfo(governorPath);
-                            target.governor.setSummary(currentGovernor);
-                            if (target != source) {
-                                target.governor.setValue(currentGovernor);
+                        for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
+                            ClusterControls target = CPUFragment.this.mClusterControls.get(j);
+                            String currentGovernor = capturedGovernors[j];
+                            if (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) {
+                                target.governor.setSummary(currentGovernor);
+                                if (target != source) {
+                                    target.governor.setValue(currentGovernor);
+                                }
                             }
                         }
                     }
