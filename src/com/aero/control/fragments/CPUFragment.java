@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /* JADX INFO: loaded from: classes.dex */
 public class CPUFragment extends PlaceHolderFragment {
@@ -54,6 +57,10 @@ public class CPUFragment extends PlaceHolderFragment {
     private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
     private final List<ClusterControls> mClusterControls = new ArrayList<>();
     private CheckBoxPreference mApplyToAllClusters;
+    /** Serializes mirrored max-frequency, min-frequency and governor operations so they observe each other's committed state and run in submission order. */
+    private final ExecutorService mMirrorExecutor = Executors.newSingleThreadExecutor();
+    /** Incremented every time an apply-all mirror request is initiated; used to discard stale UI callbacks from superseded requests. */
+    private final AtomicInteger mMirrorRequestGeneration = new AtomicInteger(0);
     private boolean mVisible = true;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() { // from class: com.aero.control.fragments.CPUFragment.11
@@ -79,6 +86,9 @@ public class CPUFragment extends PlaceHolderFragment {
         private final CustomListPreference maxFrequency;
         private final CustomListPreference minFrequency;
         private final CustomListPreference governor;
+        /** Last max/min frequency committed by a serialized mirror operation, ahead of the value reflected by the preference itself. Null until a mirror operation commits a value. */
+        private String pendingMaxFrequency;
+        private String pendingMinFrequency;
 
         private ClusterControls(int index, CpuClusterHelper.Cluster cluster, CustomListPreference maxFrequency, CustomListPreference minFrequency, CustomListPreference governor) {
             this.index = index;
@@ -473,22 +483,46 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     private boolean applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
-        applyFrequencyToAllClusters(source, value, true);
+        queueFrequencyMirrorOperation(source, value, true);
         return false;
     }
 
     private boolean applyMinFrequencyToAllClusters(ClusterControls source, String value) {
-        applyFrequencyToAllClusters(source, value, false);
+        queueFrequencyMirrorOperation(source, value, false);
         return false;
+    }
+
+    /** Captures the current mirror-request generation and enqueues the mirror operation on the shared serialized executor. */
+    private void queueFrequencyMirrorOperation(final ClusterControls source, final String value, final boolean isMax) {
+        final int requestGeneration = mMirrorRequestGeneration.incrementAndGet();
+        mMirrorExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                applyFrequencyToAllClusters(source, value, isMax, requestGeneration);
+            }
+        });
+    }
+
+    /** Returns the most recently committed max frequency for a cluster, falling back to the preference's current value if no mirror operation has committed one yet. */
+    private String getPendingMaxFrequency(ClusterControls target) {
+        return target.pendingMaxFrequency != null ? target.pendingMaxFrequency : target.maxFrequency.getValue();
+    }
+
+    /** Returns the most recently committed min frequency for a cluster, falling back to the preference's current value if no mirror operation has committed one yet. */
+    private String getPendingMinFrequency(ClusterControls target) {
+        return target.pendingMinFrequency != null ? target.pendingMinFrequency : target.minFrequency.getValue();
     }
 
     /**
      * Mirrors a max- or min-frequency change from the first cluster's controls to every detected
-     * cluster. Validates the value against each cluster's supported frequencies and its opposite
-     * frequency limit, then runs the root commands on a worker thread and posts the resulting
-     * preference updates back to the UI thread for the clusters that were actually written.
+     * cluster. Runs on the shared serialized mirror executor, so it always observes the
+     * committed state of any preceding queued mirror operation rather than the preference's
+     * stale on-screen value. Validates the value against each cluster's supported frequencies and
+     * its opposite frequency limit, then performs the root write and, once it succeeds, commits
+     * the new value for subsequent queued operations before posting the preference updates back
+     * to the UI thread for the clusters that were actually written.
      */
-    private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax) {
+    private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax, final int requestGeneration) {
         // Build intersection of supported frequencies across all clusters
         HashSet<String> supportedFreqs = null;
         for (ClusterControls controls : this.mClusterControls) {
@@ -515,9 +549,10 @@ public class CPUFragment extends PlaceHolderFragment {
         final ArrayList<String> array = new ArrayList<>();
         final ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
         for (ClusterControls target : this.mClusterControls) {
-            // Validate against the opposite frequency limit
+            // Validate against the opposite frequency limit, using the value a preceding queued
+            // mirror operation has already committed rather than the (possibly stale) preference.
             try {
-                String oppositeStr = (isMax ? target.minFrequency : target.maxFrequency).getValue();
+                String oppositeStr = isMax ? getPendingMinFrequency(target) : getPendingMaxFrequency(target);
                 if (oppositeStr != null && !oppositeStr.equals(NO_DATA_FOUND)) {
                     int opposite = Integer.parseInt(oppositeStr);
                     int requested = Integer.parseInt(value);
@@ -548,24 +583,29 @@ public class CPUFragment extends PlaceHolderFragment {
             return;
         }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String[] commands = array.toArray(new String[0]);
-                if (AeroActivity.shell.setRootInfo(commands)) {
-                    AeroActivity.mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (ClusterControls target : eligibleClusters) {
-                                CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
-                                pref.setSummary(AeroActivity.shell.toMHz(value));
-                                pref.setValue(value);
-                            }
-                        }
-                    });
+        String[] commands = array.toArray(new String[0]);
+        if (AeroActivity.shell.setRootInfo(commands)) {
+            for (ClusterControls target : eligibleClusters) {
+                if (isMax) {
+                    target.pendingMaxFrequency = value;
+                } else {
+                    target.pendingMinFrequency = value;
                 }
             }
-        }).start();
+            AeroActivity.mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (requestGeneration != mMirrorRequestGeneration.get()) {
+                        return;
+                    }
+                    for (ClusterControls target : eligibleClusters) {
+                        CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
+                        pref.setSummary(AeroActivity.shell.toMHz(value));
+                        pref.setValue(value);
+                    }
+                }
+            });
+        }
     }
 
     private boolean applyGovernorToAllClusters(final ClusterControls source, final String value) {
@@ -592,7 +632,8 @@ public class CPUFragment extends PlaceHolderFragment {
             return false;
         }
 
-        new Thread(new Runnable() {
+        final int requestGeneration = mMirrorRequestGeneration.incrementAndGet();
+        mMirrorExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 for (ClusterControls target : CPUFragment.this.mClusterControls) {
@@ -602,11 +643,13 @@ public class CPUFragment extends PlaceHolderFragment {
                 // Poll for governor change completion on all clusters
                 final String[] capturedGovernors = new String[CPUFragment.this.mClusterControls.size()];
                 boolean allComplete = false;
+                boolean interrupted = false;
                 for (int i = 0; i < 10 && !allComplete; i++) {
                     try {
                         Thread.sleep(50L);
                     } catch (InterruptedException e) {
                         Log.e("Aero", "Governor polling interrupted", e);
+                        interrupted = true;
                         break;
                     }
                     allComplete = true;
@@ -621,21 +664,27 @@ public class CPUFragment extends PlaceHolderFragment {
                     }
                 }
 
+                if (!allComplete) {
+                    Log.e("Aero", "Governor mirror to all clusters did not complete (" + (interrupted ? "interrupted" : "timed out") + "); preserving current UI state");
+                    return;
+                }
+
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        if (requestGeneration != mMirrorRequestGeneration.get()) {
+                            return;
+                        }
                         for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
                             ClusterControls target = CPUFragment.this.mClusterControls.get(j);
                             String currentGovernor = capturedGovernors[j];
-                            if (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) {
-                                target.governor.setSummary(currentGovernor);
-                                target.governor.setValue(currentGovernor);
-                            }
+                            target.governor.setSummary(currentGovernor);
+                            target.governor.setValue(currentGovernor);
                         }
                     }
                 });
             }
-        }).start();
+        });
         return false;
     }
 
@@ -719,6 +768,15 @@ public class CPUFragment extends PlaceHolderFragment {
     public void onResume() {
         super.onResume();
         this.mVisible = true;
+    }
+
+    @Override // android.app.Fragment
+    public void onDestroy() {
+        // Invalidate any mirror-request UI callback already posted to the main thread before the
+        // fragment is torn down, then stop accepting and interrupt any in-flight mirror work.
+        this.mMirrorRequestGeneration.incrementAndGet();
+        this.mMirrorExecutor.shutdownNow();
+        super.onDestroy();
     }
 
     /** Writes the governor only to the CPUs belonging to a single cluster. */
