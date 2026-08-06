@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /* JADX INFO: loaded from: classes.dex */
 public class CPUFragment extends PlaceHolderFragment {
@@ -54,6 +57,22 @@ public class CPUFragment extends PlaceHolderFragment {
     private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
     private final List<ClusterControls> mClusterControls = new ArrayList<>();
     private CheckBoxPreference mApplyToAllClusters;
+    /** Synchronizes access to ListPreference state (getValue, getEntryValues) between the serialized mirror executor and the main thread. */
+    private final Object mPreferenceLock = new Object();
+    /** Serializes mirrored max-frequency, min-frequency and governor operations so they observe each other's committed state and run in submission order. */
+    private final ExecutorService mMirrorExecutor = Executors.newSingleThreadExecutor();
+    /** Monotonically increasing per-request sequence number for max-frequency requests, incremented at enqueue time to ensure each queued request gets a distinct ID. */
+    private final AtomicInteger mMaxFreqRequestSequence = new AtomicInteger(0);
+    /** Monotonically increasing per-request sequence number for min-frequency requests, incremented at enqueue time to ensure each queued request gets a distinct ID. */
+    private final AtomicInteger mMinFreqRequestSequence = new AtomicInteger(0);
+    /** Tracks the last committed max-frequency request sequence; used to discard stale UI callbacks from superseded max-frequency requests. */
+    private final AtomicInteger mMaxFreqMirrorGeneration = new AtomicInteger(0);
+    /** Tracks the last committed min-frequency request sequence; used to discard stale UI callbacks from superseded min-frequency requests. */
+    private final AtomicInteger mMinFreqMirrorGeneration = new AtomicInteger(0);
+    /** Incremented every time an apply-all governor mirror request is initiated; used to discard stale UI callbacks from superseded governor requests. */
+    private final AtomicInteger mGovernorMirrorGeneration = new AtomicInteger(0);
+    /** Incremented on fragment destruction to invalidate all pending mirror callbacks regardless of their setting type. */
+    private final AtomicInteger mLifecycleGeneration = new AtomicInteger(0);
     private boolean mVisible = true;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() { // from class: com.aero.control.fragments.CPUFragment.11
@@ -79,6 +98,9 @@ public class CPUFragment extends PlaceHolderFragment {
         private final CustomListPreference maxFrequency;
         private final CustomListPreference minFrequency;
         private final CustomListPreference governor;
+        /** Last max/min frequency committed by a serialized mirror operation, ahead of the value reflected by the preference itself. Null until a mirror operation commits a value. */
+        private String pendingMaxFrequency;
+        private String pendingMinFrequency;
 
         private ClusterControls(int index, CpuClusterHelper.Cluster cluster, CustomListPreference maxFrequency, CustomListPreference minFrequency, CustomListPreference governor) {
             this.index = index;
@@ -361,52 +383,64 @@ public class CPUFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String a = (String) o;
-                try {
-                    if (Integer.parseInt(a) < Integer.parseInt(controls.minFrequency.getValue())) {
-                        return false;
-                    }
-                } catch (NumberFormatException e) {
-                    return false;
-                }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
                     return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
                 } else {
-                    ArrayList<String> array = new ArrayList<>();
-                    for (Integer cpu : controls.cluster.getMembers()) {
-                        array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                        array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                    synchronized (mPreferenceLock) {
+                        try {
+                            if (Integer.parseInt(a) < Integer.parseInt(controls.minFrequency.getValue())) {
+                                return false;
+                            }
+                        } catch (NumberFormatException e) {
+                            return false;
+                        }
+                        ArrayList<String> array = new ArrayList<>();
+                        for (Integer cpu : controls.cluster.getMembers()) {
+                            array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                            array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                        }
+                        String[] commands = (String[]) array.toArray(new String[0]);
+                        if (AeroActivity.shell.setRootInfo(commands)) {
+                            controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                            controls.pendingMaxFrequency = a;
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
-                    controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
-                    String[] commands = (String[]) array.toArray(new String[0]);
-                    AeroActivity.shell.setRootInfo(commands);
                 }
-                return true;
             }
         });
         controls.minFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.7
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String a = (String) o;
-                try {
-                    if (Integer.parseInt(a) > Integer.parseInt(controls.maxFrequency.getValue())) {
-                        return false;
-                    }
-                } catch (NumberFormatException e) {
-                    return false;
-                }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
+                    return CPUFragment.this.applyMinFrequencyToAllClusters(controls, a);
                 } else {
-                    ArrayList<String> array = new ArrayList<>();
-                    for (Integer cpu : controls.cluster.getMembers()) {
-                        array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                        array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                    synchronized (mPreferenceLock) {
+                        try {
+                            if (Integer.parseInt(a) > Integer.parseInt(controls.maxFrequency.getValue())) {
+                                return false;
+                            }
+                        } catch (NumberFormatException e) {
+                            return false;
+                        }
+                        ArrayList<String> array = new ArrayList<>();
+                        for (Integer cpu : controls.cluster.getMembers()) {
+                            array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                            array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                        }
+                        String[] commands = (String[]) array.toArray(new String[0]);
+                        if (AeroActivity.shell.setRootInfo(commands)) {
+                            controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                            controls.pendingMinFrequency = a;
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
-                    controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
-                    String[] commands = (String[]) array.toArray(new String[0]);
-                    AeroActivity.shell.setRootInfo(commands);
                 }
-                return true;
             }
         });
     }
@@ -420,7 +454,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     CPUFragment.this.root.removePreference(CPUFragment.this.PrefCat);
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
+                    return CPUFragment.this.applyGovernorToAllClusters(controls, a);
                 } else {
                     new Thread(new Runnable() {
                         @Override
@@ -445,8 +479,10 @@ public class CPUFragment extends PlaceHolderFragment {
                             AeroActivity.mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    controls.governor.setSummary(finalGovernor);
-                                    controls.governor.setValue(finalGovernor);
+                                    synchronized (mPreferenceLock) {
+                                        controls.governor.setSummary(finalGovernor);
+                                        controls.governor.setValue(finalGovernor);
+                                    }
                                 }
                             });
                         }
@@ -473,11 +509,95 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     private boolean applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
+        queueFrequencyMirrorOperation(source, value, true);
+        return false;
+    }
+
+    private boolean applyMinFrequencyToAllClusters(ClusterControls source, String value) {
+        queueFrequencyMirrorOperation(source, value, false);
+        return false;
+    }
+
+    /** Captures a unique per-request sequence number and enqueues the mirror operation on the shared serialized executor. */
+    private void queueFrequencyMirrorOperation(final ClusterControls source, final String value, final boolean isMax) {
+        final int requestSequence = (isMax ? mMaxFreqRequestSequence : mMinFreqRequestSequence).incrementAndGet();
+        final int lifecycleGeneration = mLifecycleGeneration.get();
+        mMirrorExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                applyFrequencyToAllClusters(source, value, isMax, requestSequence, lifecycleGeneration);
+            }
+        });
+    }
+
+    /** Returns the most recently committed max frequency for a cluster, falling back to the preference's current value if no mirror operation has committed one yet. */
+    private String getPendingMaxFrequency(ClusterControls target) {
+        synchronized (mPreferenceLock) {
+            return target.pendingMaxFrequency != null ? target.pendingMaxFrequency : target.maxFrequency.getValue();
+        }
+    }
+
+    /** Returns the most recently committed min frequency for a cluster, falling back to the preference's current value if no mirror operation has committed one yet. */
+    private String getPendingMinFrequency(ClusterControls target) {
+        synchronized (mPreferenceLock) {
+            return target.pendingMinFrequency != null ? target.pendingMinFrequency : target.minFrequency.getValue();
+        }
+    }
+
+    /**
+     * Rolls back frequency preferences to the last committed state when a mirror operation
+     * fails or encounters unsupported frequencies. This ensures the UI reflects the actual
+     * committed state and prevents a failed later request from suppressing an earlier
+     * successful update.
+     */
+    private void rollbackFrequencyPreferences(final boolean isMax, final int lifecycleGeneration) {
+        AeroActivity.mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                    return;
+                }
+                synchronized (mPreferenceLock) {
+                    for (ClusterControls target : mClusterControls) {
+                        CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
+                        String committed = isMax ? target.pendingMaxFrequency : target.pendingMinFrequency;
+                        if (committed != null) {
+                            pref.setSummary(AeroActivity.shell.toMHz(committed));
+                            pref.setValue(committed);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Mirrors a max- or min-frequency change from the first cluster's controls to every detected
+     * cluster. Runs on the shared serialized mirror executor, so it always observes the
+     * committed state of any preceding queued mirror operation rather than the preference's
+     * stale on-screen value. Validates the value against each cluster's supported frequencies and
+     * its opposite frequency limit, then performs the root write and, once it succeeds, commits
+     * the new value for subsequent queued operations before posting the preference updates back
+     * to the UI thread for the clusters that were actually written.
+     */
+    private void applyFrequencyToAllClusters(final ClusterControls source, final String value, final boolean isMax, final int requestSequence, final int lifecycleGeneration) {
+        final AtomicInteger committedGeneration = isMax ? mMaxFreqMirrorGeneration : mMinFreqMirrorGeneration;
+
+        // Check if this request is stale (a newer request was already committed)
+        if (requestSequence <= committedGeneration.get()) {
+            Log.e("Aero", "Discarding stale " + (isMax ? "max" : "min") + " frequency request (sequence " + requestSequence + " <= committed " + committedGeneration.get() + ")");
+            return;
+        }
+
         // Build intersection of supported frequencies across all clusters
         HashSet<String> supportedFreqs = null;
-        for (ClusterControls controls : this.mClusterControls) {
-            CharSequence[] entries = controls.maxFrequency.getEntryValues();
-            if (entries != null) {
+        synchronized (mPreferenceLock) {
+            for (ClusterControls controls : this.mClusterControls) {
+                CharSequence[] entries = (isMax ? controls.maxFrequency : controls.minFrequency).getEntryValues();
+                if (entries == null) {
+                    Log.e("Aero", "Cluster " + controls.index + " has no " + (isMax ? "max" : "min") + " frequency capability entries; rejecting apply-all request");
+                    return;
+                }
                 HashSet<String> clusterFreqs = new HashSet<>();
                 for (CharSequence entry : entries) {
                     clusterFreqs.add(entry.toString());
@@ -492,124 +612,99 @@ public class CPUFragment extends PlaceHolderFragment {
 
         // Validate the requested frequency is in the intersection
         if (supportedFreqs == null || !supportedFreqs.contains(value)) {
-            Log.e("Aero", "Max frequency " + value + " not supported by all clusters");
+            Log.e("Aero", (isMax ? "Max" : "Min") + " frequency " + value + " not supported by all clusters; rolling back to last committed state");
+            rollbackFrequencyPreferences(isMax, lifecycleGeneration);
             return;
         }
 
-        ArrayList<String> array = new ArrayList<>();
-        ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
+        final ArrayList<String> array = new ArrayList<>();
+        final ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
         for (ClusterControls target : this.mClusterControls) {
-            // Validate against min frequency limit
+            // Validate against the opposite frequency limit, using the value a preceding queued
+            // mirror operation has already committed rather than the (possibly stale) preference.
             try {
-                String minFreqStr = target.minFrequency.getValue();
-                if (minFreqStr != null && !minFreqStr.equals(NO_DATA_FOUND)) {
-                    int minFreq = Integer.parseInt(minFreqStr);
-                    int maxFreq = Integer.parseInt(value);
-                    if (maxFreq < minFreq) {
-                        Log.e("Aero", "Max frequency " + value + " is lower than min frequency " + minFreqStr + " for cluster " + target.index);
-                        continue;
+                String oppositeStr = isMax ? getPendingMinFrequency(target) : getPendingMaxFrequency(target);
+                if (oppositeStr != null && !oppositeStr.equals(NO_DATA_FOUND)) {
+                    int opposite = Integer.parseInt(oppositeStr);
+                    int requested = Integer.parseInt(value);
+                    if (isMax ? requested < opposite : requested > opposite) {
+                        if (isMax) {
+                            Log.e("Aero", "Max frequency " + value + " is lower than min frequency " + oppositeStr + " for cluster " + target.index + "; rolling back to last committed state");
+                        } else {
+                            Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + oppositeStr + " for cluster " + target.index + "; rolling back to last committed state");
+                        }
+                        rollbackFrequencyPreferences(isMax, lifecycleGeneration);
+                        return;
                     }
                 }
             } catch (NumberFormatException e) {
-                Log.e("Aero", "Invalid frequency format", e);
-                continue;
+                Log.e("Aero", "Invalid frequency format; rolling back to last committed state", e);
+                rollbackFrequencyPreferences(isMax, lifecycleGeneration);
+                return;
             }
 
             eligibleClusters.add(target);
+            String sysfsSuffix = isMax ? FilePath.CPU_MAX_FREQ : FilePath.CPU_MIN_FREQ;
             for (Integer cpu : target.cluster.getMembers()) {
                 array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + sysfsSuffix);
             }
         }
 
         if (array.isEmpty()) {
-            Log.e("Aero", "No valid clusters to apply max frequency");
+            Log.e("Aero", "No valid clusters to apply " + (isMax ? "max" : "min") + " frequency; rolling back to last committed state");
+            rollbackFrequencyPreferences(isMax, lifecycleGeneration);
             return;
         }
 
         String[] commands = array.toArray(new String[0]);
         if (AeroActivity.shell.setRootInfo(commands)) {
-            for (ClusterControls target : eligibleClusters) {
-                target.maxFrequency.setSummary(AeroActivity.shell.toMHz(value));
-                if (target != source) {
-                    target.maxFrequency.setValue(value);
-                }
-            }
-        }
-    }
+            // Mark this request sequence as committed
+            committedGeneration.set(requestSequence);
 
-    private void applyMinFrequencyToAllClusters(ClusterControls source, String value) {
-        // Build intersection of supported frequencies across all clusters
-        HashSet<String> supportedFreqs = null;
-        for (ClusterControls controls : this.mClusterControls) {
-            CharSequence[] entries = controls.minFrequency.getEntryValues();
-            if (entries != null) {
-                HashSet<String> clusterFreqs = new HashSet<>();
-                for (CharSequence entry : entries) {
-                    clusterFreqs.add(entry.toString());
-                }
-                if (supportedFreqs == null) {
-                    supportedFreqs = clusterFreqs;
-                } else {
-                    supportedFreqs.retainAll(clusterFreqs);
-                }
-            }
-        }
-
-        // Validate the requested frequency is in the intersection
-        if (supportedFreqs == null || !supportedFreqs.contains(value)) {
-            Log.e("Aero", "Min frequency " + value + " not supported by all clusters");
-            return;
-        }
-
-        ArrayList<String> array = new ArrayList<>();
-        ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
-        for (ClusterControls target : this.mClusterControls) {
-            // Validate against max frequency limit
-            try {
-                String maxFreqStr = target.maxFrequency.getValue();
-                if (maxFreqStr != null && !maxFreqStr.equals(NO_DATA_FOUND)) {
-                    int maxFreq = Integer.parseInt(maxFreqStr);
-                    int minFreq = Integer.parseInt(value);
-                    if (minFreq > maxFreq) {
-                        Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + maxFreqStr + " for cluster " + target.index);
-                        continue;
+            synchronized (mPreferenceLock) {
+                for (ClusterControls target : eligibleClusters) {
+                    if (isMax) {
+                        target.pendingMaxFrequency = value;
+                    } else {
+                        target.pendingMinFrequency = value;
                     }
                 }
-            } catch (NumberFormatException e) {
-                Log.e("Aero", "Invalid frequency format", e);
-                continue;
             }
-
-            eligibleClusters.add(target);
-            for (Integer cpu : target.cluster.getMembers()) {
-                array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
-            }
-        }
-
-        if (array.isEmpty()) {
-            Log.e("Aero", "No valid clusters to apply min frequency");
-            return;
-        }
-
-        String[] commands = array.toArray(new String[0]);
-        if (AeroActivity.shell.setRootInfo(commands)) {
-            for (ClusterControls target : eligibleClusters) {
-                target.minFrequency.setSummary(AeroActivity.shell.toMHz(value));
-                if (target != source) {
-                    target.minFrequency.setValue(value);
+            AeroActivity.mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                        return;
+                    }
+                    if (requestSequence != committedGeneration.get()) {
+                        return;
+                    }
+                    synchronized (mPreferenceLock) {
+                        for (ClusterControls target : eligibleClusters) {
+                            CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
+                            pref.setSummary(AeroActivity.shell.toMHz(value));
+                            pref.setValue(value);
+                        }
+                    }
                 }
-            }
+            });
+        } else {
+            Log.e("Aero", "Failed to apply " + (isMax ? "max" : "min") + " frequency to all clusters; rolling back to last committed state");
+            rollbackFrequencyPreferences(isMax, lifecycleGeneration);
         }
     }
 
-    private void applyGovernorToAllClusters(final ClusterControls source, final String value) {
+    private boolean applyGovernorToAllClusters(final ClusterControls source, final String value) {
         // Build intersection of supported governors across all clusters
         HashSet<String> supportedGovs = null;
-        for (ClusterControls controls : this.mClusterControls) {
-            CharSequence[] entries = controls.governor.getEntryValues();
-            if (entries != null) {
+        synchronized (mPreferenceLock) {
+            for (ClusterControls controls : this.mClusterControls) {
+                CharSequence[] entries = controls.governor.getEntryValues();
+                if (entries == null) {
+                    Log.e("Aero", "Cluster " + controls.index + " has no governor capability entries; rejecting apply-all request");
+                    return false;
+                }
                 HashSet<String> clusterGovs = new HashSet<>();
                 for (CharSequence entry : entries) {
                     clusterGovs.add(entry.toString());
@@ -625,10 +720,12 @@ public class CPUFragment extends PlaceHolderFragment {
         // Validate the requested governor is in the intersection
         if (supportedGovs == null || !supportedGovs.contains(value)) {
             Log.e("Aero", "Governor " + value + " not supported by all clusters");
-            return;
+            return false;
         }
 
-        new Thread(new Runnable() {
+        final int requestGeneration = mGovernorMirrorGeneration.incrementAndGet();
+        final int lifecycleGeneration = mLifecycleGeneration.get();
+        mMirrorExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 for (ClusterControls target : CPUFragment.this.mClusterControls) {
@@ -638,11 +735,13 @@ public class CPUFragment extends PlaceHolderFragment {
                 // Poll for governor change completion on all clusters
                 final String[] capturedGovernors = new String[CPUFragment.this.mClusterControls.size()];
                 boolean allComplete = false;
+                boolean interrupted = false;
                 for (int i = 0; i < 10 && !allComplete; i++) {
                     try {
                         Thread.sleep(50L);
                     } catch (InterruptedException e) {
                         Log.e("Aero", "Governor polling interrupted", e);
+                        interrupted = true;
                         break;
                     }
                     allComplete = true;
@@ -657,23 +756,33 @@ public class CPUFragment extends PlaceHolderFragment {
                     }
                 }
 
+                if (!allComplete) {
+                    Log.e("Aero", "Governor mirror to all clusters did not complete (" + (interrupted ? "interrupted" : "timed out") + "); preserving current UI state");
+                    return;
+                }
+
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
-                            ClusterControls target = CPUFragment.this.mClusterControls.get(j);
-                            String currentGovernor = capturedGovernors[j];
-                            if (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) {
+                        if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        if (requestGeneration != mGovernorMirrorGeneration.get()) {
+                            return;
+                        }
+                        synchronized (mPreferenceLock) {
+                            for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
+                                ClusterControls target = CPUFragment.this.mClusterControls.get(j);
+                                String currentGovernor = capturedGovernors[j];
                                 target.governor.setSummary(currentGovernor);
-                                if (target != source) {
-                                    target.governor.setValue(currentGovernor);
-                                }
+                                target.governor.setValue(currentGovernor);
                             }
                         }
                     }
                 });
             }
-        }).start();
+        });
+        return false;
     }
 
     @Override // android.app.Fragment
@@ -758,6 +867,15 @@ public class CPUFragment extends PlaceHolderFragment {
         this.mVisible = true;
     }
 
+    @Override // android.app.Fragment
+    public void onDestroy() {
+        // Invalidate any mirror-request UI callback already posted to the main thread before the
+        // fragment is torn down, then stop accepting and interrupt any in-flight mirror work.
+        this.mLifecycleGeneration.incrementAndGet();
+        this.mMirrorExecutor.shutdownNow();
+        super.onDestroy();
+    }
+
     /** Writes the governor only to the CPUs belonging to a single cluster. */
     public void setGovernor(String s, List<Integer> members) {
         ArrayList<String> array = new ArrayList<>();
@@ -770,35 +888,45 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     public void updateMinFreq() {
-        for (ClusterControls controls : this.mClusterControls) {
-            int representativeCpu = controls.cluster.getRepresentativeCpu();
-            String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
-            controls.minFrequency.setEntries(AeroActivity.shell.getInfoArray(availablePath, 1, 0));
-            controls.minFrequency.setEntryValues(AeroActivity.shell.getInfoArray(availablePath, 0, 0));
-            String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ;
-            try {
-                controls.minFrequency.setValue(AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0]);
-                controls.minFrequency.setSummary(AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0]);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                controls.minFrequency.setValue(NO_DATA_FOUND);
-                controls.minFrequency.setSummary(NO_DATA_FOUND);
+        synchronized (mPreferenceLock) {
+            for (ClusterControls controls : this.mClusterControls) {
+                int representativeCpu = controls.cluster.getRepresentativeCpu();
+                String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
+                controls.minFrequency.setEntries(AeroActivity.shell.getInfoArray(availablePath, 1, 0));
+                controls.minFrequency.setEntryValues(AeroActivity.shell.getInfoArray(availablePath, 0, 0));
+                String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ;
+                try {
+                    String currentValue = AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0];
+                    controls.minFrequency.setValue(currentValue);
+                    controls.minFrequency.setSummary(AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0]);
+                    controls.pendingMinFrequency = currentValue;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    controls.minFrequency.setValue(NO_DATA_FOUND);
+                    controls.minFrequency.setSummary(NO_DATA_FOUND);
+                    controls.pendingMinFrequency = null;
+                }
             }
         }
     }
 
     public void updateMaxFreq() {
-        for (ClusterControls controls : this.mClusterControls) {
-            int representativeCpu = controls.cluster.getRepresentativeCpu();
-            String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
-            controls.maxFrequency.setEntries(AeroActivity.shell.getInfoArray(availablePath, 1, 0));
-            controls.maxFrequency.setEntryValues(AeroActivity.shell.getInfoArray(availablePath, 0, 0));
-            String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ;
-            try {
-                controls.maxFrequency.setValue(AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0]);
-                controls.maxFrequency.setSummary(AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0]);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                controls.maxFrequency.setValue(NO_DATA_FOUND);
-                controls.maxFrequency.setSummary(NO_DATA_FOUND);
+        synchronized (mPreferenceLock) {
+            for (ClusterControls controls : this.mClusterControls) {
+                int representativeCpu = controls.cluster.getRepresentativeCpu();
+                String availablePath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
+                controls.maxFrequency.setEntries(AeroActivity.shell.getInfoArray(availablePath, 1, 0));
+                controls.maxFrequency.setEntryValues(AeroActivity.shell.getInfoArray(availablePath, 0, 0));
+                String currentPath = FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ;
+                try {
+                    String currentValue = AeroActivity.shell.getInfoArray(currentPath, 0, 0)[0];
+                    controls.maxFrequency.setValue(currentValue);
+                    controls.maxFrequency.setSummary(AeroActivity.shell.getInfoArray(currentPath, 1, 0)[0]);
+                    controls.pendingMaxFrequency = currentValue;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    controls.maxFrequency.setValue(NO_DATA_FOUND);
+                    controls.maxFrequency.setSummary(NO_DATA_FOUND);
+                    controls.pendingMaxFrequency = null;
+                }
             }
         }
     }
