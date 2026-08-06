@@ -395,7 +395,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     return false;
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
+                    return CPUFragment.this.applyMinFrequencyToAllClusters(controls, a);
                 } else {
                     ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
@@ -420,7 +420,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     CPUFragment.this.root.removePreference(CPUFragment.this.PrefCat);
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
-                    return CPUFragment.this.applyMaxFrequencyToAllClusters(controls, a);
+                    return CPUFragment.this.applyGovernorToAllClusters(controls, a);
                 } else {
                     new Thread(new Runnable() {
                         @Override
@@ -474,10 +474,12 @@ public class CPUFragment extends PlaceHolderFragment {
 
     private boolean applyMaxFrequencyToAllClusters(ClusterControls source, String value) {
         applyFrequencyToAllClusters(source, value, true);
+        return false;
     }
 
-    private void applyMinFrequencyToAllClusters(ClusterControls source, String value) {
+    private boolean applyMinFrequencyToAllClusters(ClusterControls source, String value) {
         applyFrequencyToAllClusters(source, value, false);
+        return false;
     }
 
     /**
@@ -557,9 +559,7 @@ public class CPUFragment extends PlaceHolderFragment {
                             for (ClusterControls target : eligibleClusters) {
                                 CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
                                 pref.setSummary(AeroActivity.shell.toMHz(value));
-                                if (target != source) {
-                                    pref.setValue(value);
-                                }
+                                pref.setValue(value);
                             }
                         }
                     });
@@ -568,7 +568,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }).start();
     }
 
-    private void applyGovernorToAllClusters(final ClusterControls source, final String value) {
+    private boolean applyGovernorToAllClusters(final ClusterControls source, final String value) {
         // Build intersection of supported governors across all clusters
         HashSet<String> supportedGovs = null;
         for (ClusterControls controls : this.mClusterControls) {
@@ -589,7 +589,7 @@ public class CPUFragment extends PlaceHolderFragment {
         // Validate the requested governor is in the intersection
         if (supportedGovs == null || !supportedGovs.contains(value)) {
             Log.e("Aero", "Governor " + value + " not supported by all clusters");
-            return;
+            return false;
         }
 
         new Thread(new Runnable() {
@@ -629,15 +629,14 @@ public class CPUFragment extends PlaceHolderFragment {
                             String currentGovernor = capturedGovernors[j];
                             if (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) {
                                 target.governor.setSummary(currentGovernor);
-                                if (target != source) {
-                                    target.governor.setValue(currentGovernor);
-                                }
+                                target.governor.setValue(currentGovernor);
                             }
                         }
                     }
                 });
             }
         }).start();
+        return false;
     }
 
     @Override // android.app.Fragment
