@@ -527,12 +527,12 @@ public class CPUFragment extends PlaceHolderFragment {
                         } else {
                             Log.e("Aero", "Min frequency " + value + " is higher than max frequency " + oppositeStr + " for cluster " + target.index);
                         }
-                        continue;
+                        return;
                     }
                 }
             } catch (NumberFormatException e) {
                 Log.e("Aero", "Invalid frequency format", e);
-                continue;
+                return;
             }
 
             eligibleClusters.add(target);
