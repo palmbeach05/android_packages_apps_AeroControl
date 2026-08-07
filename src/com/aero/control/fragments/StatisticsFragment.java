@@ -333,19 +333,17 @@ public class StatisticsFragment extends Fragment {
             Iterator<Long> it = this.cpuTime.iterator();
             while (it.hasNext()) {
                 long g = it.next().longValue();
-                String frequency = acceptedEntries.get(i2).isDeepsleep ? "DeepSleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
+                String frequency = acceptedEntries.get(i2).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
                 String time_in_state = convertTime(g);
                 int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
                 this.cpuPercentage.add(Long.valueOf(percentage));
-                if (g != 0) {
-                    PieSlice slice = new PieSlice();
-                    cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + percentage + "%", i2));
-                    slice.setValue(10.0f);
-                    slice.setGoalValue(percentage);
-                    slice.setColor(StatisticAdapter.getColorForIndex(i2));
-                    this.pg.setThickness(30);
-                    this.pg.addSlice(slice);
-                }
+                PieSlice slice = new PieSlice();
+                cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + percentage + "%", i2));
+                slice.setValue(10.0f);
+                slice.setGoalValue(percentage);
+                slice.setColor(StatisticAdapter.getColorForIndex(i2));
+                this.pg.setThickness(30);
+                this.pg.addSlice(slice);
                 i2++;
             }
         } else {
@@ -353,6 +351,9 @@ public class StatisticsFragment extends Fragment {
             for (int i = 0; i < acceptedEntries.size(); i++) {
                 this.cpuPercentage.add(0L);
             }
+        }
+        if (!acceptedEntries.isEmpty()) {
+            cpuGraphValues.add(new GraphEntry("Uptime " + convertTime((long) this.mCompleteTime) + " 100%", acceptedEntries.size()));
         }
         if (acceptedEntries.isEmpty()) {
             this.statisticView = (ListView) this.root.findViewById(R.id.statisticListView);
@@ -417,6 +418,10 @@ public class StatisticsFragment extends Fragment {
             this.txtPercentage = (TextView) this.root.findViewById(R.id.statisticPercentage);
             if (tmp[1].contains("MHz")) {
                 tmp[0] = tmp[0] + " MHz";
+                tmp[1] = tmp[2];
+                tmp[2] = tmp[3];
+            } else if ("Deep".equals(tmp[0]) && "Sleep".equals(tmp[1])) {
+                tmp[0] = tmp[0] + " " + tmp[1];
                 tmp[1] = tmp[2];
                 tmp[2] = tmp[3];
             }
@@ -680,7 +685,7 @@ public class StatisticsFragment extends Fragment {
                         convertedFreq = convertedFreq + "\t\t";
                     }
                     if (isDeepsleep[j]) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deep Sleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     } else if (j == length - 1) {
                         loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     } else {
