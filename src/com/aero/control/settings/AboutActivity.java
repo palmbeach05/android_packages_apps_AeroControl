@@ -5,17 +5,23 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
+import com.aero.control.navItems.NavigationDrawerHelper;
+import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
 
 public class AboutActivity extends Activity {
 
@@ -25,8 +31,19 @@ public class AboutActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setTitle(R.string.about);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(false);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+
+        DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) {
+            @Override
+            public boolean isLayoutRtl() {
+                return false;
+            }
+        };
+        upIndicator.setProgress(1.0f);
+        NavigationDrawerHelper.setActionBarUpIndicator(this, upIndicator);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);
@@ -52,7 +69,9 @@ public class AboutActivity extends Activity {
             }
         });
 
-        findViewById(R.id.about_github).setOnClickListener(new View.OnClickListener() {
+        Button githubButton = (Button) findViewById(R.id.about_github);
+        tintGithubIcon(githubButton);
+        githubButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openExternalUri("https://github.com/Blechd0se/android_packages_apps_AeroControl");
@@ -72,6 +91,21 @@ public class AboutActivity extends Activity {
                 openExternalUri("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=46VQEKBETN36U");
             }
         });
+    }
+
+    private void tintGithubIcon(Button githubButton) {
+        Drawable[] compoundDrawables = githubButton.getCompoundDrawables();
+        Drawable icon = compoundDrawables[0];
+        if (icon == null) {
+            return;
+        }
+        TypedArray typedArray = obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
+        int tintColor = typedArray.getColor(0, 0);
+        typedArray.recycle();
+
+        icon = icon.mutate();
+        icon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
+        githubButton.setCompoundDrawablesWithIntrinsicBounds(icon, compoundDrawables[1], compoundDrawables[2], compoundDrawables[3]);
     }
 
     private void openExternalUri(String uriString) {
@@ -112,7 +146,6 @@ public class AboutActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             return true;
         }
         return super.onOptionsItemSelected(item);
