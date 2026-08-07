@@ -250,6 +250,7 @@ public final class AeroActivity extends Activity {
         if (intent != null && intent.getBooleanExtra(EXTRA_OPEN_NAVIGATION_DRAWER, false)) {
             intent.removeExtra(EXTRA_OPEN_NAVIGATION_DRAWER);
             if (this.mDrawerLayout != null) {
+                this.mDrawerToggle.syncState();
                 this.mDrawerLayout.openDrawer(GravityCompat.START);
             }
         }
