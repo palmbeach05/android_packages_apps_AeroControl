@@ -170,7 +170,6 @@ public final class AeroActivity extends Activity {
         };
         this.mDrawerLayout.setDrawerListener(this.mDrawerToggle);
         this.mDrawerToggle.syncState();
-        handleOpenNavigationDrawerRequest();
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
@@ -198,13 +197,13 @@ public final class AeroActivity extends Activity {
             Bundle extras = getIntent().getExtras();
             if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
                 selectItemByResourceId(R.string.slider_app_monitor);
-                return;
             }
-            return;
+        } else {
+            if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
+                selectItemByResourceId(R.string.slider_app_monitor);
+            }
         }
-        if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
-            selectItemByResourceId(R.string.slider_app_monitor);
-        }
+        handleOpenNavigationDrawerRequest();
     }
 
     private final class ItemAdapter extends ArrayAdapter<NavBarItems.PreferenceItem> {
