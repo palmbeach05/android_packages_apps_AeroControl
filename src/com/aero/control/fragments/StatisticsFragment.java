@@ -349,7 +349,17 @@ public class StatisticsFragment extends Fragment {
         } else {
             Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage and pie calculations.");
             for (int i = 0; i < acceptedEntries.size(); i++) {
+                long g = this.cpuTime.get(i).longValue();
+                String frequency = acceptedEntries.get(i).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i].toString());
+                String time_in_state = convertTime(g);
                 this.cpuPercentage.add(0L);
+                PieSlice slice = new PieSlice();
+                cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + 0 + "%", i));
+                slice.setValue(10.0f);
+                slice.setGoalValue(0);
+                slice.setColor(StatisticAdapter.getColorForIndex(i));
+                this.pg.setThickness(30);
+                this.pg.addSlice(slice);
             }
         }
         if (acceptedEntries.isEmpty()) {
