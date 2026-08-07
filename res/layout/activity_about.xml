@@ -8,6 +8,14 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <ImageView
+            android:id="@+id/about_version_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@null"
+            android:src="@drawable/version"/>
+
         <TextView
             android:id="@+id/about_app_name"
             android:textSize="22sp"
@@ -22,14 +30,6 @@
             android:layout_marginTop="4dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/about_version_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"
-                android:contentDescription="@null"
-                android:src="@drawable/version"/>
 
             <TextView
                 android:id="@+id/about_version_label"
