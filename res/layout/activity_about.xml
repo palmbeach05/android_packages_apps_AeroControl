@@ -38,7 +38,7 @@
         
                 <TextView
                     android:id="@+id/about_version_label"
-                    android:text="`@string/about_version_label`"
+                    android:text="@string/about_version_label"
                     android:textSize="14sp"
                     android:gravity="right"
                     android:layout_width="60dp"
@@ -59,7 +59,7 @@
         
                 <TextView
                     android:id="@+id/about_build_label"
-                    android:text="`@string/about_build_label`"
+                    android:text="@string/about_build_label"
                     android:textSize="14sp"
                     android:gravity="right"
                     android:layout_width="60dp"
