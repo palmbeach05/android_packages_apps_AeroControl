@@ -77,7 +77,7 @@ public class PrefsActivity extends PreferenceActivity {
                 return false;
             }
         };
-        upIndicator.setProgress(0.0f);
+        upIndicator.setProgress(1.0f);
         setActionBarUpIndicator(upIndicator);
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {

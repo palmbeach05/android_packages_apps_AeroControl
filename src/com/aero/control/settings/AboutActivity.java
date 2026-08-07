@@ -1,28 +1,21 @@
 package com.aero.control.settings;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
-import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
-
-import java.lang.reflect.Method;
 
 public class AboutActivity extends Activity {
 
@@ -34,15 +27,6 @@ public class AboutActivity extends Activity {
         setTitle(R.string.about);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(false);
-
-        DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) {
-            @Override
-            public boolean isLayoutRtl() {
-                return false;
-            }
-        };
-        upIndicator.setProgress(1.0f);
-        setActionBarUpIndicator(upIndicator);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);
@@ -88,35 +72,6 @@ public class AboutActivity extends Activity {
                 openExternalUri("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=46VQEKBETN36U");
             }
         });
-    }
-
-    private void setActionBarUpIndicator(Drawable indicator) {
-        try {
-            Method setHomeAsUpIndicator = ActionBar.class.getDeclaredMethod(
-                    "setHomeAsUpIndicator", Drawable.class);
-            setHomeAsUpIndicator.invoke(getActionBar(), indicator);
-            return;
-        } catch (Exception e) {
-            Log.e(AboutActivity.class.getName(), "setActionBarUpIndicator error", e);
-        }
-
-        View home = findViewById(android.R.id.home);
-        if (home == null) {
-            return;
-        }
-
-        ViewGroup parent = (ViewGroup) home.getParent();
-        if (parent.getChildCount() != 2) {
-            return;
-        }
-
-        View first = parent.getChildAt(0);
-        View second = parent.getChildAt(1);
-        View up = first.getId() == android.R.id.home ? second : first;
-
-        if (up instanceof ImageView) {
-            ((ImageView) up).setImageDrawable(indicator);
-        }
     }
 
     private void openExternalUri(String uriString) {
