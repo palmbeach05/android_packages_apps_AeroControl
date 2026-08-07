@@ -26,6 +26,7 @@ public class AboutActivity extends Activity {
         setContentView(R.layout.activity_about);
         setTitle(R.string.about);
         getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayShowHomeEnabled(false);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);
