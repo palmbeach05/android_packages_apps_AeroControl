@@ -28,7 +28,8 @@ public class AboutActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
-        TextView versionText = (TextView) findViewById(R.id.about_version);
+        TextView versionValue = (TextView) findViewById(R.id.about_version_value);
+        TextView buildValue = (TextView) findViewById(R.id.about_build_value);
         TextView aboutText = (TextView) findViewById(R.id.about_text);
 
         appName.setText(R.string.app_name);
@@ -38,7 +39,8 @@ public class AboutActivity extends Activity {
             PackageManager pm = getPackageManager();
             String versionName = pm.getPackageInfo(getPackageName(), 0).versionName;
             int versionCode = pm.getPackageInfo(getPackageName(), 0).versionCode;
-            versionText.setText(getString(R.string.about_version, versionName, versionCode));
+            versionValue.setText(versionName);
+            buildValue.setText(String.valueOf(versionCode));
         } catch (PackageManager.NameNotFoundException e) {
         }
 
