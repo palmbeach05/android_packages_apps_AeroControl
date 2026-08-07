@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 /* JADX INFO: loaded from: classes.dex */
 public class StatisticsFragment extends Fragment {
     public static final String FILENAME_STATISTICS = "firstrun_statistics";
+    private static final String STATE_SELECTED_CLUSTER_MEMBERS = "selected_cluster_members";
     public ArrayList<Long> cpuResetTime;
     public String[] data;
     public ShowcaseView mShowCase;
@@ -67,7 +68,7 @@ public class StatisticsFragment extends Fragment {
         setHasOptionsMenu(true);
         this.root = (ViewGroup) inflater.inflate(R.layout.statistics, (ViewGroup) null);
         this.mClusters = this.mClusterHelper.getClusters();
-        this.mSelectedCluster = this.mClusters.isEmpty() ? null : this.mClusters.get(0);
+        this.mSelectedCluster = restoreSelectedCluster(savedInstanceState);
         clearUI();
         loadResetState();
         loadUI(true);
@@ -140,6 +141,36 @@ public class StatisticsFragment extends Fragment {
         if (output == 0) {
             DrawFirstStart(R.string.showcase_statistics_fragment, R.string.showcase_statistics_fragment_summary);
         }
+    }
+
+    @Override // android.app.Fragment
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (this.mSelectedCluster != null) {
+            int[] memberIds = new int[this.mSelectedCluster.getMembers().size()];
+            for (int i = 0; i < memberIds.length; i++) {
+                memberIds[i] = this.mSelectedCluster.getMembers().get(i);
+            }
+            outState.putIntArray(STATE_SELECTED_CLUSTER_MEMBERS, memberIds);
+        }
+    }
+
+    private CpuClusterHelper.Cluster restoreSelectedCluster(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            int[] savedMemberIds = savedInstanceState.getIntArray(STATE_SELECTED_CLUSTER_MEMBERS);
+            if (savedMemberIds != null && savedMemberIds.length > 0) {
+                List<Integer> savedMembers = new ArrayList<>();
+                for (int id : savedMemberIds) {
+                    savedMembers.add(id);
+                }
+                for (CpuClusterHelper.Cluster cluster : this.mClusters) {
+                    if (cluster.getMembers().equals(savedMembers)) {
+                        return cluster;
+                    }
+                }
+            }
+        }
+        return this.mClusters.isEmpty() ? null : this.mClusters.get(0);
     }
 
     public void DrawFirstStart(int header, int content) {
