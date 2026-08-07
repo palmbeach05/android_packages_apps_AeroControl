@@ -37,7 +37,7 @@ public class AboutActivity extends Activity {
             PackageManager pm = getPackageManager();
             String versionName = pm.getPackageInfo(getPackageName(), 0).versionName;
             int versionCode = pm.getPackageInfo(getPackageName(), 0).versionCode;
-            versionText.setText("Version: " + versionName + "\nBuild: " + versionCode);
+            versionText.setText(getString(R.string.about_version, versionName, versionCode));
         } catch (PackageManager.NameNotFoundException e) {
         }
 
