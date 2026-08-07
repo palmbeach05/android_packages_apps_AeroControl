@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -24,6 +25,8 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
+import com.aero.control.navItems.NavBarItems;
+import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppServiceHelper;
 import java.io.File;
 
@@ -41,6 +44,7 @@ public class PrefsActivity extends PreferenceActivity {
     private CheckBoxPreference mPer_app_check;
     private CheckBoxPreference mRebootChecker;
     private int mIconTintColor;
+    private NavigationDrawerHelper mNavigationDrawer;
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
@@ -56,15 +60,30 @@ public class PrefsActivity extends PreferenceActivity {
             this.mActionBar = getActionBar();
             this.mActionBar.setIcon(android.R.color.transparent);
         } else {
-            getActionBar().setIcon(R.drawable.app_icon_actionbar);
+            getActionBar().setIcon(R.drawable.ic_action_settings);
             this.mActionBarTitleID = getResources().getIdentifier("action_bar_title", "id", "android");
             this.mActionBarTitle = (TextView) findViewById(this.mActionBarTitleID);
             this.mActionBarTitle.setTypeface(font);
         }
+        setContentView(R.layout.activity_prefs);
         addPreferencesFromResource(R.layout.preference);
         setTitle(R.string.aero_settings);
         context = this;
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
+            @Override
+            public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
+                PrefsActivity.this.mNavigationDrawer.closeDrawers();
+                if (item.content == R.string.aero_settings) {
+                    return;
+                }
+                Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
+                intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                PrefsActivity.this.startActivity(intent);
+                PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+        });
+        this.mNavigationDrawer.syncState();
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
             this.mRebootChecker = (CheckBoxPreference) root.findPreference("reboot_checker");
@@ -276,17 +295,22 @@ public class PrefsActivity extends PreferenceActivity {
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        this.mNavigationDrawer.syncState();
+    }
+
+    @Override // android.preference.PreferenceActivity, android.app.Activity
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        this.mNavigationDrawer.onConfigurationChanged(newConfig);
+    }
+
+    @Override // android.preference.PreferenceActivity, android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                finish();
-                Intent i = new Intent(context, (Class<?>) AeroActivity.class);
-                context.startActivity(i);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

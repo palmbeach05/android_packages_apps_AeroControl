@@ -4,7 +4,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
@@ -12,21 +11,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,34 +38,31 @@ import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.navItems.NavBarItems;
+import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppService;
 import com.aero.control.service.PerAppServiceHelper;
 import com.aero.control.settings.PrefsActivity;
 import com.aero.control.testsuite.TestSuiteFragment;
-import com.ikimuhendis.ldrawer.ActionBarDrawerToggle;
-import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
-import java.util.ArrayList;
 import java.util.Stack;
 
 /* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
+    public static final String EXTRA_SELECTED_ITEM_ID = "com.aero.control.SELECTED_ITEM_ID";
     public Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
     private ActionBar mActionBar;
     public TextView mActionBarTitle;
     public int mActionBarTitleID;
-    private ItemAdapter mAdapter;
     private AeroFragment mAeroFragment;
     private AppMonitorFragment mAppStatisticsFragment;
     private CPUFragment mCPUFragement;
     private DefyPartsFragment mDefyPartsFragment;
-    private DrawerArrowDrawable mDrawerArrow;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
+    private NavigationDrawerHelper mNavigationDrawer;
     private GPUFragment mGPUFragement;
     private MemoryFragment mMemoryFragment;
     private MiscSettingsFragment mMiscSettingsFragment;
@@ -141,34 +130,17 @@ public final class AeroActivity extends Activity {
             params.setMargins(0, ((int) TypedValue.applyDimension(1, 24.0f, getResources().getDisplayMetrics())) + actionBarHeight, 0, 0);
             this.mDrawerLayout.setLayoutParams(params);
         }
-        this.mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        NavBarItems content = new NavBarItems(this);
-        this.mAdapter = new ItemAdapter(this, R.layout.activity_main, content.ITEMS);
-        this.mDrawerList.setAdapter((ListAdapter) this.mAdapter);
-        this.mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
-        this.mDrawerArrow = new DrawerArrowDrawable(this) { // from class: com.aero.control.AeroActivity.1
-            @Override // com.ikimuhendis.ldrawer.DrawerArrowDrawable
-            public boolean isLayoutRtl() {
-                return false;
+        this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
+            @Override
+            public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
+                if (item.content == R.string.aero_settings) {
+                    AeroActivity.this.launchSettings();
+                    return;
+                }
+                AeroActivity.this.selectItem(position);
             }
-        };
-        this.mDrawerToggle = new ActionBarDrawerToggle(this, this.mDrawerLayout, this.mDrawerArrow, R.string.drawer_open, R.string.drawer_close) { // from class: com.aero.control.AeroActivity.2
-            @Override // com.ikimuhendis.ldrawer.ActionBarDrawerToggle, android.support.v4.app.ActionBarDrawerToggle, android.support.v4.widget.DrawerLayout.DrawerListener
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                AeroActivity.this.invalidateOptionsMenu();
-            }
-
-            @Override // com.ikimuhendis.ldrawer.ActionBarDrawerToggle, android.support.v4.app.ActionBarDrawerToggle, android.support.v4.widget.DrawerLayout.DrawerListener
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                AeroActivity.this.invalidateOptionsMenu();
-            }
-        };
-        this.mDrawerLayout.setDrawerListener(this.mDrawerToggle);
-        this.mDrawerToggle.syncState();
+        });
+        this.mNavigationDrawer.syncState();
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
@@ -196,51 +168,31 @@ public final class AeroActivity extends Activity {
             Bundle extras = getIntent().getExtras();
             if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
                 selectItemByResourceId(R.string.slider_app_monitor);
-                return;
             }
-            return;
-        }
-        if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
-            selectItemByResourceId(R.string.slider_app_monitor);
-        }
-    }
-
-    private final class ItemAdapter extends ArrayAdapter<NavBarItems.PreferenceItem> {
-        private ArrayList<NavBarItems.PreferenceItem> items;
-
-        public ItemAdapter(Context context, int textViewResourceId, ArrayList<NavBarItems.PreferenceItem> objects) {
-            super(context, textViewResourceId, objects);
-            this.items = objects;
-        }
-
-        @Override // android.widget.ArrayAdapter, android.widget.Adapter
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View v = convertView;
-            if (v == null) {
-                LayoutInflater vi = AeroActivity.this.getLayoutInflater();
-                v = vi.inflate(R.layout.adapter_item, (ViewGroup) null);
+        } else {
+            if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
+                selectItemByResourceId(R.string.slider_app_monitor);
             }
-            NavBarItems.PreferenceItem item = this.items.get(position);
-            if (item != null) {
-                ImageView icon = (ImageView) v.findViewById(R.id.icon);
-                TextView text = (TextView) v.findViewById(R.id.text);
-                text.setTypeface(AeroActivity.font);
-                if (icon != null) {
-                    icon.setImageResource(item.drawable);
-                }
-                if (text != null) {
-                    text.setText(AeroActivity.this.getString(item.content));
-                    text.setTextColor(AeroActivity.this.getResources().getColorStateList(ThemeHelper.THEME_DARK.equals(AeroActivity.this.mCurrentTheme) ? R.drawable.textview_drawer_dark : R.drawable.textview_drawer));
-                }
-            }
-            return v;
         }
+        handleSelectedItemRequest();
     }
 
     @Override // android.app.Activity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        handleSelectedItemRequest();
+    }
+
+    private void handleSelectedItemRequest() {
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)) {
+            int selectedItemId = intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1);
+            intent.removeExtra(EXTRA_SELECTED_ITEM_ID);
+            if (selectedItemId != -1) {
+                selectItemByResourceId(selectedItemId);
+            }
+        }
     }
 
     @Override // android.app.Activity
@@ -259,25 +211,10 @@ public final class AeroActivity extends Activity {
 
     @Override // android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (this.mDrawerToggle.onOptionsItemSelected(item)) {
+        if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private class DrawerItemClickListener implements AdapterView.OnItemClickListener {
-        private DrawerItemClickListener() {
-        }
-
-        @Override // android.widget.AdapterView.OnItemClickListener
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            NavBarItems.PreferenceItem item = AeroActivity.this.mAdapter.getItem(position);
-            if (item != null && item.content == R.string.aero_settings) {
-                AeroActivity.this.launchSettings();
-                return;
-            }
-            AeroActivity.this.selectItem(position);
-        }
     }
 
     private void launchSettings() {
@@ -426,7 +363,7 @@ public final class AeroActivity extends Activity {
         Fragment oldFragment = null;
 
         // Get the item's resource ID to identify it, rather than using position
-        NavBarItems.PreferenceItem item = this.mAdapter.getItem(position);
+        NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(position);
         if (item == null) {
             return;
         }
@@ -526,8 +463,8 @@ public final class AeroActivity extends Activity {
 
     private void selectItemByResourceId(int resourceId, boolean replaceFragment) {
         // Find the position of the item with this resource ID in the current adapter
-        for (int i = 0; i < this.mAdapter.getCount(); i++) {
-            NavBarItems.PreferenceItem item = this.mAdapter.getItem(i);
+        for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
+            NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(i);
             if (item != null && item.content == resourceId) {
                 selectItem(i, replaceFragment);
                 return;
@@ -569,7 +506,7 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        this.mDrawerToggle.syncState();
+        this.mNavigationDrawer.syncState();
     }
 
     @Override // android.app.Activity
@@ -577,7 +514,7 @@ public final class AeroActivity extends Activity {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_ITEM, this.mSelectedItemPosition);
         // Save stable navigation item resource ID for robust restoration
-        NavBarItems.PreferenceItem item = this.mAdapter.getItem(this.mSelectedItemPosition);
+        NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(this.mSelectedItemPosition);
         if (item != null) {
             outState.putInt(SELECTED_ITEM_ID, item.content);
         }
@@ -594,7 +531,7 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity, android.content.ComponentCallbacks
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        this.mDrawerToggle.onConfigurationChanged(newConfig);
+        this.mNavigationDrawer.onConfigurationChanged(newConfig);
     }
 
     @Override // android.app.Activity
