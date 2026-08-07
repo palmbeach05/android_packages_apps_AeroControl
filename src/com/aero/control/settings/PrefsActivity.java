@@ -19,13 +19,18 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.service.PerAppServiceHelper;
+import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
 import java.io.File;
+import java.lang.reflect.Method;
 
 /* JADX INFO: loaded from: classes.dex */
 public class PrefsActivity extends PreferenceActivity {
@@ -66,6 +71,14 @@ public class PrefsActivity extends PreferenceActivity {
         setTitle(R.string.aero_settings);
         context = this;
         getActionBar().setDisplayHomeAsUpEnabled(true);
+        DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) { // from class: com.aero.control.settings.PrefsActivity.1
+            @Override // com.ikimuhendis.ldrawer.DrawerArrowDrawable
+            public boolean isLayoutRtl() {
+                return false;
+            }
+        };
+        upIndicator.setProgress(1.0f);
+        setActionBarUpIndicator(upIndicator);
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
             this.mRebootChecker = (CheckBoxPreference) root.findPreference("reboot_checker");
@@ -273,6 +286,35 @@ public class PrefsActivity extends PreferenceActivity {
         CharSequence[] entries = preference.getEntries();
         if (index >= 0 && index < entries.length) {
             preference.setSummary(entries[index]);
+        }
+    }
+
+    private void setActionBarUpIndicator(Drawable indicator) {
+        try {
+            Method setHomeAsUpIndicator = ActionBar.class.getDeclaredMethod(
+                    "setHomeAsUpIndicator", Drawable.class);
+            setHomeAsUpIndicator.invoke(getActionBar(), indicator);
+            return;
+        } catch (Exception e) {
+            Log.e(PrefsActivity.class.getName(), "setActionBarUpIndicator error", e);
+        }
+
+        View home = findViewById(android.R.id.home);
+        if (home == null) {
+            return;
+        }
+
+        ViewGroup parent = (ViewGroup) home.getParent();
+        if (parent.getChildCount() != 2) {
+            return;
+        }
+
+        View first = parent.getChildAt(0);
+        View second = parent.getChildAt(1);
+        View up = first.getId() == android.R.id.home ? second : first;
+
+        if (up instanceof ImageView) {
+            ((ImageView) up).setImageDrawable(indicator);
         }
     }
 
