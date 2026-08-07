@@ -51,7 +51,7 @@ public class StatisticAdapter extends ArrayAdapter<statisticInit> {
             i2++;
         }
         for (int j = 0; j < this.mTags.length; j++) {
-            int colorIndex = data[j].acceptedIndex >= 0 ? data[j].acceptedIndex : j;
+            int colorIndex = (data[j] != null && data[j].acceptedIndex >= 0) ? data[j].acceptedIndex : j;
             this.mTags[j] = getColorForIndex(colorIndex);
         }
     }
