@@ -18,6 +18,7 @@ public final class FilePath {
     public static final String CPU_MAX_RATE = "/proc/overclock/max_rate";
     public static final String CPU_MIN_FREQ = "/cpufreq/scaling_min_freq";
     public static final String CPU_TEMP_FILE = "/sys/devices/virtual/thermal/thermal_zone1/temp";
+    public static final String CPU_TIME_IN_STATE_SUFFIX = "/cpufreq/stats/time_in_state";
     public static final String CPU_VSEL = "/proc/overclock/mpu_opps";
     public static final String CPU_VSEL_MAX = "/proc/overclock/max_vsel";
     public static final String CURRENT_GOV_AVAILABLE = "/cpufreq/scaling_governor";
@@ -54,7 +55,6 @@ public final class FilePath {
     public static final String RANDOM_WRITE_WAKEUP = "/proc/sys/kernel/random/write_wakeup_threshold";
     public static final String READAHEAD_PARAMETER = "/sys/block/mmcblk0/queue/read_ahead_kb";
     public static final String SWEEP2WAKE = "/sys/android_touch/sweep2wake";
-    public static final String TIME_IN_STATE_PATH = "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state";
     public static final String VOLTAGE_PATH = "/sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table";
     public static final String WRITEBACK = "/sys/devices/virtual/misc/writeback/writeback_enabled";
     public static final String sharedPrefsPath = "/data/data/com.aero.control/shared_prefs/";
