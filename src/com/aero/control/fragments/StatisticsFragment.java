@@ -347,13 +347,23 @@ public class StatisticsFragment extends Fragment {
                 i2++;
             }
         } else {
-            Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage and pie calculations.");
-            for (int i = 0; i < acceptedEntries.size(); i++) {
+            Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage calculations.");
+            int i2 = 0;
+            Iterator<Long> it = this.cpuTime.iterator();
+            while (it.hasNext()) {
+                long g = it.next().longValue();
+                String frequency = acceptedEntries.get(i2).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
+                String time_in_state = convertTime(g);
                 this.cpuPercentage.add(0L);
+                PieSlice slice = new PieSlice();
+                cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " 0%", i2));
+                slice.setValue(10.0f);
+                slice.setGoalValue(0);
+                slice.setColor(StatisticAdapter.getColorForIndex(i2));
+                this.pg.setThickness(30);
+                this.pg.addSlice(slice);
+                i2++;
             }
-        }
-        if (!acceptedEntries.isEmpty()) {
-            cpuGraphValues.add(new GraphEntry("Uptime " + convertTime((long) this.mCompleteTime) + " 100%", acceptedEntries.size()));
         }
         if (acceptedEntries.isEmpty()) {
             this.statisticView = (ListView) this.root.findViewById(R.id.statisticListView);
@@ -677,20 +687,18 @@ public class StatisticsFragment extends Fragment {
         public final void loadSingleEntry(Long[] freq, Long[] time, Long[] percentage, boolean[] isDeepsleep) {
             int length = freq.length;
             for (int j = 0; j < length; j++) {
-                if (time[j].longValue() != 0) {
-                    String convertedFreq = AeroActivity.shell.toMHz(freq[j] + "");
-                    if (convertedFreq.length() < 8) {
-                        convertedFreq = convertedFreq + "\t";
-                    } else if (convertedFreq.length() < 7) {
-                        convertedFreq = convertedFreq + "\t\t";
-                    }
-                    if (isDeepsleep[j]) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deep Sleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
-                    } else if (j == length - 1) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
-                    } else {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
-                    }
+                String convertedFreq = AeroActivity.shell.toMHz(freq[j] + "");
+                if (convertedFreq.length() < 8) {
+                    convertedFreq = convertedFreq + "\t";
+                } else if (convertedFreq.length() < 7) {
+                    convertedFreq = convertedFreq + "\t\t";
+                }
+                if (isDeepsleep[j]) {
+                    loadArray(StatisticsFragment.this.mResult, new statisticInit("Deep Sleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
+                } else if (j == length - 1) {
+                    loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
+                } else {
+                    loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                 }
             }
         }
