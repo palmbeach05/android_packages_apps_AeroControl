@@ -307,7 +307,7 @@ public class StatisticsFragment extends Fragment {
         this.mIndex = 0;
     }
 
-    public final void handleOnClick(ArrayList<GraphEntry> list) {
+    private final void handleOnClick(ArrayList<GraphEntry> list) {
         for (GraphEntry ignored : list) {
             int arrayLength = list.size();
             if (this.mIndex == arrayLength) {
