@@ -44,7 +44,7 @@ public class AboutActivity extends Activity {
         findViewById(R.id.about_xda).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri uri = Uri.parse("http://forum.xda-developers.com/showthread.php?t=2483827");
+                Uri uri = Uri.parse("https://forum.xda-developers.com/showthread.php?t=2483827");
                 startActivity(new Intent("android.intent.action.VIEW", uri));
             }
         });
