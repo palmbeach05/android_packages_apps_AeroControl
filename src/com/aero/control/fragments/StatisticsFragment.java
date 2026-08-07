@@ -49,7 +49,6 @@ public class StatisticsFragment extends Fragment {
     public TextView txtPercentage;
     public TextView txtTime;
     public int mIndex = 0;
-    private int mColorIndex = 0;
     private double mCompleteTime = 0.0d;
     public ArrayList<Long> cpuTime = new ArrayList<>();
     public ArrayList<Long> cpuOverallTime = new ArrayList<>();
@@ -185,7 +184,7 @@ public class StatisticsFragment extends Fragment {
     }
 
     private void loadUI(boolean firstView) {
-        final ArrayList<String> cpuGraphValues = new ArrayList<>();
+        final ArrayList<GraphEntry> cpuGraphValues = new ArrayList<>();
         getCpuData();
         ArrayList<ParsedEntry> acceptedEntries = parseAcceptedEntries(this.data);
         this.mCompleteTime = 0.0d;
@@ -234,7 +233,6 @@ public class StatisticsFragment extends Fragment {
         Long[] cpuFreqArray = (Long[]) this.cpuFreq.toArray(new Long[0]);
         if (this.mCompleteTime > 0.0d) {
             int i2 = 0;
-            int j2 = 0;
             Iterator<Long> it = this.cpuTime.iterator();
             while (it.hasNext()) {
                 long g = it.next().longValue();
@@ -244,13 +242,12 @@ public class StatisticsFragment extends Fragment {
                 this.cpuPercentage.add(Long.valueOf(percentage));
                 if (g != 0 && percentage >= 1) {
                     PieSlice slice = new PieSlice();
-                    cpuGraphValues.add(frequency + " " + time_in_state + " " + percentage + "%");
+                    cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + percentage + "%", i2));
                     slice.setValue(10.0f);
                     slice.setGoalValue(percentage);
-                    slice.setColor(StatisticAdapter.getColorForIndex(j2));
+                    slice.setColor(StatisticAdapter.getColorForIndex(i2));
                     this.pg.setThickness(30);
                     this.pg.addSlice(slice);
-                    j2++;
                 }
                 i2++;
             }
@@ -307,19 +304,17 @@ public class StatisticsFragment extends Fragment {
         if (this.statisticView != null) {
             this.mResult = new statisticInit[0];
         }
-        this.mColorIndex = 0;
         this.mIndex = 0;
     }
 
-    public final void handleOnClick(ArrayList<String> list) {
-        for (String str : list) {
+    private final void handleOnClick(ArrayList<GraphEntry> list) {
+        for (GraphEntry ignored : list) {
             int arrayLength = list.size();
             if (this.mIndex == arrayLength) {
                 this.mIndex = 0;
-                this.mColorIndex = 0;
             }
-            String currentRow = list.get(this.mIndex);
-            String[] tmp = currentRow.split(" ");
+            GraphEntry currentEntry = list.get(this.mIndex);
+            String[] tmp = currentEntry.displayText.split(" ");
             this.txtFreq = (TextView) this.root.findViewById(R.id.statisticFreq);
             this.txtTime = (TextView) this.root.findViewById(R.id.statisticTime);
             this.txtPercentage = (TextView) this.root.findViewById(R.id.statisticPercentage);
@@ -334,12 +329,11 @@ public class StatisticsFragment extends Fragment {
             this.txtFreq.setTypeface(FilePath.kitkatFont);
             this.txtTime.setTypeface(FilePath.kitkatFont);
             this.txtPercentage.setTypeface(FilePath.kitkatFont);
-            int color = StatisticAdapter.getColorForIndex(this.mColorIndex);
+            int color = StatisticAdapter.getColorForIndex(currentEntry.acceptedIndex);
             this.txtFreq.setTextColor(color);
             this.txtTime.setTextColor(color);
             this.txtPercentage.setTextColor(color);
         }
-        this.mColorIndex++;
         this.mIndex++;
     }
 
@@ -376,6 +370,22 @@ public class StatisticsFragment extends Fragment {
             return this.data.length;
         }
         return 0;
+    }
+
+    /**
+     * A visible pie slice's center-display text paired with the accepted-entry index it was
+     * derived from, so the pie center and the pie slice always resolve to the same color via
+     * {@link StatisticAdapter#getColorForIndex(int)} even when earlier accepted entries were
+     * excluded from the pie graph.
+     */
+    private static final class GraphEntry {
+        private final String displayText;
+        private final int acceptedIndex;
+
+        private GraphEntry(String displayText, int acceptedIndex) {
+            this.displayText = displayText;
+            this.acceptedIndex = acceptedIndex;
+        }
     }
 
     /**
@@ -543,11 +553,11 @@ public class StatisticsFragment extends Fragment {
                         convertedFreq = convertedFreq + "\t\t";
                     }
                     if (isDeepsleep[j]) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     } else if (j == length - 1) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     } else {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     }
                 }
             }
