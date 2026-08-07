@@ -1,30 +1,29 @@
 package com.aero.control.settings;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
-import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
-
-import java.lang.reflect.Method;
+import com.aero.control.navItems.NavBarItems;
+import com.aero.control.navItems.NavigationDrawerHelper;
 
 public class AboutActivity extends Activity {
+
+    private NavigationDrawerHelper mNavigationDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,17 +31,25 @@ public class AboutActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setTitle(R.string.about);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(false);
 
-        DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) {
+        this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
             @Override
-            public boolean isLayoutRtl() {
-                return false;
+            public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
+                AboutActivity.this.mNavigationDrawer.closeDrawers();
+                Intent intent;
+                if (item.content == R.string.aero_settings) {
+                    intent = new Intent(AboutActivity.this, (Class<?>) PrefsActivity.class);
+                } else {
+                    intent = new Intent(AboutActivity.this, (Class<?>) AeroActivity.class);
+                    intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
+                }
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                AboutActivity.this.startActivity(intent);
+                AboutActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
-        };
-        upIndicator.setProgress(1.0f);
-        setActionBarUpIndicator(upIndicator);
+        });
+        this.mNavigationDrawer.syncState();
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);
@@ -90,35 +97,6 @@ public class AboutActivity extends Activity {
         });
     }
 
-    private void setActionBarUpIndicator(Drawable indicator) {
-        try {
-            Method setHomeAsUpIndicator = ActionBar.class.getDeclaredMethod(
-                    "setHomeAsUpIndicator", Drawable.class);
-            setHomeAsUpIndicator.invoke(getActionBar(), indicator);
-            return;
-        } catch (Exception e) {
-            Log.e(AboutActivity.class.getName(), "setActionBarUpIndicator error", e);
-        }
-
-        View home = findViewById(android.R.id.home);
-        if (home == null) {
-            return;
-        }
-
-        ViewGroup parent = (ViewGroup) home.getParent();
-        if (parent.getChildCount() != 2) {
-            return;
-        }
-
-        View first = parent.getChildAt(0);
-        View second = parent.getChildAt(1);
-        View up = first.getId() == android.R.id.home ? second : first;
-
-        if (up instanceof ImageView) {
-            ((ImageView) up).setImageDrawable(indicator);
-        }
-    }
-
     private void openExternalUri(String uriString) {
         Uri uri = Uri.parse(uriString);
         Intent intent = new Intent("android.intent.action.VIEW", uri);
@@ -154,10 +132,20 @@ public class AboutActivity extends Activity {
     }
 
     @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        this.mNavigationDrawer.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        this.mNavigationDrawer.onConfigurationChanged(newConfig);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
             return true;
         }
         return super.onOptionsItemSelected(item);

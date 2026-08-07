@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -19,22 +20,18 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
+import com.aero.control.navItems.NavBarItems;
+import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppServiceHelper;
-import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
 import java.io.File;
-import java.lang.reflect.Method;
 
 /* JADX INFO: loaded from: classes.dex */
 public class PrefsActivity extends PreferenceActivity {
-    private static final String EXTRA_OPEN_NAVIGATION_DRAWER = "com.aero.control.OPEN_NAVIGATION_DRAWER";
     static Context context;
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private ActionBar mActionBar;
@@ -47,6 +44,7 @@ public class PrefsActivity extends PreferenceActivity {
     private CheckBoxPreference mPer_app_check;
     private CheckBoxPreference mRebootChecker;
     private int mIconTintColor;
+    private NavigationDrawerHelper mNavigationDrawer;
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
@@ -67,18 +65,25 @@ public class PrefsActivity extends PreferenceActivity {
             this.mActionBarTitle = (TextView) findViewById(this.mActionBarTitleID);
             this.mActionBarTitle.setTypeface(font);
         }
+        setContentView(R.layout.activity_prefs);
         addPreferencesFromResource(R.layout.preference);
         setTitle(R.string.aero_settings);
         context = this;
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) { // from class: com.aero.control.settings.PrefsActivity.1
-            @Override // com.ikimuhendis.ldrawer.DrawerArrowDrawable
-            public boolean isLayoutRtl() {
-                return false;
+        this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
+            @Override
+            public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
+                PrefsActivity.this.mNavigationDrawer.closeDrawers();
+                if (item.content == R.string.aero_settings) {
+                    return;
+                }
+                Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
+                intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                PrefsActivity.this.startActivity(intent);
+                PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
-        };
-        upIndicator.setProgress(0.0f);
-        setActionBarUpIndicator(upIndicator);
+        });
+        this.mNavigationDrawer.syncState();
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
             this.mRebootChecker = (CheckBoxPreference) root.findPreference("reboot_checker");
@@ -289,47 +294,23 @@ public class PrefsActivity extends PreferenceActivity {
         }
     }
 
-    private void setActionBarUpIndicator(Drawable indicator) {
-        try {
-            Method setHomeAsUpIndicator = ActionBar.class.getDeclaredMethod(
-                    "setHomeAsUpIndicator", Drawable.class);
-            setHomeAsUpIndicator.invoke(getActionBar(), indicator);
-            return;
-        } catch (Exception e) {
-            Log.e(PrefsActivity.class.getName(), "setActionBarUpIndicator error", e);
-        }
+    @Override // android.preference.PreferenceActivity, android.app.Activity
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        this.mNavigationDrawer.syncState();
+    }
 
-        View home = findViewById(android.R.id.home);
-        if (home == null) {
-            return;
-        }
-
-        ViewGroup parent = (ViewGroup) home.getParent();
-        if (parent.getChildCount() != 2) {
-            return;
-        }
-
-        View first = parent.getChildAt(0);
-        View second = parent.getChildAt(1);
-        View up = first.getId() == android.R.id.home ? second : first;
-
-        if (up instanceof ImageView) {
-            ((ImageView) up).setImageDrawable(indicator);
-        }
+    @Override // android.preference.PreferenceActivity, android.app.Activity
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        this.mNavigationDrawer.onConfigurationChanged(newConfig);
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                Intent i = new Intent(this, (Class<?>) AeroActivity.class);
-                i.putExtra(EXTRA_OPEN_NAVIGATION_DRAWER, true);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(i);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }
