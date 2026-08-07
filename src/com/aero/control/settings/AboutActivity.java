@@ -1,28 +1,27 @@
 package com.aero.control.settings;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
+import com.aero.control.navItems.NavigationDrawerHelper;
 import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
-
-import java.lang.reflect.Method;
 
 public class AboutActivity extends Activity {
 
@@ -32,8 +31,10 @@ public class AboutActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setTitle(R.string.about);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(false);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
 
         DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) {
             @Override
@@ -42,7 +43,7 @@ public class AboutActivity extends Activity {
             }
         };
         upIndicator.setProgress(1.0f);
-        setActionBarUpIndicator(upIndicator);
+        NavigationDrawerHelper.setActionBarUpIndicator(this, upIndicator);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);
@@ -68,7 +69,9 @@ public class AboutActivity extends Activity {
             }
         });
 
-        findViewById(R.id.about_github).setOnClickListener(new View.OnClickListener() {
+        Button githubButton = (Button) findViewById(R.id.about_github);
+        tintGithubIcon(githubButton);
+        githubButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openExternalUri("https://github.com/Blechd0se/android_packages_apps_AeroControl");
@@ -90,33 +93,19 @@ public class AboutActivity extends Activity {
         });
     }
 
-    private void setActionBarUpIndicator(Drawable indicator) {
-        try {
-            Method setHomeAsUpIndicator = ActionBar.class.getDeclaredMethod(
-                    "setHomeAsUpIndicator", Drawable.class);
-            setHomeAsUpIndicator.invoke(getActionBar(), indicator);
-            return;
-        } catch (Exception e) {
-            Log.e(AboutActivity.class.getName(), "setActionBarUpIndicator error", e);
-        }
-
-        View home = findViewById(android.R.id.home);
-        if (home == null) {
+    private void tintGithubIcon(Button githubButton) {
+        Drawable[] compoundDrawables = githubButton.getCompoundDrawables();
+        Drawable icon = compoundDrawables[0];
+        if (icon == null) {
             return;
         }
+        TypedArray typedArray = obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
+        int tintColor = typedArray.getColor(0, 0);
+        typedArray.recycle();
 
-        ViewGroup parent = (ViewGroup) home.getParent();
-        if (parent.getChildCount() != 2) {
-            return;
-        }
-
-        View first = parent.getChildAt(0);
-        View second = parent.getChildAt(1);
-        View up = first.getId() == android.R.id.home ? second : first;
-
-        if (up instanceof ImageView) {
-            ((ImageView) up).setImageDrawable(indicator);
-        }
+        icon = icon.mutate();
+        icon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
+        githubButton.setCompoundDrawablesWithIntrinsicBounds(icon, compoundDrawables[1], compoundDrawables[2], compoundDrawables[3]);
     }
 
     private void openExternalUri(String uriString) {
@@ -157,7 +146,6 @@ public class AboutActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             return true;
         }
         return super.onOptionsItemSelected(item);
