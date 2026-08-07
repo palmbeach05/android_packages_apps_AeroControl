@@ -29,6 +29,7 @@ import java.io.File;
 
 /* JADX INFO: loaded from: classes.dex */
 public class PrefsActivity extends PreferenceActivity {
+    private static final String EXTRA_OPEN_NAVIGATION_DRAWER = "com.aero.control.OPEN_NAVIGATION_DRAWER";
     static Context context;
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private ActionBar mActionBar;
@@ -279,10 +280,10 @@ public class PrefsActivity extends PreferenceActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                onBackPressed();
-                finish();
-                Intent i = new Intent(context, (Class<?>) AeroActivity.class);
-                context.startActivity(i);
+                Intent i = new Intent(this, (Class<?>) AeroActivity.class);
+                i.putExtra(EXTRA_OPEN_NAVIGATION_DRAWER, true);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 return true;
             default:

@@ -59,6 +59,7 @@ import java.util.Stack;
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
+    private static final String EXTRA_OPEN_NAVIGATION_DRAWER = "com.aero.control.OPEN_NAVIGATION_DRAWER";
     public Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
@@ -169,6 +170,7 @@ public final class AeroActivity extends Activity {
         };
         this.mDrawerLayout.setDrawerListener(this.mDrawerToggle);
         this.mDrawerToggle.syncState();
+        handleOpenNavigationDrawerRequest();
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
@@ -241,6 +243,17 @@ public final class AeroActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        handleOpenNavigationDrawerRequest();
+    }
+
+    private void handleOpenNavigationDrawerRequest() {
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra(EXTRA_OPEN_NAVIGATION_DRAWER, false)) {
+            intent.removeExtra(EXTRA_OPEN_NAVIGATION_DRAWER);
+            if (this.mDrawerLayout != null) {
+                this.mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        }
     }
 
     @Override // android.app.Activity
