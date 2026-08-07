@@ -222,6 +222,8 @@
     <string name="pref_reset_tutorials">Reset Tutorials</string>
     <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
     <string name="pref_reset_tutorials_title">There is no way back</string>
+    <string name="pref_screen_rotation">Screen Rotation</string>
+    <string name="pref_screen_rotation_summary">Allow screen rotation when device is rotated</string>
     <string name="pref_set_on_boot">Set at Boot</string>
     <string name="pref_set_on_boot_summary">Caution: This will set your settings at boot.</string>
     <string name="pref_set_on_boot_settings">set-on-boot settings.</string>

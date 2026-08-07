@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.navItems.NavBarItems;
@@ -43,6 +44,7 @@ public class PrefsActivity extends PreferenceActivity {
     private CheckBoxPreference mPerAppToasts;
     private CheckBoxPreference mPer_app_check;
     private CheckBoxPreference mRebootChecker;
+    private CheckBoxPreference mScreenRotation;
     private int mIconTintColor;
     private NavigationDrawerHelper mNavigationDrawer;
 
@@ -53,9 +55,7 @@ public class PrefsActivity extends PreferenceActivity {
         TypedValue tintTypedValue = new TypedValue();
         getTheme().resolveAttribute(R.attr.aeroIconTint, tintTypedValue, true);
         this.mIconTintColor = tintTypedValue.data;
-        if (getResources().getBoolean(R.bool.portrait_only)) {
-            setRequestedOrientation(1);
-        }
+        OrientationHelper.applyOrientation(this);
         if (Build.VERSION.SDK_INT >= 21) {
             this.mActionBar = getActionBar();
             this.mActionBar.setIcon(android.R.color.transparent);
@@ -88,6 +88,9 @@ public class PrefsActivity extends PreferenceActivity {
         if (this.mRebootChecker == null) {
             this.mRebootChecker = (CheckBoxPreference) root.findPreference("reboot_checker");
         }
+        if (this.mScreenRotation == null) {
+            this.mScreenRotation = (CheckBoxPreference) root.findPreference("screen_rotation");
+        }
         if (this.mPer_app_check == null) {
             this.mPer_app_check = (CheckBoxPreference) root.findPreference("per_app_service");
         }
@@ -107,6 +110,8 @@ public class PrefsActivity extends PreferenceActivity {
         Preference about = root.findPreference("about");
         setTintedIcon(this.mRebootChecker, R.drawable.ic_action_phone);
         setCheckedState(this.mRebootChecker);
+        setTintedIcon(this.mScreenRotation, R.drawable.ic_action_reload);
+        setCheckedState(this.mScreenRotation);
         setTintedIcon(this.mPer_app_check, R.drawable.ic_action_person);
         setTintedIcon(this.mPerAppMonitor, R.drawable.ic_action_appmonitor);
         setTintedIcon(this.mBootDelay, R.drawable.timer);
@@ -131,6 +136,14 @@ public class PrefsActivity extends PreferenceActivity {
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
                 PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
+                return false;
+            }
+        });
+        this.mScreenRotation.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override // android.preference.Preference.OnPreferenceClickListener
+            public boolean onPreferenceClick(Preference preference) {
+                PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
+                OrientationHelper.applyOrientation(PrefsActivity.this);
                 return false;
             }
         });
@@ -292,6 +305,12 @@ public class PrefsActivity extends PreferenceActivity {
         if (index >= 0 && index < entries.length) {
             preference.setSummary(entries[index]);
         }
+    }
+
+    @Override // android.preference.PreferenceActivity, android.app.Activity
+    protected void onResume() {
+        super.onResume();
+        OrientationHelper.applyOrientation(this);
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity

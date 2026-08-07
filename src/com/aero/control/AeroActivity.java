@@ -33,6 +33,7 @@ import com.aero.control.fragments.ProfileFragment;
 import com.aero.control.fragments.StatisticsFragment;
 import com.aero.control.fragments.UpdaterFragment;
 import com.aero.control.helpers.GenericHelper;
+import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
@@ -88,9 +89,7 @@ public final class AeroActivity extends Activity {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (getResources().getBoolean(R.bool.portrait_only)) {
-            setRequestedOrientation(1);
-        }
+        OrientationHelper.applyOrientation(this);
         mJobManager = JobManager.instance(this);
         int actionBarHeight = 0;
         if (getActionBar() != null) {
@@ -198,6 +197,7 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     protected void onResume() {
         super.onResume();
+        OrientationHelper.applyOrientation(this);
         if (!ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
             recreate();
             return;
