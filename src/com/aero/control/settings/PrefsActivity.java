@@ -89,7 +89,7 @@ public class PrefsActivity extends PreferenceActivity {
             this.mRebootChecker = (CheckBoxPreference) root.findPreference("reboot_checker");
         }
         if (this.mScreenRotation == null) {
-            this.mScreenRotation = (CheckBoxPreference) root.findPreference("screen_rotation");
+            this.mScreenRotation = (CheckBoxPreference) root.findPreference(OrientationHelper.PREF_KEY);
         }
         if (this.mPer_app_check == null) {
             this.mPer_app_check = (CheckBoxPreference) root.findPreference("per_app_service");
