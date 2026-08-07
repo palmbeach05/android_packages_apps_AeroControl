@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
+import com.aero.control.navItems.NavigationDrawerHelper;
+import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
 
 public class AboutActivity extends Activity {
 
@@ -29,6 +31,15 @@ public class AboutActivity extends Activity {
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+
+        DrawerArrowDrawable upIndicator = new DrawerArrowDrawable(this) {
+            @Override
+            public boolean isLayoutRtl() {
+                return false;
+            }
+        };
+        upIndicator.setProgress(1.0f);
+        NavigationDrawerHelper.setActionBarUpIndicator(this, upIndicator);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);

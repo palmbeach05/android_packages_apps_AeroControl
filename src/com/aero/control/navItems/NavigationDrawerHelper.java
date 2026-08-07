@@ -1,11 +1,14 @@
 package com.aero.control.navItems;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +25,7 @@ import com.aero.control.helpers.ThemeHelper;
 import com.ikimuhendis.ldrawer.ActionBarDrawerToggle;
 import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
@@ -83,6 +87,42 @@ public class NavigationDrawerHelper {
             }
         };
         this.mDrawerLayout.setDrawerListener(this.mDrawerToggle);
+    }
+
+    /**
+     * Installs the supplied indicator drawable as the action-bar up/home indicator.
+     * Uses reflection to call the hidden {@code ActionBar.setHomeAsUpIndicator(Drawable)}
+     * method when available, falling back to swapping the android.R.id.home ImageView's
+     * drawable directly on API 14, where that method does not exist. Does not require a
+     * {@link DrawerLayout}, so it can be used by activities without a navigation drawer.
+     */
+    public static void setActionBarUpIndicator(Activity activity, Drawable indicator) {
+        try {
+            Method setHomeAsUpIndicator = ActionBar.class.getDeclaredMethod(
+                    "setHomeAsUpIndicator", Drawable.class);
+            setHomeAsUpIndicator.invoke(activity.getActionBar(), indicator);
+            return;
+        } catch (Exception e) {
+            Log.e(NavigationDrawerHelper.class.getName(), "setActionBarUpIndicator error", e);
+        }
+
+        View home = activity.findViewById(android.R.id.home);
+        if (home == null) {
+            return;
+        }
+
+        ViewGroup parent = (ViewGroup) home.getParent();
+        if (parent.getChildCount() != 2) {
+            return;
+        }
+
+        View first = parent.getChildAt(0);
+        View second = parent.getChildAt(1);
+        View up = first.getId() == android.R.id.home ? second : first;
+
+        if (up instanceof ImageView) {
+            ((ImageView) up).setImageDrawable(indicator);
+        }
     }
 
     public void syncState() {
