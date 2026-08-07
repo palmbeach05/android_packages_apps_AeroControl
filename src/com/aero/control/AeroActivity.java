@@ -271,15 +271,6 @@ public final class AeroActivity extends Activity {
         if (this.mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        switch (item.getItemId()) {
-            case R.id.aero_settings /* 2131099748 */:
-                Intent trIntent = new Intent("android.intent.action.PREFS");
-                trIntent.setClass(this, PrefsActivity.class);
-                trIntent.setFlags(268435456);
-                startActivity(trIntent);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                break;
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -289,8 +280,24 @@ public final class AeroActivity extends Activity {
 
         @Override // android.widget.AdapterView.OnItemClickListener
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            NavBarItems.PreferenceItem item = AeroActivity.this.mAdapter.getItem(position);
+            if (item != null && item.content == R.string.aero_settings) {
+                AeroActivity.this.launchSettings();
+                return;
+            }
             AeroActivity.this.selectItem(position);
         }
+    }
+
+    private void launchSettings() {
+        if (this.mDrawerLayout != null) {
+            this.mDrawerLayout.closeDrawers();
+        }
+        Intent trIntent = new Intent("android.intent.action.PREFS");
+        trIntent.setClass(this, PrefsActivity.class);
+        trIntent.setFlags(268435456);
+        startActivity(trIntent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private boolean isServiceUp() {

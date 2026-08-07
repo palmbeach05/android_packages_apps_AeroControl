@@ -182,7 +182,8 @@
     <string name="app_theme_dark">Dark - Dark background with black action bar</string>
     <string name="app_theme_light">Light - Light Holo with blue accent</string>
     <string name="app_theme_red">Red - Light Holo with red accent</string>
-    <string name="pref_app_specific">App specific</string>
+    <string name="pref_category_application">Application</string>
+    <string name="pref_category_per_app_profiles">Per-App Profiles</string>
     <string name="pref_app_theme">App Theme</string>
     <string name="pref_app_theme_summary">Defines the default app theme.</string>
     <string name="pref_boot_delay">Boot Timer Delay</string>
@@ -197,7 +198,9 @@
     <string name="pref_per_app_service">Per-App Profile Service</string>
     <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
     <string name="pref_perapp_monitor">Per-App Monitor</string>
+    <string name="pref_perapp_monitor_summary">Enable or disable the AppMonitor.</string>
     <string name="pref_perapp_toasts">Per-App Toasts</string>
+    <string name="pref_perapp_toasts_summary">Enable or disable toast-notifications</string>
     <string name="pref_profile_change_name">Set another name</string>
     <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
     <string name="pref_profile_deleted">Deleted</string>

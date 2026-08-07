@@ -29,6 +29,7 @@ public class NavBarItems {
         addItem(new PreferenceItem(R.string.slider_profile, R.drawable.profile));
         addItem(new PreferenceItem(R.string.slider_app_monitor, R.drawable.appmonitor));
         addItem(new PreferenceItem(R.string.slider_test_suite_settings, R.drawable.dashboard));
+        addItem(new PreferenceItem(R.string.aero_settings, R.drawable.ic_action_settings_light));
     }
 
     public static class PreferenceItem {
