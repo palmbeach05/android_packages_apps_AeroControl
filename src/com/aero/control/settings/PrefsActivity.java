@@ -5,11 +5,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -20,14 +18,10 @@ import android.preference.PreferenceScreen;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
-import com.aero.control.helpers.Android.AboutDialog;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.service.PerAppServiceHelper;
@@ -92,10 +86,6 @@ public class PrefsActivity extends PreferenceActivity {
         }
         Preference resetTutorials = root.findPreference("reset_tutorials");
         Preference about = root.findPreference("about");
-        Preference version = root.findPreference("version");
-        Preference legal = root.findPreference("legal");
-        Preference xda = root.findPreference("xda_thread");
-        Preference github = root.findPreference("github_link");
         setTintedIcon(this.mRebootChecker, R.drawable.ic_action_phone);
         setCheckedState(this.mRebootChecker);
         setTintedIcon(this.mPer_app_check, R.drawable.ic_action_person);
@@ -111,40 +101,13 @@ public class PrefsActivity extends PreferenceActivity {
         setTintedIcon(resetTutorials, R.drawable.ic_action_warning);
         setCheckedState(this.mPer_app_check);
         setCheckedState(this.mPerAppMonitor);
-        version.setIcon(R.drawable.version);
-        xda.setIcon(R.drawable.xda);
-        setTintedIcon(github, R.drawable.github);
         if (AeroActivity.mJobManager != null) {
             this.mPerAppMonitor.setChecked(AeroActivity.mJobManager.getJobManagerState());
         }
         if (!this.mPer_app_check.isChecked()) {
             this.mPerAppMonitor.setEnabled(false);
         }
-        try {
-            version.setTitle("Version: " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
-            version.setSummary("Build: " + getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
-        } catch (PackageManager.NameNotFoundException e) {
-        }
         setTintedIcon(about, R.drawable.ic_action_about);
-        setTintedIcon(legal, R.drawable.ic_action_legal);
-        xda.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.3
-            @Override // android.preference.Preference.OnPreferenceClickListener
-            public boolean onPreferenceClick(Preference preference) {
-                Uri uri = Uri.parse("http://forum.xda-developers.com/showthread.php?t=2483827");
-                Intent intent = new Intent("android.intent.action.VIEW", uri);
-                PrefsActivity.this.startActivity(intent);
-                return true;
-            }
-        });
-        github.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.4
-            @Override // android.preference.Preference.OnPreferenceClickListener
-            public boolean onPreferenceClick(Preference preference) {
-                Uri uri = Uri.parse("https://github.com/Blechd0se/android_packages_apps_AeroControl");
-                Intent intent = new Intent("android.intent.action.VIEW", uri);
-                PrefsActivity.this.startActivity(intent);
-                return true;
-            }
-        });
         this.mRebootChecker.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.5
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
@@ -253,47 +216,8 @@ public class PrefsActivity extends PreferenceActivity {
         about.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.11
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                AboutDialog alertDialog = new AboutDialog();
-                LayoutInflater inflater = PrefsActivity.this.getLayoutInflater();
-                View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
-                TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
-                alertDialog.setContext(PrefsActivity.context);
-                alertDialog.setTitle(R.string.about);
-                Drawable beerIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.beer).mutate();
-                alertDialog.setIcon(beerIcon);
-                alertDialog.setView(layout);
-                alertDialog.setPayPalIcons(true);
-                alertDialog.setPositiveButton(R.string.donation_blechdose);
-                aboutText.setText(PrefsActivity.this.getText(R.string.about_dialog));
-                alertDialog.show(PrefsActivity.this.getFragmentManager(), "");
-                return true;
-            }
-        });
-        legal.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.12
-            @Override // android.preference.Preference.OnPreferenceClickListener
-            public boolean onPreferenceClick(Preference preference) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(PrefsActivity.context);
-                LayoutInflater inflater = PrefsActivity.this.getLayoutInflater();
-                View layout = inflater.inflate(R.layout.about_screen, (ViewGroup) null);
-                TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
-                builder.setTitle(R.string.legal);
-                Drawable emailIcon = PrefsActivity.this.getResources().getDrawable(R.drawable.email).mutate();
-                builder.setIcon(emailIcon);
-                aboutText.setText(PrefsActivity.this.getText(R.string.legal_dialog));
-                aboutText.setTextSize(13.0f);
-                builder.setView(layout).setPositiveButton(R.string.send_email, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.12.1
-                    @Override // android.content.DialogInterface.OnClickListener
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent emailIntent = new Intent("android.intent.action.SENDTO", Uri.fromParts("mailto", "alex.christ@hotmail.de", null));
-                        try {
-                            emailIntent.putExtra("android.intent.extra.SUBJECT", "[AeroControl] Got something for you (" + PrefsActivity.this.getPackageManager().getPackageInfo(PrefsActivity.this.getPackageName(), 0).versionName + ")");
-                        } catch (PackageManager.NameNotFoundException e2) {
-                            emailIntent.putExtra("android.intent.extra.SUBJECT", "[AeroControl] Got something for you");
-                        }
-                        PrefsActivity.this.startActivity(Intent.createChooser(emailIntent, PrefsActivity.this.getText(R.string.send_email)));
-                    }
-                });
-                builder.show();
+                Intent intent = new Intent(PrefsActivity.this, (Class<?>) AboutActivity.class);
+                PrefsActivity.this.startActivity(intent);
                 return true;
             }
         });
