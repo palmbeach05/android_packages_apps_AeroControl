@@ -24,52 +24,55 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="4dp"
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="4dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/about_version_label"
+            android:text="`@string/about_version_label`"
+            android:textSize="14sp"
+            android:gravity="right"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/about_version_value"
+            android:textSize="14sp"
+            android:layout_marginLeft="4dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/about_version_label"
-                android:text="@string/about_version_label"
-                android:textSize="14sp"
-                android:gravity="right"
-                android:layout_width="60dp"
-                android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/about_version_value"
-                android:textSize="14sp"
-                android:layout_marginLeft="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/about_build_label"
+            android:text="`@string/about_build_label`"
+            android:textSize="14sp"
+            android:gravity="right"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"/>
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal"
+        <TextView
+            android:id="@+id/about_build_value"
+            android:textSize="14sp"
+            android:layout_marginLeft="4dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/about_build_label"
-                android:text="@string/about_build_label"
-                android:textSize="14sp"
-                android:gravity="right"
-                android:layout_width="60dp"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                android:id="@+id/about_build_value"
-                android:textSize="14sp"
-                android:layout_marginLeft="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        </LinearLayout>
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+</LinearLayout>
 
         <TextView
             android:id="@+id/about_text"
