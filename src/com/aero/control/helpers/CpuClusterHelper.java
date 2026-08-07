@@ -1,0 +1,224 @@
+package com.aero.control.helpers;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * Detects the cpufreq clusters exposed by the kernel (e.g. big.LITTLE
+ * layouts) so callers can build one set of controls per cluster instead of
+ * assuming a fixed CPU 0-3 / CPU 4+ split.
+ */
+public class CpuClusterHelper {
+    private static final String RELATED_CPUS = "related_cpus";
+    private static final String AFFECTED_CPUS = "affected_cpus";
+
+    private List<Cluster> mClusters;
+
+    public List<Cluster> getClusters() {
+        if (mClusters == null) {
+            mClusters = Collections.unmodifiableList(detectClusters());
+        }
+        return mClusters;
+    }
+
+    private List<Cluster> detectClusters() {
+        List<Integer> cpuIds = enumerateCpuIds();
+        List<List<Integer>> seenMemberLists = new ArrayList<>();
+        List<Integer> coveredCpuIds = new ArrayList<>();
+        List<Cluster> clusters = new ArrayList<>();
+        for (int cpu : cpuIds) {
+            List<Integer> members = readTopology(cpu, cpuIds);
+            if (members != null && !members.isEmpty()
+                    && !seenMemberLists.contains(members)) {
+                seenMemberLists.add(members);
+                for (int member : members) {
+                    if (!coveredCpuIds.contains(member)) {
+                        coveredCpuIds.add(member);
+                    }
+                }
+                clusters.add(new Cluster(members));
+            }
+        }
+        for (int cpu : cpuIds) {
+            if (!coveredCpuIds.contains(cpu)) {
+                List<Integer> members = new ArrayList<>();
+                members.add(cpu);
+                clusters.add(new Cluster(members));
+            }
+        }
+        Collections.sort(clusters, new Comparator<Cluster>() {
+            @Override
+            public int compare(Cluster a, Cluster b) {
+                return a.getRepresentativeCpu() - b.getRepresentativeCpu();
+            }
+        });
+        return clusters;
+    }
+
+    private List<Integer> enumerateCpuIds() {
+        List<Integer> cpuIds = new ArrayList<>();
+        File cpuDir = new File(FilePath.CPU_BASE_PATH);
+        if (!cpuDir.exists() || !cpuDir.isDirectory()) {
+            // Fallback to JVM processor count if sysfs not available
+            int fallbackCount = Runtime.getRuntime().availableProcessors();
+            for (int i = 0; i < fallbackCount; i++) {
+                cpuIds.add(i);
+            }
+            return cpuIds;
+        }
+        File[] files = cpuDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                String name = file.getName();
+                if (name.startsWith("cpu") && name.length() > 3) {
+                    try {
+                        int cpuId = Integer.parseInt(name.substring(3));
+                        cpuIds.add(cpuId);
+                    } catch (NumberFormatException ignored) {
+                        // Not a cpu<N> directory, skip it
+                    }
+                }
+            }
+        }
+        if (cpuIds.isEmpty()) {
+            // Fallback if no cpu directories found
+            int fallbackCount = Runtime.getRuntime().availableProcessors();
+            for (int i = 0; i < fallbackCount; i++) {
+                cpuIds.add(i);
+            }
+        }
+        Collections.sort(cpuIds);
+        return cpuIds;
+    }
+
+    private List<Integer> readTopology(int cpu, List<Integer> validCpuIds) {
+        String basePath = FilePath.CPU_BASE_PATH + cpu + "/cpufreq/";
+        List<Integer> members = parseCpuList(readFirstLine(basePath + RELATED_CPUS), validCpuIds);
+        if (members == null || !members.contains(cpu)) {
+            members = parseCpuList(readFirstLine(basePath + AFFECTED_CPUS), validCpuIds);
+            if (members != null && !members.contains(cpu)) {
+                members = null;
+            }
+        }
+        return members;
+    }
+
+    private String readFirstLine(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            return null;
+        }
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            return reader.readLine();
+        } catch (IOException e) {
+            return null;
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    private List<Integer> parseCpuList(String raw, List<Integer> validCpuIds) {
+        if (raw == null || raw.trim().length() == 0) {
+            return null;
+        }
+        String[] tokens = raw.trim().split("[,\\s]+");
+        List<Integer> result = new ArrayList<>();
+        try {
+            for (String token : tokens) {
+                if (token.length() == 0) {
+                    continue;
+                }
+                if (token.indexOf('-') >= 0) {
+                    String[] range = token.split("-", -1);
+                    if (range.length != 2 || range[0].trim().length() == 0
+                            || range[1].trim().length() == 0) {
+                        return null;
+                    }
+                    int start = Integer.parseInt(range[0].trim());
+                    int end = Integer.parseInt(range[1].trim());
+                    if (start < 0 || end < 0 || start > end) {
+                        return null;
+                    }
+                    int rangeSize = end - start + 1;
+                    if (rangeSize > validCpuIds.size()) {
+                        return null;
+                    }
+                    for (int cpu = start;; cpu++) {
+                        if (!validCpuIds.contains(cpu)) {
+                            return null;
+                        }
+                        result.add(cpu);
+                        if (cpu == end) {
+                            break;
+                        }
+                    }
+                } else {
+                    int cpu = Integer.parseInt(token.trim());
+                    if (cpu < 0 || !validCpuIds.contains(cpu)) {
+                        return null;
+                    }
+                    result.add(cpu);
+                }
+            }
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        if (result.isEmpty()) {
+            return null;
+        }
+        Collections.sort(result);
+        return result;
+    }
+
+    /** A group of CPUs that share the same cpufreq policy. */
+    public static final class Cluster {
+        private final List<Integer> mMembers;
+
+        private Cluster(List<Integer> members) {
+            mMembers = Collections.unmodifiableList(new ArrayList<>(members));
+        }
+
+        public List<Integer> getMembers() {
+            return mMembers;
+        }
+
+        public int getRepresentativeCpu() {
+            return mMembers.get(0);
+        }
+
+        /** Human readable member range, e.g. "0" or "0-3". */
+        public String getMemberRangeLabel() {
+            StringBuilder label = new StringBuilder();
+            for (int i = 0; i < mMembers.size();) {
+                int start = mMembers.get(i);
+                int end = start;
+                while (i + 1 < mMembers.size()
+                        && mMembers.get(i + 1) == end + 1) {
+                    end = mMembers.get(++i);
+                }
+                if (label.length() > 0) {
+                    label.append(',');
+                }
+                label.append(start);
+                if (start != end) {
+                    label.append('-').append(end);
+                }
+                i++;
+            }
+            return label.toString();
+        }
+    }
+}

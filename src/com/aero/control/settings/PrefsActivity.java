@@ -111,8 +111,8 @@ public class PrefsActivity extends PreferenceActivity {
         setTintedIcon(resetTutorials, R.drawable.ic_action_warning);
         setCheckedState(this.mPer_app_check);
         setCheckedState(this.mPerAppMonitor);
-        setTintedIcon(version, R.drawable.rocket);
-        setTintedIcon(xda, R.drawable.xda);
+        version.setIcon(R.drawable.version);
+        xda.setIcon(R.drawable.xda);
         setTintedIcon(github, R.drawable.github);
         if (AeroActivity.mJobManager != null) {
             this.mPerAppMonitor.setChecked(AeroActivity.mJobManager.getJobManagerState());

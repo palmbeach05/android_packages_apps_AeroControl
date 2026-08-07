@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.aero.control.R;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /* JADX INFO: loaded from: classes.dex */
@@ -16,6 +17,10 @@ public class settingsHelper {
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";
     private static final String PREF_CPU_BIG_MAX_FREQ = "big_max_frequency";
     private static final String PREF_CPU_BIG_MIN_FREQ = "big_min_frequency";
+    private static final String PREF_CLUSTER_KEY_PREFIX = "cpu_cluster_";
+    private static final String PREF_CLUSTER_MAX_FREQ_SUFFIX = "_max_frequency";
+    private static final String PREF_CLUSTER_MIN_FREQ_SUFFIX = "_min_frequency";
+    private static final String PREF_CLUSTER_GOVERNOR_SUFFIX = "_governor";
     private static final String PREF_CPU_COMMANDS = "cpu_commands";
     private static final String PREF_CPU_MAX_FREQ = "max_frequency";
     private static final String PREF_CPU_MIN_FREQ = "min_frequency";
@@ -40,7 +45,6 @@ public class settingsHelper {
     private String mHotplugPath;
     private SharedPreferences mMiscSettings;
     private SharedPreferences prefs;
-    private static final int mNumCpus = Runtime.getRuntime().availableProcessors();
     private static final shellHelper shell = shellHelper.instance();
     private static final shellHelper shellPara = shellHelper.forceInstance();
     private static final ArrayList<String> defaultProfile = new ArrayList<>();
@@ -100,11 +104,12 @@ public class settingsHelper {
                 }
             });
         }
-        String cpu_max = this.prefs.getString(PREF_CPU_MAX_FREQ, null);
-        String cpu_min = this.prefs.getString(PREF_CPU_MIN_FREQ, null);
-        String cpu_big_max = this.prefs.getString(PREF_CPU_BIG_MAX_FREQ, null);
-        String cpu_big_min = this.prefs.getString(PREF_CPU_BIG_MIN_FREQ, null);
-        String cpu_gov = this.prefs.getString(PREF_CURRENT_GOV_AVAILABLE, null);
+        String legacyMaxFreq = this.prefs.getString(PREF_CPU_MAX_FREQ, null);
+        String legacyMinFreq = this.prefs.getString(PREF_CPU_MIN_FREQ, null);
+        String legacyBigMaxFreq = this.prefs.getString(PREF_CPU_BIG_MAX_FREQ, null);
+        String legacyBigMinFreq = this.prefs.getString(PREF_CPU_BIG_MIN_FREQ, null);
+        String legacyGovernor = this.prefs.getString(PREF_CURRENT_GOV_AVAILABLE, null);
+        boolean useDynamicClusterKeys = hasDynamicClusterKeys(this.prefs.getAll());
         try {
             HashSet<String> hashcpu_cmd = (HashSet) this.prefs.getStringSet(PREF_CPU_COMMANDS, null);
             if (hashcpu_cmd != null) {
@@ -160,70 +165,107 @@ public class settingsHelper {
         String misc_tcp = this.prefs.getString(PREF_TCP_CONGESTION, null);
         String misc_vol = this.prefs.getString(FilePath.MISC_HEADSET_VOLUME_BOOST_FILE, null);
         ArrayList<String> governorSettings = new ArrayList<>();
-        String max_freq = shell.getInfo("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
-        String min_freq = shell.getInfo("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq");
-        String max_big_freq = shell.getInfo("/sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq");
-        String min_big_freq = shell.getInfo("/sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq");
-        int cores = mNumCpus;
-        if (mNumCpus > 4) {
-            cores = mNumCpus / 2;
-            for (int k = 4; k < mNumCpus; k++) {
-                if (cpu_big_max != null) {
-                    shell.queueWork("echo 1 > /sys/devices/system/cpu/cpu" + k + "/online");
-                    shell.queueWork("chmod 0666 /sys/devices/system/cpu/cpu" + k + FilePath.CPU_MAX_FREQ);
-                    if (Profile != null) {
-                        defaultProfile.add("echo 1 > /sys/devices/system/cpu/cpu" + k + "/online");
-                        defaultProfile.add("echo " + max_big_freq + " > " + FilePath.CPU_BASE_PATH + k + FilePath.CPU_MAX_FREQ);
+        boolean governorApplied = false;
+        List<CpuClusterHelper.Cluster> clusters = new CpuClusterHelper().getClusters();
+        for (int i = 0; i < clusters.size(); i++) {
+            CpuClusterHelper.Cluster cluster = clusters.get(i);
+            List<Integer> members = cluster.getMembers();
+            int representativeCpu = cluster.getRepresentativeCpu();
+            String freqMax;
+            String freqMin;
+            String governor;
+            if (useDynamicClusterKeys) {
+                freqMax = this.prefs.getString(PREF_CLUSTER_KEY_PREFIX + i + PREF_CLUSTER_MAX_FREQ_SUFFIX, null);
+                freqMin = this.prefs.getString(PREF_CLUSTER_KEY_PREFIX + i + PREF_CLUSTER_MIN_FREQ_SUFFIX, null);
+                governor = this.prefs.getString(PREF_CLUSTER_KEY_PREFIX + i + PREF_CLUSTER_GOVERNOR_SUFFIX, null);
+                // Fall back to legacy values for any missing dynamic keys
+                boolean isBigCluster = false;
+                for (Integer member : members) {
+                    if (member >= 4) {
+                        isBigCluster = true;
+                        break;
                     }
-                    shell.queueWork("echo " + cpu_big_max + " > " + FilePath.CPU_BASE_PATH + k + FilePath.CPU_MAX_FREQ);
                 }
-                if (cpu_big_min != null) {
-                    shell.queueWork("echo 1 > /sys/devices/system/cpu/cpu" + k + "/online");
-                    shell.queueWork("chmod 0666 /sys/devices/system/cpu/cpu" + k + FilePath.CPU_MIN_FREQ);
-                    if (Profile != null) {
-                        defaultProfile.add("echo 1 > /sys/devices/system/cpu/cpu" + k + "/online");
-                        defaultProfile.add("echo " + min_big_freq + " > " + FilePath.CPU_BASE_PATH + k + FilePath.CPU_MIN_FREQ);
-                    }
-                    shell.queueWork("echo " + cpu_big_min + " > " + FilePath.CPU_BASE_PATH + k + FilePath.CPU_MIN_FREQ);
+                if (freqMax == null) {
+                    freqMax = isBigCluster && legacyBigMaxFreq != null ? legacyBigMaxFreq : legacyMaxFreq;
                 }
-                if (cpu_gov != null) {
-                    shell.queueWork("chmod 0666 /sys/devices/system/cpu/cpu" + k + FilePath.CURRENT_GOV_AVAILABLE);
-                    if (Profile != null) {
-                        defaultProfile.add("echo 1 > /sys/devices/system/cpu/cpu" + k + "/online");
-                        defaultProfile.add("echo " + shell.getInfo(FilePath.CPU_BASE_PATH + k + FilePath.CURRENT_GOV_AVAILABLE) + " > " + FilePath.CPU_BASE_PATH + k + FilePath.CURRENT_GOV_AVAILABLE);
+                if (freqMin == null) {
+                    freqMin = isBigCluster && legacyBigMinFreq != null ? legacyBigMinFreq : legacyMinFreq;
+                }
+                if (governor == null) {
+                    governor = legacyGovernor;
+                }
+            } else {
+                freqMax = legacyMaxFreq;
+                freqMin = legacyMinFreq;
+                governor = legacyGovernor;
+                boolean isBigCluster = false;
+                for (Integer member : members) {
+                    if (member >= 4) {
+                        isBigCluster = true;
+                        break;
                     }
-                    shell.queueWork("echo 1 > /sys/devices/system/cpu/cpu" + k + "/online");
-                    shell.queueWork("echo " + cpu_gov + " > " + FilePath.CPU_BASE_PATH + k + FilePath.CURRENT_GOV_AVAILABLE);
+                }
+                if (isBigCluster) {
+                    if (legacyBigMaxFreq != null) {
+                        freqMax = legacyBigMaxFreq;
+                    }
+                    if (legacyBigMinFreq != null) {
+                        freqMin = legacyBigMinFreq;
+                    }
                 }
             }
-        }
-        for (int k2 = 0; k2 < cores; k2++) {
-            if (cpu_max != null) {
-                shell.queueWork("echo 1 > /sys/devices/system/cpu/cpu" + k2 + "/online");
-                shell.queueWork("chmod 0666 /sys/devices/system/cpu/cpu" + k2 + FilePath.CPU_MAX_FREQ);
-                if (Profile != null) {
-                    defaultProfile.add("echo 1 > /sys/devices/system/cpu/cpu" + k2 + "/online");
-                    defaultProfile.add("echo " + max_freq + " > " + FilePath.CPU_BASE_PATH + k2 + FilePath.CPU_MAX_FREQ);
+            if (freqMax != null) {
+                String rollbackMax = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ);
+                for (Integer cpu : members) {
+                    boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
+                    if (hasOnlineControl) {
+                        shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    }
+                    shell.queueWork("chmod 0666 " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                    if (Profile != null) {
+                        if (hasOnlineControl) {
+                            defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        }
+                        defaultProfile.add("echo " + rollbackMax + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                    }
+                    shell.queueWork("echo " + freqMax + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
                 }
-                shell.queueWork("echo " + cpu_max + " > " + FilePath.CPU_BASE_PATH + k2 + FilePath.CPU_MAX_FREQ);
             }
-            if (cpu_min != null) {
-                shell.queueWork("echo 1 > /sys/devices/system/cpu/cpu" + k2 + "/online");
-                shell.queueWork("chmod 0666 /sys/devices/system/cpu/cpu" + k2 + FilePath.CPU_MIN_FREQ);
-                if (Profile != null) {
-                    defaultProfile.add("echo 1 > /sys/devices/system/cpu/cpu" + k2 + "/online");
-                    defaultProfile.add("echo " + min_freq + " > " + FilePath.CPU_BASE_PATH + k2 + FilePath.CPU_MIN_FREQ);
+            if (freqMin != null) {
+                String rollbackMin = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ);
+                for (Integer cpu : members) {
+                    boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
+                    if (hasOnlineControl) {
+                        shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    }
+                    shell.queueWork("chmod 0666 " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                    if (Profile != null) {
+                        if (hasOnlineControl) {
+                            defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        }
+                        defaultProfile.add("echo " + rollbackMin + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                    }
+                    shell.queueWork("echo " + freqMin + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
                 }
-                shell.queueWork("echo " + cpu_min + " > " + FilePath.CPU_BASE_PATH + k2 + FilePath.CPU_MIN_FREQ);
             }
-            if (cpu_gov != null) {
-                shell.queueWork("chmod 0666 /sys/devices/system/cpu/cpu" + k2 + FilePath.CURRENT_GOV_AVAILABLE);
-                if (Profile != null) {
-                    defaultProfile.add("echo 1 > /sys/devices/system/cpu/cpu" + k2 + "/online");
-                    defaultProfile.add("echo " + shell.getInfo(FilePath.CPU_BASE_PATH + k2 + FilePath.CURRENT_GOV_AVAILABLE) + " > " + FilePath.CPU_BASE_PATH + k2 + FilePath.CURRENT_GOV_AVAILABLE);
+            if (governor != null) {
+                governorApplied = true;
+                String rollbackGovernor = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CURRENT_GOV_AVAILABLE);
+                for (Integer cpu : members) {
+                    boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
+                    shell.queueWork("chmod 0666 " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
+                    if (Profile != null) {
+                        if (hasOnlineControl) {
+                            defaultProfile.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                        }
+                        defaultProfile.add("echo " + rollbackGovernor + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
+                    }
+                    if (hasOnlineControl) {
+                        shell.queueWork("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
+                    }
+                    shell.queueWork("echo " + governor + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
                 }
-                shell.queueWork("echo 1 > /sys/devices/system/cpu/cpu" + k2 + "/online");
-                shell.queueWork("echo " + cpu_gov + " > " + FilePath.CPU_BASE_PATH + k2 + FilePath.CURRENT_GOV_AVAILABLE);
             }
         }
         if (mem_ios != null) {
@@ -240,7 +282,7 @@ public class settingsHelper {
             }
             shell.queueWork("echo " + mem_rah + " > " + FilePath.READAHEAD_PARAMETER);
         }
-        if (cpu_gov != null || mem_ios != null) {
+        if (governorApplied || mem_ios != null) {
             shell.setRootInfo((String[]) governorSettings.toArray(new String[0]));
         }
         if (gpu_gov != null) {
@@ -418,6 +460,63 @@ public class settingsHelper {
             return Boolean.valueOf(this.prefs.getString(s, "0").equals("1"));
         } catch (ClassCastException e) {
             return Boolean.valueOf(this.prefs.getBoolean(s, false));
+        }
+    }
+
+    /**
+     * Checks whether the profile stores at least one dynamic per-cluster CPU
+     * key (e.g. "cpu_cluster_0_max_frequency"). Profiles saved before the
+     * introduction of CpuClusterHelper only contain the legacy fixed keys.
+     */
+    private boolean hasDynamicClusterKeys(Map<String, ?> allPrefs) {
+        int clusterCount = new CpuClusterHelper().getClusters().size();
+        for (String key : allPrefs.keySet()) {
+            if (isDynamicClusterKey(key, clusterCount)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isDynamicClusterKey(String key, int clusterCount) {
+        if (key == null || !key.startsWith(PREF_CLUSTER_KEY_PREFIX)) {
+            return false;
+        }
+        // Determine which suffix this key uses
+        String suffix = null;
+        if (key.endsWith(PREF_CLUSTER_MAX_FREQ_SUFFIX)) {
+            suffix = PREF_CLUSTER_MAX_FREQ_SUFFIX;
+        } else if (key.endsWith(PREF_CLUSTER_MIN_FREQ_SUFFIX)) {
+            suffix = PREF_CLUSTER_MIN_FREQ_SUFFIX;
+        } else if (key.endsWith(PREF_CLUSTER_GOVERNOR_SUFFIX)) {
+            suffix = PREF_CLUSTER_GOVERNOR_SUFFIX;
+        } else {
+            return false;
+        }
+        // Extract the cluster index between prefix and suffix
+        int prefixLen = PREF_CLUSTER_KEY_PREFIX.length();
+        int suffixStart = key.length() - suffix.length();
+        if (suffixStart <= prefixLen) {
+            // No room for an index between prefix and suffix
+            return false;
+        }
+        String indexStr = key.substring(prefixLen, suffixStart);
+        // Validate that indexStr is a valid non-negative decimal integer
+        if (indexStr.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < indexStr.length(); i++) {
+            char c = indexStr.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        // Parse the index and ensure it's within range
+        try {
+            int clusterIndex = Integer.parseInt(indexStr);
+            return clusterIndex >= 0 && clusterIndex < clusterCount;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 

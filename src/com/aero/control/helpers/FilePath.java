@@ -5,13 +5,12 @@ import android.os.Environment;
 
 /* JADX INFO: loaded from: classes.dex */
 public final class FilePath {
-    public static final String ALL_GOV_AVAILABLE = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors";
     public static final String CMDLINE_ZACHE = "/system/bootstrap/2nd-boot/cmdline";
     public static final String COLOR_CONTROL = "/sys/devices/platform/kcal_ctrl.0/kcal";
     public static final String COLOR_CONTROL_BIT = "/sys/devices/platform/kcal_ctrl.0/kcal_ctrl";
-    public static final String CPU_AVAILABLE_FREQ = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies";
+    public static final String CPU_AVAILABLE_FREQ_SUFFIX = "/cpufreq/scaling_available_frequencies";
+    public static final String CPU_AVAILABLE_GOV_SUFFIX = "/cpufreq/scaling_available_governors";
     public static final String CPU_BASE_PATH = "/sys/devices/system/cpu/cpu";
-    public static final String CPU_BIG_AVAILABLE_FREQ = "/sys/devices/system/cpu/cpu4/cpufreq/scaling_available_frequencies";
     public static final String CPU_BOOST = "/sys/module/cpu_boost/parameters";
     public static final String CPU_FREQ_TABLE = "/proc/overclock/freq_table";
     public static final String CPU_GOV_BASE = "/sys/devices/system/cpu/cpufreq/";
@@ -19,6 +18,7 @@ public final class FilePath {
     public static final String CPU_MAX_RATE = "/proc/overclock/max_rate";
     public static final String CPU_MIN_FREQ = "/cpufreq/scaling_min_freq";
     public static final String CPU_TEMP_FILE = "/sys/devices/virtual/thermal/thermal_zone1/temp";
+    public static final String CPU_TIME_IN_STATE_SUFFIX = "/cpufreq/stats/time_in_state";
     public static final String CPU_VSEL = "/proc/overclock/mpu_opps";
     public static final String CPU_VSEL_MAX = "/proc/overclock/max_vsel";
     public static final String CURRENT_GOV_AVAILABLE = "/cpufreq/scaling_governor";
@@ -55,7 +55,6 @@ public final class FilePath {
     public static final String RANDOM_WRITE_WAKEUP = "/proc/sys/kernel/random/write_wakeup_threshold";
     public static final String READAHEAD_PARAMETER = "/sys/block/mmcblk0/queue/read_ahead_kb";
     public static final String SWEEP2WAKE = "/sys/android_touch/sweep2wake";
-    public static final String TIME_IN_STATE_PATH = "/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state";
     public static final String VOLTAGE_PATH = "/sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table";
     public static final String WRITEBACK = "/sys/devices/virtual/misc/writeback/writeback_enabled";
     public static final String sharedPrefsPath = "/data/data/com.aero.control/shared_prefs/";
