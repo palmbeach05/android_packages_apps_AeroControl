@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
@@ -44,16 +45,14 @@ public class AboutActivity extends Activity {
         findViewById(R.id.about_xda).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri uri = Uri.parse("https://forum.xda-developers.com/showthread.php?t=2483827");
-                startActivity(new Intent("android.intent.action.VIEW", uri));
+                openExternalUri("https://forum.xda-developers.com/showthread.php?t=2483827");
             }
         });
 
         findViewById(R.id.about_github).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri uri = Uri.parse("https://github.com/Blechd0se/android_packages_apps_AeroControl");
-                startActivity(new Intent("android.intent.action.VIEW", uri));
+                openExternalUri("https://github.com/Blechd0se/android_packages_apps_AeroControl");
             }
         });
 
@@ -67,10 +66,19 @@ public class AboutActivity extends Activity {
         findViewById(R.id.about_donate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri uri = Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=46VQEKBETN36U");
-                startActivity(new Intent("android.intent.action.VIEW", uri));
+                openExternalUri("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=46VQEKBETN36U");
             }
         });
+    }
+
+    private void openExternalUri(String uriString) {
+        Uri uri = Uri.parse(uriString);
+        Intent intent = new Intent("android.intent.action.VIEW", uri);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, R.string.no_activity_for_link, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showLegalDialog() {
