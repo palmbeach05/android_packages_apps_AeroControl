@@ -60,6 +60,7 @@ public class PrefsActivity extends PreferenceActivity {
             this.mActionBar = getActionBar();
             this.mActionBar.setIcon(android.R.color.transparent);
         } else {
+            getActionBar().setIcon(R.drawable.ic_action_settings);
             this.mActionBarTitleID = getResources().getIdentifier("action_bar_title", "id", "android");
             this.mActionBarTitle = (TextView) findViewById(this.mActionBarTitleID);
             this.mActionBarTitle.setTypeface(font);
