@@ -553,11 +553,11 @@ public class StatisticsFragment extends Fragment {
                         convertedFreq = convertedFreq + "\t\t";
                     }
                     if (isDeepsleep[j]) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     } else if (j == length - 1) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     } else {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%"));
+                        loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                     }
                 }
             }
