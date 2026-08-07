@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,15 +14,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
-import com.aero.control.navItems.NavBarItems;
-import com.aero.control.navItems.NavigationDrawerHelper;
 
 public class AboutActivity extends Activity {
-
-    private NavigationDrawerHelper mNavigationDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,23 +27,8 @@ public class AboutActivity extends Activity {
         setTitle(R.string.about);
         getActionBar().setDisplayShowHomeEnabled(false);
 
-        this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
-            @Override
-            public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
-                AboutActivity.this.mNavigationDrawer.closeDrawers();
-                Intent intent;
-                if (item.content == R.string.aero_settings) {
-                    intent = new Intent(AboutActivity.this, (Class<?>) PrefsActivity.class);
-                } else {
-                    intent = new Intent(AboutActivity.this, (Class<?>) AeroActivity.class);
-                    intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
-                }
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                AboutActivity.this.startActivity(intent);
-                AboutActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
-        });
-        this.mNavigationDrawer.syncState();
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
 
         TextView appName = (TextView) findViewById(R.id.about_app_name);
         TextView versionValue = (TextView) findViewById(R.id.about_version_value);
@@ -132,20 +111,9 @@ public class AboutActivity extends Activity {
     }
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        this.mNavigationDrawer.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        this.mNavigationDrawer.onConfigurationChanged(newConfig);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
