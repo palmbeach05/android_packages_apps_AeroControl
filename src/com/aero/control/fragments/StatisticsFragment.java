@@ -22,6 +22,7 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.adapter.StatisticAdapter;
 import com.aero.control.adapter.statisticInit;
+import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.echo.holographlibrary.PieGraph;
 import com.echo.holographlibrary.PieSlice;
@@ -33,12 +34,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /* JADX INFO: loaded from: classes.dex */
 public class StatisticsFragment extends Fragment {
     public static final String FILENAME_STATISTICS = "firstrun_statistics";
+    private static final String STATE_SELECTED_CLUSTER_MEMBERS = "selected_cluster_members";
     public ArrayList<Long> cpuResetTime;
     public String[] data;
     public ShowcaseView mShowCase;
@@ -50,6 +54,9 @@ public class StatisticsFragment extends Fragment {
     public TextView txtTime;
     public int mIndex = 0;
     private double mCompleteTime = 0.0d;
+    private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
+    private List<CpuClusterHelper.Cluster> mClusters = Collections.emptyList();
+    private CpuClusterHelper.Cluster mSelectedCluster;
     public ArrayList<Long> cpuTime = new ArrayList<>();
     public ArrayList<Long> cpuOverallTime = new ArrayList<>();
     public ArrayList<Long> cpuFreq = new ArrayList<>();
@@ -60,6 +67,8 @@ public class StatisticsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         this.root = (ViewGroup) inflater.inflate(R.layout.statistics, (ViewGroup) null);
+        this.mClusters = this.mClusterHelper.getClusters();
+        this.mSelectedCluster = restoreSelectedCluster(savedInstanceState);
         clearUI();
         loadResetState();
         loadUI(true);
@@ -69,6 +78,10 @@ public class StatisticsFragment extends Fragment {
     @Override // android.app.Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.statistic_menu, menu);
+        MenuItem selectCluster = menu.findItem(R.id.action_select_cluster);
+        if (selectCluster != null) {
+            selectCluster.setVisible(this.mClusters.size() > 1);
+        }
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -82,8 +95,40 @@ public class StatisticsFragment extends Fragment {
                 clearUI();
                 loadUI(true);
                 break;
+            case R.id.action_select_cluster:
+                showClusterSelectionDialog();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showClusterSelectionDialog() {
+        if (this.mClusters.size() <= 1) {
+            return;
+        }
+        final CharSequence[] clusterLabels = new CharSequence[this.mClusters.size()];
+        for (int i = 0; i < this.mClusters.size(); i++) {
+            clusterLabels[i] = getString(R.string.select_cluster_cpu_label, this.mClusters.get(i).getMemberRangeLabel());
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.select_cluster_title);
+        builder.setItems(clusterLabels, new DialogInterface.OnClickListener() {
+            @Override // android.content.DialogInterface.OnClickListener
+            public void onClick(DialogInterface dialog, int which) {
+                StatisticsFragment.this.selectCluster(StatisticsFragment.this.mClusters.get(which));
+            }
+        });
+        builder.show();
+    }
+
+    private void selectCluster(CpuClusterHelper.Cluster cluster) {
+        if (cluster == this.mSelectedCluster) {
+            return;
+        }
+        this.mSelectedCluster = cluster;
+        clearUI();
+        loadResetState();
+        loadUI(true);
     }
 
     @Override // android.app.Fragment
@@ -96,6 +141,36 @@ public class StatisticsFragment extends Fragment {
         if (output == 0) {
             DrawFirstStart(R.string.showcase_statistics_fragment, R.string.showcase_statistics_fragment_summary);
         }
+    }
+
+    @Override // android.app.Fragment
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (this.mSelectedCluster != null) {
+            int[] memberIds = new int[this.mSelectedCluster.getMembers().size()];
+            for (int i = 0; i < memberIds.length; i++) {
+                memberIds[i] = this.mSelectedCluster.getMembers().get(i);
+            }
+            outState.putIntArray(STATE_SELECTED_CLUSTER_MEMBERS, memberIds);
+        }
+    }
+
+    private CpuClusterHelper.Cluster restoreSelectedCluster(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            int[] savedMemberIds = savedInstanceState.getIntArray(STATE_SELECTED_CLUSTER_MEMBERS);
+            if (savedMemberIds != null && savedMemberIds.length > 0) {
+                List<Integer> savedMembers = new ArrayList<>();
+                for (int id : savedMemberIds) {
+                    savedMembers.add(id);
+                }
+                for (CpuClusterHelper.Cluster cluster : this.mClusters) {
+                    if (cluster.getMembers().equals(savedMembers)) {
+                        return cluster;
+                    }
+                }
+            }
+        }
+        return this.mClusters.isEmpty() ? null : this.mClusters.get(0);
     }
 
     public void DrawFirstStart(int header, int content) {
@@ -148,6 +223,9 @@ public class StatisticsFragment extends Fragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void resetStatistics() {
+        if (this.mSelectedCluster == null) {
+            return;
+        }
         Long[] time = (Long[]) this.cpuOverallTime.toArray(new Long[0]);
         if (this.cpuResetTime != null) {
             this.cpuResetTime = null;
@@ -159,7 +237,7 @@ public class StatisticsFragment extends Fragment {
         Collections.reverse(this.cpuResetTime);
         Long[] reversedTime = (Long[]) this.cpuResetTime.toArray(new Long[0]);
         try {
-            FileOutputStream fos = getActivity().openFileOutput("offset_stat", 0);
+            FileOutputStream fos = getActivity().openFileOutput(getResetFileName(this.mSelectedCluster), 0);
             String a = "";
             for (Long l : reversedTime) {
                 long f = l.longValue();
@@ -176,17 +254,36 @@ public class StatisticsFragment extends Fragment {
         loadUI(false);
     }
 
-    public void loadResetState() {
-        File a = new File(FilePath.OFFSET_STAT);
-        if (a.exists() && this.cpuResetTime == null) {
-            this.cpuResetTime = new ArrayList<>();
+    /**
+     * Builds the stable per-cluster reset offset filename from the cluster's sorted member
+     * IDs, e.g. {@code offset_stat_cpu_0_1} for members {@code [0, 1]}. This ties the reset
+     * state to a specific set of CPUs rather than a shared, cluster-agnostic file.
+     */
+    private String getResetFileName(CpuClusterHelper.Cluster cluster) {
+        StringBuilder name = new StringBuilder("offset_stat_cpu");
+        for (Integer member : cluster.getMembers()) {
+            name.append('_').append(member);
         }
+        return name.toString();
+    }
+
+    private File getResetFile(CpuClusterHelper.Cluster cluster) {
+        return new File(getActivity().getFilesDir(), getResetFileName(cluster));
+    }
+
+    public void loadResetState() {
+        File legacy = new File(FilePath.OFFSET_STAT);
+        if (legacy.exists()) {
+            Log.w("Aero", "Discarding legacy offset_stat file; it has no cluster identity.");
+            legacy.delete();
+        }
+        this.cpuResetTime = (this.mSelectedCluster != null && getResetFile(this.mSelectedCluster).exists()) ? new ArrayList<Long>() : null;
     }
 
     private void loadUI(boolean firstView) {
         final ArrayList<GraphEntry> cpuGraphValues = new ArrayList<>();
         getCpuData();
-        ArrayList<ParsedEntry> acceptedEntries = parseAcceptedEntries(this.data);
+        ArrayList<ParsedEntry> acceptedEntries = orderAcceptedEntries(parseAcceptedEntries(this.data));
         this.mCompleteTime = 0.0d;
         this.pg = (PieGraph) this.root.findViewById(R.id.graph);
         if (acceptedEntries.isEmpty()) {
@@ -217,7 +314,7 @@ public class StatisticsFragment extends Fragment {
                 this.mCompleteTime -= resetOffsets[acceptedEntries.size()];
             } else {
                 Log.w("Aero", "A reset offset would produce a negative residency; discarding reset state.");
-                new File(FilePath.OFFSET_STAT).delete();
+                getResetFile(this.mSelectedCluster).delete();
                 this.cpuResetTime = null;
                 adjustedResidencies = null;
             }
@@ -236,25 +333,33 @@ public class StatisticsFragment extends Fragment {
             Iterator<Long> it = this.cpuTime.iterator();
             while (it.hasNext()) {
                 long g = it.next().longValue();
-                String frequency = acceptedEntries.get(i2).isDeepsleep ? "DeepSleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
+                String frequency = acceptedEntries.get(i2).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
                 String time_in_state = convertTime(g);
                 int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
                 this.cpuPercentage.add(Long.valueOf(percentage));
-                if (g != 0 && percentage >= 1) {
-                    PieSlice slice = new PieSlice();
-                    cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + percentage + "%", i2));
-                    slice.setValue(10.0f);
-                    slice.setGoalValue(percentage);
-                    slice.setColor(StatisticAdapter.getColorForIndex(i2));
-                    this.pg.setThickness(30);
-                    this.pg.addSlice(slice);
-                }
+                PieSlice slice = new PieSlice();
+                cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + percentage + "%", i2));
+                slice.setValue(10.0f);
+                slice.setGoalValue(percentage);
+                slice.setColor(StatisticAdapter.getColorForIndex(i2));
+                this.pg.setThickness(30);
+                this.pg.addSlice(slice);
                 i2++;
             }
         } else {
             Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage and pie calculations.");
             for (int i = 0; i < acceptedEntries.size(); i++) {
+                long g = this.cpuTime.get(i).longValue();
+                String frequency = acceptedEntries.get(i).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i].toString());
+                String time_in_state = convertTime(g);
                 this.cpuPercentage.add(0L);
+                PieSlice slice = new PieSlice();
+                cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + 0 + "%", i));
+                slice.setValue(10.0f);
+                slice.setGoalValue(0);
+                slice.setColor(StatisticAdapter.getColorForIndex(i));
+                this.pg.setThickness(30);
+                this.pg.addSlice(slice);
             }
         }
         if (acceptedEntries.isEmpty()) {
@@ -322,6 +427,10 @@ public class StatisticsFragment extends Fragment {
                 tmp[0] = tmp[0] + " MHz";
                 tmp[1] = tmp[2];
                 tmp[2] = tmp[3];
+            } else if ("Deep".equals(tmp[0]) && "Sleep".equals(tmp[1])) {
+                tmp[0] = tmp[0] + " " + tmp[1];
+                tmp[1] = tmp[2];
+                tmp[2] = tmp[3];
             }
             this.txtFreq.setText(tmp[0]);
             this.txtTime.setText(tmp[1]);
@@ -362,10 +471,14 @@ public class StatisticsFragment extends Fragment {
     }
 
     public final int getCpuData() {
-        if (!AeroActivity.genHelper.doesExist(FilePath.TIME_IN_STATE_PATH)) {
+        if (this.mSelectedCluster == null) {
             return 0;
         }
-        this.data = AeroActivity.shell.getInfo(FilePath.TIME_IN_STATE_PATH, true);
+        String path = FilePath.CPU_BASE_PATH + this.mSelectedCluster.getRepresentativeCpu() + FilePath.CPU_TIME_IN_STATE_SUFFIX;
+        if (!AeroActivity.genHelper.doesExist(path)) {
+            return 0;
+        }
+        this.data = AeroActivity.shell.getInfo(path, true);
         if (this.data != null) {
             return this.data.length;
         }
@@ -389,8 +502,9 @@ public class StatisticsFragment extends Fragment {
     }
 
     /**
-     * A single accepted row from {@link FilePath#TIME_IN_STATE_PATH}: either a deep sleep
-     * duration or a frequency/residency pair.
+     * A single accepted row from a per-cluster {@code cpufreq} {@code time_in_state} file
+     * (see {@link FilePath#CPU_TIME_IN_STATE_SUFFIX}): either a deep sleep duration or a
+     * frequency/residency pair.
      */
     private static final class ParsedEntry {
         private final long frequency;
@@ -429,6 +543,27 @@ public class StatisticsFragment extends Fragment {
             }
         }
         return accepted;
+    }
+
+    /**
+     * Orders accepted entries into the standardized display order used for reset offsets,
+     * percentages, list rows, pie slices and colors: a valid {@code DeepSleep} entry first,
+     * followed by frequency entries sorted by ascending numeric frequency. {@code Uptime} is
+     * never part of this collection; it is always appended separately as the final synthetic
+     * list row.
+     */
+    private static ArrayList<ParsedEntry> orderAcceptedEntries(ArrayList<ParsedEntry> entries) {
+        ArrayList<ParsedEntry> ordered = new ArrayList<>(entries);
+        Collections.sort(ordered, new Comparator<ParsedEntry>() {
+            @Override // java.util.Comparator
+            public int compare(ParsedEntry a, ParsedEntry b) {
+                if (a.isDeepsleep != b.isDeepsleep) {
+                    return a.isDeepsleep ? -1 : 1;
+                }
+                return Long.valueOf(a.frequency).compareTo(Long.valueOf(b.frequency));
+            }
+        });
+        return ordered;
     }
 
     private static ParsedEntry parseTimeInStateRow(String rawRow) {
@@ -471,21 +606,25 @@ public class StatisticsFragment extends Fragment {
     }
 
     /**
-     * Reads and validates the on-disk reset offsets so they can be applied to
-     * {@code acceptedCount} accepted parsed entries, in source order. The offset file stores
-     * one non-negative long per accepted entry followed by a trailing total-uptime offset
-     * (the format written by {@link #resetStatistics()}); the trailing total must equal the
-     * sum of the entry offsets and must not exceed the current elapsed uptime. Discards the
-     * on-disk reset state and returns {@code null} when the file does not contain exactly
-     * {@code acceptedCount + 1} values, any value is malformed or negative, the entry-offset
-     * sum overflows, or the trailing total does not match that sum or exceeds uptime.
+     * Reads and validates the on-disk reset offsets for the selected cluster so they can be
+     * applied to {@code acceptedCount} accepted parsed entries, in the standardized display
+     * order. The offset file stores one non-negative long per accepted entry followed by a
+     * trailing total-uptime offset (the format written by {@link #resetStatistics()}); the
+     * trailing total must equal the sum of the entry offsets and must not exceed the current
+     * elapsed uptime. Discards only the selected cluster's on-disk reset state and returns
+     * {@code null} when the file does not contain exactly {@code acceptedCount + 1} values,
+     * any value is malformed or negative, the entry-offset sum overflows, or the trailing
+     * total does not match that sum or exceeds uptime.
      */
     private long[] readResetOffsets(int acceptedCount) {
-        File offsetFile = new File(FilePath.OFFSET_STAT);
+        if (this.mSelectedCluster == null) {
+            return null;
+        }
+        File offsetFile = getResetFile(this.mSelectedCluster);
         if (!offsetFile.exists()) {
             return null;
         }
-        String[] rawOffsets = AeroActivity.shell.getInfoArray(FilePath.OFFSET_STAT, 0, 0);
+        String[] rawOffsets = AeroActivity.shell.getInfoArray(offsetFile.getAbsolutePath(), 0, 0);
         if (rawOffsets == null || rawOffsets.length != acceptedCount + 1) {
             Log.w("Aero", "Offset file does not contain exactly the expected number of offsets; discarding reset state.");
             offsetFile.delete();
@@ -545,20 +684,18 @@ public class StatisticsFragment extends Fragment {
         public final void loadSingleEntry(Long[] freq, Long[] time, Long[] percentage, boolean[] isDeepsleep) {
             int length = freq.length;
             for (int j = 0; j < length; j++) {
-                if (percentage[j].longValue() != 0 && percentage[j].longValue() >= 1) {
-                    String convertedFreq = AeroActivity.shell.toMHz(freq[j] + "");
-                    if (convertedFreq.length() < 8) {
-                        convertedFreq = convertedFreq + "\t";
-                    } else if (convertedFreq.length() < 7) {
-                        convertedFreq = convertedFreq + "\t\t";
-                    }
-                    if (isDeepsleep[j]) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Deepsleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
-                    } else if (j == length - 1) {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
-                    } else {
-                        loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
-                    }
+                String convertedFreq = AeroActivity.shell.toMHz(freq[j] + "");
+                if (convertedFreq.length() < 8) {
+                    convertedFreq = convertedFreq + "\t";
+                } else if (convertedFreq.length() < 7) {
+                    convertedFreq = convertedFreq + "\t\t";
+                }
+                if (isDeepsleep[j]) {
+                    loadArray(StatisticsFragment.this.mResult, new statisticInit("Deep Sleep", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
+                } else if (j == length - 1) {
+                    loadArray(StatisticsFragment.this.mResult, new statisticInit("Uptime   ", StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
+                } else {
+                    loadArray(StatisticsFragment.this.mResult, new statisticInit(convertedFreq, StatisticsFragment.this.convertTime(time[j].longValue()) + "", percentage[j] + "%", j));
                 }
             }
         }

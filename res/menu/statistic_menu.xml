@@ -10,4 +10,9 @@
         android:id="@+id/action_refresh"
         android:title="@string/refresh"
         android:showAsAction="always"/>
+    <item
+        android:icon="@drawable/ic_action_settings_light"
+        android:id="@+id/action_select_cluster"
+        android:title="@string/select_cluster_title"
+        android:showAsAction="ifRoom"/>
 </menu>
