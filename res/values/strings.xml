@@ -198,9 +198,9 @@
     <string name="pref_per_app_service">Per-App Profile Service</string>
     <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
     <string name="pref_perapp_monitor">Per-App Monitor</string>
-    <string name="pref_perapp_monitor_summary">Enable or disable the AppMonitor.</string>
+    <string name="pref_perapp_monitor_summary">Enable or disable the App Monitor.</string>
     <string name="pref_perapp_toasts">Per-App Toasts</string>
-    <string name="pref_perapp_toasts_summary">Enable or disable toast-notifications</string>
+    <string name="pref_perapp_toasts_summary">Enable or disable toast notifications.</string>
     <string name="pref_profile_change_name">Set another name</string>
     <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
     <string name="pref_profile_deleted">Deleted</string>
