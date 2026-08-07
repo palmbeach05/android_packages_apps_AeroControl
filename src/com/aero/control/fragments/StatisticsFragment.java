@@ -337,7 +337,7 @@ public class StatisticsFragment extends Fragment {
                 String time_in_state = convertTime(g);
                 int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
                 this.cpuPercentage.add(Long.valueOf(percentage));
-                if (g != 0 && percentage >= 1) {
+                if (g != 0) {
                     PieSlice slice = new PieSlice();
                     cpuGraphValues.add(new GraphEntry(frequency + " " + time_in_state + " " + percentage + "%", i2));
                     slice.setValue(10.0f);
@@ -672,7 +672,7 @@ public class StatisticsFragment extends Fragment {
         public final void loadSingleEntry(Long[] freq, Long[] time, Long[] percentage, boolean[] isDeepsleep) {
             int length = freq.length;
             for (int j = 0; j < length; j++) {
-                if (percentage[j].longValue() != 0 && percentage[j].longValue() >= 1) {
+                if (time[j].longValue() != 0) {
                     String convertedFreq = AeroActivity.shell.toMHz(freq[j] + "");
                     if (convertedFreq.length() < 8) {
                         convertedFreq = convertedFreq + "\t";
