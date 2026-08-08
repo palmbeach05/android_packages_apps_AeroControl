@@ -593,6 +593,20 @@ public final class AeroActivity extends Activity {
         if (this.mTitle != null) {
             setTitle(this.mTitle);
         }
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        if (currentFragment instanceof StatisticsFragment || currentFragment instanceof AppMonitorDetailFragment) {
+            // CPU Statistics and the App Monitor detail page provide a
+            // dedicated landscape layout under res/layout-land/ that can be
+            // picked up by simply refreshing the existing fragment's view in
+            // place, instead of recreating the whole activity. Detaching and
+            // re-attaching the same fragment instance in one transaction
+            // destroys and reinflates its view (so the orientation-specific
+            // layout is picked up) while preserving the fragment's own state
+            // (e.g. the selected CPU cluster, or the App Monitor detail
+            // arguments, selected module, and "AppDetail" back-stack entry).
+            getFragmentManager().beginTransaction().detach(currentFragment).attach(currentFragment).commit();
+            return;
+        }
         if (currentFragmentRequiresRecreation()) {
             if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
                 // A drawer transaction was already posted by switchContent()
@@ -615,16 +629,14 @@ public final class AeroActivity extends Activity {
         }
     }
 
-    // Some pages (e.g. CPU Statistics, Profile, App Monitor detail) provide a
-    // dedicated landscape layout under res/layout-land/ that can only be
-    // inflated by recreating the activity. Standard drawer pages have no
-    // such layout, so they stay in this activity instance across rotation
+    // Profile provides a dedicated landscape layout under res/layout-land/
+    // that can only be inflated by recreating the activity. Standard drawer
+    // pages, CPU Statistics, and the App Monitor detail page have no such
+    // requirement, so they stay in this activity instance across rotation
     // instead of being torn down and recreated.
     private boolean currentFragmentRequiresRecreation() {
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
-        return currentFragment instanceof StatisticsFragment
-                || currentFragment instanceof ProfileFragment
-                || currentFragment instanceof AppMonitorDetailFragment;
+        return currentFragment instanceof ProfileFragment;
     }
 
     @Override // android.app.Activity
