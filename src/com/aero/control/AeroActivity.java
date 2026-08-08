@@ -553,6 +553,7 @@ public final class AeroActivity extends Activity {
         if (this.mTitle != null) {
             setTitle(this.mTitle);
         }
+        recreate();
     }
 
     @Override // android.app.Activity
