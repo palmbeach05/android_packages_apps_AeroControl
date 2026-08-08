@@ -68,7 +68,15 @@ public class StatisticsFragment extends Fragment {
         setHasOptionsMenu(true);
         this.root = (ViewGroup) inflater.inflate(R.layout.statistics, (ViewGroup) null);
         this.mClusters = this.mClusterHelper.getClusters();
-        this.mSelectedCluster = restoreSelectedCluster(savedInstanceState);
+        if (savedInstanceState != null) {
+            this.mSelectedCluster = restoreSelectedCluster(savedInstanceState);
+        } else if (this.mSelectedCluster == null) {
+            // No saved state to restore from (e.g. a view-only refresh on
+            // rotation triggered by AeroActivity detaching/re-attaching this
+            // fragment rather than recreating the activity): if a cluster was
+            // already selected, keep it instead of resetting to the default.
+            this.mSelectedCluster = restoreSelectedCluster(null);
+        }
         clearUI();
         loadResetState();
         loadUI(true);
@@ -375,7 +383,7 @@ public class StatisticsFragment extends Fragment {
         this.pg.setOnTouchListener(new View.OnTouchListener() { // from class: com.aero.control.fragments.StatisticsFragment.4
             @Override // android.view.View.OnTouchListener
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() != 0) {
+                if (motionEvent.getAction() != 0 || !isTouchOnPieGraph(view, motionEvent)) {
                     return false;
                 }
                 StatisticsFragment.this.handleOnClick(cpuGraphValues);
@@ -385,6 +393,21 @@ public class StatisticsFragment extends Fragment {
         this.pg.setDuration(1000);
         this.pg.setInterpolator(new AccelerateDecelerateInterpolator());
         this.pg.animateToGoalValues();
+    }
+
+    /**
+     * Restricts frequency selection to touches that land within the pie graph's drawn circle
+     * (mirroring {@link PieGraph}'s own center/radius calculation), so touches beside the
+     * visible graph &mdash; e.g. the empty space left and right of it in a wide landscape
+     * layout &mdash; fall through instead of being consumed by the graph's touch listener.
+     */
+    private static boolean isTouchOnPieGraph(View pieGraph, MotionEvent event) {
+        float midX = pieGraph.getWidth() / 2f;
+        float midY = pieGraph.getHeight() / 2f;
+        float radius = Math.min(midX, midY) - 2f;
+        float dx = event.getX() - midX;
+        float dy = event.getY() - midY;
+        return (dx * dx) + (dy * dy) <= radius * radius;
     }
 
     private void clearUI() {

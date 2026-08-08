@@ -293,12 +293,12 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             if (this.mMemoryDalvikFragment == null) {
                 this.mMemoryDalvikFragment = new MemoryDalvikFragment();
             }
-            AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.2
+            AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.2
                 @Override // java.lang.Runnable
                 public void run() {
                     MemoryFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, MemoryFragment.this.mMemoryDalvikFragment).addToBackStack("Memory").commit();
                 }
-            }, AeroActivity.genHelper.getDefaultDelay());
+            });
         } else if (preference == this.mRandomSettings) {
             onRandomClick();
         }
