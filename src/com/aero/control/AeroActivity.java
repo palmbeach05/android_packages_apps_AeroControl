@@ -532,6 +532,10 @@ public final class AeroActivity extends Activity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         this.mNavigationDrawer.onConfigurationChanged(newConfig);
+        if (this.mTitle != null) {
+            setTitle(this.mTitle);
+        }
+        recreate();
     }
 
     @Override // android.app.Activity
