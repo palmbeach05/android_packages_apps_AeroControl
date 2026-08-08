@@ -3,7 +3,7 @@ package com.aero.control.service;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.Service;
-import android.app.usage.UsageStats;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -25,8 +25,6 @@ import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.settingsHelper;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /* JADX INFO: loaded from: classes.dex */
 public final class PerAppService extends Service {
@@ -114,7 +112,9 @@ public final class PerAppService extends Service {
             this.mPerAppPrefs = this.mContext.getSharedPreferences(perAppProfileHandler, 0);
         }
         this.mShowToasts = PreferenceManager.getDefaultSharedPreferences(this.mContext).getBoolean("per_app_toast", true);
-        setAppData();
+        if (!setAppData()) {
+            return;
+        }
         if (mJobManager != null) {
             mJobManager.setContext(this.mContext);
             AppContext localContext = mJobManager.getAppContext(mCurrentApp);
@@ -158,7 +158,7 @@ public final class PerAppService extends Service {
         }
     }
 
-    private void setAppData() {
+    private boolean setAppData() {
         String PackageName;
         String PackageName2 = mCurrentApp;
         mPreviousApp = PackageName2;
@@ -168,32 +168,41 @@ public final class PerAppService extends Service {
         if (Build.VERSION.SDK_INT > 19) {
             PackageName = getTopApp();
         } else {
-            ActivityManager.RunningTaskInfo AppInfo = this.mAm.getRunningTasks(1).get(0);
-            PackageName = AppInfo.topActivity.getPackageName();
+            List<ActivityManager.RunningTaskInfo> tasks = this.mAm.getRunningTasks(1);
+            if (tasks == null || tasks.isEmpty() || tasks.get(0).topActivity == null) {
+                PackageName = null;
+            } else {
+                PackageName = tasks.get(0).topActivity.getPackageName();
+            }
         }
         if (PackageName != null) {
             PackageName = PackageName.trim();
         }
         mCurrentApp = PackageName;
+        return mCurrentApp != null;
     }
 
     @TargetApi(21)
     private String getTopApp() {
-        long time = System.currentTimeMillis();
         UsageStatsManager usm = (UsageStatsManager) getSystemService("usagestats");
-        List<UsageStats> appList = usm.queryUsageStats(0, time - 1000000, time);
-        if (appList == null || appList.size() <= 0) {
+        if (usm == null) {
             return null;
         }
-        SortedMap<Long, UsageStats> sortedMap = new TreeMap<>();
-        for (UsageStats usageStats : appList) {
-            sortedMap.put(Long.valueOf(usageStats.getLastTimeUsed()), usageStats);
-        }
-        if (sortedMap.isEmpty()) {
+        long endTime = System.currentTimeMillis();
+        long startTime = endTime - 1000000;
+        UsageEvents events = usm.queryEvents(startTime, endTime);
+        if (events == null) {
             return null;
         }
-        String visibleApp = sortedMap.get(sortedMap.lastKey()).getPackageName();
-        return visibleApp;
+        String foregroundApp = null;
+        UsageEvents.Event event = new UsageEvents.Event();
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                foregroundApp = event.getPackageName();
+            }
+        }
+        return foregroundApp;
     }
 
     private boolean isScreenOn() {
