@@ -600,12 +600,14 @@ public final class AeroActivity extends Activity {
             // dedicated landscape layout under res/layout-land/ that can be
             // picked up by simply refreshing the existing fragment's view in
             // place, instead of recreating the whole activity. Detaching and
-            // re-attaching the same fragment instance in one transaction
+            // re-attaching the same fragment instance in separate transactions
             // destroys and reinflates its view (so the orientation-specific
             // layout is picked up) while preserving the fragment's own state
             // (e.g. the selected CPU cluster, or the App Monitor detail
             // arguments, selected module, and "AppDetail" back-stack entry).
-            getFragmentManager().beginTransaction().detach(currentFragment).attach(currentFragment).commit();
+            getFragmentManager().beginTransaction().detach(currentFragment).commit();
+            getFragmentManager().executePendingTransactions();
+            getFragmentManager().beginTransaction().attach(currentFragment).commit();
             return;
         }
         if (currentFragmentRequiresRecreation()) {

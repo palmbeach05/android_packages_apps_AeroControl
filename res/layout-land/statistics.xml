@@ -27,7 +27,7 @@
             android:layout_height="220dp"
             android:layout_marginTop="10dp"/>
         <TextView
-            android:textSize="26dp"
+            android:textSize="26sp"
             android:gravity="center"
             android:id="@+id/statisticFreq"
             android:layout_width="124dp"
@@ -43,7 +43,7 @@
             android:layout_centerHorizontal="true"
             style="?android:attr/textAppearanceLarge"/>
         <TextView
-            android:textSize="42dp"
+            android:textSize="42sp"
             android:gravity="center"
             android:id="@+id/statisticPercentage"
             android:layout_width="124dp"
