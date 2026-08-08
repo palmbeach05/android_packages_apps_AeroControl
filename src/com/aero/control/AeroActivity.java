@@ -84,6 +84,11 @@ public final class AeroActivity extends Activity {
     private static final int NO_PENDING_DRAWER_ITEM = -1;
     private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static boolean sPendingRecreation = false;
+    // API 19-only: resource ID of the drawer item for a switchContent()
+    // transaction that selectItem() has posted on mHandler but that hasn't
+    // committed yet. Lets onConfigurationChanged() hand the selection off to
+    // the recreated instance instead of letting it run on this one.
+    private int mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -493,6 +498,12 @@ public final class AeroActivity extends Activity {
                 mFragmentStack.remove(oldFragment);
             }
             if (replaceFragment) {
+                if (Build.VERSION.SDK_INT == 19) {
+                    // Track which drawer item this transaction is for, so
+                    // onConfigurationChanged() can hand it off if rotation
+                    // races ahead of this transaction committing.
+                    mPendingDrawerTransactionItemResourceId = itemResourceId;
+                }
                 switchContent(fragment);
             }
         }
@@ -580,6 +591,19 @@ public final class AeroActivity extends Activity {
         this.mNavigationDrawer.onConfigurationChanged(newConfig);
         if (this.mTitle != null) {
             setTitle(this.mTitle);
+        }
+        if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            // A drawer transaction was already posted by switchContent()
+            // before this configuration change began recreating the
+            // activity. Hand its resource ID off through the same mechanism
+            // used for selections made after recreation begins, and cancel
+            // the transaction so it can't run against this soon-to-be-
+            // destroyed instance.
+            sPendingDrawerItemResourceId = this.mPendingDrawerTransactionItemResourceId;
+            if (this.mPendingSwitch != null) {
+                mHandler.removeCallbacks(this.mPendingSwitch);
+            }
+            this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
         }
         // Mark that this instance is about to be replaced so a drawer
         // selection tapped on it before it's destroyed is handed off to the
@@ -696,6 +720,9 @@ public final class AeroActivity extends Activity {
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                // This transaction is about to run (or be skipped below), so
+                // it's no longer pending.
+                AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
                 if (AeroActivity.this.isFinishing()) {
                     return;
                 }
