@@ -193,7 +193,9 @@ public final class AeroActivity extends Activity {
         if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
             selectItemByResourceId(pendingDrawerItemResourceId);
         }
-        // Defer non-UI initialization until after the restored fragment has rendered,
+        // Initialize mJobManager synchronously so restored fragments can access it.
+        mJobManager = JobManager.instance(this);
+        // Defer heavier service-starting work until after the restored fragment has rendered,
         // so it doesn't add latency to activity recreation (e.g. on rotation).
         if (this.mPendingBackgroundInit != null) {
             mHandler.removeCallbacks(this.mPendingBackgroundInit);
@@ -210,7 +212,6 @@ public final class AeroActivity extends Activity {
     }
 
     private void initBackgroundServices() {
-        mJobManager = JobManager.instance(this);
         if (!isServiceUp()) {
             perAppService = new PerAppServiceHelper(this);
             if (perAppService.shouldBeStarted()) {
