@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.fragments.AeroFragment;
+import com.aero.control.fragments.AppMonitorDetailFragment;
 import com.aero.control.fragments.AppMonitorFragment;
 import com.aero.control.fragments.CPUFragment;
 import com.aero.control.fragments.DefyPartsFragment;
@@ -592,24 +593,38 @@ public final class AeroActivity extends Activity {
         if (this.mTitle != null) {
             setTitle(this.mTitle);
         }
-        if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
-            // A drawer transaction was already posted by switchContent()
-            // before this configuration change began recreating the
-            // activity. Hand its resource ID off through the same mechanism
-            // used for selections made after recreation begins, and cancel
-            // the transaction so it can't run against this soon-to-be-
-            // destroyed instance.
-            sPendingDrawerItemResourceId = this.mPendingDrawerTransactionItemResourceId;
-            if (this.mPendingSwitch != null) {
-                mHandler.removeCallbacks(this.mPendingSwitch);
+        if (currentFragmentRequiresRecreation()) {
+            if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+                // A drawer transaction was already posted by switchContent()
+                // before this configuration change began recreating the
+                // activity. Hand its resource ID off through the same mechanism
+                // used for selections made after recreation begins, and cancel
+                // the transaction so it can't run against this soon-to-be-
+                // destroyed instance.
+                sPendingDrawerItemResourceId = this.mPendingDrawerTransactionItemResourceId;
+                if (this.mPendingSwitch != null) {
+                    mHandler.removeCallbacks(this.mPendingSwitch);
+                }
+                this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
             }
-            this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
+            // Mark that this instance is about to be replaced so a drawer
+            // selection tapped on it before it's destroyed is handed off to the
+            // recreated instance instead of switching content here.
+            sPendingRecreation = true;
+            recreate();
         }
-        // Mark that this instance is about to be replaced so a drawer
-        // selection tapped on it before it's destroyed is handed off to the
-        // recreated instance instead of switching content here.
-        sPendingRecreation = true;
-        recreate();
+    }
+
+    // Some pages (e.g. CPU Statistics, Profile, App Monitor detail) provide a
+    // dedicated landscape layout under res/layout-land/ that can only be
+    // inflated by recreating the activity. Standard drawer pages have no
+    // such layout, so they stay in this activity instance across rotation
+    // instead of being torn down and recreated.
+    private boolean currentFragmentRequiresRecreation() {
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        return currentFragment instanceof StatisticsFragment
+                || currentFragment instanceof ProfileFragment
+                || currentFragment instanceof AppMonitorDetailFragment;
     }
 
     @Override // android.app.Activity
