@@ -326,8 +326,12 @@ public final class JobManager {
                 AppLogger.print(this.mClassName, "Calling context switch for: " + context.getAppName(), 1);
                 this.mAppData.addContext(context);
                 for (AppModule module : this.mModules) {
-                    module.operate();
-                    this.mAppModuleData.addData(context, module.getLastValue(), module);
+                    try {
+                        module.operate();
+                        this.mAppModuleData.addData(context, module.getLastValue(), module);
+                    } catch (RuntimeException e) {
+                        AppLogger.print(this.mClassName, "Module " + module.getName() + " failed during scheduling, skipping this cycle: " + e, 0);
+                    }
                 }
                 if (!this.mNotifcationShowed) {
                     List<AppModuleMetaData> moduleMetaData = Collections.synchronizedList(getModuleData().getAppModuleData());

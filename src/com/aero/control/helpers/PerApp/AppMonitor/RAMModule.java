@@ -39,9 +39,13 @@ public final class RAMModule extends AppModule {
                 }
             }
         } catch (IOException e) {
+        } catch (NumberFormatException e) {
         }
-        Integer freeRAM = Integer.valueOf(Integer.parseInt(totalFreeMemory));
-        addValues(Integer.valueOf(freeRAM.intValue() / 1000));
+        try {
+            Integer freeRAM = Integer.valueOf(Integer.parseInt(totalFreeMemory));
+            addValues(Integer.valueOf(freeRAM.intValue() / 1000));
+        } catch (NumberFormatException e) {
+        }
         AppLogger.print(this.mClassName, "RAMModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
     }
 }

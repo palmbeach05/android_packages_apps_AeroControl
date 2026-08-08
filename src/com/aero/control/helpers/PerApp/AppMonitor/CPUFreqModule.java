@@ -28,9 +28,14 @@ public final class CPUFreqModule extends AppModule {
         int averageFreq = 0;
         int onlineCPUs = 0;
         int i = Runtime.getRuntime().availableProcessors();
+        boolean sampleValid = true;
         if (i == 1) {
-            averageFreq = 0 + Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"));
-            onlineCPUs = 0 + 1;
+            try {
+                averageFreq = 0 + Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"));
+                onlineCPUs = 0 + 1;
+            } catch (NumberFormatException e) {
+                sampleValid = false;
+            }
         } else {
             for (int k = 0; k < i; k++) {
                 if (AeroActivity.shell.getFastInfo("/sys/devices/system/cpu/cpu" + k + "/online").equals("1")) {
@@ -43,10 +48,12 @@ public final class CPUFreqModule extends AppModule {
                 }
             }
         }
-        if (onlineCPUs == 0) {
-            onlineCPUs = 1;
+        if (sampleValid) {
+            if (onlineCPUs == 0) {
+                onlineCPUs = 1;
+            }
+            addValues(Integer.valueOf((averageFreq / onlineCPUs) / 1000));
         }
-        addValues(Integer.valueOf((averageFreq / onlineCPUs) / 1000));
         AppLogger.print(this.mClassName, "CPUFreqModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
     }
 }
