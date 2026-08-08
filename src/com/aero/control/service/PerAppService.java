@@ -165,7 +165,7 @@ public final class PerAppService extends Service {
         if (this.mAm == null) {
             this.mAm = (ActivityManager) getSystemService("activity");
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= 21) {
             PackageName = getTopApp();
         } else {
             List<ActivityManager.RunningTaskInfo> tasks = this.mAm.getRunningTasks(1);
