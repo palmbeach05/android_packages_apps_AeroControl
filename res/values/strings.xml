@@ -182,6 +182,7 @@
     <string name="app_theme_dark">Dark - Dark background with black action bar</string>
     <string name="app_theme_light">Light - Light Holo with blue accent</string>
     <string name="app_theme_red">Red - Light Holo with red accent</string>
+    <string name="app_theme_system">System - Uses your device\'s Material theme</string>
     <string name="pref_category_application">Application</string>
     <string name="pref_category_per_app_profiles">Per-App Profiles</string>
     <string name="pref_app_theme">App Theme</string>
