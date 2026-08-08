@@ -125,9 +125,6 @@ public class PrefsActivity extends PreferenceActivity {
         setTintedIcon(resetTutorials, R.drawable.ic_action_warning);
         setCheckedState(this.mPer_app_check);
         setCheckedState(this.mPerAppMonitor);
-        if (AeroActivity.mJobManager != null) {
-            this.mPerAppMonitor.setChecked(AeroActivity.mJobManager.getJobManagerState());
-        }
         if (!this.mPer_app_check.isChecked()) {
             this.mPerAppMonitor.setEnabled(false);
         }
@@ -179,11 +176,9 @@ public class PrefsActivity extends PreferenceActivity {
                     AeroActivity.mJobManager.disable();
                     PrefsActivity.this.setCheckedState(PrefsActivity.this.mPerAppMonitor);
                     if (AeroActivity.perAppService == null) {
-                        return false;
+                        AeroActivity.perAppService = new PerAppServiceHelper(PrefsActivity.this.getBaseContext());
                     }
-                    if (AeroActivity.perAppService.getState()) {
-                        AeroActivity.perAppService.stopService();
-                    }
+                    AeroActivity.perAppService.stopService();
                     return false;
                 }
                 Util.showUsageStatDialog(PrefsActivity.this);
