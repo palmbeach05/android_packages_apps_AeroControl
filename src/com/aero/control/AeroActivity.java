@@ -78,6 +78,12 @@ public final class AeroActivity extends Activity {
     private int mSelectedItemPosition = 0;
     private Runnable mClearClosePending;
     private Runnable mPendingBackgroundInit;
+    // Process-local handoff used to carry a drawer selection made on this activity
+    // instance across into the instance created by recreate() (e.g. on rotation),
+    // so the tap isn't lost or acted upon by the soon-to-be-destroyed instance.
+    private static final int NO_PENDING_DRAWER_ITEM = -1;
+    private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
+    private static boolean sPendingRecreation = false;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -91,6 +97,11 @@ public final class AeroActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         OrientationHelper.applyOrientation(this);
+        // This instance is the recreated activity (if any recreation was in
+        // progress); clear the marker now, before the normal restoration below
+        // runs, so restoration's own selectItem() calls aren't mistaken for a
+        // hand-off from the old, destroyed instance.
+        sPendingRecreation = false;
         int actionBarHeight = 0;
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
@@ -167,6 +178,15 @@ public final class AeroActivity extends Activity {
             }
         }
         handleSelectedItemRequest();
+        // If a drawer item was tapped on the previous instance while a
+        // recreation (e.g. rotation) was already underway, apply it now that
+        // normal restoration above is done, so it overrides only the stale
+        // restored selection instead of racing with it.
+        int pendingDrawerItemResourceId = sPendingDrawerItemResourceId;
+        sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
+        if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            selectItemByResourceId(pendingDrawerItemResourceId);
+        }
         // Defer non-UI initialization until after the restored fragment has rendered,
         // so it doesn't add latency to activity recreation (e.g. on rotation).
         if (this.mPendingBackgroundInit != null) {
@@ -386,6 +406,14 @@ public final class AeroActivity extends Activity {
             return;
         }
 
+        if (sPendingRecreation) {
+            // This instance is being replaced (e.g. rotation already triggered
+            // recreate()). Hand the selection off to the recreated instance
+            // instead of building a fragment or switching content here.
+            sPendingDrawerItemResourceId = item.content;
+            return;
+        }
+
         this.mSelectedItemPosition = position;
 
         int itemResourceId = item.content;
@@ -553,6 +581,10 @@ public final class AeroActivity extends Activity {
         if (this.mTitle != null) {
             setTitle(this.mTitle);
         }
+        // Mark that this instance is about to be replaced so a drawer
+        // selection tapped on it before it's destroyed is handed off to the
+        // recreated instance instead of switching content here.
+        sPendingRecreation = true;
         recreate();
     }
 
