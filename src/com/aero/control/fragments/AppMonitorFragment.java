@@ -217,7 +217,7 @@ public class AppMonitorFragment extends Fragment {
                                 AppMonitorFragment.this.mPendingNavigationRunnable = null;
                             }
                         };
-                        AeroActivity.mHandler.postDelayed(AppMonitorFragment.this.mPendingNavigationRunnable, AeroActivity.genHelper.getDefaultDelay());
+                        AeroActivity.mHandler.post(AppMonitorFragment.this.mPendingNavigationRunnable);
                     }
                 });
             }

@@ -68,7 +68,15 @@ public class StatisticsFragment extends Fragment {
         setHasOptionsMenu(true);
         this.root = (ViewGroup) inflater.inflate(R.layout.statistics, (ViewGroup) null);
         this.mClusters = this.mClusterHelper.getClusters();
-        this.mSelectedCluster = restoreSelectedCluster(savedInstanceState);
+        if (savedInstanceState != null) {
+            this.mSelectedCluster = restoreSelectedCluster(savedInstanceState);
+        } else if (this.mSelectedCluster == null) {
+            // No saved state to restore from (e.g. a view-only refresh on
+            // rotation triggered by AeroActivity detaching/re-attaching this
+            // fragment rather than recreating the activity): if a cluster was
+            // already selected, keep it instead of resetting to the default.
+            this.mSelectedCluster = restoreSelectedCluster(null);
+        }
         clearUI();
         loadResetState();
         loadUI(true);

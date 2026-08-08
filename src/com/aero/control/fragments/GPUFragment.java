@@ -154,12 +154,12 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     if (GPUFragment.this.mGPUGovernorFragment == null) {
                         GPUFragment.this.mGPUGovernorFragment = new GPUGovernorFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.GPUFragment.1.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.GPUFragment.1.1
                         @Override // java.lang.Runnable
                         public void run() {
                             GPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, GPUFragment.this.mGPUGovernorFragment).addToBackStack("GPU Governor").commit();
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });
