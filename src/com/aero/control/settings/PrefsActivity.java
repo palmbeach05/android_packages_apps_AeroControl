@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -18,7 +19,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.MenuItem;
 import android.widget.TextView;
 import com.aero.control.AeroActivity;
@@ -52,9 +52,9 @@ public class PrefsActivity extends PreferenceActivity {
     public void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
-        TypedValue tintTypedValue = new TypedValue();
-        getTheme().resolveAttribute(R.attr.aeroIconTint, tintTypedValue, true);
-        this.mIconTintColor = tintTypedValue.data;
+        TypedArray tintTypedArray = getTheme().obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
+        this.mIconTintColor = tintTypedArray.getColor(0, 0);
+        tintTypedArray.recycle();
         OrientationHelper.applyOrientation(this);
         if (Build.VERSION.SDK_INT >= 21) {
             this.mActionBar = getActionBar();
