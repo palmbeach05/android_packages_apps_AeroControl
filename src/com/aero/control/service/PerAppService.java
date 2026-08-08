@@ -160,8 +160,6 @@ public final class PerAppService extends Service {
 
     private boolean setAppData() {
         String PackageName;
-        String PackageName2 = mCurrentApp;
-        mPreviousApp = PackageName2;
         if (this.mAm == null) {
             this.mAm = (ActivityManager) getSystemService("activity");
         }
@@ -178,8 +176,12 @@ public final class PerAppService extends Service {
         if (PackageName != null) {
             PackageName = PackageName.trim();
         }
+        if (PackageName == null || PackageName.isEmpty()) {
+            return false;
+        }
+        mPreviousApp = mCurrentApp;
         mCurrentApp = PackageName;
-        return mCurrentApp != null;
+        return true;
     }
 
     @TargetApi(21)
