@@ -47,6 +47,7 @@ public final class JobManager {
 
     private JobManager(Context context) {
         this.mContext = context;
+        this.mJobManagerEnable = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(mPreferenceValue, true);
         loadModules();
         this.mAppModuleData = new AppModuleData(getModules());
         Runnable run = new Runnable() { // from class: com.aero.control.helpers.PerApp.AppMonitor.JobManager.1
@@ -304,6 +305,12 @@ public final class JobManager {
     }
 
     public final void schedule(AppContext context) {
+        if (!PreferenceManager.getDefaultSharedPreferences(this.mContext).getBoolean(mPreferenceValue, true)) {
+            if (this.mJobManagerEnable) {
+                disable();
+            }
+            return;
+        }
         if (context != null) {
             if (this.mPrevSleeping && !this.mSleeping) {
                 context.setLastCheckedNow();
@@ -315,9 +322,6 @@ public final class JobManager {
                 if (System.currentTimeMillis() > this.mExportThreshold) {
                     exportData();
                     setExportTimeNow();
-                }
-                if (!PreferenceManager.getDefaultSharedPreferences(this.mContext).getBoolean(mPreferenceValue, true)) {
-                    disable();
                 }
                 AppLogger.print(this.mClassName, "Calling context switch for: " + context.getAppName(), 1);
                 this.mAppData.addContext(context);

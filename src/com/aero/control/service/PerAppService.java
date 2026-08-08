@@ -51,7 +51,6 @@ public final class PerAppService extends Service {
     public void onCreate() {
         mDestroyed = false;
 
-        final boolean enabled = AeroActivity.perAppService != null ? AeroActivity.perAppService.getState() : true;
         mJobManager = JobManager.instance(this);
         if (this.mContext == null) {
             this.mContext = this;
@@ -67,9 +66,14 @@ public final class PerAppService extends Service {
                                 return;
                             }
 
-                            if (enabled) {
-                                PerAppService.this.runTask();
+                            boolean enabled = PreferenceManager.getDefaultSharedPreferences(PerAppService.this.mContext).getBoolean("per_app_service", false);
+                            if (!enabled) {
+                                PerAppService.mHandler.removeCallbacks(PerAppService.this.mRunnable);
+                                PerAppService.this.stopSelf();
+                                return;
                             }
+
+                            PerAppService.this.runTask();
 
                             if (!mDestroyed) {
                                 PerAppService.mHandler.postDelayed(PerAppService.this.mRunnable, 5000L);
