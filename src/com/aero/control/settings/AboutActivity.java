@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aero.control.R;
+import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.navItems.NavigationDrawerHelper;
 import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
@@ -29,6 +30,7 @@ public class AboutActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        OrientationHelper.applyOrientation(this);
         setContentView(R.layout.activity_about);
         setTitle(R.string.about);
         getActionBar().setDisplayShowHomeEnabled(false);
@@ -140,6 +142,12 @@ public class AboutActivity extends Activity {
             }
         });
         builder.show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OrientationHelper.applyOrientation(this);
     }
 
     @Override
