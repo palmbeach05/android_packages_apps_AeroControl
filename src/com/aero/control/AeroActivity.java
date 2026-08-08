@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.fragments.AeroFragment;
+import com.aero.control.fragments.AppMonitorDetailFragment;
 import com.aero.control.fragments.AppMonitorFragment;
 import com.aero.control.fragments.CPUFragment;
 import com.aero.control.fragments.DefyPartsFragment;
@@ -77,6 +78,18 @@ public final class AeroActivity extends Activity {
     private boolean mClosePending = false;
     private int mSelectedItemPosition = 0;
     private Runnable mClearClosePending;
+    private Runnable mPendingBackgroundInit;
+    // Process-local handoff used to carry a drawer selection made on this activity
+    // instance across into the instance created by recreate() (e.g. on rotation),
+    // so the tap isn't lost or acted upon by the soon-to-be-destroyed instance.
+    private static final int NO_PENDING_DRAWER_ITEM = -1;
+    private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
+    private static boolean sPendingRecreation = false;
+    // API 19-only: resource ID of the drawer item for a switchContent()
+    // transaction that selectItem() has posted on mHandler but that hasn't
+    // committed yet. Lets onConfigurationChanged() hand the selection off to
+    // the recreated instance instead of letting it run on this one.
+    private int mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -90,7 +103,11 @@ public final class AeroActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         OrientationHelper.applyOrientation(this);
-        mJobManager = JobManager.instance(this);
+        // This instance is the recreated activity (if any recreation was in
+        // progress); clear the marker now, before the normal restoration below
+        // runs, so restoration's own selectItem() calls aren't mistaken for a
+        // hand-off from the old, destroyed instance.
+        sPendingRecreation = false;
         int actionBarHeight = 0;
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
@@ -105,13 +122,6 @@ public final class AeroActivity extends Activity {
             TypedValue tv = new TypedValue();
             if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
                 actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-            }
-        }
-        if (!isServiceUp()) {
-            perAppService = new PerAppServiceHelper(this);
-            if (perAppService.shouldBeStarted()) {
-                Util.showUsageStatDialog(this);
-                perAppService.startService();
             }
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -174,6 +184,40 @@ public final class AeroActivity extends Activity {
             }
         }
         handleSelectedItemRequest();
+        // If a drawer item was tapped on the previous instance while a
+        // recreation (e.g. rotation) was already underway, apply it now that
+        // normal restoration above is done, so it overrides only the stale
+        // restored selection instead of racing with it.
+        int pendingDrawerItemResourceId = sPendingDrawerItemResourceId;
+        sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
+        if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            selectItemByResourceId(pendingDrawerItemResourceId);
+        }
+        // Defer non-UI initialization until after the restored fragment has rendered,
+        // so it doesn't add latency to activity recreation (e.g. on rotation).
+        if (this.mPendingBackgroundInit != null) {
+            mHandler.removeCallbacks(this.mPendingBackgroundInit);
+        }
+        this.mPendingBackgroundInit = new Runnable() { // from class: com.aero.control.AeroActivity.5
+            @Override // java.lang.Runnable
+            public void run() {
+                if (!AeroActivity.this.isFinishing()) {
+                    AeroActivity.this.initBackgroundServices();
+                }
+            }
+        };
+        mHandler.post(this.mPendingBackgroundInit);
+    }
+
+    private void initBackgroundServices() {
+        mJobManager = JobManager.instance(this);
+        if (!isServiceUp()) {
+            perAppService = new PerAppServiceHelper(this);
+            if (perAppService.shouldBeStarted()) {
+                Util.showUsageStatDialog(this);
+                perAppService.startService();
+            }
+        }
     }
 
     @Override // android.app.Activity
@@ -368,6 +412,14 @@ public final class AeroActivity extends Activity {
             return;
         }
 
+        if (sPendingRecreation) {
+            // This instance is being replaced (e.g. rotation already triggered
+            // recreate()). Hand the selection off to the recreated instance
+            // instead of building a fragment or switching content here.
+            sPendingDrawerItemResourceId = item.content;
+            return;
+        }
+
         this.mSelectedItemPosition = position;
 
         int itemResourceId = item.content;
@@ -447,6 +499,12 @@ public final class AeroActivity extends Activity {
                 mFragmentStack.remove(oldFragment);
             }
             if (replaceFragment) {
+                if (Build.VERSION.SDK_INT == 19) {
+                    // Track which drawer item this transaction is for, so
+                    // onConfigurationChanged() can hand it off if rotation
+                    // races ahead of this transaction committing.
+                    mPendingDrawerTransactionItemResourceId = itemResourceId;
+                }
                 switchContent(fragment);
             }
         }
@@ -535,7 +593,50 @@ public final class AeroActivity extends Activity {
         if (this.mTitle != null) {
             setTitle(this.mTitle);
         }
-        recreate();
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        if (currentFragment instanceof StatisticsFragment || currentFragment instanceof AppMonitorDetailFragment) {
+            // CPU Statistics and the App Monitor detail page provide a
+            // dedicated landscape layout under res/layout-land/ that can be
+            // picked up by simply refreshing the existing fragment's view in
+            // place, instead of recreating the whole activity. Detaching and
+            // re-attaching the same fragment instance in one transaction
+            // destroys and reinflates its view (so the orientation-specific
+            // layout is picked up) while preserving the fragment's own state
+            // (e.g. the selected CPU cluster, or the App Monitor detail
+            // arguments, selected module, and "AppDetail" back-stack entry).
+            getFragmentManager().beginTransaction().detach(currentFragment).attach(currentFragment).commit();
+            return;
+        }
+        if (currentFragmentRequiresRecreation()) {
+            if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+                // A drawer transaction was already posted by switchContent()
+                // before this configuration change began recreating the
+                // activity. Hand its resource ID off through the same mechanism
+                // used for selections made after recreation begins, and cancel
+                // the transaction so it can't run against this soon-to-be-
+                // destroyed instance.
+                sPendingDrawerItemResourceId = this.mPendingDrawerTransactionItemResourceId;
+                if (this.mPendingSwitch != null) {
+                    mHandler.removeCallbacks(this.mPendingSwitch);
+                }
+                this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
+            }
+            // Mark that this instance is about to be replaced so a drawer
+            // selection tapped on it before it's destroyed is handed off to the
+            // recreated instance instead of switching content here.
+            sPendingRecreation = true;
+            recreate();
+        }
+    }
+
+    // Profile provides a dedicated landscape layout under res/layout-land/
+    // that can only be inflated by recreating the activity. Standard drawer
+    // pages, CPU Statistics, and the App Monitor detail page have no such
+    // requirement, so they stay in this activity instance across rotation
+    // instead of being torn down and recreated.
+    private boolean currentFragmentRequiresRecreation() {
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        return currentFragment instanceof ProfileFragment;
     }
 
     @Override // android.app.Activity
@@ -646,6 +747,9 @@ public final class AeroActivity extends Activity {
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                // This transaction is about to run (or be skipped below), so
+                // it's no longer pending.
+                AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
                 if (AeroActivity.this.isFinishing()) {
                     return;
                 }
@@ -662,7 +766,7 @@ public final class AeroActivity extends Activity {
                 }
             }
         };
-        mHandler.postDelayed(this.mPendingSwitch, genHelper.getDefaultDelay());
+        mHandler.post(this.mPendingSwitch);
     }
 
     @Override // android.app.Activity
@@ -672,6 +776,9 @@ public final class AeroActivity extends Activity {
         }
         if (this.mClearClosePending != null) {
             mHandler.removeCallbacks(this.mClearClosePending);
+        }
+        if (this.mPendingBackgroundInit != null) {
+            mHandler.removeCallbacks(this.mPendingBackgroundInit);
         }
         super.onDestroy();
     }
