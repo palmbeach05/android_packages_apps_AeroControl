@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import com.aero.control.helpers.Android.CirclePageIndicator;
+import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.ZoomOutPageTransformer;
 import com.aero.control.helpers.rootHelper;
 import com.aero.control.sliderFragments.IntroductionFragment;
@@ -45,9 +46,7 @@ public class SplashScreen extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        if (getResources().getBoolean(R.bool.portrait_only)) {
-            setRequestedOrientation(1);
-        }
+        OrientationHelper.applyOrientation(this);
         this.mFragments.clear();
         this.mFragments.add(new IntroductionFragment());
         this.mFragments.add(new PerAppFragment());
@@ -71,6 +70,12 @@ public class SplashScreen extends FragmentActivity {
         this.mCircleIndicator.setViewPager(this.mPager);
         this.mSkip = (Button) findViewById(R.id.splash_button);
         initDefaultSkip();
+    }
+
+    @Override // android.support.v4.app.FragmentActivity, android.app.Activity
+    protected void onResume() {
+        super.onResume();
+        OrientationHelper.applyOrientation(this);
     }
 
     public void initDefaultSkip() {

@@ -57,6 +57,14 @@
                 android:value="com.aero.control.AeroActivity" />
         </activity>
 
+        <activity
+            android:name="com.aero.control.settings.AboutActivity"
+            android:configChanges="screenSize|screenLayout|orientation">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.aero.control.settings.PrefsActivity" />
+        </activity>
+
 		<receiver android:name="com.aero.control.boot.bootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

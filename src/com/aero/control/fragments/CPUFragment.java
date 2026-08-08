@@ -204,12 +204,19 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (CPUFragment.this.mHotplugFragment == null) {
                         CPUFragment.this.mHotplugFragment = new CPUHotplugFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.1.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.1.1
                         @Override // java.lang.Runnable
                         public void run() {
-                            CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mHotplugFragment).addToBackStack("Hotplug").commit();
+                            if (!CPUFragment.this.isAdded() || CPUFragment.this.getFragmentManager() == null) {
+                                return;
+                            }
+                            try {
+                                CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mHotplugFragment).addToBackStack("Hotplug").commit();
+                            } catch (IllegalStateException e) {
+                                Log.e("Aero", "Could not commit fragment transaction, state already saved.", e);
+                            }
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });
@@ -226,12 +233,19 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (CPUFragment.this.mVoltageFragment == null) {
                         CPUFragment.this.mVoltageFragment = new VoltageFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.2.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.2.1
                         @Override // java.lang.Runnable
                         public void run() {
-                            CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mVoltageFragment).addToBackStack("Voltage").commit();
+                            if (!CPUFragment.this.isAdded() || CPUFragment.this.getFragmentManager() == null) {
+                                return;
+                            }
+                            try {
+                                CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mVoltageFragment).addToBackStack("Voltage").commit();
+                            } catch (IllegalStateException e) {
+                                Log.e("Aero", "Could not commit fragment transaction, state already saved.", e);
+                            }
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });
@@ -248,12 +262,19 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (CPUFragment.this.mCPUBoostFragment == null) {
                         CPUFragment.this.mCPUBoostFragment = new CPUBoostFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.3.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.3.1
                         @Override // java.lang.Runnable
                         public void run() {
-                            CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mCPUBoostFragment).addToBackStack("CPUBoost").commit();
+                            if (!CPUFragment.this.isAdded() || CPUFragment.this.getFragmentManager() == null) {
+                                return;
+                            }
+                            try {
+                                CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mCPUBoostFragment).addToBackStack("CPUBoost").commit();
+                            } catch (IllegalStateException e) {
+                                Log.e("Aero", "Could not commit fragment transaction, state already saved.", e);
+                            }
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });

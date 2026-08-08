@@ -43,4 +43,28 @@
         <item name="aeroGraphLabelColor">@color/dark_text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
     </style>
+    <!--
+        System App Theme (API 21+ only). Uses the platform Material base theme
+        so that a compatible ROM's framework-resource overlay can affect the
+        action bar, window background, and text colors, without claiming
+        support for arbitrary CyanogenMod/LineageOS theme packages. Only the
+        AeroControl attributes the app's own layouts require are defined here;
+        application-specific cards, icons, and navigation resources are kept
+        stable by reusing the same app assets as AeroTheme.
+    -->
+    <style name="AeroTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
+        <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
+        <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
+        <item name="aeroSecondaryTextColor">?android:attr/textColorSecondary</item>
+        <item name="aeroCardBackground">@drawable/card_system</item>
+        <item name="aeroCardBackgroundClicked">@drawable/card_clicked_system</item>
+        <item name="aeroGraphBackground">@drawable/card_rect_system</item>
+        <item name="aeroTooltipBackground">@drawable/circle</item>
+        <item name="aeroIconTint">?android:attr/textColorPrimary</item>
+        <item name="aeroDividerColor">@android:color/darker_gray</item>
+        <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
+        <item name="aeroGraphLabelColor">?android:attr/textColorPrimary</item>
+        <item name="aeroGraphLineColor">@color/material_blue</item>
+    </style>
 </resources>

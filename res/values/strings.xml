@@ -182,7 +182,9 @@
     <string name="app_theme_dark">Dark - Dark background with black action bar</string>
     <string name="app_theme_light">Light - Light Holo with blue accent</string>
     <string name="app_theme_red">Red - Light Holo with red accent</string>
-    <string name="pref_app_specific">App specific</string>
+    <string name="app_theme_system">System - Uses your device\'s Material theme</string>
+    <string name="pref_category_application">Application</string>
+    <string name="pref_category_per_app_profiles">Per-App Profiles</string>
     <string name="pref_app_theme">App Theme</string>
     <string name="pref_app_theme_summary">Defines the default app theme.</string>
     <string name="pref_boot_delay">Boot Timer Delay</string>
@@ -197,7 +199,9 @@
     <string name="pref_per_app_service">Per-App Profile Service</string>
     <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
     <string name="pref_perapp_monitor">Per-App Monitor</string>
+    <string name="pref_perapp_monitor_summary">Enable or disable the App Monitor.</string>
     <string name="pref_perapp_toasts">Per-App Toasts</string>
+    <string name="pref_perapp_toasts_summary">Enable or disable toast notifications.</string>
     <string name="pref_profile_change_name">Set another name</string>
     <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
     <string name="pref_profile_deleted">Deleted</string>
@@ -219,6 +223,8 @@
     <string name="pref_reset_tutorials">Reset Tutorials</string>
     <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
     <string name="pref_reset_tutorials_title">There is no way back</string>
+    <string name="pref_screen_rotation">Screen Rotation</string>
+    <string name="pref_screen_rotation_summary">Allow screen rotation when the device is rotated.</string>
     <string name="pref_set_on_boot">Set at Boot</string>
     <string name="pref_set_on_boot_summary">Caution: This will set your settings at boot.</string>
     <string name="pref_set_on_boot_settings">set-on-boot settings.</string>
@@ -276,6 +282,8 @@
     <!-- About Screen & Social / Legal Open-Source Notice Items    -->
     <!-- ========================================================= -->
     <string name="about">About</string>
+    <string name="about_version_label">Version:</string>
+    <string name="about_build_label">Build:</string>
     <string name="about_dialog">Aero Control was originally created by Alexander Christ (Blechd0se) while assisting Quarx and other developers with the Motorola Defy. It is open-source and compatible with a variety of devices. If you wish to show your support, you can donate to Blechd0se.</string>
     <string name="donation_blechdose">Blechd0se</string>
     <string name="github">GitHub</string>
@@ -283,6 +291,7 @@
     <string name="legal_dialog">This App is licensed under the Apache license. A copy of this can be downloaded here:\n http://www.apache.org/licenses/LICENSE-2.0\n ShowCase Library by Alex Curran is licensed under the Apache 2.0 License.\n HoloGraph Library by Daniel Nadeau is licensed under the Apache 2.0 License. </string>
     <string name="send_email">Send an Email</string>
     <string name="xda">XDA Thread</string>
+    <string name="no_activity_for_link">No app available to open this link</string>
 
     <!-- ========================================================= -->
     <!-- Introduction Guide System Walkthrough                     -->

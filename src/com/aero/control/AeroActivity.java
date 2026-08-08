@@ -4,7 +4,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
@@ -12,27 +11,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.fragments.AeroFragment;
+import com.aero.control.fragments.AppMonitorDetailFragment;
 import com.aero.control.fragments.AppMonitorFragment;
 import com.aero.control.fragments.CPUFragment;
 import com.aero.control.fragments.DefyPartsFragment;
@@ -43,39 +34,37 @@ import com.aero.control.fragments.ProfileFragment;
 import com.aero.control.fragments.StatisticsFragment;
 import com.aero.control.fragments.UpdaterFragment;
 import com.aero.control.helpers.GenericHelper;
+import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.navItems.NavBarItems;
+import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppService;
 import com.aero.control.service.PerAppServiceHelper;
 import com.aero.control.settings.PrefsActivity;
 import com.aero.control.testsuite.TestSuiteFragment;
-import com.ikimuhendis.ldrawer.ActionBarDrawerToggle;
-import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
-import java.util.ArrayList;
 import java.util.Stack;
 
 /* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
+    public static final String EXTRA_SELECTED_ITEM_ID = "com.aero.control.SELECTED_ITEM_ID";
     public Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
     private ActionBar mActionBar;
     public TextView mActionBarTitle;
     public int mActionBarTitleID;
-    private ItemAdapter mAdapter;
     private AeroFragment mAeroFragment;
     private AppMonitorFragment mAppStatisticsFragment;
     private CPUFragment mCPUFragement;
     private DefyPartsFragment mDefyPartsFragment;
-    private DrawerArrowDrawable mDrawerArrow;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
+    private NavigationDrawerHelper mNavigationDrawer;
     private GPUFragment mGPUFragement;
     private MemoryFragment mMemoryFragment;
     private MiscSettingsFragment mMiscSettingsFragment;
@@ -89,6 +78,18 @@ public final class AeroActivity extends Activity {
     private boolean mClosePending = false;
     private int mSelectedItemPosition = 0;
     private Runnable mClearClosePending;
+    private Runnable mPendingBackgroundInit;
+    // Process-local handoff used to carry a drawer selection made on this activity
+    // instance across into the instance created by recreate() (e.g. on rotation),
+    // so the tap isn't lost or acted upon by the soon-to-be-destroyed instance.
+    private static final int NO_PENDING_DRAWER_ITEM = -1;
+    private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
+    private static boolean sPendingRecreation = false;
+    // API 19-only: resource ID of the drawer item for a switchContent()
+    // transaction that selectItem() has posted on mHandler but that hasn't
+    // committed yet. Lets onConfigurationChanged() hand the selection off to
+    // the recreated instance instead of letting it run on this one.
+    private int mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -101,10 +102,12 @@ public final class AeroActivity extends Activity {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (getResources().getBoolean(R.bool.portrait_only)) {
-            setRequestedOrientation(1);
-        }
-        mJobManager = JobManager.instance(this);
+        OrientationHelper.applyOrientation(this);
+        // This instance is the recreated activity (if any recreation was in
+        // progress); clear the marker now, before the normal restoration below
+        // runs, so restoration's own selectItem() calls aren't mistaken for a
+        // hand-off from the old, destroyed instance.
+        sPendingRecreation = false;
         int actionBarHeight = 0;
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
@@ -119,13 +122,6 @@ public final class AeroActivity extends Activity {
             TypedValue tv = new TypedValue();
             if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
                 actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-            }
-        }
-        if (!isServiceUp()) {
-            perAppService = new PerAppServiceHelper(this);
-            if (perAppService.shouldBeStarted()) {
-                Util.showUsageStatDialog(this);
-                perAppService.startService();
             }
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -143,34 +139,17 @@ public final class AeroActivity extends Activity {
             params.setMargins(0, ((int) TypedValue.applyDimension(1, 24.0f, getResources().getDisplayMetrics())) + actionBarHeight, 0, 0);
             this.mDrawerLayout.setLayoutParams(params);
         }
-        this.mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        NavBarItems content = new NavBarItems(this);
-        this.mAdapter = new ItemAdapter(this, R.layout.activity_main, content.ITEMS);
-        this.mDrawerList.setAdapter((ListAdapter) this.mAdapter);
-        this.mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
-        this.mDrawerArrow = new DrawerArrowDrawable(this) { // from class: com.aero.control.AeroActivity.1
-            @Override // com.ikimuhendis.ldrawer.DrawerArrowDrawable
-            public boolean isLayoutRtl() {
-                return false;
+        this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
+            @Override
+            public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
+                if (item.content == R.string.aero_settings) {
+                    AeroActivity.this.launchSettings();
+                    return;
+                }
+                AeroActivity.this.selectItem(position);
             }
-        };
-        this.mDrawerToggle = new ActionBarDrawerToggle(this, this.mDrawerLayout, this.mDrawerArrow, R.string.drawer_open, R.string.drawer_close) { // from class: com.aero.control.AeroActivity.2
-            @Override // com.ikimuhendis.ldrawer.ActionBarDrawerToggle, android.support.v4.app.ActionBarDrawerToggle, android.support.v4.widget.DrawerLayout.DrawerListener
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                AeroActivity.this.invalidateOptionsMenu();
-            }
-
-            @Override // com.ikimuhendis.ldrawer.ActionBarDrawerToggle, android.support.v4.app.ActionBarDrawerToggle, android.support.v4.widget.DrawerLayout.DrawerListener
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                AeroActivity.this.invalidateOptionsMenu();
-            }
-        };
-        this.mDrawerLayout.setDrawerListener(this.mDrawerToggle);
-        this.mDrawerToggle.syncState();
+        });
+        this.mNavigationDrawer.syncState();
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
@@ -198,63 +177,72 @@ public final class AeroActivity extends Activity {
             Bundle extras = getIntent().getExtras();
             if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
                 selectItemByResourceId(R.string.slider_app_monitor);
-                return;
             }
-            return;
-        }
-        if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
-            selectItemByResourceId(R.string.slider_app_monitor);
-        }
-    }
-
-    private final class ItemAdapter extends ArrayAdapter<NavBarItems.PreferenceItem> {
-        private ArrayList<NavBarItems.PreferenceItem> items;
-
-        public ItemAdapter(Context context, int textViewResourceId, ArrayList<NavBarItems.PreferenceItem> objects) {
-            super(context, textViewResourceId, objects);
-            this.items = objects;
-        }
-
-        @Override // android.widget.ArrayAdapter, android.widget.Adapter
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View v = convertView;
-            if (v == null) {
-                LayoutInflater vi = AeroActivity.this.getLayoutInflater();
-                v = vi.inflate(R.layout.adapter_item, (ViewGroup) null);
+        } else {
+            if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
+                selectItemByResourceId(R.string.slider_app_monitor);
             }
-            NavBarItems.PreferenceItem item = this.items.get(position);
-            if (item != null) {
-                ImageView icon = (ImageView) v.findViewById(R.id.icon);
-                TextView text = (TextView) v.findViewById(R.id.text);
-                text.setTypeface(AeroActivity.font);
-                if (icon != null) {
-                    icon.setImageResource(item.drawable);
-                }
-                if (text != null) {
-                    text.setText(AeroActivity.this.getString(item.content));
-                    text.setTextColor(AeroActivity.this.getResources().getColorStateList(ThemeHelper.THEME_DARK.equals(AeroActivity.this.mCurrentTheme) ? R.drawable.textview_drawer_dark : R.drawable.textview_drawer));
+        }
+        handleSelectedItemRequest();
+        // If a drawer item was tapped on the previous instance while a
+        // recreation (e.g. rotation) was already underway, apply it now that
+        // normal restoration above is done, so it overrides only the stale
+        // restored selection instead of racing with it.
+        int pendingDrawerItemResourceId = sPendingDrawerItemResourceId;
+        sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
+        if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            selectItemByResourceId(pendingDrawerItemResourceId);
+        }
+        // Initialize mJobManager synchronously so restored fragments can access it.
+        mJobManager = JobManager.instance(this);
+        // Defer heavier service-starting work until after the restored fragment has rendered,
+        // so it doesn't add latency to activity recreation (e.g. on rotation).
+        if (this.mPendingBackgroundInit != null) {
+            mHandler.removeCallbacks(this.mPendingBackgroundInit);
+        }
+        this.mPendingBackgroundInit = new Runnable() { // from class: com.aero.control.AeroActivity.5
+            @Override // java.lang.Runnable
+            public void run() {
+                if (!AeroActivity.this.isFinishing()) {
+                    AeroActivity.this.initBackgroundServices();
                 }
             }
-            return v;
-        }
+        };
+        mHandler.post(this.mPendingBackgroundInit);
     }
 
-    @Override // android.app.Activity
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
+    private void initBackgroundServices() {
+        if (!isServiceUp()) {
+            perAppService = new PerAppServiceHelper(this);
+            if (perAppService.shouldBeStarted()) {
+                Util.showUsageStatDialog(this);
+                perAppService.startService();
+            }
+        }
     }
 
     @Override // android.app.Activity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        handleSelectedItemRequest();
+    }
+
+    private void handleSelectedItemRequest() {
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)) {
+            int selectedItemId = intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1);
+            intent.removeExtra(EXTRA_SELECTED_ITEM_ID);
+            if (selectedItemId != -1) {
+                selectItemByResourceId(selectedItemId);
+            }
+        }
     }
 
     @Override // android.app.Activity
     protected void onResume() {
         super.onResume();
+        OrientationHelper.applyOrientation(this);
         if (!ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
             recreate();
             return;
@@ -268,29 +256,21 @@ public final class AeroActivity extends Activity {
 
     @Override // android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (this.mDrawerToggle.onOptionsItemSelected(item)) {
+        if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
             return true;
-        }
-        switch (item.getItemId()) {
-            case R.id.aero_settings /* 2131099748 */:
-                Intent trIntent = new Intent("android.intent.action.PREFS");
-                trIntent.setClass(this, PrefsActivity.class);
-                trIntent.setFlags(268435456);
-                startActivity(trIntent);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private class DrawerItemClickListener implements AdapterView.OnItemClickListener {
-        private DrawerItemClickListener() {
+    private void launchSettings() {
+        if (this.mDrawerLayout != null) {
+            this.mDrawerLayout.closeDrawers();
         }
-
-        @Override // android.widget.AdapterView.OnItemClickListener
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            AeroActivity.this.selectItem(position);
-        }
+        Intent trIntent = new Intent("android.intent.action.PREFS");
+        trIntent.setClass(this, PrefsActivity.class);
+        trIntent.setFlags(268435456);
+        startActivity(trIntent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private boolean isServiceUp() {
@@ -428,8 +408,16 @@ public final class AeroActivity extends Activity {
         Fragment oldFragment = null;
 
         // Get the item's resource ID to identify it, rather than using position
-        NavBarItems.PreferenceItem item = this.mAdapter.getItem(position);
+        NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(position);
         if (item == null) {
+            return;
+        }
+
+        if (sPendingRecreation) {
+            // This instance is being replaced (e.g. rotation already triggered
+            // recreate()). Hand the selection off to the recreated instance
+            // instead of building a fragment or switching content here.
+            sPendingDrawerItemResourceId = item.content;
             return;
         }
 
@@ -512,6 +500,12 @@ public final class AeroActivity extends Activity {
                 mFragmentStack.remove(oldFragment);
             }
             if (replaceFragment) {
+                if (Build.VERSION.SDK_INT == 19) {
+                    // Track which drawer item this transaction is for, so
+                    // onConfigurationChanged() can hand it off if rotation
+                    // races ahead of this transaction committing.
+                    mPendingDrawerTransactionItemResourceId = itemResourceId;
+                }
                 switchContent(fragment);
             }
         }
@@ -528,8 +522,8 @@ public final class AeroActivity extends Activity {
 
     private void selectItemByResourceId(int resourceId, boolean replaceFragment) {
         // Find the position of the item with this resource ID in the current adapter
-        for (int i = 0; i < this.mAdapter.getCount(); i++) {
-            NavBarItems.PreferenceItem item = this.mAdapter.getItem(i);
+        for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
+            NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(i);
             if (item != null && item.content == resourceId) {
                 selectItem(i, replaceFragment);
                 return;
@@ -571,7 +565,7 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        this.mDrawerToggle.syncState();
+        this.mNavigationDrawer.syncState();
     }
 
     @Override // android.app.Activity
@@ -579,7 +573,7 @@ public final class AeroActivity extends Activity {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_ITEM, this.mSelectedItemPosition);
         // Save stable navigation item resource ID for robust restoration
-        NavBarItems.PreferenceItem item = this.mAdapter.getItem(this.mSelectedItemPosition);
+        NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(this.mSelectedItemPosition);
         if (item != null) {
             outState.putInt(SELECTED_ITEM_ID, item.content);
         }
@@ -596,7 +590,56 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity, android.content.ComponentCallbacks
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        this.mDrawerToggle.onConfigurationChanged(newConfig);
+        this.mNavigationDrawer.onConfigurationChanged(newConfig);
+        if (this.mTitle != null) {
+            setTitle(this.mTitle);
+        }
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        if (currentFragment instanceof StatisticsFragment || currentFragment instanceof AppMonitorDetailFragment) {
+            // CPU Statistics and the App Monitor detail page provide a
+            // dedicated landscape layout under res/layout-land/ that can be
+            // picked up by simply refreshing the existing fragment's view in
+            // place, instead of recreating the whole activity. Detaching and
+            // re-attaching the same fragment instance in separate transactions
+            // destroys and reinflates its view (so the orientation-specific
+            // layout is picked up) while preserving the fragment's own state
+            // (e.g. the selected CPU cluster, or the App Monitor detail
+            // arguments, selected module, and "AppDetail" back-stack entry).
+            getFragmentManager().beginTransaction().detach(currentFragment).commit();
+            getFragmentManager().executePendingTransactions();
+            getFragmentManager().beginTransaction().attach(currentFragment).commit();
+            return;
+        }
+        if (currentFragmentRequiresRecreation()) {
+            if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+                // A drawer transaction was already posted by switchContent()
+                // before this configuration change began recreating the
+                // activity. Hand its resource ID off through the same mechanism
+                // used for selections made after recreation begins, and cancel
+                // the transaction so it can't run against this soon-to-be-
+                // destroyed instance.
+                sPendingDrawerItemResourceId = this.mPendingDrawerTransactionItemResourceId;
+                if (this.mPendingSwitch != null) {
+                    mHandler.removeCallbacks(this.mPendingSwitch);
+                }
+                this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
+            }
+            // Mark that this instance is about to be replaced so a drawer
+            // selection tapped on it before it's destroyed is handed off to the
+            // recreated instance instead of switching content here.
+            sPendingRecreation = true;
+            recreate();
+        }
+    }
+
+    // Profile provides a dedicated landscape layout under res/layout-land/
+    // that can only be inflated by recreating the activity. Standard drawer
+    // pages, CPU Statistics, and the App Monitor detail page have no such
+    // requirement, so they stay in this activity instance across rotation
+    // instead of being torn down and recreated.
+    private boolean currentFragmentRequiresRecreation() {
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        return currentFragment instanceof ProfileFragment;
     }
 
     @Override // android.app.Activity
@@ -707,6 +750,9 @@ public final class AeroActivity extends Activity {
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                // This transaction is about to run (or be skipped below), so
+                // it's no longer pending.
+                AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
                 if (AeroActivity.this.isFinishing()) {
                     return;
                 }
@@ -723,7 +769,7 @@ public final class AeroActivity extends Activity {
                 }
             }
         };
-        mHandler.postDelayed(this.mPendingSwitch, genHelper.getDefaultDelay());
+        mHandler.post(this.mPendingSwitch);
     }
 
     @Override // android.app.Activity
@@ -733,6 +779,9 @@ public final class AeroActivity extends Activity {
         }
         if (this.mClearClosePending != null) {
             mHandler.removeCallbacks(this.mClearClosePending);
+        }
+        if (this.mPendingBackgroundInit != null) {
+            mHandler.removeCallbacks(this.mPendingBackgroundInit);
         }
         super.onDestroy();
     }
