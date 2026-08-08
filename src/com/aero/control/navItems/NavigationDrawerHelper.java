@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -176,8 +177,15 @@ public class NavigationDrawerHelper {
                 }
                 if (text != null) {
                     text.setText(getContext().getString(item.content));
-                    text.setTextColor(getContext().getResources().getColorStateList(
-                            ThemeHelper.THEME_DARK.equals(this.currentTheme) ? R.drawable.textview_drawer_dark : R.drawable.textview_drawer));
+                    int drawerTextSelector;
+                    if (ThemeHelper.THEME_SYSTEM.equals(this.currentTheme) && Build.VERSION.SDK_INT >= 21) {
+                        drawerTextSelector = R.drawable.textview_drawer_system;
+                    } else if (ThemeHelper.THEME_DARK.equals(this.currentTheme)) {
+                        drawerTextSelector = R.drawable.textview_drawer_dark;
+                    } else {
+                        drawerTextSelector = R.drawable.textview_drawer;
+                    }
+                    text.setTextColor(getContext().getResources().getColorStateList(drawerTextSelector));
                 }
             }
             return v;

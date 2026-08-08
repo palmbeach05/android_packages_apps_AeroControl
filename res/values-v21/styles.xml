@@ -57,9 +57,9 @@
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
         <item name="aeroSecondaryTextColor">?android:attr/textColorSecondary</item>
-        <item name="aeroCardBackground">@drawable/card</item>
-        <item name="aeroCardBackgroundClicked">@drawable/card_clicked</item>
-        <item name="aeroGraphBackground">@drawable/card_rect</item>
+        <item name="aeroCardBackground">@drawable/card_system</item>
+        <item name="aeroCardBackgroundClicked">@drawable/card_clicked_system</item>
+        <item name="aeroGraphBackground">@drawable/card_rect_system</item>
         <item name="aeroTooltipBackground">@drawable/circle</item>
         <item name="aeroIconTint">?android:attr/textColorPrimary</item>
         <item name="aeroDividerColor">@android:color/darker_gray</item>
