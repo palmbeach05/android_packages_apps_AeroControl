@@ -69,6 +69,9 @@ public final class PerAppService extends Service {
                             boolean enabled = PreferenceManager.getDefaultSharedPreferences(PerAppService.this.mContext).getBoolean("per_app_service", false);
                             if (!enabled) {
                                 PerAppService.mHandler.removeCallbacks(PerAppService.this.mRunnable);
+                                if (AeroActivity.perAppService != null) {
+                                    AeroActivity.perAppService.setState(false);
+                                }
                                 PerAppService.this.stopSelf();
                                 return;
                             }

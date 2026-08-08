@@ -213,7 +213,7 @@ public final class AeroActivity extends Activity {
 
     private void initBackgroundServices() {
         if (perAppService == null) {
-            perAppService = new PerAppServiceHelper(this);
+            perAppService = new PerAppServiceHelper(getApplicationContext());
         }
         if (!isServiceUp()) {
             if (perAppService.shouldBeStarted()) {
