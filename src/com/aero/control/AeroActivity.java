@@ -77,6 +77,7 @@ public final class AeroActivity extends Activity {
     private boolean mClosePending = false;
     private int mSelectedItemPosition = 0;
     private Runnable mClearClosePending;
+    private Runnable mPendingBackgroundInit;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -90,7 +91,6 @@ public final class AeroActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         OrientationHelper.applyOrientation(this);
-        mJobManager = JobManager.instance(this);
         int actionBarHeight = 0;
         if (getActionBar() != null) {
             getActionBar().setIcon(android.R.color.transparent);
@@ -105,13 +105,6 @@ public final class AeroActivity extends Activity {
             TypedValue tv = new TypedValue();
             if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
                 actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-            }
-        }
-        if (!isServiceUp()) {
-            perAppService = new PerAppServiceHelper(this);
-            if (perAppService.shouldBeStarted()) {
-                Util.showUsageStatDialog(this);
-                perAppService.startService();
             }
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -174,6 +167,31 @@ public final class AeroActivity extends Activity {
             }
         }
         handleSelectedItemRequest();
+        // Defer non-UI initialization until after the restored fragment has rendered,
+        // so it doesn't add latency to activity recreation (e.g. on rotation).
+        if (this.mPendingBackgroundInit != null) {
+            mHandler.removeCallbacks(this.mPendingBackgroundInit);
+        }
+        this.mPendingBackgroundInit = new Runnable() { // from class: com.aero.control.AeroActivity.5
+            @Override // java.lang.Runnable
+            public void run() {
+                if (!AeroActivity.this.isFinishing()) {
+                    AeroActivity.this.initBackgroundServices();
+                }
+            }
+        };
+        mHandler.post(this.mPendingBackgroundInit);
+    }
+
+    private void initBackgroundServices() {
+        mJobManager = JobManager.instance(this);
+        if (!isServiceUp()) {
+            perAppService = new PerAppServiceHelper(this);
+            if (perAppService.shouldBeStarted()) {
+                Util.showUsageStatDialog(this);
+                perAppService.startService();
+            }
+        }
     }
 
     @Override // android.app.Activity
@@ -662,7 +680,7 @@ public final class AeroActivity extends Activity {
                 }
             }
         };
-        mHandler.postDelayed(this.mPendingSwitch, genHelper.getDefaultDelay());
+        mHandler.post(this.mPendingSwitch);
     }
 
     @Override // android.app.Activity
@@ -672,6 +690,9 @@ public final class AeroActivity extends Activity {
         }
         if (this.mClearClosePending != null) {
             mHandler.removeCallbacks(this.mClearClosePending);
+        }
+        if (this.mPendingBackgroundInit != null) {
+            mHandler.removeCallbacks(this.mPendingBackgroundInit);
         }
         super.onDestroy();
     }

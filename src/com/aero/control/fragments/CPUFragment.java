@@ -204,12 +204,12 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (CPUFragment.this.mHotplugFragment == null) {
                         CPUFragment.this.mHotplugFragment = new CPUHotplugFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.1.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.1.1
                         @Override // java.lang.Runnable
                         public void run() {
                             CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mHotplugFragment).addToBackStack("Hotplug").commit();
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });
@@ -226,12 +226,12 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (CPUFragment.this.mVoltageFragment == null) {
                         CPUFragment.this.mVoltageFragment = new VoltageFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.2.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.2.1
                         @Override // java.lang.Runnable
                         public void run() {
                             CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mVoltageFragment).addToBackStack("Voltage").commit();
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });
@@ -248,12 +248,12 @@ public class CPUFragment extends PlaceHolderFragment {
                     if (CPUFragment.this.mCPUBoostFragment == null) {
                         CPUFragment.this.mCPUBoostFragment = new CPUBoostFragment();
                     }
-                    AeroActivity.mHandler.postDelayed(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.3.1
+                    AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.CPUFragment.3.1
                         @Override // java.lang.Runnable
                         public void run() {
                             CPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, CPUFragment.this.mCPUBoostFragment).addToBackStack("CPUBoost").commit();
                         }
-                    }, AeroActivity.genHelper.getDefaultDelay());
+                    });
                     return true;
                 }
             });
