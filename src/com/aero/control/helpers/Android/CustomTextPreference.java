@@ -180,7 +180,7 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
             preferenceContent.setOnClickListener(new View.OnClickListener() {
                 @Override // android.view.View.OnClickListener
                 public void onClick(View v) {
-                    view.performClick();
+                    CustomTextPreference.this.performClick(null);
                 }
             });
         }
