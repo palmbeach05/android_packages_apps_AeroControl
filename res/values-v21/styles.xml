@@ -6,7 +6,11 @@
     </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:listViewWhiteStyle">@style/ListViewAeroTheme.White</item>
-        <item name="android:actionBarStyle">@style/AeroActionBar</item>
+        <item name="android:colorPrimary">@color/actionbar_color</item>
+        <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+        <item name="android:colorControlHighlight">@color/card_shadow</item>
         <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
@@ -24,7 +28,11 @@
         <item name="aeroGraphLineColor">@color/material_blue</item>
     </style>
     <style name="AeroTheme.Dark" parent="@android:style/Theme.Material">
-        <item name="android:actionBarStyle">@style/AeroActionBar.Dark</item>
+        <item name="android:colorPrimary">@color/dark_actionbar_color</item>
+        <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+        <item name="android:colorControlHighlight">@color/card_shadow</item>
         <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="android:windowBackground">@color/dark_window_background</item>
