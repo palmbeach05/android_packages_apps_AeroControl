@@ -25,8 +25,20 @@
     <style name="AeroPreferenceCategory">
         <item name="android:layout">@layout/preference_category</item>
     </style>
+    <style name="AeroPreference">
+        <item name="android:layout">@layout/preference_card</item>
+    </style>
+    <style name="AeroDialogPreference">
+        <item name="android:layout">@layout/preference_card</item>
+    </style>
+    <style name="AeroSwitchPreference">
+        <item name="android:layout">@layout/preference_switch_card</item>
+    </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
+        <item name="android:preferenceStyle">@style/AeroPreference</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
+        <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="android:listViewWhiteStyle">@style/ListViewAeroTheme.White</item>
         <item name="android:colorPrimary">@color/actionbar_color</item>
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
@@ -52,6 +64,9 @@
     </style>
     <style name="AeroTheme.Dark" parent="@android:style/Theme.Material">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
+        <item name="android:preferenceStyle">@style/AeroPreference</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
+        <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="android:colorPrimary">@color/dark_actionbar_color</item>
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
@@ -87,6 +102,9 @@
     -->
     <style name="AeroTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
+        <item name="android:preferenceStyle">@style/AeroPreference</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
+        <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
