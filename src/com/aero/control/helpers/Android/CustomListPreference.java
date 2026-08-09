@@ -7,20 +7,19 @@ import android.content.SharedPreferences;
 import android.preference.ListPreference;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import com.aero.control.R;
+import com.aero.control.helpers.Android.Material.CheckBox;
+import com.aero.control.helpers.Android.Material.CustomImageButton;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
 /* JADX INFO: loaded from: classes.dex */
-public class CustomListPreference extends ListPreference implements CompoundButton.OnCheckedChangeListener {
+public class CustomListPreference extends ListPreference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
     private Boolean mChecked;
     private Context mContext;
-    private ImageButton mCustomImageButton;
+    private CustomImageButton mCustomImageButton;
     private String mHelpContent;
     private Boolean mHideOnBoot;
     private String mName;
@@ -163,10 +162,10 @@ public class CustomListPreference extends ListPreference implements CompoundButt
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
         this.mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-        this.mCheckBox.setOnCheckedChangeListener(null);
+        this.mCheckBox.setOncheckListener(null);
         this.mCheckBox.setChecked(isChecked().booleanValue());
-        this.mCheckBox.setOnCheckedChangeListener(this);
-        this.mCustomImageButton = (ImageButton) view.findViewById(R.id.info_button);
+        this.mCheckBox.setOncheckListener(this);
+        this.mCustomImageButton = (CustomImageButton) view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
         if (isHelpEnabled().booleanValue()) {
@@ -181,8 +180,8 @@ public class CustomListPreference extends ListPreference implements CompoundButt
         }
     }
 
-    @Override // android.widget.CompoundButton.OnCheckedChangeListener
-    public void onCheckedChanged(CompoundButton buttonView, boolean checked) {
+    @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
+    public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         setChecked(Boolean.valueOf(checked));
         if (checked) {
