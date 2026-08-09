@@ -4,6 +4,24 @@
     </style>
     <style name="Theme.Transparent" parent="@android:style/Theme.Material.Light.NoActionBar">
     </style>
+    <style name="AeroCardSurface.Light" parent="@style/AeroCardSurface">
+        <item name="android:background">@drawable/card</item>
+        <item name="android:elevation">@dimen/card_elevation</item>
+        <item name="android:translationZ">0dp</item>
+        <item name="android:colorControlHighlight">@color/card_shadow</item>
+    </style>
+    <style name="AeroCardSurface.Dark" parent="@style/AeroCardSurface">
+        <item name="android:background">@drawable/card_dark</item>
+        <item name="android:elevation">@dimen/card_elevation</item>
+        <item name="android:translationZ">0dp</item>
+        <item name="android:colorControlHighlight">@color/dark_card_shadow</item>
+    </style>
+    <style name="AeroCardSurface.System" parent="@style/AeroCardSurface">
+        <item name="android:background">@drawable/card_system</item>
+        <item name="android:elevation">@dimen/card_elevation</item>
+        <item name="android:translationZ">0dp</item>
+        <item name="android:colorControlHighlight">?android:attr/colorControlHighlight</item>
+    </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:listViewWhiteStyle">@style/ListViewAeroTheme.White</item>
         <item name="android:colorPrimary">@color/actionbar_color</item>
@@ -20,6 +38,7 @@
         <item name="aeroCardBackground">@drawable/card</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked</item>
         <item name="aeroGraphBackground">@drawable/card_rect</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface.Light</item>
         <item name="aeroTooltipBackground">@drawable/circle</item>
         <item name="aeroIconTint">@color/text_color</item>
         <item name="aeroDividerColor">@android:color/darker_gray</item>
@@ -44,6 +63,7 @@
         <item name="aeroCardBackground">@drawable/card_dark</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked_dark</item>
         <item name="aeroGraphBackground">@drawable/card_rect_dark</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
         <item name="aeroTooltipBackground">@drawable/circle_dark</item>
         <item name="aeroIconTint">@color/dark_text_color</item>
         <item name="aeroDividerColor">@color/dark_secondary_text_color</item>
@@ -68,6 +88,7 @@
         <item name="aeroCardBackground">@drawable/card_system</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked_system</item>
         <item name="aeroGraphBackground">@drawable/card_rect_system</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface.System</item>
         <item name="aeroTooltipBackground">@drawable/circle</item>
         <item name="aeroIconTint">?android:attr/textColorPrimary</item>
         <item name="aeroDividerColor">@android:color/darker_gray</item>
