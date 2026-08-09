@@ -143,7 +143,7 @@ public class settingsHelper {
             }
         }
         String voltage = this.prefs.getString("voltage_values", null);
-        if (voltage != null) {
+        if (voltage != null && genHelper.isSafeShellValue(voltage)) {
             shell.queueWork("echo " + voltage + " > " + FilePath.VOLTAGE_PATH);
         }
         String gpu_gov = this.prefs.getString(PREF_CURRENT_GPU_GOV_AVAILABLE, null);
@@ -215,7 +215,7 @@ public class settingsHelper {
                     }
                 }
             }
-            if (freqMax != null) {
+            if (freqMax != null && genHelper.isSafeShellValue(freqMax)) {
                 String rollbackMax = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MAX_FREQ);
                 for (Integer cpu : members) {
                     boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
@@ -232,7 +232,7 @@ public class settingsHelper {
                     shell.queueWork("echo " + freqMax + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
                 }
             }
-            if (freqMin != null) {
+            if (freqMin != null && genHelper.isSafeShellValue(freqMin)) {
                 String rollbackMin = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CPU_MIN_FREQ);
                 for (Integer cpu : members) {
                     boolean hasOnlineControl = genHelper.doesExist(FilePath.CPU_BASE_PATH + cpu + "/online");
@@ -249,7 +249,7 @@ public class settingsHelper {
                     shell.queueWork("echo " + freqMin + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
                 }
             }
-            if (governor != null) {
+            if (governor != null && genHelper.isSafeShellValue(governor)) {
                 governorApplied = true;
                 String rollbackGovernor = shell.getInfo(FilePath.CPU_BASE_PATH + representativeCpu + FilePath.CURRENT_GOV_AVAILABLE);
                 for (Integer cpu : members) {
@@ -268,14 +268,14 @@ public class settingsHelper {
                 }
             }
         }
-        if (mem_ios != null) {
+        if (mem_ios != null && genHelper.isSafeShellValue(mem_ios)) {
             governorSettings.add("chmod 0666 /sys/block/mmcblk0/queue/scheduler");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfoString(shell.getInfo(FilePath.GOV_IO_FILE)) + " > " + FilePath.GOV_IO_FILE);
             }
             governorSettings.add("echo " + mem_ios + " > " + FilePath.GOV_IO_FILE);
         }
-        if (mem_rah != null) {
+        if (mem_rah != null && genHelper.isSafeShellValue(mem_rah)) {
             shell.queueWork("chmod 0666 /sys/block/mmcblk0/queue/read_ahead_kb");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.READAHEAD_PARAMETER) + " > " + FilePath.READAHEAD_PARAMETER);
@@ -285,7 +285,7 @@ public class settingsHelper {
         if (governorApplied || mem_ios != null) {
             shell.setRootInfo((String[]) governorSettings.toArray(new String[0]));
         }
-        if (gpu_gov != null) {
+        if (gpu_gov != null && genHelper.isSafeShellValue(gpu_gov)) {
             String[] arr$ = FilePath.GPU_GOV_ARRAY;
             for (String s : arr$) {
                 if (genHelper.doesExist(s)) {
@@ -314,7 +314,7 @@ public class settingsHelper {
                     break;
                 }
             }
-            if (this.gpu_file != null) {
+            if (this.gpu_file != null && genHelper.isSafeShellValue(gpu_max)) {
                 shell.queueWork("chmod 0666 " + this.gpu_file);
                 if (Profile != null) {
                     defaultProfile.add("echo " + shell.getInfo(this.gpu_file) + " > " + this.gpu_file);
@@ -343,14 +343,14 @@ public class settingsHelper {
             }
             shell.queueWork("echo " + (doubletap.booleanValue() ? "1" : "0") + " > " + FilePath.DOUBLETAP2WAKE);
         }
-        if (display_color != null) {
+        if (display_color != null && genHelper.isSafeShellValue(display_color)) {
             shell.queueWork("chmod 0666 /sys/class/misc/mDisplayControl/display_brightness_value");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.DISPLAY_COLOR) + " > " + FilePath.DISPLAY_COLOR);
             }
             shell.queueWork("echo " + display_color + " > " + FilePath.DISPLAY_COLOR);
         }
-        if (rgbValues != null) {
+        if (rgbValues != null && genHelper.isSafeShellValue(rgbValues)) {
             shell.queueWork("chmod 0666 /sys/devices/platform/kcal_ctrl.0/kcal");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.COLOR_CONTROL) + " > " + FilePath.COLOR_CONTROL);
@@ -385,35 +385,35 @@ public class settingsHelper {
             }
             shell.queueWork("echo " + (mem_ksm.booleanValue() ? "1" : "0") + " > " + FilePath.KSM_SETTINGS);
         }
-        if (misc_vib != null) {
+        if (misc_vib != null && genHelper.isSafeShellValue(misc_vib)) {
             shell.queueWork("chmod 0666 /sys/devices/virtual/timed_output/vibrator/vtg_level");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.MISC_VIBRATOR_CONTROL_FILE) + " > " + FilePath.MISC_VIBRATOR_CONTROL_FILE);
             }
             shell.queueWork("echo " + misc_vib + " > " + FilePath.MISC_VIBRATOR_CONTROL_FILE);
         }
-        if (misc_amp != null) {
+        if (misc_amp != null && genHelper.isSafeShellValue(misc_amp)) {
             shell.queueWork("chmod 0666 /sys/devices/virtual/timed_output/vibrator/amp");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.MISC_VIBRATOR_CONTROL_FILEAMP) + " > " + FilePath.MISC_VIBRATOR_CONTROL_FILEAMP);
             }
             shell.queueWork("echo " + misc_amp + " > " + FilePath.MISC_VIBRATOR_CONTROL_FILEAMP);
         }
-        if (misc_thm != null) {
+        if (misc_thm != null && genHelper.isSafeShellValue(misc_thm)) {
             shell.queueWork("chmod 0666 /sys/module/msm_thermal/parameters/temp_threshold");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.MISC_THERMAL_CONTROL_FILE) + " > " + FilePath.MISC_THERMAL_CONTROL_FILE);
             }
             shell.queueWork("echo " + misc_thm + " > " + FilePath.MISC_THERMAL_CONTROL_FILE);
         }
-        if (misc_tcp != null) {
+        if (misc_tcp != null && genHelper.isSafeShellValue(misc_tcp)) {
             shell.queueWork("chmod 0666 /proc/sys/net/ipv4/tcp_congestion_control");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.MISC_TCP_CONGESTION_CURRENT) + " > " + FilePath.MISC_TCP_CONGESTION_CURRENT);
             }
             shell.queueWork("echo " + misc_tcp + " > " + FilePath.MISC_TCP_CONGESTION_CURRENT);
         }
-        if (misc_vol != null) {
+        if (misc_vol != null && genHelper.isSafeShellValue(misc_vol)) {
             shell.queueWork("chmod 0666 /sys/class/misc/soundcontrol/volume_boost");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.MISC_HEADSET_VOLUME_BOOST_FILE) + " > " + FilePath.MISC_HEADSET_VOLUME_BOOST_FILE);
@@ -425,7 +425,7 @@ public class settingsHelper {
             Map<String, ?> aero_keys = this.prefs.getAll();
             for (Map.Entry<String, ?> a2 : misc_keys.entrySet()) {
                 for (Map.Entry<String, ?> b : aero_keys.entrySet()) {
-                    if (a2.getKey().equals(b.getKey())) {
+                    if (a2.getKey().equals(b.getKey()) && b.getValue() != null && genHelper.isSafeShellValue(String.valueOf(b.getValue()))) {
                         shell.queueWork("chmod 0666 " + b.getKey());
                         if (Profile != null) {
                             defaultProfile.add("echo " + shell.getInfo(b.getKey()) + " > " + b.getKey());
@@ -529,7 +529,7 @@ public class settingsHelper {
             String[] completeIOSchedulerSettings = shellPara.getDirInfo(FilePath.GOV_IO_PARAMETER, true);
             for (String b : completeIOSchedulerSettings) {
                 String ioSettings = this.prefs.getString("/sys/block/mmcblk0/queue/iosched/" + b, null);
-                if (ioSettings != null) {
+                if (ioSettings != null && genHelper.isSafeShellValue(ioSettings)) {
                     shellPara.queueWork("chmod 0666 /sys/block/mmcblk0/queue/iosched/" + b);
                     if (Profile != null) {
                         defaultProfile.add("echo " + shellPara.getInfo("/sys/block/mmcblk0/queue/iosched/" + b) + " > " + FilePath.GOV_IO_PARAMETER + "/" + b);
@@ -540,7 +540,7 @@ public class settingsHelper {
         }
         for (String c : completeVMSettings) {
             String vmSettings = this.prefs.getString("/proc/sys/vm/" + c, null);
-            if (vmSettings != null) {
+            if (vmSettings != null && genHelper.isSafeShellValue(vmSettings)) {
                 shellPara.queueWork("chmod 0666 /proc/sys/vm/" + c);
                 if (Profile != null) {
                     defaultProfile.add("echo " + shellPara.getInfo("/proc/sys/vm/" + c) + " > " + FilePath.DALVIK_TWEAK + "/" + c);
@@ -558,7 +558,7 @@ public class settingsHelper {
             String[] completeHotplugSettings = shellPara.getDirInfo(this.mHotplugPath, true);
             for (String d : completeHotplugSettings) {
                 String hotplugSettings = this.prefs.getString(this.mHotplugPath + "/" + d, null);
-                if (hotplugSettings != null) {
+                if (hotplugSettings != null && genHelper.isSafeShellValue(hotplugSettings)) {
                     shellPara.queueWork("chmod 0666 " + this.mHotplugPath + "/" + d);
                     if (Profile != null) {
                         defaultProfile.add("echo " + shellPara.getInfo(this.mHotplugPath + "/" + d) + " > " + this.mHotplugPath + "/" + d);
@@ -571,7 +571,7 @@ public class settingsHelper {
             String[] completeCPUBOOSTSettings = shellPara.getDirInfo(FilePath.CPU_BOOST, true);
             for (String d2 : completeCPUBOOSTSettings) {
                 String cpuBoostSettings = this.prefs.getString("/sys/module/cpu_boost/parameters/" + d2, null);
-                if (cpuBoostSettings != null) {
+                if (cpuBoostSettings != null && genHelper.isSafeShellValue(cpuBoostSettings)) {
                     shellPara.queueWork("chmod 0666 /sys/module/cpu_boost/parameters/" + d2);
                     if (Profile != null) {
                         defaultProfile.add("echo " + shellPara.getInfo("/sys/module/cpu_boost/parameters/" + d2) + " > " + FilePath.CPU_BOOST + "/" + d2);
@@ -584,7 +584,7 @@ public class settingsHelper {
             String[] completeGPUGovSettings = shellPara.getDirInfo(FilePath.GPU_GOV_PATH, true);
             for (String e : completeGPUGovSettings) {
                 String gpugovSettings = this.prefs.getString("/sys/module/msm_kgsl_core/parameters/" + e, null);
-                if (gpugovSettings != null) {
+                if (gpugovSettings != null && genHelper.isSafeShellValue(gpugovSettings)) {
                     shellPara.queueWork("chmod 0666 /sys/module/msm_kgsl_core/parameters/" + e);
                     if (Profile != null) {
                         defaultProfile.add("echo " + shellPara.getInfo("/sys/module/msm_kgsl_core/parameters/" + e) + " > " + FilePath.GPU_GOV_PATH + "/" + e);
@@ -596,7 +596,7 @@ public class settingsHelper {
         if (completeGovernorSettingList != null) {
             for (String b2 : completeGovernorSettingList) {
                 String governorSetting = this.prefs.getString(FilePath.CPU_GOV_BASE + cpu_governor + "/" + b2, null);
-                if (governorSetting != null) {
+                if (governorSetting != null && genHelper.isSafeShellValue(governorSetting)) {
                     shellPara.queueWork("sleep 1");
                     shellPara.queueWork("chmod 0666 /sys/devices/system/cpu/cpufreq/" + cpu_governor + "/" + b2);
                     if (Profile != null) {
@@ -607,7 +607,7 @@ public class settingsHelper {
                 }
             }
         }
-        if (gpu_gov != null) {
+        if (gpu_gov != null && genHelper.isSafeShellValue(gpu_gov)) {
             if (this.mGPUGov == null) {
                 String[] arr$2 = FilePath.GPU_GOV_ARRAY;
                 for (String s2 : arr$2) {
@@ -619,7 +619,7 @@ public class settingsHelper {
             String[] completeGPUGovernorSetting = shell.getDirInfo(this.mGPUGov + gpu_gov, true);
             for (String b3 : completeGPUGovernorSetting) {
                 String governorSetting2 = this.prefs.getString(this.mGPUGov + gpu_gov + "/" + b3, null);
-                if (governorSetting2 != null) {
+                if (governorSetting2 != null && genHelper.isSafeShellValue(governorSetting2)) {
                     shellPara.queueWork("chmod 0666 " + this.mGPUGov + gpu_gov + "/" + b3);
                     if (Profile != null) {
                         defaultProfile.add("echo " + shellPara.getInfo(this.mGPUGov + gpu_gov + "/" + b3) + " > " + this.mGPUGov + gpu_gov + "/" + b3);
