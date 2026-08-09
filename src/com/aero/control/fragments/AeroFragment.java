@@ -170,7 +170,7 @@ public class AeroFragment extends Fragment {
     }
 
     /**
-     * Builds one formatted string per core, for example "CPU0 1200 MHz", for
+     * Builds one formatted string per core, for example "CPU0\n1200 MHz", for
      * rendering in the Overview frequency grid.
      */
     private List<String> getCoreFrequencyList() {
@@ -179,7 +179,7 @@ public class AeroFragment extends Fragment {
         for (int k = 0; k < i; k++) {
             String complete_path = "/sys/devices/system/cpu/cpu" + k + SCALE_PATH_NAME;
             String value = AeroActivity.shell.toMHz(AeroActivity.shell.getInfo(complete_path)).replace(NO_DATA_FOUND, "Offline");
-            perCore.add("CPU" + k + " " + value);
+            perCore.add("CPU" + k + "\n" + value);
         }
         return perCore;
     }
