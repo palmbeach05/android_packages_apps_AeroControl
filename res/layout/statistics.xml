@@ -51,6 +51,7 @@
         android:layout_marginTop="240dp"
         android:layout_marginBottom="48dp"
         android:drawSelectorOnTop="true"
+        android:listSelector="?android:attr/selectableItemBackground"
         android:divider="@android:color/transparent"
         android:dividerHeight="2dp"/>
 </RelativeLayout>

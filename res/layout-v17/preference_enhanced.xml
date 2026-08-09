@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?android:attr/listPreferredItemHeight">
-    <com.aero.control.helpers.Android.Material.CustomImageButton
+    <ImageButton
         android:id="@+id/info_button"
-        android:background="@drawable/background_transparent"
+        android:background="@drawable/ripple_icon_button"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:layout_width="wrap_content"
@@ -51,9 +51,8 @@
         android:background="?attr/aeroDividerColor"
         android:layout_width="0.5dp"
         android:layout_height="match_parent"/>
-    <com.aero.control.helpers.Android.Material.CheckBox
+    <CheckBox
         android:id="@+id/checkbox_pref"
-        android:background="?attr/aeroPreferenceControlBackground"
         android:paddingLeft="0dp"
         android:paddingRight="5dp"
         android:layout_width="64dp"

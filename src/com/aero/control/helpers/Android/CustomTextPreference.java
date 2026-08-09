@@ -7,18 +7,19 @@ import android.content.SharedPreferences;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import com.aero.control.R;
-import com.aero.control.helpers.Android.Material.CheckBox;
-import com.aero.control.helpers.Android.Material.CustomImageButton;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
 /* JADX INFO: loaded from: classes.dex */
-public class CustomTextPreference extends EditTextPreference implements CheckBox.OnCheckListener {
+public class CustomTextPreference extends EditTextPreference implements CompoundButton.OnCheckedChangeListener {
     private Boolean mChecked;
     private Context mContext;
-    private CustomImageButton mCustomImageButton;
+    private ImageButton mCustomImageButton;
     private String mHelpContent;
     private Boolean mHideOnBoot;
     private String mName;
@@ -153,8 +154,7 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
         CheckBox checkbox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-        checkbox.setOncheckListener(this);
-        this.mCustomImageButton = (CustomImageButton) view.findViewById(R.id.info_button);
+        this.mCustomImageButton = (ImageButton) view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
         if (isHelpEnabled().booleanValue()) {
@@ -164,16 +164,18 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
             seperator_info.setVisibility(8);
         }
         if (isChecked() != null) {
+            checkbox.setOnCheckedChangeListener(null);
             checkbox.setChecked(isChecked().booleanValue());
         }
+        checkbox.setOnCheckedChangeListener(this);
         if (isHidden().booleanValue()) {
             checkbox.setVisibility(8);
             separator_checkbox.setVisibility(8);
         }
     }
 
-    @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
-    public void onCheck(boolean checked) {
+    @Override // android.widget.CompoundButton.OnCheckedChangeListener
+    public void onCheckedChanged(CompoundButton buttonView, boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         setChecked(Boolean.valueOf(checked));
         if (checked) {

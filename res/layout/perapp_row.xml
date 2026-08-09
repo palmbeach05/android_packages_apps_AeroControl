@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/com.aero.control"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <com.aero.control.helpers.Android.Material.RippleView
+    <RelativeLayout
+        android:background="@drawable/ripple_row_background"
         android:padding="5dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:rv_rippleDuration="200"
-        app:rv_type="rectangle">
+        android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/rowfolder"
             android:padding="2dp"
@@ -29,5 +28,5 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"/>
-    </com.aero.control.helpers.Android.Material.RippleView>
+    </RelativeLayout>
 </RelativeLayout>

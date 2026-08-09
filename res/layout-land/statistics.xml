@@ -57,6 +57,7 @@
         android:layout_height="match_parent"
         android:layout_toRightOf="@id/statisticGraphContainer"
         android:drawSelectorOnTop="true"
+        android:listSelector="?android:attr/selectableItemBackground"
         android:divider="@android:color/transparent"
         android:dividerHeight="2dp"/>
 </RelativeLayout>

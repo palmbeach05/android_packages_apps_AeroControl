@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -17,12 +18,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
-import com.aero.control.helpers.Android.Material.Slider;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.Shell;
@@ -269,16 +270,21 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         builder.setIcon(R.drawable.flower);
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View layout = inflater.inflate(R.layout.gpu_color_control, (ViewGroup) null);
-        final Slider redValues = (Slider) layout.findViewById(R.id.redValues);
-        final Slider greenValues = (Slider) layout.findViewById(R.id.greenValues);
-        final Slider blueValues = (Slider) layout.findViewById(R.id.blueValues);
+        final int colorMin = 20;
+        final int colorMax = 255;
+        final SeekBar redValues = (SeekBar) layout.findViewById(R.id.redValues);
+        final SeekBar greenValues = (SeekBar) layout.findViewById(R.id.greenValues);
+        final SeekBar blueValues = (SeekBar) layout.findViewById(R.id.blueValues);
+        redValues.getProgressDrawable().setColorFilter(getResources().getColor(R.color.gpu_slider_red), PorterDuff.Mode.SRC_IN);
+        greenValues.getProgressDrawable().setColorFilter(getResources().getColor(R.color.gpu_slider_green), PorterDuff.Mode.SRC_IN);
+        blueValues.getProgressDrawable().setColorFilter(getResources().getColor(R.color.gpu_slider_blue), PorterDuff.Mode.SRC_IN);
         final EditText redValue = (EditText) layout.findViewById(R.id.redValue);
         final EditText greenValue = (EditText) layout.findViewById(R.id.greenValue);
         final EditText blueValue = (EditText) layout.findViewById(R.id.blueValue);
         try {
-            redValues.setProgress(Integer.parseInt(this.mColorValues[0]));
-            greenValues.setProgress(Integer.parseInt(this.mColorValues[1]));
-            blueValues.setProgress(Integer.parseInt(this.mColorValues[2]));
+            redValues.setProgress(clampColorValue(Integer.parseInt(this.mColorValues[0]), colorMin, colorMax) - colorMin);
+            greenValues.setProgress(clampColorValue(Integer.parseInt(this.mColorValues[1]), colorMin, colorMax) - colorMin);
+            blueValues.setProgress(clampColorValue(Integer.parseInt(this.mColorValues[2]), colorMin, colorMax) - colorMin);
         } catch (NumberFormatException e) {
             Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
             return;
@@ -299,7 +305,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 try {
                     int i = Integer.parseInt(s.toString());
                     if (i <= 255 && i >= 0) {
-                        redValues.setProgress(i);
+                        redValues.setProgress(clampColorValue(i, colorMin, colorMax) - colorMin);
                         GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                     } else {
                         redValue.setText("255");
@@ -322,7 +328,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 try {
                     int i = Integer.parseInt(s.toString());
                     if (i <= 255 && i >= 0) {
-                        greenValues.setProgress(i);
+                        greenValues.setProgress(clampColorValue(i, colorMin, colorMax) - colorMin);
                         GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                     } else {
                         greenValue.setText("255");
@@ -345,7 +351,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 try {
                     int i = Integer.parseInt(s.toString());
                     if (i <= 255 && i >= 0) {
-                        blueValues.setProgress(i);
+                        blueValues.setProgress(clampColorValue(i, colorMin, colorMax) - colorMin);
                         GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                     } else {
                         blueValue.setText("255");
@@ -358,31 +364,65 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             public void afterTextChanged(Editable s) {
             }
         });
-        redValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.5
-            @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
-            public void onValueChanged(int value) {
-                redValue.setText("" + value);
-                GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+        redValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    redValue.setText("" + (progress + colorMin));
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                }
+            }
+
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
-        greenValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.6
-            @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
-            public void onValueChanged(int value) {
-                greenValue.setText("" + value);
-                GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+        greenValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    greenValue.setText("" + (progress + colorMin));
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                }
+            }
+
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
-        blueValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.7
-            @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
-            public void onValueChanged(int value) {
-                blueValue.setText("" + value);
-                GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+        blueValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    blueValue.setText("" + (progress + colorMin));
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                }
+            }
+
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override // android.widget.SeekBar.OnSeekBarChangeListener
+            public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
         builder.setTitle(R.string.pref_display_color);
         builder.setView(layout);
         this.mColorDialog = builder.create();
         this.mColorDialog.show();
+    }
+
+    private int clampColorValue(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     /**
