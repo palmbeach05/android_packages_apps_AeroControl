@@ -6,14 +6,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.regex.Pattern;
 
 /* JADX INFO: loaded from: classes.dex */
 public class GenericHelper {
     private static final int BYTE = 1024;
     private static final int DEFAULT_DELAY = 200;
+    private static final Pattern SAFE_SHELL_VALUE = Pattern.compile("[\\w.,\\- ]+");
 
     public final int getDefaultDelay() {
         return DEFAULT_DELAY;
+    }
+
+    /**
+     * Whether a value read from preferences is safe to interpolate directly into a
+     * privileged shell command (e.g. "echo <value> > <sysfs path>"). Only allows
+     * letters, digits, '.', ',', '-', '_' and spaces so that shell metacharacters
+     * (';', '|', '&', '$', backticks, quotes, redirections, newlines, etc.) present
+     * in a corrupted or tampered preference value cannot be executed, and malformed
+     * values cannot be written into kernel sysfs nodes.
+     */
+    public final boolean isSafeShellValue(String value) {
+        return value != null && SAFE_SHELL_VALUE.matcher(value).matches();
     }
 
     public final boolean doesExist(String s) {
