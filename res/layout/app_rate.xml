@@ -5,7 +5,7 @@
     <RelativeLayout
         android:layout_gravity="bottom"
         android:id="@+id/container"
-        android:background="#aa000000"
+        android:background="@color/app_rate_overlay_background"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:layout_width="match_parent"
