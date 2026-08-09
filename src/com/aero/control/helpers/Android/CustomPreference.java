@@ -260,7 +260,7 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
     }
 
     @Override // android.preference.Preference
-    protected void onBindView(View view) {
+    protected void onBindView(final View view) {
         super.onBindView(view);
         this.mTitle = (TextView) view.findViewById(R.id.preference_title);
         this.mSummary = (TextView) view.findViewById(R.id.preference_summary);
@@ -289,6 +289,15 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
+        View preferenceContent = view.findViewById(R.id.preference_content);
+        if (preferenceContent != null) {
+            preferenceContent.setOnClickListener(new View.OnClickListener() {
+                @Override // android.view.View.OnClickListener
+                public void onClick(View v) {
+                    view.performClick();
+                }
+            });
+        }
         if (isHelpEnabled().booleanValue()) {
             this.mCustomImageButton.setOnClickListener(this.mOnClickListener);
         } else {

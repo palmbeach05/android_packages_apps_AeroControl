@@ -20,6 +20,7 @@
         android:layout_width="0.5dp"
         android:layout_height="match_parent"/>
     <RelativeLayout
+        android:id="@+id/preference_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="9dp"
@@ -53,7 +54,6 @@
         android:layout_height="match_parent"/>
     <CheckBox
         android:id="@+id/checkbox_pref"
-        android:background="?attr/aeroPreferenceControlBackground"
         android:paddingLeft="0dp"
         android:paddingRight="5dp"
         android:layout_width="64dp"
