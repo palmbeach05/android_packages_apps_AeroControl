@@ -79,6 +79,9 @@ public class CardBox extends LinearLayout {
             // Use themed drawable resolution for API 21+
             if (Build.VERSION.SDK_INT >= 21) {
                 backgroundDrawable = getContext().getResources().getDrawable(drawable, getContext().getTheme());
+                // Use platform elevation instead of a simulated shadow drawable
+                setElevation(getResources().getDimension(R.dimen.card_elevation));
+                setTranslationZ(0f);
             } else {
                 backgroundDrawable = getResources().getDrawable(drawable);
             }
