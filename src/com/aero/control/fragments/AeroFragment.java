@@ -28,6 +28,7 @@ import java.util.List;
 /* JADX INFO: loaded from: classes.dex */
 public class AeroFragment extends Fragment {
     private static final String FILENAME = "firstrun";
+    private static final int MAX_GRID_CORES = 8;
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final String SCALE_CPU_UTIL = "/cpufreq/cpu_utilization";
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
@@ -148,18 +149,52 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Builds the legacy joined single-line frequency string. Used as the
+     * fallback format when a device reports more than {@link #MAX_GRID_CORES}
+     * cores, since the fixed grid layout only supports up to 8 cells.
+     */
     public final String getFreqPerCore() {
         String freq_string = "";
-        String cpu_util = "";
         int i = Runtime.getRuntime().availableProcessors();
         for (int k = 0; k < i; k++) {
             String complete_path = "/sys/devices/system/cpu/cpu" + k + SCALE_PATH_NAME;
             freq_string = freq_string + " " + AeroActivity.shell.toMHz(AeroActivity.shell.getInfo(complete_path));
         }
         String freq_string2 = freq_string.replace(NO_DATA_FOUND, " Offline ");
-        if (!AeroActivity.genHelper.doesExist("/sys/devices/system/cpu/cpu0/cpufreq/cpu_utilization")) {
+        String cpu_util_line = getCpuUtilizationLine();
+        if (cpu_util_line == null) {
             return freq_string2;
         }
+        return freq_string2 + "\n" + cpu_util_line;
+    }
+
+    /**
+     * Builds one formatted string per core, for example "CPU0 1200 MHz", for
+     * rendering in the Overview frequency grid.
+     */
+    private List<String> getCoreFrequencyList() {
+        int i = Runtime.getRuntime().availableProcessors();
+        List<String> perCore = new ArrayList<>(i);
+        for (int k = 0; k < i; k++) {
+            String complete_path = "/sys/devices/system/cpu/cpu" + k + SCALE_PATH_NAME;
+            String value = AeroActivity.shell.toMHz(AeroActivity.shell.getInfo(complete_path)).replace(NO_DATA_FOUND, "Offline");
+            perCore.add("CPU" + k + " " + value);
+        }
+        return perCore;
+    }
+
+    /**
+     * Builds the tab-padded, percentage-suffixed CPU-utilization line,
+     * decoupled from the per-core frequency string. Returns null when the
+     * utilization file does not exist.
+     */
+    private String getCpuUtilizationLine() {
+        int i = Runtime.getRuntime().availableProcessors();
+        if (!AeroActivity.genHelper.doesExist("/sys/devices/system/cpu/cpu0/cpufreq/cpu_utilization")) {
+            return null;
+        }
+        String cpu_util = "";
         for (int j = 0; j < i; j++) {
             String complete_path2 = "/sys/devices/system/cpu/cpu" + j + SCALE_CPU_UTIL;
             String tmp = AeroActivity.shell.getInfo(complete_path2);
@@ -174,7 +209,7 @@ public class AeroFragment extends Fragment {
             }
             cpu_util = cpu_util + "\t\t\t" + tmp + "%";
         }
-        return freq_string2 + "\n" + cpu_util.replace("Unavailable%", "--");
+        return cpu_util.replace("Unavailable%", "--");
     }
 
     private String getCPUTemp() {
@@ -212,12 +247,16 @@ public class AeroFragment extends Fragment {
         } else {
             this.mIOSchedulerData.content = AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE);
         }
+        int coreCount = Runtime.getRuntime().availableProcessors();
+        List<String> coreFrequencies = coreCount <= MAX_GRID_CORES ? getCoreFrequencyList() : null;
+        String frequencyContent = coreCount <= MAX_GRID_CORES ? getCpuUtilizationLine() : getFreqPerCore();
         if (this.mFrequencyData == null) {
-            this.mFrequencyData = new AeroData(getString(R.string.current_cpu_speed), getFreqPerCore(), getCPUTemp());
+            this.mFrequencyData = new AeroData(getString(R.string.current_cpu_speed), frequencyContent, getCPUTemp());
         } else {
-            this.mFrequencyData.content = getFreqPerCore();
+            this.mFrequencyData.content = frequencyContent;
             this.mFrequencyData.right_name = getCPUTemp();
         }
+        this.mFrequencyData.coreFrequencies = coreFrequencies;
         if (this.mGPUData == null) {
             this.mGPUData = new AeroData(getString(R.string.current_gpu_speed), AeroActivity.shell.toMHz(gpu_freq.substring(0, gpu_freq.length() - 3)), null);
         } else {
