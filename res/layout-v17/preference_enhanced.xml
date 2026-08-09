@@ -13,7 +13,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/info"
-        android:paddingEnd="10dp"/>
+        android:paddingEnd="10dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
     <View
         android:id="@+id/separator_info"
         android:background="?attr/aeroDividerColor"
@@ -57,5 +59,7 @@
         android:paddingRight="5dp"
         android:layout_width="64dp"
         android:layout_height="match_parent"
-        android:paddingEnd="5dp"/>
+        android:paddingEnd="5dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
 </LinearLayout>
