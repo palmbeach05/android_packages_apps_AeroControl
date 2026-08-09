@@ -123,8 +123,7 @@
     <!--
         Settings-only Material theme (API 21+). Provides the drawer and icon
         attributes the settings screen requires without the custom
-        preference-style overrides used by AeroTheme. This is a resource
-        foundation only; it is not yet applied by any activity.
+        preference-style overrides used by AeroTheme.
     -->
     <style name="AeroSettingsTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:colorPrimary">@color/actionbar_color</item>

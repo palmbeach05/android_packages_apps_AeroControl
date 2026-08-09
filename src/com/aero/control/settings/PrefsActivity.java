@@ -50,7 +50,7 @@ public class PrefsActivity extends PreferenceActivity {
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
-        ThemeHelper.applyTheme(this);
+        ThemeHelper.applySettingsTheme(this);
         super.onCreate(savedInstanceState);
         TypedArray tintTypedArray = getTheme().obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
         this.mIconTintColor = tintTypedArray.getColor(0, 0);
