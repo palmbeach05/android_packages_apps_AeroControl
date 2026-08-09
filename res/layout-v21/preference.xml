@@ -12,10 +12,12 @@
             android:entryValues="@array/app_theme_values"
             android:defaultValue="light"/>
         <SwitchPreference
+            android:layout="@layout/preference_switch_card"
             android:title="@string/pref_reboot_check"
             android:key="reboot_checker"
             android:summary="@string/pref_reboot_check_summary"/>
         <SwitchPreference
+            android:layout="@layout/preference_switch_card"
             android:title="@string/pref_screen_rotation"
             android:key="screen_rotation"
             android:summary="@string/pref_screen_rotation_summary"
@@ -33,14 +35,17 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_category_per_app_profiles">
         <SwitchPreference
+            android:layout="@layout/preference_switch_card"
             android:title="@string/pref_per_app_service"
             android:key="per_app_service"
             android:summary="@string/pref_per_app_service_summary"/>
         <SwitchPreference
+            android:layout="@layout/preference_switch_card"
             android:title="@string/pref_perapp_monitor"
             android:key="per_app_monitor"
             android:summary="@string/pref_perapp_monitor_summary"/>
         <SwitchPreference
+            android:layout="@layout/preference_switch_card"
             android:title="@string/pref_perapp_toasts"
             android:key="per_app_toast"
             android:summary="@string/pref_perapp_toasts_summary"/>
