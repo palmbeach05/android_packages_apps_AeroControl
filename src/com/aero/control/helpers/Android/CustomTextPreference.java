@@ -4,13 +4,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.Material.CheckBox;
-import com.aero.control.helpers.Android.Material.CustomImageButton;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
@@ -18,11 +19,12 @@ import com.aero.control.helpers.HelpTextHolder;
 public class CustomTextPreference extends EditTextPreference implements CheckBox.OnCheckListener {
     private Boolean mChecked;
     private Context mContext;
-    private CustomImageButton mCustomImageButton;
+    private View mCustomImageButton;
     private String mHelpContent;
     private Boolean mHideOnBoot;
     private String mName;
     private View.OnClickListener mOnClickListener;
+    private CompoundButton mPlatformCheckBox;
     private SharedPreferences mSharedPreference;
     private Boolean mShowHelp;
     private TextView mSummary;
@@ -152,9 +154,25 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         this.mSummary.setText(this.mSummaryPref);
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
-        CheckBox checkbox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-        checkbox.setOncheckListener(this);
-        this.mCustomImageButton = (CustomImageButton) view.findViewById(R.id.info_button);
+        View checkBoxView;
+        if (Build.VERSION.SDK_INT >= 21) {
+            this.mPlatformCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
+            this.mPlatformCheckBox.setOnCheckedChangeListener(null);
+            this.mPlatformCheckBox.setChecked(isChecked().booleanValue());
+            this.mPlatformCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override // android.widget.CompoundButton.OnCheckedChangeListener
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    CustomTextPreference.this.onCheck(isChecked);
+                }
+            });
+            checkBoxView = this.mPlatformCheckBox;
+        } else {
+            CheckBox checkbox = (CheckBox) view.findViewById(R.id.checkbox_pref);
+            checkbox.setOncheckListener(this);
+            checkbox.setChecked(isChecked().booleanValue());
+            checkBoxView = checkbox;
+        }
+        this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
         if (isHelpEnabled().booleanValue()) {
@@ -163,11 +181,8 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
             this.mCustomImageButton.setVisibility(8);
             seperator_info.setVisibility(8);
         }
-        if (isChecked() != null) {
-            checkbox.setChecked(isChecked().booleanValue());
-        }
         if (isHidden().booleanValue()) {
-            checkbox.setVisibility(8);
+            checkBoxView.setVisibility(8);
             separator_checkbox.setVisibility(8);
         }
     }
