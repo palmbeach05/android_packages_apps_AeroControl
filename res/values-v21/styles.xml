@@ -22,7 +22,7 @@
         <item name="android:translationZ">0dp</item>
         <item name="android:colorControlHighlight">?android:attr/colorControlHighlight</item>
     </style>
-    <style name="AeroPreferenceCategory" parent="@android:style/Preference.Category">
+    <style name="AeroPreferenceCategory">
         <item name="android:layout">@layout/preference_category</item>
     </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
