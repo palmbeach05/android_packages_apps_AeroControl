@@ -33,7 +33,6 @@ import java.io.File;
 /* JADX INFO: loaded from: classes.dex */
 public class GPUFragment extends PlaceHolderFragment implements Preference.OnPreferenceChangeListener {
     private static final String NO_DATA_FOUND = "Unavailable";
-    private static final int COLOR_MIN = 20;
     private PreferenceCategory PrefCat;
     private CustomPreference mColorControl;
     private AlertDialog mColorDialog;
@@ -280,9 +279,9 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             final SeekBar greenValues = (SeekBar) layout.findViewById(R.id.greenValues);
             final SeekBar blueValues = (SeekBar) layout.findViewById(R.id.blueValues);
             try {
-                redValues.setProgress(Integer.parseInt(this.mColorValues[0]) - COLOR_MIN);
-                greenValues.setProgress(Integer.parseInt(this.mColorValues[1]) - COLOR_MIN);
-                blueValues.setProgress(Integer.parseInt(this.mColorValues[2]) - COLOR_MIN);
+                redValues.setProgress(Integer.parseInt(this.mColorValues[0]));
+                greenValues.setProgress(Integer.parseInt(this.mColorValues[1]));
+                blueValues.setProgress(Integer.parseInt(this.mColorValues[2]));
             } catch (NumberFormatException e) {
                 Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
                 return;
@@ -303,7 +302,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
-                            redValues.setProgress(Math.max(0, i - COLOR_MIN));
+                            redValues.setProgress(i);
                             GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                         } else {
                             redValue.setText("255");
@@ -326,7 +325,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
-                            greenValues.setProgress(Math.max(0, i - COLOR_MIN));
+                            greenValues.setProgress(i);
                             GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                         } else {
                             greenValue.setText("255");
@@ -349,7 +348,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
-                            blueValues.setProgress(Math.max(0, i - COLOR_MIN));
+                            blueValues.setProgress(i);
                             GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                         } else {
                             blueValue.setText("255");
@@ -368,8 +367,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     if (!fromUser) {
                         return;
                     }
-                    redValue.setText("" + (progress + COLOR_MIN));
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    redValue.setText("" + progress);
                 }
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
@@ -378,6 +376,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                 }
             });
             greenValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -386,8 +385,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     if (!fromUser) {
                         return;
                     }
-                    greenValue.setText("" + (progress + COLOR_MIN));
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    greenValue.setText("" + progress);
                 }
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
@@ -396,6 +394,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                 }
             });
             blueValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -404,8 +403,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     if (!fromUser) {
                         return;
                     }
-                    blueValue.setText("" + (progress + COLOR_MIN));
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    blueValue.setText("" + progress);
                 }
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
@@ -414,6 +412,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
                 }
             });
         } else {

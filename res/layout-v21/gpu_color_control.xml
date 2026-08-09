@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_toLeftOf="@+id/redValue"
-        android:max="235"
+        android:max="255"
         android:progressTint="@color/gpu_slider_red"
         android:thumbTint="@color/gpu_slider_red"/>
     <EditText
@@ -29,7 +29,7 @@
         android:layout_marginTop="20dp"
         android:layout_toLeftOf="@+id/greenValue"
         android:layout_below="@+id/redValues"
-        android:max="235"
+        android:max="255"
         android:progressTint="@color/gpu_slider_green"
         android:thumbTint="@color/gpu_slider_green"/>
     <EditText
@@ -50,7 +50,7 @@
         android:layout_marginTop="20dp"
         android:layout_toLeftOf="@+id/blueValue"
         android:layout_below="@+id/greenValues"
-        android:max="235"
+        android:max="255"
         android:progressTint="@color/gpu_slider_blue"
         android:thumbTint="@color/gpu_slider_blue"/>
     <EditText
