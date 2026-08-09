@@ -55,6 +55,8 @@
     <Switch
         android:id="@+id/checkbox_pref"
         android:gravity="center"
+        android:paddingRight="5dp"
+        android:paddingEnd="5dp"
         android:layout_width="64dp"
         android:layout_height="match_parent"
         android:focusable="false"/>
