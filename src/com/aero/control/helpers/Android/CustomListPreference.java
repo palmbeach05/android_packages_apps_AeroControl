@@ -184,6 +184,15 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
             this.mCheckBox.setChecked(isChecked().booleanValue());
             checkBoxView = this.mCheckBox;
         }
+        View contentContainer = view.findViewById(R.id.preference_content);
+        if (contentContainer != null) {
+            contentContainer.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomListPreference.2
+                @Override // android.view.View.OnClickListener
+                public void onClick(View v) {
+                    view.performClick();
+                }
+            });
+        }
         this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
