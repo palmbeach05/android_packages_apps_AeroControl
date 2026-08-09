@@ -5,7 +5,7 @@
     android:layout_height="wrap_content">
     <com.aero.control.helpers.Android.Material.Slider
         android:id="@+id/redValues"
-        android:background="#f44336"
+        android:background="@color/gpu_slider_red"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -25,7 +25,7 @@
         android:inputType="number"/>
     <com.aero.control.helpers.Android.Material.Slider
         android:id="@+id/greenValues"
-        android:background="#4caf50"
+        android:background="@color/gpu_slider_green"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -47,7 +47,7 @@
         android:inputType="number"/>
     <com.aero.control.helpers.Android.Material.Slider
         android:id="@+id/blueValues"
-        android:background="#2196f3"
+        android:background="@color/gpu_slider_blue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"

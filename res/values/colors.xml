@@ -29,4 +29,20 @@
     <color name="checkbox_stroke_dark">#b0b0b0</color>
     <color name="reset_button_normal">#f44336</color>
     <color name="reset_button_pressed">#c62828</color>
+    <color name="onboarding_intro_background">#3f51b5</color>
+    <color name="onboarding_tutorial_background">#7e57c2</color>
+    <color name="onboarding_perapp_background">#009688</color>
+    <color name="onboarding_setonboot_background">#ff9800</color>
+    <color name="onboarding_text_color">#eceff1</color>
+    <color name="gpu_slider_red">#f44336</color>
+    <color name="gpu_slider_green">#4caf50</color>
+    <color name="gpu_slider_blue">#2196f3</color>
+    <color name="fab_menu_color_pressed">#37474f</color>
+    <color name="fab_menu_color_normal">#455a64</color>
+    <color name="material_green">#4caf50</color>
+    <color name="material_green_dark">#388e3c</color>
+    <color name="material_light_blue">#03a9f4</color>
+    <color name="material_light_blue_dark">#01579b</color>
+    <color name="splash_background">#546e7a</color>
+    <color name="app_rate_overlay_background">#aa000000</color>
 </resources>
