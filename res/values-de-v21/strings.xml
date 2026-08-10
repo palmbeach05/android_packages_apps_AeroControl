@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_theme_light">Hell – Nutzt das Material Theme der Plattform mit blauem Akzent</string>
+    <string name="app_theme_red">Rot – Nutzt das Material Theme der Plattform mit rotem Akzent</string>
+</resources>
