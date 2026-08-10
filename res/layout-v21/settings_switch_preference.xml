@@ -54,6 +54,7 @@
         android:layout_width="64dp"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:background="@null"
         android:paddingLeft="0dp"
         android:paddingRight="5dp"
         android:paddingEnd="5dp"
