@@ -13,6 +13,7 @@
             android:title="Use All CPUs"
             android:key="linpack_use_all_cpus"
             android:defaultValue="false"
+            android:widgetLayout="@android:layout/preference_widget_switch"
             android:summary="Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness."/>
     </PreferenceCategory>
 </PreferenceScreen>
