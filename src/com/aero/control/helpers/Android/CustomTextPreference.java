@@ -126,6 +126,9 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
     @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        if (this.mPlatformCheckBox != null) {
+            this.mPlatformCheckBox.setEnabled(enabled);
+        }
         if (enabled) {
             if (this.mTitle != null) {
                 this.mTitle.setTextColor(this.mContext.getResources().getColor(R.color.text_color));

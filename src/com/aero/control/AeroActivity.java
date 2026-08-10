@@ -761,7 +761,7 @@ public final class AeroActivity extends Activity {
                     return;
                 }
                 try {
-                    AeroActivity.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+                    AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
                     // Only add to stack after the transaction has been committed
                     if (addToStack) {
                         mFragmentStack.push(fragment);
