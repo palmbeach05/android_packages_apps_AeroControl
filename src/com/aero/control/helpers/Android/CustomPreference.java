@@ -294,7 +294,7 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
             preferenceContent.setOnClickListener(new View.OnClickListener() {
                 @Override // android.view.View.OnClickListener
                 public void onClick(View v) {
-                    view.performClick();
+                    CustomPreference.this.performClick(null);
                 }
             });
         }
