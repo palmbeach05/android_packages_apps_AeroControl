@@ -41,4 +41,20 @@ public class ThemeHelper {
             activity.setTheme(R.style.AeroTheme);
         }
     }
+
+    public static void applySettingsTheme(Activity activity) {
+        if (Build.VERSION.SDK_INT < 21) {
+            applyTheme(activity);
+            return;
+        }
+
+        String theme = getTheme(activity);
+        if (THEME_SYSTEM.equals(theme)) {
+            activity.setTheme(R.style.AeroSettingsTheme_System);
+        } else if (THEME_DARK.equals(theme)) {
+            activity.setTheme(R.style.AeroSettingsTheme_Dark);
+        } else {
+            activity.setTheme(R.style.AeroSettingsTheme);
+        }
+    }
 }
