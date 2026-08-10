@@ -76,7 +76,7 @@ class SettingsCardAdapter extends BaseAdapter {
             preferenceView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    preference.performClick();
+                    preference.performClick(null);
                 }
             });
             items.addView(preferenceView);
