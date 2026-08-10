@@ -67,6 +67,9 @@ public class PrefsActivity extends PreferenceActivity {
         }
         setContentView(R.layout.activity_prefs);
         addPreferencesFromResource(R.layout.preference);
+        if (Build.VERSION.SDK_INT >= 21) {
+            getListView().setAdapter(new SettingsCardAdapter(this, getPreferenceScreen()));
+        }
         setTitle(R.string.aero_settings);
         context = this;
         this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
