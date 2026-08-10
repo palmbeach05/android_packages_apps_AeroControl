@@ -4,22 +4,24 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.ListPreference;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.Material.CheckBox;
-import com.aero.control.helpers.Android.Material.CustomImageButton;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
 /* JADX INFO: loaded from: classes.dex */
 public class CustomListPreference extends ListPreference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
+    private CompoundButton mPlatformCheckBox;
     private Boolean mChecked;
     private Context mContext;
-    private CustomImageButton mCustomImageButton;
+    private View mCustomImageButton;
     private String mHelpContent;
     private Boolean mHideOnBoot;
     private String mName;
@@ -150,10 +152,13 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         if (this.mCheckBox != null) {
             this.mCheckBox.setEnabled(enabled);
         }
+        if (this.mPlatformCheckBox != null) {
+            this.mPlatformCheckBox.setEnabled(enabled);
+        }
     }
 
     @Override // android.preference.Preference
-    protected void onBindView(View view) {
+    protected void onBindView(final View view) {
         super.onBindView(view);
         this.mTitle = (TextView) view.findViewById(R.id.preference_title);
         this.mSummary = (TextView) view.findViewById(R.id.preference_summary);
@@ -161,12 +166,36 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         this.mSummary.setText(this.mSummaryPref);
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
-        this.mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-        this.mCheckBox.setOncheckListener(this);
-        this.mCheckBox.setChecked(isChecked().booleanValue());
-        this.mCustomImageButton = (CustomImageButton) view.findViewById(R.id.info_button);
+        View checkBoxView;
+        if (Build.VERSION.SDK_INT >= 21) {
+            this.mPlatformCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
+            this.mPlatformCheckBox.setOnCheckedChangeListener(null);
+            this.mPlatformCheckBox.setChecked(isChecked().booleanValue());
+            this.mPlatformCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override // android.widget.CompoundButton.OnCheckedChangeListener
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    CustomListPreference.this.onCheck(isChecked);
+                }
+            });
+            checkBoxView = this.mPlatformCheckBox;
+        } else {
+            this.mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
+            this.mCheckBox.setOncheckListener(this);
+            this.mCheckBox.setChecked(isChecked().booleanValue());
+            checkBoxView = this.mCheckBox;
+        }
+        this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
+        View preferenceContent = view.findViewById(R.id.preference_content);
+        if (preferenceContent != null) {
+            preferenceContent.setOnClickListener(new View.OnClickListener() {
+                @Override // android.view.View.OnClickListener
+                public void onClick(View v) {
+                    CustomListPreference.this.performClick(null);
+                }
+            });
+        }
         if (isHelpEnabled().booleanValue()) {
             this.mCustomImageButton.setOnClickListener(this.mOnClickListener);
         } else {
@@ -174,7 +203,7 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
             seperator_info.setVisibility(8);
         }
         if (isHidden().booleanValue()) {
-            this.mCheckBox.setVisibility(8);
+            checkBoxView.setVisibility(8);
             separator_checkbox.setVisibility(8);
         }
     }
