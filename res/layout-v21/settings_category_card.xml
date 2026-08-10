@@ -9,8 +9,6 @@
     style="?attr/aeroCardStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="4dp"
     android:clipToPadding="false"
     android:paddingBottom="8dp">
 
