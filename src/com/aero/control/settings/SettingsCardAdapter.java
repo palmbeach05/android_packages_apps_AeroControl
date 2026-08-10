@@ -97,7 +97,8 @@ class SettingsCardAdapter extends BaseAdapter {
     }
 
     private View getSwitchPreferenceView(final TwoStatePreference preference, ViewGroup parent) {
-        View row = LayoutInflater.from(mContext).inflate(R.layout.settings_switch_preference, parent, false);
+        final View row = LayoutInflater.from(mContext).inflate(
+                R.layout.settings_switch_preference, parent, false);
 
         ((ImageView) row.findViewById(R.id.settings_switch_icon)).setImageDrawable(preference.getIcon());
         ((TextView) row.findViewById(R.id.settings_switch_title)).setText(preference.getTitle());
