@@ -6,13 +6,13 @@
         android:title="@string/slider_test_suite_settings"
         android:key="testsuite_settings">
         <Preference
-            android:title="Linpack Test"
+            android:title="@string/testsuite_linpack_test_title"
             android:key="linpack_test"
-            android:summary="Runs the linpack test."/>
+            android:summary="@string/testsuite_linpack_test_summary"/>
         <SwitchPreference
-            android:title="Use All CPUs"
+            android:title="@string/testsuite_use_all_cpus_title"
             android:key="linpack_use_all_cpus"
             android:defaultValue="false"
-            android:summary="Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness."/>
+            android:summary="@string/testsuite_use_all_cpus_summary"/>
     </PreferenceCategory>
 </PreferenceScreen>
