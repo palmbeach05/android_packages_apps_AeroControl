@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_theme_light">Light - Uses the platform Material theme with a blue accent</string>
+    <string name="app_theme_light">בהיר - משתמש בעיצוב Material של הפלטפורמה עם הדגשה כחולה</string>
     <string name="app_theme_red">Red - Uses the platform Material theme with a red accent</string>
 </resources>
