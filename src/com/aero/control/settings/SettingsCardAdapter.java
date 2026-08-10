@@ -131,4 +131,12 @@ class SettingsCardAdapter extends BaseAdapter {
         summary.setText(preference.getSummary());
         summary.setVisibility(TextUtils.isEmpty(preference.getSummary()) ? View.GONE : View.VISIBLE);
     }
+
+    /**
+     * Refreshes all visible preference rows to reflect updated summaries, enabled
+     * states, and checked states after preference mutations.
+     */
+    public void refresh() {
+        notifyDataSetChanged();
+    }
 }

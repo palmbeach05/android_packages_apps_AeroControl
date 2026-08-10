@@ -47,6 +47,7 @@ public class PrefsActivity extends PreferenceActivity {
     private TwoStatePreference mScreenRotation;
     private int mIconTintColor;
     private NavigationDrawerHelper mNavigationDrawer;
+    private SettingsCardAdapter mSettingsAdapter;
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
@@ -71,7 +72,8 @@ public class PrefsActivity extends PreferenceActivity {
             getListView().post(new Runnable() {
                 @Override
                 public void run() {
-                    getListView().setAdapter(new SettingsCardAdapter(PrefsActivity.this, getPreferenceScreen()));
+                    mSettingsAdapter = new SettingsCardAdapter(PrefsActivity.this, getPreferenceScreen());
+                    getListView().setAdapter(mSettingsAdapter);
                 }
             });
         }
@@ -163,6 +165,9 @@ public class PrefsActivity extends PreferenceActivity {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PrefsActivity.this.setMinutes(PrefsActivity.this.mBootDelay, newValue.toString());
+                if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                    PrefsActivity.this.mSettingsAdapter.refresh();
+                }
                 return false;
             }
         });
@@ -187,6 +192,9 @@ public class PrefsActivity extends PreferenceActivity {
                         AeroActivity.perAppService = new PerAppServiceHelper(PrefsActivity.this.getBaseContext());
                     }
                     AeroActivity.perAppService.stopService();
+                    if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                        PrefsActivity.this.mSettingsAdapter.refresh();
+                    }
                     return false;
                 }
                 Util.showUsageStatDialog(PrefsActivity.this);
@@ -201,6 +209,9 @@ public class PrefsActivity extends PreferenceActivity {
                     AeroActivity.perAppService.startService();
                 }
                 preference.getEditor().commit();
+                if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                    PrefsActivity.this.mSettingsAdapter.refresh();
+                }
                 return true;
             }
         });
@@ -212,13 +223,14 @@ public class PrefsActivity extends PreferenceActivity {
                     Util.showUsageStatDialog(PrefsActivity.this);
                     if (AeroActivity.mJobManager != null) {
                         AeroActivity.mJobManager.enable();
-                        return false;
                     }
-                    return false;
+                } else {
+                    if (AeroActivity.mJobManager != null) {
+                        AeroActivity.mJobManager.disable();
+                    }
                 }
-                if (AeroActivity.mJobManager != null) {
-                    AeroActivity.mJobManager.disable();
-                    return false;
+                if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                    PrefsActivity.this.mSettingsAdapter.refresh();
                 }
                 return false;
             }

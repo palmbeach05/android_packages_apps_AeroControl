@@ -133,6 +133,8 @@
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
+        <item name="aeroPrimaryTextColor">@color/text_color</item>
+        <item name="aeroSecondaryTextColor">@color/light_grey</item>
         <item name="aeroIconTint">@color/text_color</item>
         <item name="aeroCardStyle">@style/AeroCardSurface.Light</item>
     </style>
@@ -145,12 +147,16 @@
         <item name="android:textColorPrimary">@color/dark_text_color</item>
         <item name="aeroDrawerLayoutBackground">@color/dark_window_background</item>
         <item name="aeroDrawerListBackground">@color/dark_drawer_list_background</item>
+        <item name="aeroPrimaryTextColor">@color/dark_text_color</item>
+        <item name="aeroSecondaryTextColor">@color/dark_secondary_text_color</item>
         <item name="aeroIconTint">@color/dark_text_color</item>
         <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
     </style>
     <style name="AeroSettingsTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
+        <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
+        <item name="aeroSecondaryTextColor">?android:attr/textColorSecondary</item>
         <item name="aeroIconTint">?android:attr/textColorPrimary</item>
         <item name="aeroCardStyle">@style/AeroCardSurface.System</item>
     </style>
