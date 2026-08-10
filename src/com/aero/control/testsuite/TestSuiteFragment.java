@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.Preference;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
@@ -48,7 +47,6 @@ public class TestSuiteFragment extends PreferenceFragment {
     }
 
     public void loadSettings() {
-        PreferenceCategory TestSuiteCat = (PreferenceCategory) findPreference("testsuite_settings");
         Preference lpPreference = this.root.findPreference("linpack_test");
         lpPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.testsuite.TestSuiteFragment.1
             @Override // android.preference.Preference.OnPreferenceClickListener
@@ -57,7 +55,6 @@ public class TestSuiteFragment extends PreferenceFragment {
                 return false;
             }
         });
-        TestSuiteCat.addPreference(lpPreference);
     }
 
     private void startBenchmark() {
