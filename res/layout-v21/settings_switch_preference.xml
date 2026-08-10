@@ -7,7 +7,6 @@
     @android:layout/preference_widget_switch are required.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="?attr/aeroCardStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?android:attr/listPreferredItemHeight"
