@@ -8,3 +8,19 @@ project.properties
 .settings/
 *.*~
 library/showcase/gen/
+
+# Standalone Gradle build output and local machine configuration
+.gradle/
+build/
+local.properties
+*.apk
+*.ap_
+*.dex
+
+# IDE workspace/user-specific artifacts (checked-in .idea project files are
+# kept, but per-user workspace state is not reproducible/shareable)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
+*.iml.bak
+out/

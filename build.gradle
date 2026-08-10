@@ -1,0 +1,86 @@
+// Standalone Gradle build for a clean checkout outside an AOSP platform tree.
+//
+// This does not replace Android.mk, which remains the build recipe used when
+// this module is built inside an Android platform source tree. This file
+// lets the same sources (root src/, res/, libs/ and the bundled library/
+// source trees) be built with a normal `./gradlew assembleDebug` using a
+// standalone Android SDK + Gradle installation.
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion '26.0.2'
+
+    // minSdkVersion, targetSdkVersion, versionCode and versionName are
+    // intentionally not repeated here: they are already declared on
+    // AndroidManifest.xml's <uses-sdk> and <manifest> elements
+    // (minSdkVersion 14, targetSdkVersion 23, versionCode 33,
+    // versionName "2.2.3") and AndroidManifest.xml is not being moved or
+    // duplicated by this build file.
+    defaultConfig {
+    }
+
+    // The app module, plus the bundled library source trees under
+    // library/, are compiled together as a single application module,
+    // mirroring the LOCAL_SRC_FILES / LOCAL_RESOURCE_DIR layout in
+    // Android.mk.
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = [
+                    'src',
+                    'library/HoloGraphLibrary/src',
+                    'library/UndoBar/src',
+                    'library/WilliamChart/src',
+                    'library/floatingactionbutton/java',
+                    'library/ldrawer/src/main/java',
+                    'library/showcase/java'
+            ]
+            res.srcDirs = [
+                    'res',
+                    'library/HoloGraphLibrary/res',
+                    'library/WilliamChart/res',
+                    'library/floatingactionbutton/res',
+                    'library/ldrawer/src/main/res',
+                    'library/showcase/res'
+            ]
+        }
+    }
+
+    // Reproduces Android.mk's LOCAL_AAPT_FLAGS := --extra-packages: the
+    // bundled library sources above are compiled straight into this single
+    // application module instead of as separate library modules, but they
+    // still reference their own package's R class (e.g.
+    // com.echo.holographlibrary.R, com.db.williamchart.R). AAPT2 needs to
+    // be told about those packages so a matching R.java is generated for
+    // each of them.
+    aaptOptions {
+        additionalParameters '--extra-packages', 'com.getbase.floatingactionbutton:com.echo.holographlibrary:com.cocosw.undobar:com.db.williamchart:com.github.amlcurran.showcaseview:com.ikimuhendis.ldrawer'
+    }
+}
+
+dependencies {
+    implementation files(
+            'libs/android-support-v4.jar',
+            'libs/android-support-annotations.jar',
+            'libs/nineoldandroids-2.4.0.jar',
+            'library/HoloGraphLibrary/libs/annotations-12.0.jar'
+    )
+}
