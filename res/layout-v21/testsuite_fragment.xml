@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <PreferenceCategory
+        android:title="@string/slider_test_suite_settings"
+        android:key="testsuite_settings">
+        <Preference
+            android:title="Linpack Test"
+            android:key="linpack_test"
+            android:summary="Runs the linpack test."/>
+        <SwitchPreference
+            android:title="Use All CPUs"
+            android:key="linpack_use_all_cpus"
+            android:defaultValue="false"
+            android:summary="Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness."/>
+    </PreferenceCategory>
+</PreferenceScreen>
