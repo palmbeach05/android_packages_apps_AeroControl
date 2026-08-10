@@ -49,11 +49,6 @@
             android:maxLines="4"/>
     </RelativeLayout>
 
-    <View
-        android:background="?attr/aeroDividerColor"
-        android:layout_width="0.5dp"
-        android:layout_height="match_parent"/>
-
     <Switch
         android:id="@+id/settings_switch"
         android:layout_width="64dp"
