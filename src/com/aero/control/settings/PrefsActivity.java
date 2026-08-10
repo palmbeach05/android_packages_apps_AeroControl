@@ -12,11 +12,11 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
+import android.preference.TwoStatePreference;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
@@ -40,17 +40,18 @@ public class PrefsActivity extends PreferenceActivity {
     public int mActionBarTitleID;
     private ListPreference mAppTheme;
     private ListPreference mBootDelay;
-    private CheckBoxPreference mPerAppMonitor;
-    private CheckBoxPreference mPerAppToasts;
-    private CheckBoxPreference mPer_app_check;
-    private CheckBoxPreference mRebootChecker;
-    private CheckBoxPreference mScreenRotation;
+    private TwoStatePreference mPerAppMonitor;
+    private TwoStatePreference mPerAppToasts;
+    private TwoStatePreference mPer_app_check;
+    private TwoStatePreference mRebootChecker;
+    private TwoStatePreference mScreenRotation;
     private int mIconTintColor;
     private NavigationDrawerHelper mNavigationDrawer;
+    private SettingsCardAdapter mSettingsAdapter;
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
-        ThemeHelper.applyTheme(this);
+        ThemeHelper.applySettingsTheme(this);
         super.onCreate(savedInstanceState);
         TypedArray tintTypedArray = getTheme().obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
         this.mIconTintColor = tintTypedArray.getColor(0, 0);
@@ -67,6 +68,15 @@ public class PrefsActivity extends PreferenceActivity {
         }
         setContentView(R.layout.activity_prefs);
         addPreferencesFromResource(R.layout.preference);
+        if (Build.VERSION.SDK_INT >= 21) {
+            getListView().post(new Runnable() {
+                @Override
+                public void run() {
+                    mSettingsAdapter = new SettingsCardAdapter(PrefsActivity.this, getPreferenceScreen());
+                    getListView().setAdapter(mSettingsAdapter);
+                }
+            });
+        }
         setTitle(R.string.aero_settings);
         context = this;
         this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
@@ -86,13 +96,13 @@ public class PrefsActivity extends PreferenceActivity {
         this.mNavigationDrawer.syncState();
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
-            this.mRebootChecker = (CheckBoxPreference) root.findPreference("reboot_checker");
+            this.mRebootChecker = (TwoStatePreference) root.findPreference("reboot_checker");
         }
         if (this.mScreenRotation == null) {
-            this.mScreenRotation = (CheckBoxPreference) root.findPreference(OrientationHelper.PREF_KEY);
+            this.mScreenRotation = (TwoStatePreference) root.findPreference(OrientationHelper.PREF_KEY);
         }
         if (this.mPer_app_check == null) {
-            this.mPer_app_check = (CheckBoxPreference) root.findPreference("per_app_service");
+            this.mPer_app_check = (TwoStatePreference) root.findPreference("per_app_service");
         }
         if (this.mBootDelay == null) {
             this.mBootDelay = (ListPreference) root.findPreference("boot_delay");
@@ -101,10 +111,10 @@ public class PrefsActivity extends PreferenceActivity {
             this.mAppTheme = (ListPreference) root.findPreference("app_theme");
         }
         if (this.mPerAppMonitor == null) {
-            this.mPerAppMonitor = (CheckBoxPreference) root.findPreference("per_app_monitor");
+            this.mPerAppMonitor = (TwoStatePreference) root.findPreference("per_app_monitor");
         }
         if (this.mPerAppToasts == null) {
-            this.mPerAppToasts = (CheckBoxPreference) root.findPreference("per_app_toast");
+            this.mPerAppToasts = (TwoStatePreference) root.findPreference("per_app_toast");
         }
         Preference resetTutorials = root.findPreference("reset_tutorials");
         Preference about = root.findPreference("about");
@@ -132,14 +142,14 @@ public class PrefsActivity extends PreferenceActivity {
         this.mRebootChecker.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.5
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
+                PrefsActivity.this.setCheckedState((TwoStatePreference) preference);
                 return false;
             }
         });
         this.mScreenRotation.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
+                PrefsActivity.this.setCheckedState((TwoStatePreference) preference);
                 OrientationHelper.applyOrientation(PrefsActivity.this);
                 return false;
             }
@@ -147,7 +157,7 @@ public class PrefsActivity extends PreferenceActivity {
         this.mPerAppToasts.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.6
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
+                PrefsActivity.this.setCheckedState((TwoStatePreference) preference);
                 return false;
             }
         });
@@ -155,6 +165,9 @@ public class PrefsActivity extends PreferenceActivity {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PrefsActivity.this.setMinutes(PrefsActivity.this.mBootDelay, newValue.toString());
+                if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                    PrefsActivity.this.mSettingsAdapter.refresh();
+                }
                 return false;
             }
         });
@@ -169,7 +182,7 @@ public class PrefsActivity extends PreferenceActivity {
         this.mPer_app_check.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.8
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
+                PrefsActivity.this.setCheckedState((TwoStatePreference) preference);
                 if (!PrefsActivity.this.mPer_app_check.isChecked()) {
                     PrefsActivity.this.mPerAppMonitor.setEnabled(false);
                     PrefsActivity.this.mPerAppMonitor.setChecked(false);
@@ -179,6 +192,9 @@ public class PrefsActivity extends PreferenceActivity {
                         AeroActivity.perAppService = new PerAppServiceHelper(PrefsActivity.this.getBaseContext());
                     }
                     AeroActivity.perAppService.stopService();
+                    if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                        PrefsActivity.this.mSettingsAdapter.refresh();
+                    }
                     return false;
                 }
                 Util.showUsageStatDialog(PrefsActivity.this);
@@ -193,24 +209,28 @@ public class PrefsActivity extends PreferenceActivity {
                     AeroActivity.perAppService.startService();
                 }
                 preference.getEditor().commit();
+                if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                    PrefsActivity.this.mSettingsAdapter.refresh();
+                }
                 return true;
             }
         });
         this.mPerAppMonitor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.settings.PrefsActivity.9
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                PrefsActivity.this.setCheckedState((CheckBoxPreference) preference);
-                if (((CheckBoxPreference) preference).isChecked()) {
+                PrefsActivity.this.setCheckedState((TwoStatePreference) preference);
+                if (((TwoStatePreference) preference).isChecked()) {
                     Util.showUsageStatDialog(PrefsActivity.this);
                     if (AeroActivity.mJobManager != null) {
                         AeroActivity.mJobManager.enable();
-                        return false;
                     }
-                    return false;
+                } else {
+                    if (AeroActivity.mJobManager != null) {
+                        AeroActivity.mJobManager.disable();
+                    }
                 }
-                if (AeroActivity.mJobManager != null) {
-                    AeroActivity.mJobManager.disable();
-                    return false;
+                if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
+                    PrefsActivity.this.mSettingsAdapter.refresh();
                 }
                 return false;
             }
@@ -263,7 +283,7 @@ public class PrefsActivity extends PreferenceActivity {
     }
 
     /* JADX INFO: Access modifiers changed from: private */
-    public void setCheckedState(CheckBoxPreference preference) {
+    public void setCheckedState(TwoStatePreference preference) {
         if (preference.isChecked()) {
             preference.setSummary(R.string.enabled);
         } else {

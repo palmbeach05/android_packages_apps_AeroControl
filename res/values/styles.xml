@@ -128,11 +128,10 @@
     <style name="AeroTheme.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textColor">#ffffff</item>
     </style>
-    <style name="ListViewAeroTheme.White" parent="@android:style/Widget.ListView.White">
-        <item name="android:listSelector">@android:color/transparent</item>
+    <style name="AeroCardSurface" parent="">
+        <item name="android:background">?attr/aeroCardBackground</item>
     </style>
     <style name="AeroTheme" parent="@android:style/Theme.Holo.Light">
-        <item name="android:listViewWhiteStyle">@style/ListViewAeroTheme.White</item>
         <item name="android:actionBarStyle">@style/AeroActionBar</item>
         <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
@@ -143,6 +142,7 @@
         <item name="aeroCardBackground">@drawable/card</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked</item>
         <item name="aeroGraphBackground">@drawable/card_rect</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface</item>
         <item name="aeroTooltipBackground">@drawable/circle</item>
         <item name="aeroIconTint">@color/text_color</item>
         <item name="aeroDividerColor">@android:color/darker_gray</item>
@@ -167,6 +167,7 @@
         <item name="aeroCardBackground">@drawable/card_dark</item>
         <item name="aeroCardBackgroundClicked">@drawable/card_clicked_dark</item>
         <item name="aeroGraphBackground">@drawable/card_rect_dark</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface</item>
         <item name="aeroTooltipBackground">@drawable/circle_dark</item>
         <item name="aeroIconTint">@color/dark_text_color</item>
         <item name="aeroDividerColor">@color/dark_secondary_text_color</item>

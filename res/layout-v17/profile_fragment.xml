@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/rocket_large"/>
         <TextView
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:textColor="?attr/aeroPrimaryTextColor"
             android:gravity="center"
             android:layout_gravity="center"
@@ -39,32 +39,32 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_alignParentEnd="true"
-        fab:fab_addButtonColorPressed="#37474f"
-        fab:fab_addButtonColorNormal="#455a64"
-        fab:fab_addButtonPlusIconColor="#ffffff"
+        fab:fab_addButtonColorPressed="@color/fab_menu_color_pressed"
+        fab:fab_addButtonColorNormal="@color/fab_menu_color_normal"
+        fab:fab_addButtonPlusIconColor="@color/white"
         fab:fab_labelStyle="@style/menu_labels_style">
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/reset_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            fab:fab_colorPressed="#c62828"
-            fab:fab_colorNormal="#f44336"
+            fab:fab_colorPressed="@color/reset_button_pressed"
+            fab:fab_colorNormal="@color/reset_button_normal"
             fab:fab_icon="@drawable/ic_refresh"
             fab:fab_title="@string/reload"/>
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/toggle_system"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            fab:fab_colorPressed="#388e3c"
-            fab:fab_colorNormal="#4caf50"
+            fab:fab_colorPressed="@color/material_green_dark"
+            fab:fab_colorNormal="@color/material_green"
             fab:fab_icon="@drawable/ic_fab_star"
             fab:fab_title="@string/pref_profile_show_system"/>
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/add_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            fab:fab_colorPressed="#01579b"
-            fab:fab_colorNormal="#03a9f4"
+            fab:fab_colorPressed="@color/material_light_blue_dark"
+            fab:fab_colorNormal="@color/material_light_blue"
             fab:fab_icon="@drawable/ic_person_add"
             fab:fab_title="@string/add"/>
     </com.getbase.floatingactionbutton.FloatingActionsMenu>

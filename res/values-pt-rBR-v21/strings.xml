@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_theme_light">Claro - Usa o tema Material da plataforma com destaque azul</string>
+    <string name="app_theme_red">Red - Uses the platform Material theme with a red accent</string>
+</resources>
