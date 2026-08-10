@@ -25,8 +25,21 @@
     <style name="AeroPreferenceCategory">
         <item name="android:layout">@layout/preference_category</item>
     </style>
+    <style name="AeroPreference">
+        <item name="android:layout">@layout/preference_card</item>
+    </style>
+    <style name="AeroDialogPreference">
+        <item name="android:layout">@layout/preference_card</item>
+    </style>
+    <style name="AeroSwitchPreference">
+        <item name="android:layout">@layout/preference_switch_card</item>
+        <item name="android:widgetLayout">@layout/preference_switch_widget</item>
+    </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
+        <item name="android:preferenceStyle">@style/AeroPreference</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
+        <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="android:listViewWhiteStyle">@style/ListViewAeroTheme.White</item>
         <item name="android:colorPrimary">@color/actionbar_color</item>
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
@@ -52,6 +65,9 @@
     </style>
     <style name="AeroTheme.Dark" parent="@android:style/Theme.Material">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
+        <item name="android:preferenceStyle">@style/AeroPreference</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
+        <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="android:colorPrimary">@color/dark_actionbar_color</item>
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
@@ -87,6 +103,9 @@
     -->
     <style name="AeroTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
+        <item name="android:preferenceStyle">@style/AeroPreference</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
+        <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
@@ -101,5 +120,38 @@
         <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
         <item name="aeroGraphLabelColor">?android:attr/textColorPrimary</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
+    </style>
+    <!--
+        Settings-only Material theme (API 21+). Provides the drawer and icon
+        attributes the settings screen requires without the custom
+        preference-style overrides used by AeroTheme.
+    -->
+    <style name="AeroSettingsTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/actionbar_color</item>
+        <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+        <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
+        <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
+        <item name="aeroIconTint">@color/text_color</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface.Light</item>
+    </style>
+    <style name="AeroSettingsTheme.Dark" parent="@android:style/Theme.Material">
+        <item name="android:colorPrimary">@color/dark_actionbar_color</item>
+        <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+        <item name="android:windowBackground">@color/dark_window_background</item>
+        <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="aeroDrawerLayoutBackground">@color/dark_window_background</item>
+        <item name="aeroDrawerListBackground">@color/dark_drawer_list_background</item>
+        <item name="aeroIconTint">@color/dark_text_color</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
+    </style>
+    <style name="AeroSettingsTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
+        <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
+        <item name="aeroIconTint">?android:attr/textColorPrimary</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface.System</item>
     </style>
 </resources>
