@@ -45,7 +45,6 @@
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="android:colorControlHighlight">@color/card_shadow</item>
-        <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
@@ -72,7 +71,6 @@
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="android:colorControlHighlight">@color/card_shadow</item>
-        <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="android:windowBackground">@color/dark_window_background</item>
         <item name="android:textColorPrimary">@color/dark_text_color</item>
