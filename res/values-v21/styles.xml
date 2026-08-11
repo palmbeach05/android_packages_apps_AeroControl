@@ -35,6 +35,22 @@
         <item name="android:layout">@layout/preference_switch_card</item>
         <item name="android:widgetLayout">@layout/preference_switch_widget</item>
     </style>
+    <!--
+        Explicit Light alert-dialog/dialog theme (API 21+). Framework dialogs
+        (AlertDialog, ListPreference selection dialogs, etc.) otherwise inherit
+        android:alertDialogTheme/android:dialogTheme from the device's system
+        theme rather than from AeroTheme, which produces a dark dialog surface
+        when the system theme is dark even though the app theme is Light.
+    -->
+    <style name="AeroDialog.Light" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:windowBackground">@color/bg_grey</item>
+        <item name="android:colorBackground">@color/bg_grey</item>
+        <item name="android:colorBackgroundFloating">@color/bg_grey</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+    </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
         <item name="android:preferenceStyle">@style/AeroPreference</item>
@@ -50,6 +66,8 @@
         <item name="android:colorControlHighlight">@color/card_shadow</item>
         <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
+        <item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
         <item name="aeroPrimaryTextColor">@color/text_color</item>
@@ -136,6 +154,8 @@
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
+        <item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
         <item name="aeroPrimaryTextColor">@color/text_color</item>
