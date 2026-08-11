@@ -17,7 +17,7 @@
             android:textAllCaps="true"/>
         <View
             android:id="@+id/card_divider"
-            android:background="@color/card_shadow"
+            android:background="?attr/aeroDividerColor"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_below="@+id/card_title"/>
