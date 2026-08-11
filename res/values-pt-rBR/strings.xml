@@ -88,8 +88,6 @@
     <string name="perf_live_oc_uc_summary">Control Frequencies and Voltage in realtime!</string>
     <string name="perf_voltage_control">Voltage Control</string>
     <string name="perf_voltage_control_summary">Adjust the voltage of your CPU here</string>
-    <string name="pref_max_freq_cpu_big">Max. Frequency (big)</string>
-    <string name="pref_min_freq_cpu_big">Min. Frequency (big)</string>
     <string name="pref_cpu_freq">Frequencies</string>
     <string name="pref_max_freq_cpu">Max. Frequency</string>
     <string name="pref_min_freq_cpu">Min. Frequency</string>
@@ -177,8 +175,6 @@
     <string name="aero_settings">Settings</string>
     <string name="app_theme_dark">Dark - Dark background with black action bar</string>
     <string name="app_theme_light">Light - Light Holo with blue accent</string>
-    <string name="app_theme_red">Red - Light Holo with red accent</string>
-    <string name="pref_app_specific">App specific</string>
     <string name="pref_app_theme">App Theme</string>
     <string name="pref_app_theme_summary">Defines the default app theme.</string>
     <string name="pref_boot_delay">Boot Timer Delay</string>
@@ -369,12 +365,10 @@
     <string name="help_text_low_latency">If enabled (1) it let\'s the hotplug driver react really quickly to short load spikes (100% CPU load) and brings CPUs online accordingly.</string>
     <string name="help_text_lowmem_reserve_ratio">For some specialized workloads on highmem machines it is dangerous for the kernel to allow process memory to be allocated from the lowmem zone. This is because that memory could then be pinned via the mlock() system call, or by unavailability of swap space.</string>
     <string name="help_text_max_freq_cpu">This tunable lets you adjust the maximum CPU frequency. Lowering this value can save you power at the cost of performance.</string>
-    <string name="help_text_max_freq_cpu_big">This tunable lets you adjust the maximum CPU frequency for your big (more powerful) CPUs.</string>
     <string name="help_text_max_freq_hysteresis">Stay at the max frequency for at least this value before dropping frequency again.</string>
     <string name="help_text_max_map_count">This file contains the maximum number of memory map areas a process may have. Memory map areas are used as a side-effect of calling malloc, directly by mmap and mprotect, and also when loading shared libraries.</string>
     <string name="help_text_min_free_kbytes">This is used to force the Linux VM to keep a minimum number of kilobytes free.</string>
     <string name="help_text_min_freq_cpu">This tunable lets you adjust the minimum CPU frequency. Increasing this value can give a better performance at the cost of battery usage.</string>
-    <string name="help_text_min_freq_cpu_big">This tunable lets you adjust the minimum CPU frequency for your big (more powerful) CPUs.</string>
     <string name="help_text_min_online_time">To prevent core off-/onlining when they are near the threshold. This is the minimum online time in seconds for a core.</string>
     <string name="help_text_min_sample_time">The minimum amount of time to spend at a frequency before we can ramp down.</string>
     <string name="help_text_no_data_found">There is no information available about this item.</string>

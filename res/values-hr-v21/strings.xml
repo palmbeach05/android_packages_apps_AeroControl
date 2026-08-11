@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_theme_light">Svijetla - Koristi Material temu platforme s plavim naglaskom</string>
-    <string name="app_theme_red">Red - Uses the platform Material theme with a red accent</string>
 </resources>

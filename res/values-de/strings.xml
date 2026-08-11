@@ -88,8 +88,6 @@
     <string name="perf_live_oc_uc_summary">Echtzeit-Einstellungen für Spannung und Frequenz</string>
     <string name="perf_voltage_control">Spannungssteuerung</string>
     <string name="perf_voltage_control_summary">Hier kann die CPU-Spannung eingestellt werden</string>
-    <string name="pref_max_freq_cpu_big">Max. Frequenz (big)</string>
-    <string name="pref_min_freq_cpu_big">Min. Frequenz (big)</string>
     <string name="pref_cpu_freq">Frequenzen</string>
     <string name="pref_max_freq_cpu">Max. Frequenz</string>
     <string name="pref_min_freq_cpu">Min. Frequenz</string>
@@ -176,8 +174,6 @@
     <string name="aero_settings">Einstellungen</string>
     <string name="app_theme_dark">Dunkel – Helles Holo-Design mit blauem Akzent und dunkler Aktionsleiste</string>
     <string name="app_theme_light">Hell – Helles Holo-Design mit blauem Akzent</string>
-    <string name="app_theme_red">Rot – Helles Holo-Design mit rotem Akzent</string>
-    <string name="pref_app_specific">App-spezifisch</string>
     <string name="pref_app_theme">App-Design</string>
     <string name="pref_app_theme_summary">Legt das Erscheinungsbild der App fest.</string>
     <string name="pref_boot_delay">Startverzögerung</string>
@@ -367,12 +363,10 @@
 	<string name="help_text_low_latency">Wenn aktiviert (1), reagiert der Hotplug-Treiber sehr schnell auf kurze Lastspitzen (100 % CPU-Auslastung) und aktiviert zusätzliche CPU-Kerne entsprechend.</string>
 	<string name="help_text_lowmem_reserve_ratio">Bei einigen spezialisierten Arbeitslasten auf Systemen mit Highmem kann es problematisch sein, wenn der Kernel Prozessspeicher aus der Lowmem-Zone zuweist. Dieser Speicher kann beispielsweise durch den Systemaufruf „mlock()“ oder durch fehlenden Swap-Speicher dauerhaft belegt werden.</string>
 	<string name="help_text_max_freq_cpu">Mit dieser Einstellung kann die maximale CPU-Frequenz angepasst werden. Ein niedrigerer Wert kann Energie sparen, geht jedoch zulasten der Leistung.</string>
-	<string name="help_text_max_freq_cpu_big">Mit dieser Einstellung kann die maximale CPU-Frequenz der großen (leistungsstärkeren) CPU-Kerne angepasst werden.</string>
 	<string name="help_text_max_freq_hysteresis">Verbleibt nach Erreichen der maximalen Frequenz mindestens für diesen Zeitraum auf dieser Frequenz, bevor sie wieder reduziert wird.</string>
 	<string name="help_text_max_map_count">Diese Datei enthält die maximale Anzahl von Speicherabbildungsbereichen (Memory Maps), die ein Prozess besitzen darf. Solche Bereiche entstehen beispielsweise durch Aufrufe von malloc, mmap und mprotect sowie beim Laden gemeinsam genutzter Bibliotheken.</string>
 	<string name="help_text_min_free_kbytes">Wird verwendet, um die Linux-VM anzuweisen, stets eine minimale Anzahl von Kilobyte freien Speichers vorzuhalten.</string>
 	<string name="help_text_min_freq_cpu">Mit dieser Einstellung kann die minimale CPU-Frequenz angepasst werden. Ein höherer Wert kann die Leistung verbessern, erhöht jedoch den Akkuverbrauch.</string>
-	<string name="help_text_min_freq_cpu_big">Mit dieser Einstellung kann die minimale CPU-Frequenz der großen (leistungsstärkeren) CPU-Kerne angepasst werden.</string>
 	<string name="help_text_min_online_time">Verhindert ein zu häufiges Aktivieren und Deaktivieren von CPU-Kernen nahe dem Schwellenwert. Legt die minimale Aktivitätsdauer eines Kerns in Sekunden fest.</string>
 	<string name="help_text_min_sample_time">Die minimale Zeitspanne, die eine Frequenz beibehalten wird, bevor sie wieder reduziert werden kann.</string>
 	<string name="help_text_no_data_found">Für diesen Eintrag sind keine Informationen verfügbar.</string>
