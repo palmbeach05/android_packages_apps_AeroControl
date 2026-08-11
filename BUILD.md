@@ -15,7 +15,7 @@ unaffected by this and continues to work as before.
 
 Install the SDK components with the SDK manager, e.g.:
 
-```
+```sh
 sdkmanager "platforms;android-22" "build-tools;26.0.2"
 ```
 
@@ -28,7 +28,7 @@ installed locally.
 Point the build at your local Android SDK either by creating a
 `local.properties` file in the repository root (not committed):
 
-```
+```properties
 sdk.dir=/path/to/Android/sdk
 ```
 
@@ -37,7 +37,7 @@ environment.
 
 ## Building
 
-```
+```sh
 ./gradlew assembleDebug
 ```
 
