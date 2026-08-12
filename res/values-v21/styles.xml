@@ -144,13 +144,11 @@
         application-specific cards, icons, and navigation resources are kept
         stable by reusing the same app assets as AeroTheme.
     -->
-    <style name="AeroTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
+    <style name="AeroTheme.System" parent="@android:style/Theme.DeviceDefault">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
         <item name="android:preferenceStyle">@style/AeroPreference</item>
         <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
         <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
-		<item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
-		<item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
@@ -202,9 +200,7 @@
         <item name="aeroIconTint">@color/dark_text_color</item>
         <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
     </style>
-    <style name="AeroSettingsTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
-		<item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
-		<item name="android:dialogTheme">@style/AeroDialog.Light</item>
+    <style name="AeroSettingsTheme.System" parent="@android:style/Theme.DeviceDefault">
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
