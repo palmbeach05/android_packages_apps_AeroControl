@@ -35,6 +35,22 @@
         <item name="android:layout">@layout/preference_switch_card</item>
         <item name="android:widgetLayout">@layout/preference_switch_widget</item>
     </style>
+	<style name="AeroDialog.Text.Large" parent="@android:style/TextAppearance.Material.Headline">
+		<item name="android:textColor">@color/text_color</item>
+	</style>
+	<style name="AeroDialog.Text.Medium" parent="@android:style/TextAppearance.Material.Subhead">
+		<item name="android:textColor">@color/text_color</item>
+	</style>
+	<style name="AeroDialog.Text.ListItem" parent="@android:style/TextAppearance.Material.Subhead">
+		<item name="android:textColor">@color/text_color</item>
+	</style>
+	<style name="AeroDialog.Title" parent="@android:style/TextAppearance.Material.Title">
+		<item name="android:textColor">@color/text_color</item>
+	</style>
+	<style name="AeroDialog.ProgressMessage" parent="@android:style/TextAppearance.Material.Body1">
+		<item name="android:textColor">@color/text_color</item>
+	</style>
+
     <!--
         Explicit Light alert-dialog/dialog theme (API 21+). Framework dialogs
         (AlertDialog, ListPreference selection dialogs, etc.) otherwise inherit
@@ -47,8 +63,16 @@
         <item name="android:colorBackground">@color/bg_grey</item>
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
+		<item name="android:textColorPrimaryInverse">@color/text_color</item>
+		<item name="android:textColorSecondaryInverse">@color/light_grey</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
+		<item name="android:textAppearanceLarge">@style/AeroDialog.Text.Large</item>
+		<item name="android:textAppearanceMedium">@style/AeroDialog.Text.Medium</item>
+		<item name="android:textAppearanceListItemSmall">@style/AeroDialog.Text.ListItem</item>
+		<item name="android:textColorAlertDialogListItem">@color/text_color</item>
+		<item name="android:windowTitleStyle">@style/AeroDialog.Title</item>
+		<item name="android:textAppearanceSmall">@style/AeroDialog.ProgressMessage</item>
     </style>
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
@@ -125,6 +149,8 @@
         <item name="android:preferenceStyle">@style/AeroPreference</item>
         <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
         <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
+		<item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
+		<item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
@@ -177,6 +203,8 @@
         <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
     </style>
     <style name="AeroSettingsTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
+		<item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
+		<item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
