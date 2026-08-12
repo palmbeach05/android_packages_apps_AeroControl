@@ -80,6 +80,7 @@
         <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
         <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
         <item name="android:windowBackground">@color/bg_grey</item>
+		<item name="android:colorButtonNormal">@color/bg_dark_grey</item>
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
         <item name="android:colorPrimary">@color/actionbar_color</item>
