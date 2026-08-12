@@ -31,7 +31,7 @@
     <style name="AeroDialogPreference">
         <item name="android:layout">@layout/preference_card</item>
     </style>
-    <style name="AeroSwitchPreference" parent="@android:style/Preference.Material.SwitchPreference">
+    <style name="AeroSwitchPreference">
         <item name="android:layout">@layout/preference_switch_card</item>
     </style>
 	<style name="AeroDialog.Text.Large" parent="@android:style/TextAppearance.Material.Headline">
