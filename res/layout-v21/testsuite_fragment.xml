@@ -11,6 +11,5 @@
         android:key="linpack_use_all_cpus"
         android:defaultValue="false"
         android:summary="@string/testsuite_use_all_cpus_summary"
-        android:layout="@layout/preference_switch_row"
-        android:widgetLayout="@layout/preference_switch_widget"/>
+        android:layout="@layout/preference_switch_row"/>
 </PreferenceScreen>
