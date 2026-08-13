@@ -1,10 +1,12 @@
 package com.aero.control.helpers.Android.Material;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -79,6 +81,7 @@ public class CardBox extends LinearLayout {
             // Use themed drawable resolution for API 21+
             if (Build.VERSION.SDK_INT >= 21) {
                 backgroundDrawable = getContext().getResources().getDrawable(drawable, getContext().getTheme());
+                backgroundDrawable = applyTouchFeedback(backgroundDrawable);
                 // Use platform elevation instead of a simulated shadow drawable
                 setElevation(getResources().getDimension(R.dimen.card_elevation));
                 setTranslationZ(0f);
@@ -92,6 +95,23 @@ public class CardBox extends LinearLayout {
         } else {
             setBackground(backgroundDrawable);
         }
+    }
+
+    /**
+     * Wraps the card background in a RippleDrawable so clickable App Monitor
+     * tabs get Material press feedback on API 21+. Uses the resolved
+     * android:colorControlHighlight theme color, falling back to
+     * android.R.color.darker_gray if the attribute cannot be resolved.
+     */
+    private Drawable applyTouchFeedback(Drawable base) {
+        TypedValue typedValue = new TypedValue();
+        int highlightColor = getResources().getColor(android.R.color.darker_gray);
+        if (getContext().getTheme().resolveAttribute(android.R.attr.colorControlHighlight, typedValue, true)) {
+            highlightColor = typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT && typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT
+                    ? typedValue.data
+                    : getResources().getColor(typedValue.resourceId);
+        }
+        return new RippleDrawable(ColorStateList.valueOf(highlightColor), base, base);
     }
 
     /**
