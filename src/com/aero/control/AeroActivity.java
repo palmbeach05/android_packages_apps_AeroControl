@@ -671,19 +671,35 @@ public final class AeroActivity extends Activity {
         });
     }
 
-    // Runs once, after this restored activity's layout has completed. If
-    // content_frame is still blank for the restored CPU Statistics
-    // selection, performs a single replacement transaction to force the
-    // fragment's view to be created.
+    // Runs after this restored activity's layout has completed (and, if a
+    // matching drawer transaction was still in flight, after that
+    // transaction has settled too). If content_frame is still blank for the
+    // restored CPU Statistics selection, performs a single replacement
+    // transaction to force the fragment's view to be created.
     private void recoverBlankStatisticsContentIfNeeded(int savedItemId) {
         if (isFinishing() || hasAppDetailBackStackEntry()) {
             return;
         }
-        // A newer drawer selection has already been made (or is about to be
-        // applied); don't fight it with a stale replacement for the
-        // restored CPU Statistics selection.
-        if (sPendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM
-                || this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+        // This instance is itself about to be recreated again (e.g. another
+        // rotation raced in before this check ran); let the next instance's
+        // own restoration handle recovery instead of fighting it here.
+        if (sPendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            return;
+        }
+        if (this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            // During initial rotation, the old activity instance can hand
+            // off a still-pending switchContent() transaction for this same
+            // restored CPU Statistics selection (see onConfigurationChanged
+            // and the sPendingDrawerItemResourceId hand-off in onCreate).
+            // That transaction hasn't committed yet, so content_frame can't
+            // be judged blank or not yet -- wait for it to settle instead of
+            // giving up permanently.
+            if (this.mPendingDrawerTransactionItemResourceId == savedItemId) {
+                scheduleBlankStatisticsContentRecoveryCheck(savedItemId);
+            }
+            // Otherwise a different, newer drawer selection is pending;
+            // don't fight it with a stale replacement for the restored CPU
+            // Statistics selection.
             return;
         }
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
