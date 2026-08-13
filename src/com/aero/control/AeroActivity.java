@@ -165,9 +165,19 @@ public final class AeroActivity extends Activity {
             Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
             Fragment expectedFragment = (savedItemId != -1) ? getFragmentByResourceId(savedItemId) : null;
 
-            // Enable replacement when restored content doesn't match saved selection
+            // Automatic FragmentManager restoration can re-attach the correct
+            // fragment instance for content_frame without ever giving it a
+            // rendered view (e.g. StatisticsFragment recreated for rotation
+            // into res/layout-land/statistics.xml), leaving the screen blank
+            // even though currentFragment already matches expectedFragment.
+            // Treat that as needing replacement too, so a fresh transaction
+            // forces the fragment's view to be (re)created.
+            boolean contentFrameNotRendered = expectedFragment != null && expectedFragment.getView() == null;
+
+            // Enable replacement when restored content doesn't match saved selection,
+            // or matches but never rendered a view.
             // Exception: AppDetail is handled via back stack, not drawer selection
-            boolean needsReplacement = (currentFragment != expectedFragment) && !hasAppDetailBackStackEntry();
+            boolean needsReplacement = (currentFragment != expectedFragment || contentFrameNotRendered) && !hasAppDetailBackStackEntry();
 
             if (savedItemId != -1) {
                 selectItemByResourceId(savedItemId, needsReplacement);
