@@ -13,12 +13,11 @@
             android:id="@+id/frequency"
             android:paddingLeft="7dp"
             android:singleLine="true"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"/>
         <TextView
             android:textSize="19sp"
             android:id="@+id/timeInState"
-            android:paddingLeft="50dp"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:singleLine="true"
