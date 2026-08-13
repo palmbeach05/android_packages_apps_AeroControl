@@ -149,8 +149,6 @@
         <item name="android:preferenceStyle">@style/AeroPreference</item>
         <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
         <item name="android:switchPreferenceStyle">@style/AeroSwitchPreference</item>
-        <item name="android:colorControlNormal">?android:attr/textColorSecondary</item>
-        <item name="android:colorControlActivated">?android:attr/colorAccent</item>
         <item name="android:colorForeground">?android:attr/textColorPrimary</item>
         <item name="android:editTextColor">?android:attr/textColorPrimary</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
@@ -207,8 +205,6 @@
         <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
     </style>
     <style name="AeroSettingsTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
-        <item name="android:colorControlNormal">?android:attr/textColorSecondary</item>
-        <item name="android:colorControlActivated">?android:attr/colorAccent</item>
         <item name="android:colorForeground">?android:attr/textColorPrimary</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
