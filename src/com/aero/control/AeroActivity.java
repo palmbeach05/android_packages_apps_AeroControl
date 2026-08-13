@@ -85,10 +85,12 @@ public final class AeroActivity extends Activity {
     private static final int NO_PENDING_DRAWER_ITEM = -1;
     private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static boolean sPendingRecreation = false;
-    // API 19-only: resource ID of the drawer item for a switchContent()
-    // transaction that selectItem() has posted on mHandler but that hasn't
-    // committed yet. Lets onConfigurationChanged() hand the selection off to
-    // the recreated instance instead of letting it run on this one.
+    // Resource ID of the drawer item for a switchContent() transaction that
+    // selectItem() has posted on mHandler but that hasn't committed yet. Lets
+    // onConfigurationChanged() hand the selection off to the recreated
+    // instance instead of letting it run on this one. Tracked on all
+    // supported API levels, since rotation can race ahead of the posted
+    // transaction on any of them.
     private int mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -175,7 +177,7 @@ public final class AeroActivity extends Activity {
         }
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
+            if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
                 selectItemByResourceId(R.string.slider_app_monitor);
             }
         } else {
@@ -252,7 +254,7 @@ public final class AeroActivity extends Activity {
             return;
         }
         Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.getString("NOTIFY_STRING").equals("APPMONITOR")) {
+        if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
             selectItemByResourceId(R.string.slider_app_monitor);
         }
         getIntent().putExtra("NOTIFY_STRING", new String());
@@ -504,12 +506,10 @@ public final class AeroActivity extends Activity {
                 mFragmentStack.remove(oldFragment);
             }
             if (replaceFragment) {
-                if (Build.VERSION.SDK_INT == 19) {
-                    // Track which drawer item this transaction is for, so
-                    // onConfigurationChanged() can hand it off if rotation
-                    // races ahead of this transaction committing.
-                    mPendingDrawerTransactionItemResourceId = itemResourceId;
-                }
+                // Track which drawer item this transaction is for, so
+                // onConfigurationChanged() can hand it off if rotation
+                // races ahead of this transaction committing.
+                mPendingDrawerTransactionItemResourceId = itemResourceId;
                 switchContent(fragment);
             }
         }
@@ -598,35 +598,21 @@ public final class AeroActivity extends Activity {
         if (this.mTitle != null) {
             setTitle(this.mTitle);
         }
-        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
-        if (currentFragment instanceof StatisticsFragment || currentFragment instanceof AppMonitorDetailFragment) {
-            // CPU Statistics and the App Monitor detail page provide a
-            // dedicated landscape layout under res/layout-land/ that can be
-            // picked up by simply refreshing the existing fragment's view in
-            // place, instead of recreating the whole activity. Detaching and
-            // re-attaching the same fragment instance in separate transactions
-            // destroys and reinflates its view (so the orientation-specific
-            // layout is picked up) while preserving the fragment's own state
-            // (e.g. the selected CPU cluster, or the App Monitor detail
-            // arguments, selected module, and "AppDetail" back-stack entry).
-            getFragmentManager().beginTransaction().detach(currentFragment).commit();
-            getFragmentManager().executePendingTransactions();
-            getFragmentManager().beginTransaction().attach(currentFragment).commit();
-            return;
-        }
         if (currentFragmentRequiresRecreation()) {
-            if (Build.VERSION.SDK_INT == 19 && this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            if (this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
                 // A drawer transaction was already posted by switchContent()
                 // before this configuration change began recreating the
                 // activity. Hand its resource ID off through the same mechanism
-                // used for selections made after recreation begins, and cancel
-                // the transaction so it can't run against this soon-to-be-
-                // destroyed instance.
+                // used for selections made after recreation begins, so it
+                // isn't lost.
                 sPendingDrawerItemResourceId = this.mPendingDrawerTransactionItemResourceId;
-                if (this.mPendingSwitch != null) {
-                    mHandler.removeCallbacks(this.mPendingSwitch);
-                }
                 this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
+            }
+            // Cancel any switchContent() transaction still pending on the
+            // handler so it can't run against this soon-to-be-destroyed
+            // instance.
+            if (this.mPendingSwitch != null) {
+                mHandler.removeCallbacks(this.mPendingSwitch);
             }
             // Mark that this instance is about to be replaced so a drawer
             // selection tapped on it before it's destroyed is handed off to the
@@ -636,14 +622,17 @@ public final class AeroActivity extends Activity {
         }
     }
 
-    // Profile provides a dedicated landscape layout under res/layout-land/
-    // that can only be inflated by recreating the activity. Standard drawer
-    // pages, CPU Statistics, and the App Monitor detail page have no such
-    // requirement, so they stay in this activity instance across rotation
-    // instead of being torn down and recreated.
+    // StatisticsFragment (CPU Statistics), ProfileFragment, and
+    // AppMonitorDetailFragment each provide a dedicated landscape layout
+    // under res/layout-land/ that can only be inflated by recreating the
+    // activity. Standard drawer pages have no such requirement, so they stay
+    // in this activity instance across rotation instead of being torn down
+    // and recreated.
     private boolean currentFragmentRequiresRecreation() {
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
-        return currentFragment instanceof ProfileFragment;
+        return currentFragment instanceof ProfileFragment
+                || currentFragment instanceof StatisticsFragment
+                || currentFragment instanceof AppMonitorDetailFragment;
     }
 
     @Override // android.app.Activity
