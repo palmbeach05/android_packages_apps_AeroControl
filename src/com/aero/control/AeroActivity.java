@@ -840,7 +840,8 @@ public final class AeroActivity extends Activity {
                 try {
                     AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
                     // Only add to stack after the transaction has been committed
-                    if (addToStack) {
+                    // and only if the fragment is not already at the top of the stack
+                    if (addToStack && (mFragmentStack.isEmpty() || mFragmentStack.peek() != fragment)) {
                         mFragmentStack.push(fragment);
                     }
                 } catch (IllegalStateException e) {
