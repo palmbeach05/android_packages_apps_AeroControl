@@ -152,6 +152,7 @@ public final class AeroActivity extends Activity {
             }
         });
         this.mNavigationDrawer.syncState();
+        int savedItemId = -1;
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
@@ -159,7 +160,7 @@ public final class AeroActivity extends Activity {
             int[] stackResourceIds = savedInstanceState.getIntArray("FRAGMENT_STACK_IDS");
             reconnectRestoredFragments(stackResourceIds);
             // Restore using stable resource ID if available, otherwise fall back to position
-            int savedItemId = savedInstanceState.getInt(SELECTED_ITEM_ID, -1);
+            savedItemId = savedInstanceState.getInt(SELECTED_ITEM_ID, -1);
 
             // Check if the current fragment in content_frame matches the saved selection.
             // Note: Fragment.getView() is not used here to test for a rendered view --
@@ -178,18 +179,6 @@ public final class AeroActivity extends Activity {
             } else {
                 selectItem(savedInstanceState.getInt(SELECTED_ITEM), needsReplacement);
             }
-
-            // FragmentManager restoration can re-attach the correct fragment
-            // instance for content_frame without ever giving it a rendered
-            // view (e.g. StatisticsFragment recreated for rotation into
-            // res/layout-land/statistics.xml), leaving the CPU Statistics
-            // screen blank even though currentFragment already matched
-            // expectedFragment above. Unlike checking getView() during
-            // onCreate() itself, this schedules a one-time check to run
-            // after this activity's layout has completed, so it only reacts
-            // to an actually-blank content_frame instead of racing with a
-            // still-in-progress normal restoration.
-            scheduleBlankStatisticsContentRecoveryCheck(savedItemId);
         }
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -210,6 +199,28 @@ public final class AeroActivity extends Activity {
         sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
         if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
             selectItemByResourceId(pendingDrawerItemResourceId);
+        }
+        if (savedInstanceState != null) {
+            // FragmentManager restoration can re-attach the correct fragment
+            // instance for content_frame without ever giving it a rendered
+            // view (e.g. StatisticsFragment recreated for rotation into
+            // res/layout-land/statistics.xml), leaving the CPU Statistics
+            // screen blank even though currentFragment already matched
+            // expectedFragment earlier. Unlike checking getView() during
+            // onCreate() itself, this schedules a one-time check to run
+            // after this activity's layout has completed, so it only reacts
+            // to an actually-blank content_frame instead of racing with a
+            // still-in-progress normal restoration.
+            //
+            // Schedule the check for the item that remains selected after
+            // the hand-off above, not the restored savedItemId: on the
+            // initial rotation, savedItemId is the page that was active
+            // before CPU Statistics was tapped mid-rotation, so a stale
+            // check for savedItemId would silently skip the CPU Statistics
+            // recovery this activity actually needs.
+            int recoveryItemId = (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM)
+                    ? pendingDrawerItemResourceId : savedItemId;
+            scheduleBlankStatisticsContentRecoveryCheck(recoveryItemId);
         }
         // Initialize mJobManager synchronously so restored fragments can access it.
         mJobManager = JobManager.instance(this);
@@ -671,19 +682,35 @@ public final class AeroActivity extends Activity {
         });
     }
 
-    // Runs once, after this restored activity's layout has completed. If
-    // content_frame is still blank for the restored CPU Statistics
-    // selection, performs a single replacement transaction to force the
-    // fragment's view to be created.
+    // Runs after this restored activity's layout has completed (and, if a
+    // matching drawer transaction was still in flight, after that
+    // transaction has settled too). If content_frame is still blank for the
+    // restored CPU Statistics selection, performs a single replacement
+    // transaction to force the fragment's view to be created.
     private void recoverBlankStatisticsContentIfNeeded(int savedItemId) {
         if (isFinishing() || hasAppDetailBackStackEntry()) {
             return;
         }
-        // A newer drawer selection has already been made (or is about to be
-        // applied); don't fight it with a stale replacement for the
-        // restored CPU Statistics selection.
-        if (sPendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM
-                || this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+        // This instance is itself about to be recreated again (e.g. another
+        // rotation raced in before this check ran); let the next instance's
+        // own restoration handle recovery instead of fighting it here.
+        if (sPendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            return;
+        }
+        if (this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            // During initial rotation, the old activity instance can hand
+            // off a still-pending switchContent() transaction for this same
+            // restored CPU Statistics selection (see onConfigurationChanged
+            // and the sPendingDrawerItemResourceId hand-off in onCreate).
+            // That transaction hasn't committed yet, so content_frame can't
+            // be judged blank or not yet -- wait for it to settle instead of
+            // giving up permanently.
+            if (this.mPendingDrawerTransactionItemResourceId == savedItemId) {
+                scheduleBlankStatisticsContentRecoveryCheck(savedItemId);
+            }
+            // Otherwise a different, newer drawer selection is pending;
+            // don't fight it with a stale replacement for the restored CPU
+            // Statistics selection.
             return;
         }
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
