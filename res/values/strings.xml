@@ -79,6 +79,8 @@
     <string name="per_app_not_active">Per-App: Not active</string>
     <string name="profile_assign_to_apps">Assign to apps</string>
     <string name="profile_remove">Remove this profile</string>
+    <string name="profile_remove_confirmation">This profile will be permanently deleted.</string>
+    <string name="delete">Delete</string>
     <string name="return_to_normal">Returning to normal usage</string>
 
     <!-- ========================================================= -->

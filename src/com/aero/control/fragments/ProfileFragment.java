@@ -9,7 +9,6 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
@@ -17,7 +16,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,8 +27,6 @@ import com.aero.control.helpers.PerApp.perAppHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.settingsHelper;
 import com.aero.control.service.PerAppServiceHelper;
-import com.cocosw.undobar.UndoBarController;
-import com.cocosw.undobar.UndoBarStyle;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.github.amlcurran.showcaseview.ShowcaseView;
@@ -44,15 +40,13 @@ import java.util.List;
 import java.util.Map;
 
 /* JADX INFO: loaded from: classes.dex */
-public class ProfileFragment extends PreferenceFragment implements UndoBarController.AdvancedUndoListener {
+public class ProfileFragment extends PreferenceFragment {
     public static final String FILENAME_PERAPP = "firstrun_perapp";
     public static final String FILENAME_PROFILES = "firstrun_profiles";
     private static final String perAppProfileHandler = "perAppProfileHandler";
     private String[] mCompleteProfiles;
     private ViewGroup mContainerView;
     private Context mContext;
-    private ViewGroup mDeletedChild;
-    private String mDeletedProfile;
     private List<ApplicationInfo> mPackages;
     private boolean mPerAppDialogVisible;
     private SharedPreferences mPerAppPrefs;
@@ -272,18 +266,21 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
             txtView.setTypeface(FilePath.kitkatFont);
             txtViewSummary.setTypeface(FilePath.kitkatFont);
             createListener(txtView, txtViewSummary);
-            final UndoBarStyle style = new UndoBarStyle(R.drawable.ic_action_undo, R.string.pref_profile_undo, R.drawable.undobar_background, 5000L).setAnim(AnimationUtils.loadAnimation(this.mContext, android.R.anim.fade_in), AnimationUtils.loadAnimation(this.mContext, android.R.anim.fade_out));
             childView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8
                 @Override // android.view.View.OnClickListener
                 public void onClick(View view) {
-                    UndoBarController.show(ProfileFragment.this.getActivity(), ProfileFragment.this.getText(R.string.pref_profile_deleted), (UndoBarController.UndoListener) ProfileFragment.this, style);
-                    if (ProfileFragment.this.mDeletedChild != null) {
-                        ProfileFragment.this.deleteProfile(ProfileFragment.this.mDeletedProfile);
-                    }
-                    ProfileFragment.this.mDeletedProfile = txtView.getText().toString();
-                    ProfileFragment.this.mDeletedChild = childView;
-                    ProfileFragment.this.mPrefs = ProfileFragment.this.mContext.getSharedPreferences(ProfileFragment.this.mDeletedProfile, 0);
-                    ProfileFragment.this.mContainerView.removeView(ProfileFragment.this.mDeletedChild);
+                    new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.profile_remove).setMessage(R.string.profile_remove_confirmation).setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8.1
+                        @Override // android.content.DialogInterface.OnClickListener
+                        public void onClick(DialogInterface dialog, int which) {
+                            ProfileFragment.this.deleteProfile(txtView.getText().toString());
+                            ProfileFragment.this.mContainerView.removeView(childView);
+                            if (ProfileFragment.this.mContainerView.getChildCount() == 2) {
+                                ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
+                                ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
+                            }
+                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_deleted, Toast.LENGTH_SHORT).show();
+                        }
+                    }).setNegativeButton(R.string.cancel, (DialogInterface.OnClickListener) null).show();
                 }
             });
             childView.findViewById(R.id.assign_to_app).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.9
@@ -293,23 +290,6 @@ public class ProfileFragment extends PreferenceFragment implements UndoBarContro
                 }
             });
             this.mContainerView.addView(childView, 0);
-        }
-    }
-
-    @Override // com.cocosw.undobar.UndoBarController.UndoListener
-    public void onUndo(Parcelable token) {
-        Toast.makeText(this.mContext, R.string.successful, 0).show();
-        this.mContainerView.addView(this.mDeletedChild);
-    }
-
-    @Override // com.cocosw.undobar.UndoBarController.AdvancedUndoListener
-    public void onHide(Parcelable token) {
-        if (deleteProfile(this.mDeletedProfile)) {
-            this.mContainerView.removeView(this.mDeletedChild);
-        }
-        if (this.mContainerView.getChildCount() == 2) {
-            this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
-            this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
         }
     }
 
