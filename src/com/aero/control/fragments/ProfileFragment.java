@@ -272,13 +272,17 @@ public class ProfileFragment extends PreferenceFragment {
                     new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.profile_remove).setMessage(R.string.profile_remove_confirmation).setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8.1
                         @Override // android.content.DialogInterface.OnClickListener
                         public void onClick(DialogInterface dialog, int which) {
-                            ProfileFragment.this.deleteProfile(txtView.getText().toString());
-                            ProfileFragment.this.mContainerView.removeView(childView);
-                            if (ProfileFragment.this.mContainerView.getChildCount() == 2) {
-                                ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
-                                ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
+                            boolean success = ProfileFragment.this.deleteProfile(txtView.getText().toString());
+                            if (success) {
+                                ProfileFragment.this.mContainerView.removeView(childView);
+                                if (ProfileFragment.this.mContainerView.getChildCount() == 2) {
+                                    ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
+                                    ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
+                                }
+                                Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_deleted, Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_not_deleted, Toast.LENGTH_SHORT).show();
                             }
-                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_deleted, Toast.LENGTH_SHORT).show();
                         }
                     }).setNegativeButton(R.string.cancel, (DialogInterface.OnClickListener) null).show();
                 }
@@ -426,8 +430,8 @@ public class ProfileFragment extends PreferenceFragment {
     public boolean deleteProfile(String ProfileName) {
         File prefFile = new File(FilePath.sharedPrefsPath + ProfileName + ".xml");
         this.mPerAppPrefs.edit().remove(ProfileName).commit();
-        prefFile.delete();
-        if (prefFile.exists()) {
+        boolean deleted = prefFile.delete();
+        if (!deleted && prefFile.exists()) {
             Log.e(LOG_TAG, "Whoop, it still exists, something went wrong");
             String[] cmd = {"rm " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml")};
             AeroActivity.shell.setRootInfo(cmd);
@@ -437,7 +441,7 @@ public class ProfileFragment extends PreferenceFragment {
                 Log.e(LOG_TAG, "Something interrupted the main Thread, try again.", e);
             }
         }
-        return true;
+        return !prefFile.exists();
     }
 
     /**
