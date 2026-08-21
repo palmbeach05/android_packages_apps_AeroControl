@@ -131,6 +131,10 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         if (this.mPlatformCheckBox != null) {
             this.mPlatformCheckBox.setEnabled(enabled);
         }
+        applyEnabledStateToViews(enabled);
+    }
+
+    private void applyEnabledStateToViews(boolean enabled) {
         int primaryColor = resolveThemeColor(R.attr.aeroPrimaryTextColor, R.color.text_color);
         int secondaryColor = resolveThemeColor(R.attr.aeroSecondaryTextColor, R.color.text_color);
         if (enabled) {
@@ -139,15 +143,14 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
             }
             if (this.mSummary != null) {
                 this.mSummary.setTextColor(secondaryColor);
-                return;
             }
-            return;
-        }
-        if (this.mTitle != null) {
-            this.mTitle.setTextColor(applyDisabledAlpha(primaryColor));
-        }
-        if (this.mSummary != null) {
-            this.mSummary.setTextColor(applyDisabledAlpha(secondaryColor));
+        } else {
+            if (this.mTitle != null) {
+                this.mTitle.setTextColor(applyDisabledAlpha(primaryColor));
+            }
+            if (this.mSummary != null) {
+                this.mSummary.setTextColor(applyDisabledAlpha(secondaryColor));
+            }
         }
     }
 
@@ -222,6 +225,7 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
             checkBoxView.setVisibility(8);
             separator_checkbox.setVisibility(8);
         }
+        applyEnabledStateToViews(isEnabled());
     }
 
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener

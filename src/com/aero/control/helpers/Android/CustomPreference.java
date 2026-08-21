@@ -190,6 +190,16 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
     @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        applyEnabledStateToViews(enabled);
+        if (this.mCheckBox != null) {
+            this.mCheckBox.setEnabled(enabled);
+        }
+        if (this.mPlatformCheckBox != null) {
+            this.mPlatformCheckBox.setEnabled(enabled);
+        }
+    }
+
+    private void applyEnabledStateToViews(boolean enabled) {
         int primaryColor = resolveThemeColor(R.attr.aeroPrimaryTextColor, R.color.text_color);
         int secondaryColor = resolveThemeColor(R.attr.aeroSecondaryTextColor, R.color.text_color);
         if (enabled) {
@@ -206,12 +216,6 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
             if (this.mSummary != null) {
                 this.mSummary.setTextColor(applyDisabledAlpha(secondaryColor));
             }
-        }
-        if (this.mCheckBox != null) {
-            this.mCheckBox.setEnabled(enabled);
-        }
-        if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(enabled);
         }
     }
 
@@ -333,6 +337,7 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
             checkBoxView.setVisibility(8);
             separator_checkbox.setVisibility(8);
         }
+        applyEnabledStateToViews(isEnabled());
     }
 
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
