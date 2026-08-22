@@ -45,8 +45,8 @@
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="android:colorControlHighlight">@color/card_shadow</item>
-        <item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
-        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
+        <item name="android:alertDialogTheme">@android:style/Theme.Material.Light.Dialog.Alert</item>
+        <item name="android:dialogTheme">@android:style/Theme.Material.Light.Dialog</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
@@ -130,8 +130,8 @@
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
-        <item name="android:alertDialogTheme">@style/AeroDialog.Light</item>
-        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
+        <item name="android:alertDialogTheme">@android:style/Theme.Material.Light.Dialog.Alert</item>
+        <item name="android:dialogTheme">@android:style/Theme.Material.Light.Dialog</item>
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
