@@ -128,10 +128,11 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
     @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        boolean effectiveEnabled = isEnabled();
         if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(enabled);
+            this.mPlatformCheckBox.setEnabled(effectiveEnabled);
         }
-        applyEnabledStateToViews(enabled);
+        applyEnabledStateToViews(effectiveEnabled);
     }
 
     private void applyEnabledStateToViews(boolean enabled) {

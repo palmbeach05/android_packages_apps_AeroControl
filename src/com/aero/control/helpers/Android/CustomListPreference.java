@@ -136,12 +136,13 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
     @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        applyEnabledStateToViews(enabled);
+        boolean effectiveEnabled = isEnabled();
+        applyEnabledStateToViews(effectiveEnabled);
         if (this.mCheckBox != null) {
-            this.mCheckBox.setEnabled(enabled);
+            this.mCheckBox.setEnabled(effectiveEnabled);
         }
         if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(enabled);
+            this.mPlatformCheckBox.setEnabled(effectiveEnabled);
         }
     }
 
