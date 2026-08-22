@@ -37,16 +37,14 @@
     </style>
     <style name="AeroDialog.Light" parent="@android:style/Theme.Material.Light.Dialog">
         <item name="android:colorBackground">@android:color/white</item>
-        <item name="android:textColorPrimary">@color/text_color</item>
-        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:windowBackground">@android:color/white</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
     </style>
 
     <style name="AeroDialog.Light.Alert" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <item name="android:colorBackground">@android:color/white</item>
-        <item name="android:textColorPrimary">@color/text_color</item>
-        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:windowBackground">@android:color/white</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
     </style>
