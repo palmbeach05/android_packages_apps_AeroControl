@@ -38,7 +38,7 @@ public class TestSuiteSwitchPreference extends SwitchPreference {
     @Override // android.preference.SwitchPreference, android.preference.Preference
     protected void onBindView(View view) {
         super.onBindView(view);
-        Switch switchWidget = (Switch) view.findViewById(R.id.testsuite_switch);
+        Switch switchWidget = (Switch) view.findViewById(R.id.switch_widget);
         if (switchWidget == null) {
             return;
         }

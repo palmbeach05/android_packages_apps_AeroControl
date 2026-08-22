@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceManager;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -126,25 +128,52 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
     @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        boolean effectiveEnabled = isEnabled();
         if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(enabled);
+            this.mPlatformCheckBox.setEnabled(effectiveEnabled);
         }
+        applyEnabledStateToViews(effectiveEnabled);
+    }
+
+    private void applyEnabledStateToViews(boolean enabled) {
+        int primaryColor = resolveThemeColor(R.attr.aeroPrimaryTextColor, R.color.text_color);
+        int secondaryColor = resolveThemeColor(R.attr.aeroSecondaryTextColor, R.color.text_color);
         if (enabled) {
             if (this.mTitle != null) {
-                this.mTitle.setTextColor(this.mContext.getResources().getColor(R.color.text_color));
+                this.mTitle.setTextColor(primaryColor);
             }
             if (this.mSummary != null) {
-                this.mSummary.setTextColor(this.mContext.getResources().getColor(R.color.text_color));
-                return;
+                this.mSummary.setTextColor(secondaryColor);
             }
-            return;
+        } else {
+            if (this.mTitle != null) {
+                this.mTitle.setTextColor(applyDisabledAlpha(primaryColor));
+            }
+            if (this.mSummary != null) {
+                this.mSummary.setTextColor(applyDisabledAlpha(secondaryColor));
+            }
         }
-        if (this.mTitle != null) {
-            this.mTitle.setTextColor(this.mContext.getResources().getColor(android.R.color.darker_gray));
+    }
+
+    private int resolveThemeColor(int attrResId, int fallbackColorResId) {
+        TypedValue typedValue = new TypedValue();
+        if (this.mContext.getTheme().resolveAttribute(attrResId, typedValue, true)) {
+            if (typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT && typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                return typedValue.data;
+            }
+            return this.mContext.getResources().getColor(typedValue.resourceId);
         }
-        if (this.mSummary != null) {
-            this.mSummary.setTextColor(this.mContext.getResources().getColor(android.R.color.darker_gray));
+        return this.mContext.getResources().getColor(fallbackColorResId);
+    }
+
+    private int applyDisabledAlpha(int color) {
+        TypedValue typedValue = new TypedValue();
+        float disabledAlpha = 0.5f;
+        if (this.mContext.getTheme().resolveAttribute(android.R.attr.disabledAlpha, typedValue, true)) {
+            disabledAlpha = typedValue.getFloat();
         }
+        int alpha = (int) (Color.alpha(color) * disabledAlpha);
+        return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
     }
 
     @Override // android.preference.Preference
@@ -197,6 +226,7 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
             checkBoxView.setVisibility(8);
             separator_checkbox.setVisibility(8);
         }
+        applyEnabledStateToViews(isEnabled());
     }
 
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
