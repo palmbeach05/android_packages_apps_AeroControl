@@ -31,10 +31,10 @@
     <style name="AeroDialogPreference">
         <item name="android:layout">@layout/preference_card</item>
     </style>
-    <style name="AeroSettingsDialogPreference" parent="@android:style/Preference.Material.DialogPreference">
+    <style name="AeroSettingsDialogPreference">
         <item name="android:dialogTheme">@style/AeroDialog.Light.Alert</item>
     </style>
-    <style name="AeroSettingsDialogPreference.Dark" parent="@android:style/Preference.Material.DialogPreference">
+    <style name="AeroSettingsDialogPreference.Dark">
         <item name="android:dialogTheme">@style/AeroDialog.Dark.Alert</item>
     </style>
     <style name="AeroSwitchPreference">
