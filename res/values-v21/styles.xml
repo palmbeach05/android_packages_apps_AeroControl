@@ -56,8 +56,13 @@
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
         <item name="android:textColorAlertDialogListItem">@color/text_color</item>
+        <item name="android:windowTitleStyle">@style/AeroDialog.Light.Alert.Title</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
+    </style>
+
+    <style name="AeroDialog.Light.Alert.Title" parent="@android:style/TextAppearance.Material.Headline">
+        <item name="android:textColor">@color/text_color</item>
     </style>
 
     <style name="AeroDialog.Dark" parent="@android:style/Theme.Material.Dialog">
@@ -89,6 +94,12 @@
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="android:colorControlHighlight">@color/card_shadow</item>
+        <item name="android:colorControlNormal">@color/text_color</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:textColorButton">@color/text_color</item>
         <item name="android:alertDialogTheme">@style/AeroDialog.Light.Alert</item>
         <item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
