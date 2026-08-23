@@ -2,7 +2,7 @@ package com.aero.control.testsuite;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -104,7 +104,7 @@ public class TestSuiteFragment extends PreferenceFragment {
     }
 
     private class RunBenchmark extends AsyncTask<Void, Void, Double> {
-        ProgressDialog progressDialog;
+        Dialog progressDialog;
         private final int workerCount;
         private final boolean useAllCpus;
         private final int availableProcessors;
@@ -128,13 +128,10 @@ public class TestSuiteFragment extends PreferenceFragment {
             super.onPreExecute();
             int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme(false);
             this.progressDialog = dialogTheme == 0
-                    ? new ProgressDialog(TestSuiteFragment.this.getActivity())
-                    : new ProgressDialog(TestSuiteFragment.this.getActivity(), dialogTheme);
-            this.progressDialog.setTitle("Running Linpack");
-            this.progressDialog.setMessage("Burning your CPUs...");
-            this.progressDialog.setIndeterminate(true);
+                    ? new Dialog(TestSuiteFragment.this.getActivity())
+                    : new Dialog(TestSuiteFragment.this.getActivity(), dialogTheme);
+            this.progressDialog.setContentView(R.layout.linpack_progress_dialog);
             this.progressDialog.setCancelable(false);
-            this.progressDialog.setIndeterminateDrawable(TestSuiteFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
             this.progressDialog.show();
         }
 
