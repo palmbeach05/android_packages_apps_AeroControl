@@ -11,6 +11,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
@@ -129,9 +130,16 @@ public class TestSuiteFragment extends PreferenceFragment {
             AlertDialog.Builder builder = dialogTheme == 0
                     ? new AlertDialog.Builder(TestSuiteFragment.this.getActivity())
                     : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
+            builder.setTitle(R.string.testsuite_linpack_running);
+            if (Build.VERSION.SDK_INT >= 21) {
+                builder.setView(R.layout.linpack_progress_dialog);
+            } else {
+                View progressView = TestSuiteFragment.this.getActivity()
+                        .getLayoutInflater()
+                        .inflate(R.layout.linpack_progress_dialog, null);
+                builder.setView(progressView);
+            }
             this.progressDialog = builder
-                    .setTitle(R.string.testsuite_linpack_running)
-                    .setView(R.layout.linpack_progress_dialog)
                     .setCancelable(false)
                     .create();
             this.progressDialog.show();
