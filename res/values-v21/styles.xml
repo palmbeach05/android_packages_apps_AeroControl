@@ -131,6 +131,7 @@
         <item name="aeroGraphLabelColor">@color/text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
         <item name="aeroAboutButtonStyle">@style/AeroAboutButton.Light</item>
+        <item name="aeroAboutBackground">@color/bg_grey</item>
     </style>
     <style name="AeroTheme.Dark" parent="@android:style/Theme.Material">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
@@ -160,6 +161,7 @@
         <item name="aeroGraphLabelColor">@color/dark_text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
         <item name="aeroAboutButtonStyle">@style/AeroAboutButton.Dark</item>
+        <item name="aeroAboutBackground">@color/dark_window_background</item>
     </style>
     <!--
         System App Theme (API 21+ only). Uses the platform Material base theme
@@ -190,6 +192,7 @@
         <item name="aeroGraphLabelColor">?android:attr/textColorPrimary</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
         <item name="aeroAboutButtonStyle">@style/AeroAboutButton.System</item>
+        <item name="aeroAboutBackground">?android:attr/windowBackground</item>
     </style>
     <!--
         Settings-only Material theme (API 21+). Provides the drawer and icon
