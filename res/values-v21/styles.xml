@@ -31,6 +31,9 @@
     <style name="AeroDialogPreference">
         <item name="android:layout">@layout/preference_card</item>
     </style>
+    <style name="AeroSettingsDialogPreference" parent="@android:style/Preference.Material.DialogPreference">
+        <item name="android:dialogTheme">@style/AeroDialog.Light.Alert</item>
+    </style>
     <style name="AeroSwitchPreference">
         <item name="android:layout">@layout/preference_switch_card</item>
         <item name="android:widgetLayout">@layout/preference_switch_widget</item>
@@ -49,6 +52,7 @@
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:textColorAlertDialogListItem">@color/text_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
     </style>
@@ -150,8 +154,10 @@
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="android:alertDialogTheme">@style/AeroDialog.Light.Alert</item>
         <item name="android:dialogTheme">@style/AeroDialog.Light</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroSettingsDialogPreference</item>
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:editTextColor">@color/text_color</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
         <item name="aeroPrimaryTextColor">@color/text_color</item>
