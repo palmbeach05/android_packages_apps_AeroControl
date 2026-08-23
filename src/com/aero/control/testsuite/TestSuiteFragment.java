@@ -83,6 +83,32 @@ public class TestSuiteFragment extends PreferenceFragment {
         return 0;
     }
 
+    private void applyLinpackProgressDialogTextColors(ProgressDialog dialog) {
+        String theme = ThemeHelper.getTheme(getActivity());
+        int titleColor;
+        int messageColor;
+
+        if (ThemeHelper.THEME_LIGHT.equals(theme)) {
+            titleColor = getResources().getColor(R.color.text_color);
+            messageColor = getResources().getColor(R.color.light_grey);
+        } else if (ThemeHelper.THEME_DARK.equals(theme)) {
+            titleColor = getResources().getColor(R.color.dark_text_color);
+            messageColor = getResources().getColor(R.color.dark_secondary_text_color);
+        } else {
+            return;
+        }
+
+        TextView title = (TextView) dialog.findViewById(android.R.id.title);
+        TextView message = (TextView) dialog.findViewById(android.R.id.message);
+
+        if (title != null) {
+            title.setTextColor(titleColor);
+        }
+        if (message != null) {
+            message.setTextColor(messageColor);
+        }
+    }
+
     @Override // android.app.Fragment
     public void onDestroyView() {
         if (this.mRunBenchmark != null) {
@@ -136,6 +162,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             this.progressDialog.setCancelable(false);
             this.progressDialog.setIndeterminateDrawable(TestSuiteFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
             this.progressDialog.show();
+            TestSuiteFragment.this.applyLinpackProgressDialogTextColors(this.progressDialog);
         }
 
         /* JADX INFO: Access modifiers changed from: protected */
