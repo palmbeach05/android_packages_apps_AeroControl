@@ -12,8 +12,10 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.widget.TextView;
 import com.aero.control.R;
+import com.aero.control.helpers.ThemeHelper;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -112,8 +114,22 @@ public class TestSuiteFragment extends PreferenceFragment {
         @Override // android.os.AsyncTask
         protected void onPreExecute() {
             super.onPreExecute();
-            this.progressDialog = ProgressDialog.show(TestSuiteFragment.this.getActivity(), "Running Linpack", "Burning your CPUs...", false);
+            String theme = ThemeHelper.getTheme(TestSuiteFragment.this.getActivity());
+            if (ThemeHelper.THEME_LIGHT.equals(theme)) {
+                this.progressDialog = new ProgressDialog(new ContextThemeWrapper(
+                        TestSuiteFragment.this.getActivity(), R.style.AeroDialog_Light));
+            } else if (ThemeHelper.THEME_DARK.equals(theme)) {
+                this.progressDialog = new ProgressDialog(new ContextThemeWrapper(
+                        TestSuiteFragment.this.getActivity(), R.style.AeroDialog_Dark));
+            } else {
+                this.progressDialog = new ProgressDialog(TestSuiteFragment.this.getActivity());
+            }
+            this.progressDialog.setTitle("Running Linpack");
+            this.progressDialog.setMessage("Burning your CPUs...");
+            this.progressDialog.setIndeterminate(true);
+            this.progressDialog.setCancelable(false);
             this.progressDialog.setIndeterminateDrawable(TestSuiteFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
+            this.progressDialog.show();
         }
 
         /* JADX INFO: Access modifiers changed from: protected */

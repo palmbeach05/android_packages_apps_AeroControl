@@ -28,6 +28,8 @@
     </attr>
     <attr name="aeroGraphLineColor" format="color">
     </attr>
+    <attr name="aeroAboutButtonStyle" format="reference">
+    </attr>
     <attr name="chart_axisThickness" format="dimension">
     </attr>
     <attr name="chart_axisColor" format="reference|color">

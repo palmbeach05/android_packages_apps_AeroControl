@@ -90,6 +90,7 @@
 
         <Button
             android:id="@+id/about_xda"
+            style="?attr/aeroAboutButtonStyle"
             android:text="@string/xda"
             android:drawableLeft="@drawable/xda"
             android:drawablePadding="8dp"
@@ -99,6 +100,7 @@
 
         <Button
             android:id="@+id/about_github"
+            style="?attr/aeroAboutButtonStyle"
             android:text="@string/github"
             android:drawableLeft="@drawable/github"
             android:drawablePadding="8dp"
@@ -107,6 +109,7 @@
 
         <Button
             android:id="@+id/about_legal"
+            style="?attr/aeroAboutButtonStyle"
             android:text="@string/legal"
             android:drawableLeft="@drawable/ic_action_legal"
             android:drawablePadding="8dp"
@@ -115,6 +118,7 @@
 
         <Button
             android:id="@+id/about_donate"
+            style="?attr/aeroAboutButtonStyle"
             android:text="@string/donation_blechdose"
             android:drawableLeft="@drawable/paypal"
             android:drawablePadding="8dp"
