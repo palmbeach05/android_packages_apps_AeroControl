@@ -3,6 +3,7 @@ package com.aero.control.testsuite;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -71,6 +72,19 @@ public class TestSuiteFragment extends PreferenceFragment {
         this.mRunBenchmark.execute(new Void[0]);
     }
 
+    private Context getLinpackDialogContext(boolean alertDialog) {
+        String theme = ThemeHelper.getTheme(getActivity());
+        if (ThemeHelper.THEME_LIGHT.equals(theme)) {
+            return new ContextThemeWrapper(getActivity(), alertDialog
+                    ? R.style.AeroDialog_Light_Alert : R.style.AeroDialog_Light);
+        }
+        if (ThemeHelper.THEME_DARK.equals(theme)) {
+            return new ContextThemeWrapper(getActivity(), alertDialog
+                    ? R.style.AeroDialog_Dark_Alert : R.style.AeroDialog_Dark);
+        }
+        return getActivity();
+    }
+
     @Override // android.app.Fragment
     public void onDestroyView() {
         if (this.mRunBenchmark != null) {
@@ -114,16 +128,8 @@ public class TestSuiteFragment extends PreferenceFragment {
         @Override // android.os.AsyncTask
         protected void onPreExecute() {
             super.onPreExecute();
-            String theme = ThemeHelper.getTheme(TestSuiteFragment.this.getActivity());
-            if (ThemeHelper.THEME_LIGHT.equals(theme)) {
-                this.progressDialog = new ProgressDialog(new ContextThemeWrapper(
-                        TestSuiteFragment.this.getActivity(), R.style.AeroDialog_Light));
-            } else if (ThemeHelper.THEME_DARK.equals(theme)) {
-                this.progressDialog = new ProgressDialog(new ContextThemeWrapper(
-                        TestSuiteFragment.this.getActivity(), R.style.AeroDialog_Dark));
-            } else {
-                this.progressDialog = new ProgressDialog(TestSuiteFragment.this.getActivity());
-            }
+            this.progressDialog = new ProgressDialog(
+                    TestSuiteFragment.this.getLinpackDialogContext(false));
             this.progressDialog.setTitle("Running Linpack");
             this.progressDialog.setMessage("Burning your CPUs...");
             this.progressDialog.setIndeterminate(true);
@@ -191,7 +197,8 @@ public class TestSuiteFragment extends PreferenceFragment {
             if (!TestSuiteFragment.this.isAdded() || TestSuiteFragment.this.getActivity() == null) {
                 return;
             }
-            AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                    TestSuiteFragment.this.getLinpackDialogContext(true));
             builder.setTitle("Result");
             builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + getModeText() + "\nCPUs: " + this.workerCount);
             builder.show();

@@ -104,6 +104,7 @@
             android:text="@string/github"
             android:drawableLeft="@drawable/github"
             android:drawablePadding="8dp"
+            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -113,6 +114,7 @@
             android:text="@string/legal"
             android:drawableLeft="@drawable/ic_action_legal"
             android:drawablePadding="8dp"
+            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -122,6 +124,7 @@
             android:text="@string/donation_blechdose"
             android:drawableLeft="@drawable/paypal"
             android:drawablePadding="8dp"
+            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
