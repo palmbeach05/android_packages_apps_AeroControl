@@ -139,7 +139,7 @@
         <item name="aeroPrimaryTextColor">@color/text_color</item>
         <item name="aeroSecondaryTextColor">@color/light_grey</item>
     </style>
-    <style name="AeroDialog.Light.Alert" parent="@style/AeroDialog.Light">
+    <style name="AeroDialog.Light.Alert" parent="@android:style/Theme.Holo.Light.Dialog.Alert">
         <item name="android:colorBackground">@android:color/white</item>
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:textColorPrimary">@color/text_color</item>
@@ -154,7 +154,7 @@
         <item name="aeroPrimaryTextColor">@color/dark_text_color</item>
         <item name="aeroSecondaryTextColor">@color/dark_secondary_text_color</item>
     </style>
-    <style name="AeroDialog.Dark.Alert" parent="@style/AeroDialog.Dark">
+    <style name="AeroDialog.Dark.Alert" parent="@android:style/Theme.Holo.Dialog.Alert">
         <item name="android:colorBackground">@color/dark_card_background</item>
         <item name="android:windowBackground">@color/dark_card_background</item>
         <item name="android:textColorPrimary">@color/dark_text_color</item>
