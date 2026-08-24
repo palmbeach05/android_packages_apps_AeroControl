@@ -431,7 +431,6 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             this.val$update.setIndeterminateDrawable(MemoryFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
             this.val$update.setMessage(Util.getRandomLoadingText(MemoryFragment.this.getActivity()));
             this.val$update.show();
-            this.val$update.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             TextView messageView = (TextView) this.val$update.findViewById(android.R.id.message);
             if (messageView != null) {
                 TypedValue messageColor = new TypedValue();

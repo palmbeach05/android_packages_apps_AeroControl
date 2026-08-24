@@ -417,7 +417,6 @@ public class ProfileFragment extends PreferenceFragment {
                 this.mProgressDialog.setIndeterminateDrawable(getResources().getDrawable(R.drawable.spinner_animation));
             }
             this.mProgressDialog.show();
-            this.mProgressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             TextView messageView = (TextView) this.mProgressDialog.findViewById(android.R.id.message);
             if (messageView != null) {
                 TypedValue messageColor = new TypedValue();
