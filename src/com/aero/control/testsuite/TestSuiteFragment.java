@@ -204,6 +204,7 @@ public class TestSuiteFragment extends PreferenceFragment {
                     : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
             builder.setTitle("Result");
             builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + getModeText() + "\nCPUs: " + this.workerCount);
+            builder.setCancelable(false);
             builder.show();
         }
 
