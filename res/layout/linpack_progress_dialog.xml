@@ -7,8 +7,8 @@
     android:padding="24dp">
 
     <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:indeterminate="true"
         android:indeterminateDrawable="@drawable/spinner_animation" />
 
@@ -22,14 +22,6 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/testsuite_linpack_running"
-            android:textColor="?attr/aeroPrimaryTextColor"
-            android:textSize="20sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="@string/testsuite_linpack_running_summary"
             android:textColor="?attr/aeroSecondaryTextColor"
             android:textSize="16sp" />
