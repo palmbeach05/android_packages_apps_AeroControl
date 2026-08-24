@@ -1,6 +1,7 @@
 package com.aero.control.settings;
 
 import android.content.Context;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
@@ -23,9 +24,9 @@ import java.util.List;
  * list item containing the category header and its child preference rows inside one
  * shared Material card. Existing {@link Preference} instances are bound with
  * {@link Preference#getView}, preserving persistence, change listeners, dialogs,
- * icons and enabled state. {@link TwoStatePreference} instances are instead bound to
- * a dedicated {@code settings_switch_preference} row with an application-owned
- * {@link Switch}, since the platform's switch preference widget cannot be inflated here.
+ * icons and enabled state. {@link TwoStatePreference} and {@link ListPreference}
+ * instances are instead bound to dedicated application-owned rows so their content
+ * shares the same alignment inside the card.
  */
 class SettingsCardAdapter extends BaseAdapter {
 
@@ -81,6 +82,8 @@ class SettingsCardAdapter extends BaseAdapter {
             View preferenceView;
             if (preference instanceof TwoStatePreference) {
                 preferenceView = getSwitchPreferenceView((TwoStatePreference) preference, items);
+            } else if (preference instanceof ListPreference) {
+                preferenceView = getListPreferenceView((ListPreference) preference, items);
             } else {
                 preferenceView = preference.getView(null, items);
                 preferenceView.setOnClickListener(new View.OnClickListener() {
@@ -94,6 +97,34 @@ class SettingsCardAdapter extends BaseAdapter {
         }
 
         return card;
+    }
+
+    private View getListPreferenceView(final ListPreference preference, ViewGroup parent) {
+        View row = LayoutInflater.from(mContext).inflate(
+                R.layout.settings_list_preference, parent, false);
+
+        ImageView icon = (ImageView) row.findViewById(R.id.settings_list_icon);
+        icon.setImageDrawable(preference.getIcon());
+
+        TextView title = (TextView) row.findViewById(R.id.settings_list_title);
+        title.setText(preference.getTitle());
+
+        TextView summary = (TextView) row.findViewById(R.id.settings_list_summary);
+        summary.setText(preference.getSummary());
+        summary.setVisibility(TextUtils.isEmpty(preference.getSummary()) ? View.GONE : View.VISIBLE);
+
+        boolean enabled = preference.isEnabled();
+        row.setEnabled(enabled);
+        icon.setEnabled(enabled);
+        title.setEnabled(enabled);
+        summary.setEnabled(enabled);
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                preference.performClick(null);
+            }
+        });
+        return row;
     }
 
     private View getSwitchPreferenceView(final TwoStatePreference preference, ViewGroup parent) {
