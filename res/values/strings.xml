@@ -54,6 +54,8 @@
     <string name="slider_test_suite_settings">Test Suite</string>
     <string name="testsuite_linpack_test_title">Linpack Test</string>
     <string name="testsuite_linpack_test_summary">Runs the linpack test.</string>
+    <string name="testsuite_linpack_running">Running Linpack</string>
+    <string name="testsuite_linpack_running_summary">Burning your CPUs...</string>
     <string name="testsuite_use_all_cpus_title">Use All CPUs</string>
     <string name="testsuite_use_all_cpus_summary">Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness.</string>
 
