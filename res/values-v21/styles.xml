@@ -22,6 +22,20 @@
         <item name="android:translationZ">0dp</item>
         <item name="android:colorControlHighlight">?android:attr/colorControlHighlight</item>
     </style>
+    <style name="AeroAboutButton.Light" parent="@android:style/Widget.Material.Button">
+        <item name="android:background">@drawable/about_button_light</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:textColor">@color/text_color</item>
+    </style>
+    <style name="AeroAboutButton.Dark" parent="@android:style/Widget.Material.Button">
+        <item name="android:background">@drawable/about_button_dark</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:textColor">@color/dark_text_color</item>
+    </style>
+    <style name="AeroAboutButton.System" parent="@android:style/Widget.Material.Button">
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:paddingStart">16dp</item>
+    </style>
     <style name="AeroPreferenceCategory">
         <item name="android:layout">@layout/preference_category</item>
     </style>
@@ -31,10 +45,67 @@
     <style name="AeroDialogPreference">
         <item name="android:layout">@layout/preference_card</item>
     </style>
+    <style name="AeroSettingsDialogPreference">
+        <item name="android:dialogTheme">@style/AeroDialog.Light.Alert</item>
+    </style>
+    <style name="AeroSettingsDialogPreference.Dark">
+        <item name="android:dialogTheme">@style/AeroDialog.Dark.Alert</item>
+    </style>
     <style name="AeroSwitchPreference">
         <item name="android:layout">@layout/preference_switch_card</item>
         <item name="android:widgetLayout">@layout/preference_switch_widget</item>
     </style>
+    <style name="AeroDialog.Light" parent="@android:style/Theme.Material.Light.Dialog">
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="aeroPrimaryTextColor">@color/text_color</item>
+        <item name="aeroSecondaryTextColor">@color/light_grey</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+    </style>
+
+    <style name="AeroDialog.Light.Alert" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:textColorAlertDialogListItem">@color/text_color</item>
+        <item name="android:windowTitleStyle">@style/AeroDialog.Light.Alert.Title</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+    </style>
+
+    <style name="AeroDialog.Light.Alert.Linpack" parent="@style/AeroDialog.Light.Alert" />
+
+    <style name="AeroDialog.Light.Alert.Title" parent="@android:style/TextAppearance.Material.Headline">
+        <item name="android:textColor">@color/text_color</item>
+    </style>
+
+    <style name="AeroDialog.Dark" parent="@android:style/Theme.Material.Dialog">
+        <item name="android:colorBackground">@color/dark_card_background</item>
+        <item name="android:windowBackground">@color/dark_card_background</item>
+        <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="android:textColorSecondary">@color/dark_secondary_text_color</item>
+        <item name="aeroPrimaryTextColor">@color/dark_text_color</item>
+        <item name="aeroSecondaryTextColor">@color/dark_secondary_text_color</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+    </style>
+
+    <style name="AeroDialog.Dark.Alert" parent="@android:style/Theme.Material.Dialog.Alert">
+        <item name="android:colorBackground">@color/dark_card_background</item>
+        <item name="android:windowBackground">@color/dark_card_background</item>
+        <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="android:textColorSecondary">@color/dark_secondary_text_color</item>
+        <item name="android:textColorAlertDialogListItem">@color/dark_text_color</item>
+        <item name="android:colorAccent">@color/material_blue</item>
+        <item name="android:colorControlActivated">@color/material_blue</item>
+    </style>
+
+    <style name="AeroDialog.Dark.Alert.Linpack" parent="@style/AeroDialog.Dark.Alert" />
+
     <style name="AeroTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
         <item name="android:preferenceStyle">@style/AeroPreference</item>
@@ -45,8 +116,13 @@
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
         <item name="android:colorControlHighlight">@color/card_shadow</item>
-        <item name="android:alertDialogTheme">@android:style/Theme.Material.Light.Dialog.Alert</item>
-        <item name="android:dialogTheme">@android:style/Theme.Material.Light.Dialog</item>
+        <item name="android:colorControlNormal">@color/text_color</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:alertDialogTheme">@style/AeroDialog.Light.Alert</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
@@ -62,6 +138,8 @@
         <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
         <item name="aeroGraphLabelColor">@color/text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="aeroAboutButtonStyle">@style/AeroAboutButton.Light</item>
+        <item name="aeroAboutBackground">@color/bg_grey</item>
     </style>
     <style name="AeroTheme.Dark" parent="@android:style/Theme.Material">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
@@ -90,6 +168,8 @@
         <item name="aeroPreferenceControlBackground">@color/dark_card_background</item>
         <item name="aeroGraphLabelColor">@color/dark_text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="aeroAboutButtonStyle">@style/AeroAboutButton.Dark</item>
+        <item name="aeroAboutBackground">@color/dark_window_background</item>
     </style>
     <!--
         System App Theme (API 21+ only). Uses the platform Material base theme
@@ -100,7 +180,7 @@
         application-specific cards, icons, and navigation resources are kept
         stable by reusing the same app assets as AeroTheme.
     -->
-    <style name="AeroTheme.System" parent="@android:style/Theme.DeviceDefault">
+    <style name="AeroTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
         <item name="android:preferenceCategoryStyle">@style/AeroPreferenceCategory</item>
         <item name="android:preferenceStyle">@style/AeroPreference</item>
         <item name="android:dialogPreferenceStyle">@style/AeroDialogPreference</item>
@@ -119,6 +199,8 @@
         <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
         <item name="aeroGraphLabelColor">?android:attr/textColorPrimary</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="aeroAboutButtonStyle">@style/AeroAboutButton.System</item>
+        <item name="aeroAboutBackground">?android:attr/windowBackground</item>
     </style>
     <!--
         Settings-only Material theme (API 21+). Provides the drawer and icon
@@ -130,10 +212,12 @@
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
-        <item name="android:alertDialogTheme">@android:style/Theme.Material.Light.Dialog.Alert</item>
-        <item name="android:dialogTheme">@android:style/Theme.Material.Light.Dialog</item>
+        <item name="android:alertDialogTheme">@style/AeroDialog.Light.Alert</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroSettingsDialogPreference</item>
         <item name="android:textColorPrimary">@color/text_color</item>
         <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:editTextColor">@color/text_color</item>
         <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
         <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
         <item name="aeroPrimaryTextColor">@color/text_color</item>
@@ -146,8 +230,13 @@
         <item name="android:colorPrimaryDark">@color/dark_actionbar_color</item>
         <item name="android:colorAccent">@color/material_blue</item>
         <item name="android:colorControlActivated">@color/material_blue</item>
+        <item name="android:alertDialogTheme">@style/AeroDialog.Dark.Alert</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Dark</item>
+        <item name="android:dialogPreferenceStyle">@style/AeroSettingsDialogPreference.Dark</item>
         <item name="android:windowBackground">@color/dark_window_background</item>
         <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="android:textColorSecondary">@color/dark_secondary_text_color</item>
+        <item name="android:editTextColor">@color/dark_text_color</item>
         <item name="aeroDrawerLayoutBackground">@color/dark_window_background</item>
         <item name="aeroDrawerListBackground">@color/dark_drawer_list_background</item>
         <item name="aeroPrimaryTextColor">@color/dark_text_color</item>
@@ -155,7 +244,9 @@
         <item name="aeroIconTint">@color/dark_text_color</item>
         <item name="aeroCardStyle">@style/AeroCardSurface.Dark</item>
     </style>
-    <style name="AeroSettingsTheme.System" parent="@android:style/Theme.DeviceDefault">
+    <style name="AeroSettingsTheme.System" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:dialogPreferenceStyle">@style/AeroSettingsDialogPreference</item>
+        <item name="android:editTextColor">?android:attr/textColorPrimary</item>
         <item name="aeroDrawerLayoutBackground">?android:attr/windowBackground</item>
         <item name="aeroDrawerListBackground">?android:attr/windowBackground</item>
         <item name="aeroPrimaryTextColor">?android:attr/textColorPrimary</item>
