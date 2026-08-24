@@ -16,6 +16,68 @@
 
     <ImageView
         android:id="@+id/settings_switch_icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:padding="12dp"
+        android:scaleType="centerInside" />
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingEnd="8dp">
+        <TextView
+            android:id="@+id/settings_switch_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:fadingEdge="horizontal"
+            android:textSize="18sp"
+            android:textColor="?attr/aeroPrimaryTextColor"/>
+        <TextView
+            android:id="@+id/settings_switch_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/settings_switch_title"
+            android:layout_alignStart="@id/settings_switch_title"
+            android:textSize="14sp"
+            android:textColor="?attr/aeroSecondaryTextColor"
+            android:maxLines="4"/>
+    </RelativeLayout>
+
+    <Switch
+        android:id="@+id/settings_switch"
+        android:layout_width="64dp"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:background="@null"
+        android:paddingLeft="0dp"
+        android:paddingRight="5dp"
+        android:paddingEnd="5dp"
+        android:focusable="false"
+        android:clickable="true"/>
+</LinearLayout><?xml version="1.0" encoding="utf-8"?>
+<!--
+    Settings-card row for TwoStatePreference entries (reboot_checker, screen_rotation,
+    per_app_service, per_app_monitor, per_app_toast). Inflated and bound directly by
+    SettingsCardAdapter using a framework Switch with an application-owned ID, so no
+    platform-internal resources such as @android:id/switch_widget or
+    @android:layout/preference_widget_switch are required.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:gravity="center_vertical"
+    android:background="?android:attr/selectableItemBackground"
+    android:clipToPadding="false">
+
+    <ImageView
+        android:id="@+id/settings_switch_icon"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:minWidth="56dp"/>
