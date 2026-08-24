@@ -2,7 +2,6 @@ package com.aero.control.testsuite;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,7 +11,8 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TextView;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
@@ -71,6 +71,17 @@ public class TestSuiteFragment extends PreferenceFragment {
         this.mRunBenchmark.execute(new Void[0]);
     }
 
+    private int getLinpackDialogTheme() {
+        String theme = ThemeHelper.getTheme(getActivity());
+        if (ThemeHelper.THEME_LIGHT.equals(theme)) {
+            return R.style.AeroDialog_Light_Alert_Linpack;
+        }
+        if (ThemeHelper.THEME_DARK.equals(theme)) {
+            return R.style.AeroDialog_Dark_Alert_Linpack;
+        }
+        return 0;
+    }
+
     @Override // android.app.Fragment
     public void onDestroyView() {
         if (this.mRunBenchmark != null) {
@@ -92,7 +103,7 @@ public class TestSuiteFragment extends PreferenceFragment {
     }
 
     private class RunBenchmark extends AsyncTask<Void, Void, Double> {
-        ProgressDialog progressDialog;
+        AlertDialog progressDialog;
         private final int workerCount;
         private final boolean useAllCpus;
         private final int availableProcessors;
@@ -114,21 +125,17 @@ public class TestSuiteFragment extends PreferenceFragment {
         @Override // android.os.AsyncTask
         protected void onPreExecute() {
             super.onPreExecute();
-            String theme = ThemeHelper.getTheme(TestSuiteFragment.this.getActivity());
-            if (ThemeHelper.THEME_LIGHT.equals(theme)) {
-                this.progressDialog = new ProgressDialog(new ContextThemeWrapper(
-                        TestSuiteFragment.this.getActivity(), R.style.AeroDialog_Light));
-            } else if (ThemeHelper.THEME_DARK.equals(theme)) {
-                this.progressDialog = new ProgressDialog(new ContextThemeWrapper(
-                        TestSuiteFragment.this.getActivity(), R.style.AeroDialog_Dark));
-            } else {
-                this.progressDialog = new ProgressDialog(TestSuiteFragment.this.getActivity());
-            }
-            this.progressDialog.setTitle("Running Linpack");
-            this.progressDialog.setMessage("Burning your CPUs...");
-            this.progressDialog.setIndeterminate(true);
-            this.progressDialog.setCancelable(false);
-            this.progressDialog.setIndeterminateDrawable(TestSuiteFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
+            int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme();
+            AlertDialog.Builder builder = dialogTheme == 0
+                    ? new AlertDialog.Builder(TestSuiteFragment.this.getActivity())
+                    : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
+            View progressView = LayoutInflater.from(TestSuiteFragment.this.getActivity())
+                    .inflate(R.layout.linpack_progress_dialog, null);
+            this.progressDialog = builder
+                    .setTitle(R.string.testsuite_linpack_running)
+                    .setView(progressView)
+                    .setCancelable(false)
+                    .create();
             this.progressDialog.show();
         }
 
@@ -191,7 +198,10 @@ public class TestSuiteFragment extends PreferenceFragment {
             if (!TestSuiteFragment.this.isAdded() || TestSuiteFragment.this.getActivity() == null) {
                 return;
             }
-            AlertDialog.Builder builder = new AlertDialog.Builder(TestSuiteFragment.this.getActivity());
+            int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme();
+            AlertDialog.Builder builder = dialogTheme == 0
+                    ? new AlertDialog.Builder(TestSuiteFragment.this.getActivity())
+                    : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
             builder.setTitle("Result");
             builder.setMessage("Great! \nYou have achieved: \n" + result + " MFlops\n\nMode: " + getModeText() + "\nCPUs: " + this.workerCount);
             builder.show();

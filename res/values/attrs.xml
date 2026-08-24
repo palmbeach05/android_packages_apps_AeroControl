@@ -30,6 +30,8 @@
     </attr>
     <attr name="aeroAboutButtonStyle" format="reference">
     </attr>
+    <attr name="aeroAboutBackground" format="reference|color">
+    </attr>
     <attr name="chart_axisThickness" format="dimension">
     </attr>
     <attr name="chart_axisColor" format="reference|color">
