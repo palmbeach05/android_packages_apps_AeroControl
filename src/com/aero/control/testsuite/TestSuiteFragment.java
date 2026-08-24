@@ -2,7 +2,6 @@ package com.aero.control.testsuite;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -70,15 +69,13 @@ public class TestSuiteFragment extends PreferenceFragment {
         this.mRunBenchmark.execute(new Void[0]);
     }
 
-    private int getLinpackDialogTheme(boolean alertDialog) {
+    private int getLinpackDialogTheme() {
         String theme = ThemeHelper.getTheme(getActivity());
         if (ThemeHelper.THEME_LIGHT.equals(theme)) {
-            return alertDialog
-                    ? R.style.AeroDialog_Light_Alert : R.style.AeroDialog_Light;
+            return R.style.AeroDialog_Light_Alert_Linpack;
         }
         if (ThemeHelper.THEME_DARK.equals(theme)) {
-            return alertDialog
-                    ? R.style.AeroDialog_Dark_Alert : R.style.AeroDialog_Dark;
+            return R.style.AeroDialog_Dark_Alert_Linpack;
         }
         return 0;
     }
@@ -104,7 +101,7 @@ public class TestSuiteFragment extends PreferenceFragment {
     }
 
     private class RunBenchmark extends AsyncTask<Void, Void, Double> {
-        Dialog progressDialog;
+        AlertDialog progressDialog;
         private final int workerCount;
         private final boolean useAllCpus;
         private final int availableProcessors;
@@ -126,25 +123,15 @@ public class TestSuiteFragment extends PreferenceFragment {
         @Override // android.os.AsyncTask
         protected void onPreExecute() {
             super.onPreExecute();
-            if (Build.VERSION.SDK_INT >= 21) {
-                int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme(true);
-                AlertDialog.Builder builder = dialogTheme == 0
-                        ? new AlertDialog.Builder(TestSuiteFragment.this.getActivity())
-                        : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
-                this.progressDialog = builder
-                        .setTitle(R.string.testsuite_linpack_running)
-                        .setView(R.layout.linpack_progress_dialog)
-                        .setCancelable(false)
-                        .create();
-            } else {
-                int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme(false);
-                this.progressDialog = dialogTheme == 0
-                        ? new Dialog(TestSuiteFragment.this.getActivity())
-                        : new Dialog(TestSuiteFragment.this.getActivity(), dialogTheme);
-                this.progressDialog.setTitle(R.string.testsuite_linpack_running);
-                this.progressDialog.setContentView(R.layout.linpack_progress_dialog);
-                this.progressDialog.setCancelable(false);
-            }
+            int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme();
+            AlertDialog.Builder builder = dialogTheme == 0
+                    ? new AlertDialog.Builder(TestSuiteFragment.this.getActivity())
+                    : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
+            this.progressDialog = builder
+                    .setTitle(R.string.testsuite_linpack_running)
+                    .setView(R.layout.linpack_progress_dialog)
+                    .setCancelable(false)
+                    .create();
             this.progressDialog.show();
         }
 
@@ -207,7 +194,7 @@ public class TestSuiteFragment extends PreferenceFragment {
             if (!TestSuiteFragment.this.isAdded() || TestSuiteFragment.this.getActivity() == null) {
                 return;
             }
-            int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme(true);
+            int dialogTheme = TestSuiteFragment.this.getLinpackDialogTheme();
             AlertDialog.Builder builder = dialogTheme == 0
                     ? new AlertDialog.Builder(TestSuiteFragment.this.getActivity())
                     : new AlertDialog.Builder(TestSuiteFragment.this.getActivity(), dialogTheme);
