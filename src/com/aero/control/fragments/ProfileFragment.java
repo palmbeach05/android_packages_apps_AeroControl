@@ -417,6 +417,12 @@ public class ProfileFragment extends PreferenceFragment {
                 this.mProgressDialog.setIndeterminateDrawable(getResources().getDrawable(R.drawable.spinner_animation));
             }
             this.mProgressDialog.show();
+            TextView messageView = (TextView) this.mProgressDialog.findViewById(android.R.id.message);
+            if (messageView != null) {
+                TypedValue messageColor = new TypedValue();
+                this.mContext.getTheme().resolveAttribute(R.attr.aeroPrimaryTextColor, messageColor, true);
+                messageView.setTextColor(messageColor.data);
+            }
             Runnable runnable = new Runnable() { // from class: com.aero.control.fragments.ProfileFragment.10
                 @Override // java.lang.Runnable
                 public void run() {
