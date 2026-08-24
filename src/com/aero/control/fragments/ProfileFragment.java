@@ -14,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.PerApp.PerAppManager;
 import com.aero.control.helpers.PerApp.perAppHelper;
 import com.aero.control.helpers.Util;
@@ -279,7 +281,7 @@ public class ProfileFragment extends PreferenceFragment {
                                     ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
                                     ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
                                 }
-                                Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_deleted, Toast.LENGTH_SHORT).show();
+                                ProfileFragment.this.showProfileDeletedToast();
                             } else {
                                 Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_not_deleted, Toast.LENGTH_SHORT).show();
                             }
@@ -295,6 +297,19 @@ public class ProfileFragment extends PreferenceFragment {
             });
             this.mContainerView.addView(childView, 0);
         }
+    }
+
+    private void showProfileDeletedToast() {
+        String theme = ThemeHelper.getTheme(this.mContext);
+        int themeResource = ThemeHelper.THEME_DARK.equals(theme)
+                ? R.style.AeroTheme_Dark
+                : ThemeHelper.THEME_SYSTEM.equals(theme) ? R.style.AeroTheme_System : R.style.AeroTheme;
+        Context themedContext = new ContextThemeWrapper(this.mContext, themeResource);
+        View toastView = LayoutInflater.from(themedContext).inflate(R.layout.profile_deleted_toast, null);
+        Toast toast = new Toast(this.mContext);
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setView(toastView);
+        toast.show();
     }
 
     /* JADX INFO: Access modifiers changed from: private */
