@@ -11,6 +11,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -403,7 +404,9 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        ProgressDialog update = new ProgressDialog(getActivity());
+        TypedValue dialogTheme = new TypedValue();
+        getActivity().getTheme().resolveAttribute(android.R.attr.dialogTheme, dialogTheme, true);
+        ProgressDialog update = new ProgressDialog(getActivity(), dialogTheme.resourceId);
         builder.setTitle(R.string.pref_fstrim);
         builder.setIcon(R.drawable.file_exe);
         builder.setItems(fsystem, new AnonymousClass5(fsystem, update)).show();
@@ -428,6 +431,13 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             this.val$update.setIndeterminateDrawable(MemoryFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
             this.val$update.setMessage(Util.getRandomLoadingText(MemoryFragment.this.getActivity()));
             this.val$update.show();
+            this.val$update.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            TextView messageView = (TextView) this.val$update.findViewById(android.R.id.message);
+            if (messageView != null) {
+                TypedValue messageColor = new TypedValue();
+                MemoryFragment.this.getActivity().getTheme().resolveAttribute(R.attr.aeroPrimaryTextColor, messageColor, true);
+                messageView.setTextColor(messageColor.data);
+            }
             AeroActivity.shell.remountSystem();
             Runnable runnable = new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.5.1
                 @Override // java.lang.Runnable

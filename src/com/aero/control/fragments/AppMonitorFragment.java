@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,12 +119,21 @@ public class AppMonitorFragment extends Fragment {
             AeroActivity.mJobManager = JobManager.instance(this.mContext);
         }
         if (this.mProgressDialog == null) {
-            this.mProgressDialog = new ProgressDialog(this.mContext);
+            TypedValue dialogTheme = new TypedValue();
+            this.mContext.getTheme().resolveAttribute(android.R.attr.dialogTheme, dialogTheme, true);
+            this.mProgressDialog = new ProgressDialog(this.mContext, dialogTheme.resourceId);
             this.mProgressDialog.setMessage(Util.getRandomLoadingText(getActivity()));
             this.mProgressDialog.setIndeterminate(true);
             this.mProgressDialog.setIndeterminateDrawable(getResources().getDrawable(R.drawable.spinner_animation));
         }
         this.mProgressDialog.show();
+        this.mProgressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        TextView messageView = (TextView) this.mProgressDialog.findViewById(android.R.id.message);
+        if (messageView != null) {
+            TypedValue messageColor = new TypedValue();
+            this.mContext.getTheme().resolveAttribute(R.attr.aeroPrimaryTextColor, messageColor, true);
+            messageView.setTextColor(messageColor.data);
+        }
         this.mLoadGeneration++;
         Runnable runnable = new AnonymousClass2(this.mLoadGeneration);
         new Thread(runnable).start();
