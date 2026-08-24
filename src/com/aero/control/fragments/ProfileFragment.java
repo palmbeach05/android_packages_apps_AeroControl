@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -17,7 +18,9 @@ import android.view.LayoutInflater;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.AeroActivity;
@@ -168,83 +171,121 @@ public class ProfileFragment extends PreferenceFragment {
     /* JADX INFO: Access modifiers changed from: private */
     public void showDialog(final EditText editText) {
         this.mCompleteProfiles = AeroActivity.shell.getDirInfo(FilePath.sharedPrefsPath, true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            showMaterialProfileDialog(editText);
+            return;
+        }
         AlertDialog dialog = new AlertDialog.Builder(this.mContext).setTitle(R.string.add_a_name).setIcon(R.drawable.profile_new).setMessage(R.string.define_a_name).setView(editText).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.7
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog2, int which) {
-                String allProfiles = Arrays.asList(ProfileFragment.this.mCompleteProfiles).toString();
-                String profileTitle = ProfileFragment.sanitizeProfileName(editText.getText().toString());
-                if (profileTitle.equals("")) {
-                    Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_enter_name, 1).show();
-                    return;
-                }
-                if (allProfiles.contains(profileTitle + ".xml")) {
-                    Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_name_exists, 1).show();
-                    return;
-                }
-                ProfileFragment.this.addProfile(profileTitle, true);
-                int output = 0;
-                if (AeroActivity.genHelper.doesExist(ProfileFragment.this.getActivity().getFilesDir().getAbsolutePath() + "/" + ProfileFragment.FILENAME_PERAPP)) {
-                    output = 1;
-                }
-                if (output == 0) {
-                    ProfileFragment.this.DrawFirstStart(R.string.showcase_perapp_profiles, R.string.showcase_perapp_profiles_summary, ProfileFragment.FILENAME_PERAPP, null);
-                }
-                ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(8);
-                ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(8);
+                ProfileFragment.this.saveProfile(editText);
             }
         }).setNeutralButton(R.string.pref_profile_import, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.6
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialogInterface, int i) {
-                AlertDialog.Builder dialog2 = new AlertDialog.Builder(ProfileFragment.this.mContext);
-                final String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
-                if (!AeroActivity.genHelper.doesExist(dir)) {
-                    Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_no_import, 1).show();
-                    return;
-                }
-                final String[] strings = AeroActivity.shell.getDirInfo(dir, true);
-                final ArrayList<Boolean> importProfiles = new ArrayList<>();
-                for (String str : strings) {
-                    importProfiles.add(false);
-                }
-                dialog2.setTitle(R.string.pref_profile_import_select);
-                dialog2.setIcon(R.drawable.restore);
-                dialog2.setMultiChoiceItems(strings, (boolean[]) null, new DialogInterface.OnMultiChoiceClickListener() { // from class: com.aero.control.fragments.ProfileFragment.6.2
-                    @Override // android.content.DialogInterface.OnMultiChoiceClickListener
-                    public void onClick(DialogInterface dialogInterface2, int i2, boolean b) {
-                        if (b) {
-                            importProfiles.add(i2, true);
-                        } else {
-                            importProfiles.add(i2, false);
-                        }
-                    }
-                }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.6.1
-                    @Override // android.content.DialogInterface.OnClickListener
-                    public void onClick(DialogInterface dialog3, int id) {
-                        int i2 = 0;
-                        String[] arr$ = strings;
-                        for (String s : arr$) {
-                            if (((Boolean) importProfiles.get(i2)).booleanValue()) {
-                                try {
-                                    AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(dir + "/" + s), AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + s));
-                                } catch (IOException e) {
-                                    Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: " + dir + "/" + s, e);
-                                }
-                                if (AeroActivity.genHelper.doesExist(FilePath.sharedPrefsPath + s)) {
-                                    Toast.makeText(ProfileFragment.this.mContext, R.string.successful, 0).show();
-                                }
-                            }
-                            i2++;
-                        }
-                        for (int j = 0; j < ProfileFragment.this.mContainerView.getChildCount(); j++) {
-                            ProfileFragment.this.mContainerView.getChildAt(j).setVisibility(8);
-                        }
-                        ProfileFragment.this.loadProfiles();
-                    }
-                });
-                dialog2.create().show();
+                ProfileFragment.this.showImportDialog();
             }
         }).create();
         dialog.show();
+    }
+
+    private void showMaterialProfileDialog(final EditText editText) {
+        View content = LayoutInflater.from(this.mContext).inflate(R.layout.profile_name_dialog, null);
+        editText.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        ((FrameLayout) content.findViewById(R.id.profile_name_input)).addView(editText);
+        final AlertDialog dialog = new AlertDialog.Builder(this.mContext)
+                .setTitle(R.string.add_a_name)
+                .setIcon(R.drawable.profile_new)
+                .setMessage(R.string.define_a_name)
+                .setView(content)
+                .create();
+        ((Button) content.findViewById(R.id.profile_import)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                ProfileFragment.this.showImportDialog();
+            }
+        });
+        ((Button) content.findViewById(R.id.profile_save)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ProfileFragment.this.saveProfile(editText);
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void saveProfile(EditText editText) {
+        String allProfiles = Arrays.asList(this.mCompleteProfiles).toString();
+        String profileTitle = sanitizeProfileName(editText.getText().toString());
+        if (profileTitle.equals("")) {
+            Toast.makeText(this.mContext, R.string.pref_profile_enter_name, 1).show();
+            return;
+        }
+        if (allProfiles.contains(profileTitle + ".xml")) {
+            Toast.makeText(this.mContext, R.string.pref_profile_name_exists, 1).show();
+            return;
+        }
+        addProfile(profileTitle, true);
+        int output = 0;
+        if (AeroActivity.genHelper.doesExist(getActivity().getFilesDir().getAbsolutePath() + "/" + FILENAME_PERAPP)) {
+            output = 1;
+        }
+        if (output == 0) {
+            DrawFirstStart(R.string.showcase_perapp_profiles, R.string.showcase_perapp_profiles_summary, FILENAME_PERAPP, null);
+        }
+        this.mContainerView.findViewById(android.R.id.empty).setVisibility(8);
+        this.mContainerView.findViewById(R.id.empty_image).setVisibility(8);
+    }
+
+    private void showImportDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this.mContext);
+        final String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
+        if (!AeroActivity.genHelper.doesExist(dir)) {
+            Toast.makeText(this.mContext, R.string.pref_profile_no_import, 1).show();
+            return;
+        }
+        final String[] strings = AeroActivity.shell.getDirInfo(dir, true);
+        final ArrayList<Boolean> importProfiles = new ArrayList<>();
+        for (String str : strings) {
+            importProfiles.add(false);
+        }
+        dialog.setTitle(R.string.pref_profile_import_select);
+        dialog.setIcon(R.drawable.restore);
+        dialog.setMultiChoiceItems(strings, (boolean[]) null, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int index, boolean checked) {
+                if (checked) {
+                    importProfiles.add(index, true);
+                } else {
+                    importProfiles.add(index, false);
+                }
+            }
+        }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int id) {
+                for (int i = 0; i < strings.length; i++) {
+                    String profile = strings[i];
+                    if (importProfiles.get(i).booleanValue()) {
+                        try {
+                            AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(dir + "/" + profile), AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + profile));
+                        } catch (IOException e) {
+                            Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: " + dir + "/" + profile, e);
+                        }
+                        if (AeroActivity.genHelper.doesExist(FilePath.sharedPrefsPath + profile)) {
+                            Toast.makeText(ProfileFragment.this.mContext, R.string.successful, 0).show();
+                        }
+                    }
+                }
+                for (int i = 0; i < ProfileFragment.this.mContainerView.getChildCount(); i++) {
+                    ProfileFragment.this.mContainerView.getChildAt(i).setVisibility(8);
+                }
+                ProfileFragment.this.loadProfiles();
+            }
+        });
+        dialog.create().show();
     }
 
     /* JADX INFO: Access modifiers changed from: private */
