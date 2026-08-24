@@ -218,15 +218,17 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     private void saveProfile(EditText editText) {
-        String allProfiles = Arrays.asList(this.mCompleteProfiles).toString();
         String profileTitle = sanitizeProfileName(editText.getText().toString());
         if (profileTitle.equals("")) {
             Toast.makeText(this.mContext, R.string.pref_profile_enter_name, 1).show();
             return;
         }
-        if (allProfiles.contains(profileTitle + ".xml")) {
-            Toast.makeText(this.mContext, R.string.pref_profile_name_exists, 1).show();
-            return;
+        String targetFilename = profileTitle + ".xml";
+        for (String profile : this.mCompleteProfiles) {
+            if (profile.equals(targetFilename)) {
+                Toast.makeText(this.mContext, R.string.pref_profile_name_exists, 1).show();
+                return;
+            }
         }
         addProfile(profileTitle, true);
         int output = 0;
@@ -258,9 +260,9 @@ public class ProfileFragment extends PreferenceFragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int index, boolean checked) {
                 if (checked) {
-                    importProfiles.add(index, true);
+                    importProfiles.set(index, true);
                 } else {
-                    importProfiles.add(index, false);
+                    importProfiles.set(index, false);
                 }
             }
         }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
