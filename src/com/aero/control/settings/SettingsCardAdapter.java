@@ -134,28 +134,38 @@ class SettingsCardAdapter extends BaseAdapter {
         ((ImageView) row.findViewById(R.id.settings_switch_icon)).setImageDrawable(preference.getIcon());
         ((TextView) row.findViewById(R.id.settings_switch_title)).setText(preference.getTitle());
 
-        View.OnClickListener clickListener = new View.OnClickListener() {
+        final Switch switchWidget = (Switch) row.findViewById(R.id.settings_switch);
+        switchWidget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 preference.performClick(null);
-                bindSwitchState(preference, row);
+                bindSwitchMetadata(preference, row);
             }
-        };
-        row.setOnClickListener(clickListener);
-        ((Switch) row.findViewById(R.id.settings_switch)).setOnClickListener(clickListener);
+        });
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchWidget.performClick();
+            }
+        });
 
         bindSwitchState(preference, row);
         return row;
     }
 
     private void bindSwitchState(TwoStatePreference preference, View row) {
+        ((Switch) row.findViewById(R.id.settings_switch)).setChecked(preference.isChecked());
+        bindSwitchMetadata(preference, row);
+    }
+
+    private void bindSwitchMetadata(TwoStatePreference preference, View row) {
         boolean enabled = preference.isEnabled();
         row.setEnabled(enabled);
+        row.findViewById(R.id.settings_switch_icon).setEnabled(enabled);
         row.findViewById(R.id.settings_switch_title).setEnabled(enabled);
 
         Switch switchWidget = (Switch) row.findViewById(R.id.settings_switch);
         switchWidget.setEnabled(enabled);
-        switchWidget.setChecked(preference.isChecked());
 
         TextView summary = (TextView) row.findViewById(R.id.settings_switch_summary);
         summary.setEnabled(enabled);

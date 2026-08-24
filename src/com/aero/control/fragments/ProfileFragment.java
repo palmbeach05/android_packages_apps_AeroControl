@@ -168,9 +168,18 @@ public class ProfileFragment extends PreferenceFragment {
     /* JADX INFO: Access modifiers changed from: private */
     public void showDialog(final EditText editText) {
         this.mCompleteProfiles = AeroActivity.shell.getDirInfo(FilePath.sharedPrefsPath, true);
-        AlertDialog dialog = new AlertDialog.Builder(this.mContext).setTitle(R.string.add_a_name).setIcon(R.drawable.profile_new).setMessage(R.string.define_a_name).setView(editText).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.7
+        View content = LayoutInflater.from(this.mContext).inflate(R.layout.profile_name_dialog, null);
+        ViewGroup editorContainer = (ViewGroup) content.findViewById(R.id.profile_name_editor_container);
+        editorContainer.addView(editText, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        final AlertDialog dialog = new AlertDialog.Builder(this.mContext)
+                .setTitle(R.string.add_a_name)
+                .setIcon(R.drawable.profile_new)
+                .setView(content)
+                .create();
+        content.findViewById(R.id.profile_name_save).setOnClickListener(new View.OnClickListener() {
             @Override // android.content.DialogInterface.OnClickListener
-            public void onClick(DialogInterface dialog2, int which) {
+            public void onClick(View view) {
                 String allProfiles = Arrays.asList(ProfileFragment.this.mCompleteProfiles).toString();
                 String profileTitle = ProfileFragment.sanitizeProfileName(editText.getText().toString());
                 if (profileTitle.equals("")) {
@@ -191,10 +200,12 @@ public class ProfileFragment extends PreferenceFragment {
                 }
                 ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(8);
                 ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(8);
+                dialog.dismiss();
             }
-        }).setNeutralButton(R.string.pref_profile_import, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.6
+        });
+        content.findViewById(R.id.profile_name_import).setOnClickListener(new View.OnClickListener() {
             @Override // android.content.DialogInterface.OnClickListener
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(View view) {
                 AlertDialog.Builder dialog2 = new AlertDialog.Builder(ProfileFragment.this.mContext);
                 final String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
                 if (!AeroActivity.genHelper.doesExist(dir)) {
@@ -242,8 +253,9 @@ public class ProfileFragment extends PreferenceFragment {
                     }
                 });
                 dialog2.create().show();
+                dialog.dismiss();
             }
-        }).create();
+        });
         dialog.show();
     }
 
