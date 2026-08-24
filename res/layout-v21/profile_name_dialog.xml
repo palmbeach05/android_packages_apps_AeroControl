@@ -20,6 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:textColor="?android:attr/colorAccent"
             android:text="@string/pref_profile_import" />
 
         <Button
@@ -28,6 +29,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:textColor="?android:attr/colorAccent"
             android:text="@string/save" />
     </LinearLayout>
 </LinearLayout>

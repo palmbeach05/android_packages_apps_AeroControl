@@ -20,6 +20,7 @@
             android:textSize="16sp"
             android:id="@+id/rowtext"
             android:padding="10dp"
+            android:textColor="?attr/aeroPrimaryTextColor"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_toRightOf="@+id/rowfolder"/>
