@@ -80,6 +80,11 @@ public class ProfileFragment extends PreferenceFragment {
         return this.mRootView;
     }
 
+    private String[] getDirectoryEntries(String path) {
+        String[] entries = AeroActivity.shell.getDirInfo(path, true);
+        return entries != null ? entries : new String[0];
+    }
+
     private void loadFloatingMenu() {
         final FloatingActionsMenu floatMenu = (FloatingActionsMenu) this.mRootView.findViewById(R.id.float_menu);
         FloatingActionButton addProfiles = (FloatingActionButton) this.mRootView.findViewById(R.id.add_button);
@@ -124,7 +129,7 @@ public class ProfileFragment extends PreferenceFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void loadProfiles() {
-        this.mCompleteProfiles = AeroActivity.shell.getDirInfo(FilePath.sharedPrefsPath, true);
+        this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         String[] arr$ = this.mCompleteProfiles;
         for (String s : arr$) {
             if (!s.equals("com.aero.control_preferences.xml") && !s.equals("showcase_internal.xml") && !s.equals("app_rate_prefs.xml") && !s.equals("perAppProfileHandler.xml") && !s.equals("miscSettingsStorage.xml")) {
@@ -170,7 +175,7 @@ public class ProfileFragment extends PreferenceFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void showDialog(final EditText editText) {
-        this.mCompleteProfiles = AeroActivity.shell.getDirInfo(FilePath.sharedPrefsPath, true);
+        this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             showMaterialProfileDialog(editText);
             return;
@@ -249,7 +254,7 @@ public class ProfileFragment extends PreferenceFragment {
             Toast.makeText(this.mContext, R.string.pref_profile_no_import, 1).show();
             return;
         }
-        final String[] strings = AeroActivity.shell.getDirInfo(dir, true);
+        final String[] strings = getDirectoryEntries(dir);
         final ArrayList<Boolean> importProfiles = new ArrayList<>();
         for (String str : strings) {
             importProfiles.add(false);
@@ -645,7 +650,7 @@ public class ProfileFragment extends PreferenceFragment {
         v.setOnLongClickListener(new View.OnLongClickListener() { // from class: com.aero.control.fragments.ProfileFragment.14
             @Override // android.view.View.OnLongClickListener
             public boolean onLongClick(View view) {
-                ProfileFragment.this.mCompleteProfiles = AeroActivity.shell.getDirInfo(FilePath.sharedPrefsPath, true);
+                ProfileFragment.this.mCompleteProfiles = ProfileFragment.this.getDirectoryEntries(FilePath.sharedPrefsPath);
                 final EditText editText = new EditText(ProfileFragment.this.mContext);
                 final CharSequence oldName = txtView.getText();
                 editText.setText(oldName);
