@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.AeroActivity;
@@ -312,6 +314,12 @@ public class ProfileFragment extends PreferenceFragment {
         txtView.setTypeface(FilePath.kitkatFont);
         txtViewSummary.setTypeface(FilePath.kitkatFont);
         createListener(txtView, txtViewSummary);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            TypedValue iconColor = new TypedValue();
+            this.mContext.getTheme().resolveAttribute(R.attr.aeroPrimaryTextColor, iconColor, true);
+            ImageButton deleteButton = (ImageButton) childView.findViewById(R.id.delete_button);
+            deleteButton.getDrawable().mutate().setColorFilter(iconColor.data, PorterDuff.Mode.SRC_IN);
+        }
         childView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8
             @Override // android.view.View.OnClickListener
             public void onClick(View view) {
