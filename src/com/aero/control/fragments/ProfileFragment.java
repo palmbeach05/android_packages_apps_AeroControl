@@ -174,17 +174,12 @@ public class ProfileFragment extends PreferenceFragment {
     public void showDialog(final EditText editText) {
         this.mCompleteProfiles = AeroActivity.shell.getDirInfo(FilePath.sharedPrefsPath, true);
         if (Build.VERSION.SDK_INT < 21) {
-            new AlertDialog.Builder(this.mContext)
+            final AlertDialog dialog = new AlertDialog.Builder(this.mContext)
                     .setTitle(R.string.add_a_name)
                     .setIcon(R.drawable.profile_new)
                     .setMessage(R.string.define_a_name)
                     .setView(editText)
-                    .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            saveProfileFromDialog(editText);
-                        }
-                    })
+                    .setPositiveButton(R.string.save, null)
                     .setNeutralButton(R.string.pref_profile_import, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -192,6 +187,14 @@ public class ProfileFragment extends PreferenceFragment {
                         }
                     })
                     .show();
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (saveProfileFromDialog(editText)) {
+                        dialog.dismiss();
+                    }
+                }
+            });
             return;
         }
         View content = LayoutInflater.from(this.mContext).inflate(R.layout.profile_name_dialog, null);
@@ -260,27 +263,33 @@ public class ProfileFragment extends PreferenceFragment {
             @Override // android.content.DialogInterface.OnMultiChoiceClickListener
             public void onClick(DialogInterface dialogInterface, int position, boolean checked) {
                 if (checked) {
-                    importProfiles.add(position, true);
+                    importProfiles.set(position, true);
                 } else {
-                    importProfiles.add(position, false);
+                    importProfiles.set(position, false);
                 }
             }
         }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.6.1
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialogInterface, int id) {
                 int position = 0;
+                boolean anySuccess = false;
                 for (String profile : strings) {
                     if (importProfiles.get(position).booleanValue()) {
+                        boolean success = false;
                         try {
                             AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(dir + "/" + profile), AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + profile));
+                            success = true;
                         } catch (IOException e) {
                             Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: " + dir + "/" + profile, e);
                         }
-                        if (AeroActivity.genHelper.doesExist(FilePath.sharedPrefsPath + profile)) {
-                            Toast.makeText(ProfileFragment.this.mContext, R.string.successful, 0).show();
+                        if (success) {
+                            anySuccess = true;
                         }
                     }
                     position++;
+                }
+                if (anySuccess) {
+                    Toast.makeText(ProfileFragment.this.mContext, R.string.successful, 0).show();
                 }
                 for (int i = 0; i < ProfileFragment.this.mContainerView.getChildCount(); i++) {
                     ProfileFragment.this.mContainerView.getChildAt(i).setVisibility(8);
