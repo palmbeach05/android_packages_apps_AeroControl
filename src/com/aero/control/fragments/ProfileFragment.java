@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -419,9 +421,12 @@ public class ProfileFragment extends PreferenceFragment {
             this.mProgressDialog.show();
             TextView messageView = (TextView) this.mProgressDialog.findViewById(android.R.id.message);
             if (messageView != null) {
-                TypedValue messageColor = new TypedValue();
-                this.mContext.getTheme().resolveAttribute(R.attr.aeroPrimaryTextColor, messageColor, true);
-                messageView.setTextColor(messageColor.data);
+				TypedArray attributes = this.mContext.obtainStyledAttributes(new int[] { R.attr.aeroPrimaryTextColor });
+				ColorStateList messageColors = attributes.getColorStateList(0);
+				attributes.recycle();
+				if (messageColors != null) {
+					messageView.setTextColor(messageColors);
+				}
             }
             Runnable runnable = new Runnable() { // from class: com.aero.control.fragments.ProfileFragment.10
                 @Override // java.lang.Runnable
