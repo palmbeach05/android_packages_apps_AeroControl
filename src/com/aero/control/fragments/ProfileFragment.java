@@ -287,8 +287,8 @@ public class ProfileFragment extends PreferenceFragment {
                 }
                 for (int i = ProfileFragment.this.mContainerView.getChildCount() - 1; i >= 0; i--) {
                     View child = ProfileFragment.this.mContainerView.getChildAt(i);
-                    int id = child.getId();
-                    if (id != android.R.id.empty && id != R.id.empty_image) {
+                    int childId = child.getId();
+                    if (childId != android.R.id.empty && childId != R.id.empty_image) {
                         ProfileFragment.this.mContainerView.removeViewAt(i);
                     }
                 }
