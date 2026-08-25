@@ -8,12 +8,14 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -21,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.AeroActivity;
@@ -93,12 +96,8 @@ public class ProfileFragment extends PreferenceFragment {
         addProfiles.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.1
             @Override // android.view.View.OnClickListener
             public void onClick(View v) {
-                if (!AeroActivity.genHelper.doesExist("/data/data/com.aero.control/shared_prefs/com.aero.control_preferences.xml")) {
-                    Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_no_changes, 1).show();
-                } else {
-                    ProfileFragment.this.showDialog(new EditText(ProfileFragment.this.mContext));
-                    floatMenu.toggle();
-                }
+                ProfileFragment.this.showDialog(new EditText(ProfileFragment.this.mContext));
+                floatMenu.toggle();
             }
         });
         toggleSystem.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.2
@@ -300,51 +299,55 @@ public class ProfileFragment extends PreferenceFragment {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(this.mContext);
         SharedPreferences AeroProfile = this.mContext.getSharedPreferences(s, 0);
         final perAppHelper perApp = new perAppHelper(this.mContext);
-        if (AeroActivity.genHelper.doesExist("/data/data/com.aero.control/shared_prefs/com.aero.control_preferences.xml")) {
-            if (flag) {
-                saveNewProfile(AeroProfile);
-            }
-            final ViewGroup childView = (ViewGroup) LayoutInflater.from(this.mContext).inflate(R.layout.profiles_list, this.mContainerView, false);
-            final TextView txtView = (TextView) childView.findViewById(R.id.profile_text);
-            final TextView txtViewSummary = (TextView) childView.findViewById(R.id.profile_text_summary);
-            txtView.setText(s);
-            if (checkState(s)) {
-                updateStatus(txtViewSummary, true);
-            } else {
-                updateStatus(txtViewSummary, false);
-            }
-            txtView.setTypeface(FilePath.kitkatFont);
-            txtViewSummary.setTypeface(FilePath.kitkatFont);
-            createListener(txtView, txtViewSummary);
-            childView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8
-                @Override // android.view.View.OnClickListener
-                public void onClick(View view) {
-                    new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.profile_remove).setMessage(R.string.profile_remove_confirmation).setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8.1
-                        @Override // android.content.DialogInterface.OnClickListener
-                        public void onClick(DialogInterface dialog, int which) {
-                            boolean success = ProfileFragment.this.deleteProfile(txtView.getText().toString());
-                            if (success) {
-                                ProfileFragment.this.mContainerView.removeView(childView);
-                                if (ProfileFragment.this.mContainerView.getChildCount() == 2) {
-                                    ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
-                                    ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
-                                }
-                                ProfileFragment.this.showProfileDeletedToast();
-                            } else {
-                                Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_not_deleted, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }).setNegativeButton(R.string.cancel, (DialogInterface.OnClickListener) null).show();
-                }
-            });
-            childView.findViewById(R.id.assign_to_app).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.9
-                @Override // android.view.View.OnClickListener
-                public void onClick(View view) {
-                    ProfileFragment.this.getPersistentData(perApp, s, txtViewSummary);
-                }
-            });
-            this.mContainerView.addView(childView, 0);
+        if (flag) {
+            saveNewProfile(AeroProfile);
         }
+        final ViewGroup childView = (ViewGroup) LayoutInflater.from(this.mContext).inflate(R.layout.profiles_list, this.mContainerView, false);
+        final TextView txtView = (TextView) childView.findViewById(R.id.profile_text);
+        final TextView txtViewSummary = (TextView) childView.findViewById(R.id.profile_text_summary);
+        txtView.setText(s);
+        if (checkState(s)) {
+            updateStatus(txtViewSummary, true);
+        } else {
+            updateStatus(txtViewSummary, false);
+        }
+        txtView.setTypeface(FilePath.kitkatFont);
+        txtViewSummary.setTypeface(FilePath.kitkatFont);
+        createListener(txtView, txtViewSummary);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            TypedValue iconColor = new TypedValue();
+            this.mContext.getTheme().resolveAttribute(R.attr.aeroPrimaryTextColor, iconColor, true);
+            ImageButton deleteButton = (ImageButton) childView.findViewById(R.id.delete_button);
+            deleteButton.getDrawable().mutate().setColorFilter(iconColor.data, PorterDuff.Mode.SRC_IN);
+        }
+        childView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8
+            @Override // android.view.View.OnClickListener
+            public void onClick(View view) {
+                new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.profile_remove).setMessage(R.string.profile_remove_confirmation).setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.8.1
+                    @Override // android.content.DialogInterface.OnClickListener
+                    public void onClick(DialogInterface dialog, int which) {
+                        boolean success = ProfileFragment.this.deleteProfile(txtView.getText().toString());
+                        if (success) {
+                            ProfileFragment.this.mContainerView.removeView(childView);
+                            if (ProfileFragment.this.mContainerView.getChildCount() == 2) {
+                                ProfileFragment.this.mContainerView.findViewById(android.R.id.empty).setVisibility(0);
+                                ProfileFragment.this.mContainerView.findViewById(R.id.empty_image).setVisibility(0);
+                            }
+                            ProfileFragment.this.showProfileDeletedToast();
+                        } else {
+                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_not_deleted, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }).setNegativeButton(R.string.cancel, (DialogInterface.OnClickListener) null).show();
+            }
+        });
+        childView.findViewById(R.id.assign_to_app).setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.9
+            @Override // android.view.View.OnClickListener
+            public void onClick(View view) {
+                ProfileFragment.this.getPersistentData(perApp, s, txtViewSummary);
+            }
+        });
+        this.mContainerView.addView(childView, 0);
     }
 
     private void showProfileDeletedToast() {
@@ -406,8 +409,9 @@ public class ProfileFragment extends PreferenceFragment {
                 return;
             }
             if (this.mProgressDialog == null) {
-                this.mProgressDialog = new ProgressDialog(this.mContext);
-                this.mProgressDialog.setMessage(Util.getRandomLoadingText(this.mContext));
+                TypedValue dialogTheme = new TypedValue();
+                this.mContext.getTheme().resolveAttribute(android.R.attr.dialogTheme, dialogTheme, true);
+                this.mProgressDialog = new ProgressDialog(this.mContext, dialogTheme.resourceId);
                 this.mProgressDialog.setIndeterminate(true);
                 this.mProgressDialog.setIndeterminateDrawable(getResources().getDrawable(R.drawable.spinner_animation));
             }
