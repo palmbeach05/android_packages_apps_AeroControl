@@ -39,8 +39,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
             android:maxLines="4"
-            android:layout_below="@android:id/title"
-            android:layout_alignLeft="@android:id/title"/>
+            android:layout_below="@id/profile_text"
+            android:layout_alignLeft="@id/profile_text"/>
     </RelativeLayout>
     <ImageButton
         android:id="@+id/assign_to_app"

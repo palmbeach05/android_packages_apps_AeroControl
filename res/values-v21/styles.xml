@@ -154,6 +154,8 @@
         <item name="android:actionMenuTextColor">@android:color/white</item>
         <item name="android:windowBackground">@color/dark_window_background</item>
         <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="android:alertDialogTheme">@style/AeroDialog.Dark.Alert</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Dark</item>
         <item name="aeroDrawerLayoutBackground">@color/dark_window_background</item>
         <item name="aeroDrawerListBackground">@color/dark_drawer_list_background</item>
         <item name="aeroPrimaryTextColor">@color/dark_text_color</item>

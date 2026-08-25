@@ -285,8 +285,12 @@ public class ProfileFragment extends PreferenceFragment {
                         }
                     }
                 }
-                for (int i = 0; i < ProfileFragment.this.mContainerView.getChildCount(); i++) {
-                    ProfileFragment.this.mContainerView.getChildAt(i).setVisibility(8);
+                for (int i = ProfileFragment.this.mContainerView.getChildCount() - 1; i >= 0; i--) {
+                    View child = ProfileFragment.this.mContainerView.getChildAt(i);
+                    int id = child.getId();
+                    if (id != android.R.id.empty && id != R.id.empty_image) {
+                        ProfileFragment.this.mContainerView.removeViewAt(i);
+                    }
                 }
                 ProfileFragment.this.loadProfiles();
             }
