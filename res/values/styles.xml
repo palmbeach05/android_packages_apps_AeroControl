@@ -185,6 +185,7 @@
         <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
         <item name="aeroGraphLabelColor">@color/text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
     </style>
     <style name="AeroActionBar.Dark" parent="@android:style/Widget.Holo.ActionBar">
         <item name="android:background">@color/dark_actionbar_color</item>
@@ -210,5 +211,6 @@
         <item name="aeroPreferenceControlBackground">@color/dark_card_background</item>
         <item name="aeroGraphLabelColor">@color/dark_text_color</item>
         <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Dark</item>
     </style>
 </resources>
