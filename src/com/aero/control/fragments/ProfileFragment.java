@@ -412,7 +412,6 @@ public class ProfileFragment extends PreferenceFragment {
                 TypedValue dialogTheme = new TypedValue();
                 this.mContext.getTheme().resolveAttribute(android.R.attr.dialogTheme, dialogTheme, true);
                 this.mProgressDialog = new ProgressDialog(this.mContext, dialogTheme.resourceId);
-                this.mProgressDialog.setMessage(Util.getRandomLoadingText(this.mContext));
                 this.mProgressDialog.setIndeterminate(true);
                 this.mProgressDialog.setIndeterminateDrawable(getResources().getDrawable(R.drawable.spinner_animation));
             }
