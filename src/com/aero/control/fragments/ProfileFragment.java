@@ -227,6 +227,10 @@ public class ProfileFragment extends PreferenceFragment {
             return;
         }
         String targetFilename = profileTitle + ".xml";
+        if (!isValidProfileFilename(targetFilename)) {
+            Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
+            return;
+        }
         for (String profile : this.mCompleteProfiles) {
             if (profile.equals(targetFilename)) {
                 Toast.makeText(this.mContext, R.string.pref_profile_name_exists, 1).show();
@@ -593,6 +597,10 @@ public class ProfileFragment extends PreferenceFragment {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
             return;
         }
+        if (!isValidProfileFilename(newName + ".xml")) {
+            Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
+            return;
+        }
         File prefFile = new File(FilePath.sharedPrefsPath + oldName.toString() + ".xml");
         boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName + ".xml"));
         if (!renameSuccess) {
@@ -688,6 +696,10 @@ public class ProfileFragment extends PreferenceFragment {
                     public void onClick(DialogInterface dialog2, int which) {
                         String newName = editText.getText().toString();
                         if (!ProfileFragment.isValidProfileName(newName)) {
+                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_invalid_name, 1).show();
+                            return;
+                        }
+                        if (!ProfileFragment.isValidProfileFilename(newName + ".xml")) {
                             Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_invalid_name, 1).show();
                             return;
                         }
