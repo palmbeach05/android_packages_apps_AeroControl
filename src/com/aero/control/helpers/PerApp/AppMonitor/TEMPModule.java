@@ -4,10 +4,19 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 
+/**
+ * Monitoring module that tracks CPU temperature from the thermal zone sensor.
+ * Reads the temperature from sysfs and reports it in degrees Celsius.
+ */
 public final class TEMPModule extends AppModule {
     private static final String CPU_TEMP_FILE = "/sys/devices/virtual/thermal/thermal_zone1/temp";
     private final String mClassName;
 
+    /**
+     * Creates a temperature monitoring module.
+     *
+     * @param context the application context
+     */
     public TEMPModule(Context context) {
         super(context);
         this.mClassName = getClass().getName();
@@ -25,7 +34,7 @@ public final class TEMPModule extends AppModule {
         long temp = System.currentTimeMillis();
         Integer temperature = null;
         try {
-            temperature = Integer.valueOf(Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/virtual/thermal/thermal_zone1/temp")));
+            temperature = Integer.valueOf(Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/virtual/thermal/thermal_zone1/temp")) / 1000);
         } catch (NumberFormatException e) {
         }
         if (temperature != null) {

@@ -51,6 +51,11 @@ public final class AppContext {
         this.mLastChecked = lastchecked;
     }
 
+    /**
+     * Returns the last checked timestamp, initializing it to the current time if not yet set.
+     *
+     * @return the last checked timestamp in milliseconds
+     */
     public final long getLastChecked() {
         if (this.mLastChecked == 0) {
             this.mLastChecked = System.currentTimeMillis();
@@ -58,31 +63,65 @@ public final class AppContext {
         return this.mLastChecked;
     }
 
+    /**
+     * Increases the total time usage for this app by the specified duration.
+     *
+     * @param time the duration to add in milliseconds
+     */
     public final void increaseTimeUsage(long time) {
         this.mTimeUsage += time;
     }
 
+    /**
+     * Returns the total time the app has been in the foreground.
+     *
+     * @return the total time usage in milliseconds
+     */
     public final long getTimeUsage() {
         return this.mTimeUsage;
     }
 
+    /**
+     * Sets the total time usage for this app.
+     *
+     * @param timeusage the time usage in milliseconds
+     */
     public final void setTimeUsage(long timeusage) {
         this.mTimeUsage = timeusage;
     }
 
+    /**
+     * Returns the total time usage formatted as a human-readable string.
+     *
+     * @return formatted time string (e.g., "2 h 30 min 15 secs")
+     */
     public final String getFormatTimeUsage() {
         return Util.getFormatedTimeString(getTimeUsage());
     }
 
+    /**
+     * Checks if the app has been used for at least the minimum threshold duration.
+     *
+     * @return true if time usage is at least 60 seconds, false otherwise
+     */
     public final boolean isAboveThreshold() {
         return getTimeUsage() >= 60000;
     }
 
+    /**
+     * Resets all monitoring data for this app, clearing time usage and last checked timestamp.
+     */
     public final void cleanUp() {
         this.mLastChecked = 0L;
         this.mTimeUsage = 0L;
     }
 
+    /**
+     * Retrieves the human-readable app name from the package manager.
+     *
+     * @param context the context to access the package manager
+     * @return the app's display name, or null if the app is not found
+     */
     public final String getRealAppName(Context context) {
         PackageManager pm = context.getPackageManager();
         try {

@@ -29,6 +29,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Central manager for the per-app monitoring system. Coordinates data collection from
+ * monitoring modules, manages app contexts, handles data import/export to JSON, and
+ * provides notification support for the monitoring service.
+ */
 public final class JobManager {
     private static final String FILENAME_APPMONITOR_NOTIFY = "appmonitor_notify";
     private static JobManager mJobManager = null;
@@ -65,6 +70,12 @@ public final class JobManager {
         AppLogger.print(this.mClassName, "JobManager initialized, AppMonitor Version " + getVersion() + " loaded!", -1);
     }
 
+    /**
+     * Returns the singleton JobManager instance, creating it if necessary.
+     *
+     * @param context the context for initializing the manager
+     * @return the shared JobManager instance
+     */
     public static synchronized JobManager instance(Context context) {
         if (mJobManager == null) {
             mJobManager = new JobManager(context);
@@ -72,28 +83,54 @@ public final class JobManager {
         return mJobManager;
     }
 
+    /**
+     * Enables the job manager to allow data collection.
+     */
     public final void enable() {
         this.mJobManagerEnable = true;
         AppLogger.print(this.mClassName, "JobManager enabled!", 0);
     }
 
+    /**
+     * Disables the job manager to pause data collection.
+     */
     public final void disable() {
         this.mJobManagerEnable = false;
         AppLogger.print(this.mClassName, "JobManager disabled!", 0);
     }
 
+    /**
+     * Returns the AppMonitor framework version string.
+     *
+     * @return the version string from Configuration
+     */
     public final String getVersion() {
         return Configuration.APPMONITOR_VERSION;
     }
 
+    /**
+     * Returns whether the job manager is currently enabled for data collection.
+     *
+     * @return true if enabled, false otherwise
+     */
     public final boolean getJobManagerState() {
         return this.mJobManagerEnable;
     }
 
+    /**
+     * Updates the context used by the job manager.
+     *
+     * @param context the new context
+     */
     public final void setContext(Context context) {
         this.mContext = context;
     }
 
+    /**
+     * Forces cleanup of all module data for a specific app, resetting its monitoring state.
+     *
+     * @param appname the package name of the app to clean up
+     */
     public final void forceCleanUp(String appname) {
         AppContext context = getSimpleAppContext(appname);
         if (context != null) {
@@ -105,6 +142,13 @@ public final class JobManager {
         }
     }
 
+    /**
+     * Retrieves all monitoring data organized as parent-child elements for display in
+     * the expandable list UI. Only includes apps that have met or exceeded the usage threshold.
+     *
+     * @param context the context for accessing package information
+     * @return a list of AppElement objects sorted by usage time in descending order
+     */
     public final synchronized List<AppElement> getParentChildData(Context context) {
         List<AppElement> data;
         Drawable appicon;
@@ -142,6 +186,13 @@ public final class JobManager {
         return data;
     }
 
+    /**
+     * Retrieves the raw monitoring data for a specific app and module.
+     *
+     * @param appname the package name of the app
+     * @param identifier the module identifier to retrieve data for
+     * @return a list of raw integer values collected by the module, or null if app not found
+     */
     public final List<Integer> getRawData(String appname, int identifier) {
         AppContext context = getSimpleAppContext(appname);
         if (context == null) {
@@ -155,6 +206,10 @@ public final class JobManager {
         return null;
     }
 
+    /**
+     * Exports all collected monitoring data to a JSON file for persistence across
+     * service restarts or app crashes. Writes to the emergency file location.
+     */
     public void exportData() {
         JSONObject jSONObject = new JSONObject();
         long time = System.currentTimeMillis();
@@ -219,6 +274,10 @@ public final class JobManager {
         }
     }
 
+    /**
+     * Imports previously exported monitoring data from the emergency JSON file,
+     * restoring app contexts and module data.
+     */
     public void importData() {
         ContextWrapper cw = new ContextWrapper(this.mContext);
         long time = System.currentTimeMillis();
@@ -303,6 +362,12 @@ public final class JobManager {
         this.mSleeping = false;
     }
 
+    /**
+     * Schedules monitoring for the given app context. Runs all registered modules,
+     * collects their data, and handles periodic data export.
+     *
+     * @param context the app context to monitor
+     */
     public final void schedule(AppContext context) {
         if (!PreferenceManager.getDefaultSharedPreferences(this.mContext).getBoolean(mPreferenceValue, true)) {
             if (this.mJobManagerEnable) {
@@ -346,6 +411,12 @@ public final class JobManager {
         }
     }
 
+    /**
+     * Retrieves an app context without triggering time usage tracking or other side effects.
+     *
+     * @param appname the package name of the app
+     * @return the app context, or null if the manager is disabled, sleeping, or the app is not found
+     */
     public final AppContext getSimpleAppContext(String appname) {
         if (this.mJobManagerEnable && !this.mSleeping) {
             return this.mAppData.getSimpleAppContext(appname);
@@ -356,6 +427,13 @@ public final class JobManager {
         return null;
     }
 
+    /**
+     * Retrieves an app context and updates its usage tracking. Creates a new context
+     * if the app hasn't been seen before.
+     *
+     * @param appname the package name of the app
+     * @return the app context, or null if the manager is disabled or sleeping
+     */
     public final AppContext getAppContext(String appname) {
         if (!this.mJobManagerEnable || this.mSleeping) {
             if (this.mSleeping && !this.mPrevSleeping) {
@@ -369,6 +447,12 @@ public final class JobManager {
         return this.mAppData.getAppContext(appname);
     }
 
+    /**
+     * Sets the sleep state of the job manager. When sleeping, monitoring is paused
+     * (typically when the screen is off).
+     *
+     * @param sleepValue true to put the manager to sleep, false to wake it
+     */
     public final void setSleep(boolean sleepValue) {
         if (sleepValue && !this.mSleeping) {
             AppLogger.print(this.mClassName, "JobManager is sleeping because the display is off!", 0);
@@ -377,10 +461,18 @@ public final class JobManager {
         this.mSleeping = sleepValue;
     }
 
+    /**
+     * Returns whether the job manager is currently in sleep mode.
+     *
+     * @return true if sleeping, false otherwise
+     */
     public final boolean getSleepState() {
         return this.mSleeping;
     }
 
+    /**
+     * Forces the job manager to wake up from sleep mode and resume monitoring.
+     */
     public final synchronized void wakeUp() {
         if (getSleepState()) {
             AppLogger.print(this.mClassName, "Forcing a wakeup of the JobManager...", 0);
@@ -418,6 +510,11 @@ public final class JobManager {
         this.mExportThreshold = System.currentTimeMillis() + 60000;
     }
 
+    /**
+     * Returns the list of registered monitoring modules.
+     *
+     * @return the list of AppModule instances currently loaded
+     */
     public final List<AppModule> getModules() {
         return this.mModules;
     }

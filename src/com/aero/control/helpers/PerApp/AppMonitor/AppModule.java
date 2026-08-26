@@ -42,6 +42,11 @@ public class AppModule {
         this.mModuleIdentifier = Integer.valueOf(identifier);
     }
 
+    /**
+     * Returns the unique identifier for this module type.
+     *
+     * @return the module identifier constant
+     */
     public final int getIdentifier() {
         return this.mModuleIdentifier.intValue();
     }
@@ -50,14 +55,29 @@ public class AppModule {
         this.mSuffix = suffix;
     }
 
+    /**
+     * Returns the prefix string to display before values from this module.
+     *
+     * @return the prefix string
+     */
     public final String getPrefix() {
         return this.mPrefix;
     }
 
+    /**
+     * Sets the icon drawable for this module to display in the UI.
+     *
+     * @param drawable the drawable icon
+     */
     public final void setDrawable(Drawable drawable) {
         this.mDrawable = drawable;
     }
 
+    /**
+     * Returns the icon drawable for this module.
+     *
+     * @return the drawable icon
+     */
     public final Drawable getDrawable() {
         return this.mDrawable;
     }
@@ -70,6 +90,11 @@ public class AppModule {
         setPrefix(charSequence.toString());
     }
 
+    /**
+     * Returns the suffix string to display after values from this module.
+     *
+     * @return the suffix string
+     */
     public final String getSuffix() {
         return this.mSuffix;
     }
@@ -103,6 +128,10 @@ public class AppModule {
         this.mValues = new ArrayList();
     }
 
+    /**
+     * Hook method for subclasses to implement module-specific data collection logic.
+     * Base implementation validates that the module has been properly named.
+     */
     protected void operate() {
         if (this.mName == null) {
             throw new ExceptionHandler("This module has no name, please enter a name!");

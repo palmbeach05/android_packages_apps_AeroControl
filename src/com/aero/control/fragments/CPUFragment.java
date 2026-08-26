@@ -415,6 +415,9 @@ public class CPUFragment extends PlaceHolderFragment {
                     // Validate under lock, but perform shell I/O outside lock
                     final String minFreqValue;
                     synchronized (mPreferenceLock) {
+                        if (!CPUFragment.this.isConfiguredListValue(controls.maxFrequency, a)) {
+                            return false;
+                        }
                         minFreqValue = controls.minFrequency.getValue();
                     }
                     if (minFreqValue != null && !minFreqValue.equals(NO_DATA_FOUND)) {
@@ -429,8 +432,12 @@ public class CPUFragment extends PlaceHolderFragment {
 
                     final ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
-                        array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                        array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ);
+                        String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
+                        String maxFrequencyPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ;
+                        if (AeroActivity.genHelper.doesExist(onlinePath)) {
+                            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
+                        }
+                        array.add("echo " + AeroActivity.shell.escapeShellArg(a) + " > " + AeroActivity.shell.escapeShellArg(maxFrequencyPath));
                     }
                     final String[] commands = (String[]) array.toArray(new String[0]);
 
@@ -470,6 +477,9 @@ public class CPUFragment extends PlaceHolderFragment {
                     // Validate under lock, but perform shell I/O outside lock
                     final String maxFreqValue;
                     synchronized (mPreferenceLock) {
+                        if (!CPUFragment.this.isConfiguredListValue(controls.minFrequency, a)) {
+                            return false;
+                        }
                         maxFreqValue = controls.maxFrequency.getValue();
                     }
                     if (maxFreqValue != null && !maxFreqValue.equals(NO_DATA_FOUND)) {
@@ -484,8 +494,12 @@ public class CPUFragment extends PlaceHolderFragment {
 
                     final ArrayList<String> array = new ArrayList<>();
                     for (Integer cpu : controls.cluster.getMembers()) {
-                        array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                        array.add("echo " + a + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ);
+                        String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
+                        String minFrequencyPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ;
+                        if (AeroActivity.genHelper.doesExist(onlinePath)) {
+                            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
+                        }
+                        array.add("echo " + AeroActivity.shell.escapeShellArg(a) + " > " + AeroActivity.shell.escapeShellArg(minFrequencyPath));
                     }
                     final String[] commands = (String[]) array.toArray(new String[0]);
 
@@ -503,6 +517,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                     if (success) {
                                         synchronized (mPreferenceLock) {
                                             controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.minFrequency.setValue(a);
                                             controls.pendingMinFrequency = a;
                                         }
                                     }
@@ -521,6 +536,11 @@ public class CPUFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String a = (String) o;
+                synchronized (mPreferenceLock) {
+                    if (!CPUFragment.this.isConfiguredListValue(controls.governor, a)) {
+                        return false;
+                    }
+                }
                 if (CPUFragment.this.PrefCat != null) {
                     CPUFragment.this.root.removePreference(CPUFragment.this.PrefCat);
                 }
@@ -727,8 +747,12 @@ public class CPUFragment extends PlaceHolderFragment {
             eligibleClusters.add(target);
             String sysfsSuffix = isMax ? FilePath.CPU_MAX_FREQ : FilePath.CPU_MIN_FREQ;
             for (Integer cpu : target.cluster.getMembers()) {
-                array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-                array.add("echo " + value + " > " + FilePath.CPU_BASE_PATH + cpu + sysfsSuffix);
+                String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
+                String frequencyPath = FilePath.CPU_BASE_PATH + cpu + sysfsSuffix;
+                if (AeroActivity.genHelper.doesExist(onlinePath)) {
+                    array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
+                }
+                array.add("echo " + AeroActivity.shell.escapeShellArg(value) + " > " + AeroActivity.shell.escapeShellArg(frequencyPath));
             }
         }
 
@@ -966,11 +990,28 @@ public class CPUFragment extends PlaceHolderFragment {
     public boolean setGovernor(String s, List<Integer> members) {
         ArrayList<String> array = new ArrayList<>();
         for (Integer cpu : members) {
-            array.add("echo 1 > " + FilePath.CPU_BASE_PATH + cpu + "/online");
-            array.add("echo " + s + " > " + FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE);
+            String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
+            String governorPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE;
+            if (AeroActivity.genHelper.doesExist(onlinePath)) {
+                array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
+            }
+            array.add("echo " + AeroActivity.shell.escapeShellArg(s) + " > " + AeroActivity.shell.escapeShellArg(governorPath));
         }
         String[] commands = (String[]) array.toArray(new String[0]);
         return AeroActivity.shell.setRootInfo(commands);
+    }
+
+    private boolean isConfiguredListValue(CustomListPreference preference, String candidate) {
+        CharSequence[] entryValues = preference.getEntryValues();
+        if (candidate == null || entryValues == null) {
+            return false;
+        }
+        for (CharSequence entryValue : entryValues) {
+            if (candidate.contentEquals(entryValue)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void updateMinFreq() {

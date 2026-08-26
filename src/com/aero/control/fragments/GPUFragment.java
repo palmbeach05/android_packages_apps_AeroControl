@@ -657,7 +657,12 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             newSummary = a;
         } else {
             if (preference == this.mDisplayControl) {
-                String[] commands = {"chmod 0664 /sys/class/misc/mDisplayControl/display_brightness_value", "echo " + a + " > " + FilePath.DISPLAY_COLOR};
+                if (!isConfiguredListValue(this.mDisplayControl, a)) {
+                    Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
+                    return false;
+                }
+                String displayPath = AeroActivity.shell.escapeShellArg(FilePath.DISPLAY_COLOR);
+                String[] commands = {"chmod 0664 " + displayPath, "echo " + AeroActivity.shell.escapeShellArg(a) + " > " + displayPath};
                 AeroActivity.shell.setRootInfo(commands);
                 Toast.makeText(getActivity(), "Turn your display off/on :)", 1).show();
             }
@@ -668,6 +673,19 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             preference.setSummary(newSummary);
         }
         return true;
+    }
+
+    private boolean isConfiguredListValue(CustomListPreference preference, String candidate) {
+        CharSequence[] entryValues = preference.getEntryValues();
+        if (candidate == null || entryValues == null) {
+            return false;
+        }
+        for (CharSequence entryValue : entryValues) {
+            if (candidate.contentEquals(entryValue)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override // android.app.Fragment

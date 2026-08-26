@@ -56,6 +56,9 @@ public final class AppData {
         return this.mMetaData.mAppList;
     }
 
+    /**
+     * Clears all monitored app data by replacing the metadata container with a fresh instance.
+     */
     public final void clearData() {
         this.mMetaData = new AppMetaData();
     }

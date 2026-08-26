@@ -4,11 +4,20 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 
+/**
+ * Monitoring module that tracks average CPU frequency across all online cores.
+ * Samples the current frequency from each online CPU and computes the mean.
+ */
 public final class CPUFreqModule extends AppModule {
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";
     private final String mClassName;
 
+    /**
+     * Creates a CPU frequency monitoring module.
+     *
+     * @param context the application context
+     */
     public CPUFreqModule(Context context) {
         super(context);
         this.mClassName = getClass().getName();

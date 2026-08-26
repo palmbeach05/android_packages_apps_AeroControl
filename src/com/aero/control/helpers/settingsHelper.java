@@ -87,6 +87,16 @@ public class settingsHelper {
         }).start();
     }
 
+    /**
+     * Applies all system settings from preferences. This method reads CPU, GPU, memory,
+     * and other kernel parameters from SharedPreferences and queues the corresponding
+     * shell commands to apply them. Executes synchronously on the calling thread; callers
+     * must invoke this from a worker thread when background execution is required.
+     *
+     * @param context the context to access preferences and resources
+     * @param Profile the profile name to load settings from, or null to use default preferences
+     * @param onboot whether this is being called during system boot
+     */
     public void doBackground(final Context context, String Profile, boolean onboot) {
         if (Profile == null) {
             this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -460,6 +470,10 @@ public class settingsHelper {
         }
     }
 
+    /**
+     * Executes the rollback profile to restore default system settings that were saved
+     * before applying a custom profile. Clears the rollback queue after execution.
+     */
     public void executeDefault() {
         String[] defaultValues = (String[]) defaultProfile.toArray(new String[0]);
         shell.setRootInfo(defaultValues);
