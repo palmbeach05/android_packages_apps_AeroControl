@@ -141,6 +141,12 @@ public class perAppHelper {
         }
     }
 
+    /**
+     * Rebuilds the application list based on the system app filter setting. Retrieves
+     * installed applications from the package manager and populates the display data.
+     *
+     * @param showSystemApp true to include system apps, false to show only user apps
+     */
     public final void getAllApps(boolean showSystemApp) {
         PackageManager pm = this.mContext.getPackageManager();
         List<ApplicationInfo> packages = pm.getInstalledApplications(0);

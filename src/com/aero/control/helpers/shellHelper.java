@@ -546,6 +546,14 @@ public final class shellHelper {
         }
     }
 
+    /**
+     * Writes content to a sysfs file using root permissions. Changes file permissions to
+     * writable and uses printf to write the value safely.
+     *
+     * @param content the content to write to the file
+     * @param path the sysfs path to write to
+     * @return true if the write operation was queued successfully, false if parameters are invalid
+     */
     public final synchronized boolean setRootInfo(String content, String path) {
         if (content == null || content.isEmpty() || content.trim().isEmpty() || path == null || path.isEmpty() || path.trim().isEmpty()) {
             Log.e(LOG_TAG, "setRootInfo called with invalid content or path, ignoring.");
@@ -557,6 +565,13 @@ public final class shellHelper {
         return runCommands();
     }
 
+    /**
+     * Escapes a string value for safe use as a shell argument by wrapping it in single
+     * quotes and escaping any embedded single quotes.
+     *
+     * @param value the string to escape
+     * @return the shell-escaped string
+     */
     public static String escapeShellArg(String value) {
         return "'" + value.replace("'", "'\\''") + "'";
     }
@@ -645,6 +660,13 @@ public final class shellHelper {
         return output != null && output.contains("BLOCK_OK");
     }
 
+    /**
+     * Executes a root command and splits the output into an array using the specified delimiter.
+     *
+     * @param command the command to execute
+     * @param split the delimiter regex to use for splitting the output
+     * @return an array of strings split from the command output
+     */
     public final synchronized String[] getRootArray(String command, String split) {
         ArrayList<String> temp = new ArrayList<>();
         addCommand(command);
