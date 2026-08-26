@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -131,8 +130,8 @@ public class ProfileFragment extends PreferenceFragment {
         this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         String[] arr$ = this.mCompleteProfiles;
         for (String s : arr$) {
-            if (!s.equals("com.aero.control_preferences.xml") && !s.equals("showcase_internal.xml") && !s.equals("app_rate_prefs.xml") && !s.equals("perAppProfileHandler.xml") && !s.equals("miscSettingsStorage.xml")) {
-                addProfile(s.replace(".xml", ""), false);
+            if (isValidProfileFilename(s)) {
+                addProfile(s.substring(0, s.length() - 4), false);
                 this.mContainerView.findViewById(android.R.id.empty).setVisibility(8);
                 this.mContainerView.findViewById(R.id.empty_image).setVisibility(8);
             }
@@ -222,9 +221,9 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     private void saveProfile(EditText editText) {
-        String profileTitle = sanitizeProfileName(editText.getText().toString());
-        if (profileTitle.equals("")) {
-            Toast.makeText(this.mContext, R.string.pref_profile_enter_name, 1).show();
+        String profileTitle = editText.getText().toString();
+        if (!isValidProfileName(profileTitle)) {
+            Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
             return;
         }
         String targetFilename = profileTitle + ".xml";
@@ -253,7 +252,18 @@ public class ProfileFragment extends PreferenceFragment {
             Toast.makeText(this.mContext, R.string.pref_profile_no_import, 1).show();
             return;
         }
-        final String[] strings = getDirectoryEntries(dir);
+        String[] directoryEntries = getDirectoryEntries(dir);
+        ArrayList<String> validProfiles = new ArrayList<>();
+        for (String entry : directoryEntries) {
+            if (isValidProfileFilename(entry)) {
+                validProfiles.add(entry);
+            }
+        }
+        if (validProfiles.isEmpty()) {
+            Toast.makeText(this.mContext, R.string.pref_profile_no_import, 1).show();
+            return;
+        }
+        final String[] strings = validProfiles.toArray(new String[validProfiles.size()]);
         final ArrayList<Boolean> importProfiles = new ArrayList<>();
         for (String str : strings) {
             importProfiles.add(false);
@@ -274,7 +284,7 @@ public class ProfileFragment extends PreferenceFragment {
             public void onClick(DialogInterface dialogInterface, int id) {
                 for (int i = 0; i < strings.length; i++) {
                     String profile = strings[i];
-                    if (importProfiles.get(i).booleanValue()) {
+                    if (importProfiles.get(i).booleanValue() && isValidProfileFilename(profile)) {
                         try {
                             AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(dir + "/" + profile), AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + profile));
                         } catch (IOException e) {
@@ -515,17 +525,25 @@ public class ProfileFragment extends PreferenceFragment {
         return !prefFile.exists();
     }
 
-    /**
-     * Restricts profile names to a safe character set (letters, digits, spaces,
-     * underscore and hyphen) so they cannot be used to inject shell metacharacters
-     * (e.g. ", ;, |, $(), `, &&) or path traversal sequences (.., /) into the
-     * privileged shell commands built from them.
-     */
-    private static String sanitizeProfileName(String name) {
-        if (name == null) {
-            return "";
+    private static boolean isValidProfileName(String name) {
+        return name != null
+                && name.equals(name.trim())
+                && !name.equals(".")
+                && !name.equals("..")
+                && name.matches("[A-Za-z0-9 _-]{1,64}");
+    }
+
+    private static boolean isValidProfileFilename(String filename) {
+        if (filename == null
+                || !filename.endsWith(".xml")
+                || filename.equals("com.aero.control_preferences.xml")
+                || filename.equals("showcase_internal.xml")
+                || filename.equals("app_rate_prefs.xml")
+                || filename.equals("perAppProfileHandler.xml")
+                || filename.equals("miscSettingsStorage.xml")) {
+            return false;
         }
-        return name.replaceAll("[^a-zA-Z0-9 _-]", "").trim();
+        return isValidProfileName(filename.substring(0, filename.length() - 4));
     }
 
     /**
@@ -571,19 +589,22 @@ public class ProfileFragment extends PreferenceFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public void renameProfile(CharSequence oldName, String newName, TextView txtView, TextView txtViewSummary) {
+        if (!isValidProfileName(newName)) {
+            Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
+            return;
+        }
         File prefFile = new File(FilePath.sharedPrefsPath + oldName.toString() + ".xml");
-        String newName2 = sanitizeProfileName(newName);
-        boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName2 + ".xml"));
+        boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName + ".xml"));
         if (!renameSuccess) {
-            String[] cmd = {"mv " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldName.toString() + ".xml") + " " + escapeShellArg(FilePath.sharedPrefsPath + newName2 + ".xml")};
+            String[] cmd = {"mv " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldName.toString() + ".xml") + " " + escapeShellArg(FilePath.sharedPrefsPath + newName + ".xml")};
             AeroActivity.shell.setRootInfo(cmd);
         } else {
             prefFile.delete();
         }
         String valueOld = this.mPerAppPrefs.getString(oldName.toString(), null);
         this.mPerAppPrefs.edit().remove(oldName.toString()).commit();
-        this.mPerAppPrefs.edit().putString(newName2, valueOld).commit();
-        txtView.setText(newName2);
+        this.mPerAppPrefs.edit().putString(newName, valueOld).commit();
+        txtView.setText(newName);
     }
 
     private void createListener(final TextView txtView, final TextView txtViewSummary) {
@@ -665,16 +686,21 @@ public class ProfileFragment extends PreferenceFragment {
                 AlertDialog dialog = new AlertDialog.Builder(ProfileFragment.this.mContext).setTitle(R.string.pref_profile_change_name).setMessage(R.string.pref_profile_change_name_summary).setView(editText).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.14.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog2, int which) {
-                        String newName = ProfileFragment.sanitizeProfileName(editText.getText().toString());
-                        if (newName.equals("")) {
-                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_enter_name, 1).show();
+                        String newName = editText.getText().toString();
+                        if (!ProfileFragment.isValidProfileName(newName)) {
+                            Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_invalid_name, 1).show();
                             return;
                         }
-                        String allProfiles = Arrays.asList(ProfileFragment.this.mCompleteProfiles).toString();
-                        if (allProfiles.contains(newName + ".xml")) {
+                        boolean nameExists = false;
+                        for (String profile : ProfileFragment.this.mCompleteProfiles) {
+                            if (profile.equals(newName + ".xml")) {
+                                nameExists = true;
+                                break;
+                            }
+                        }
+                        if (nameExists) {
                             Toast.makeText(ProfileFragment.this.mContext, R.string.pref_profile_name_exists, 1).show();
                         } else {
-                            txtView.setText(newName);
                             ProfileFragment.this.renameProfile(oldName, newName, txtView, txtViewSummary);
                         }
                     }

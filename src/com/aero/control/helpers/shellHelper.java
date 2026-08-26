@@ -460,9 +460,14 @@ public final class shellHelper {
         } else {
             tmp = command;
         }
-        String[] commands = {"chmod 0666 " + content, "echo \"" + tmp + "\" > " + content};
+        String quotedContent = escapeShellArg(content);
+        String[] commands = {"chmod 0666 " + quotedContent, "echo " + escapeShellArg(tmp) + " > " + quotedContent};
         addCommands(commands);
         return runCommands();
+    }
+
+    private static String escapeShellArg(String value) {
+        return "'" + value.replace("'", "'\\''") + "'";
     }
 
     public final synchronized boolean setRootInfo(String[] array) {
