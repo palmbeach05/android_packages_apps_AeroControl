@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class FileManager extends RelativeLayout implements AdapterView.OnItemClickListener {
     private static final String mRoot = "/";
     private FileAdapter mAdapter;

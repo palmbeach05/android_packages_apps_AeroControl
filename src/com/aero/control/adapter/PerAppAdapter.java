@@ -14,7 +14,6 @@ import com.aero.control.R;
 import com.aero.control.helpers.PerApp.PerAppListener;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class PerAppAdapter extends ArrayAdapter<AeroData> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;

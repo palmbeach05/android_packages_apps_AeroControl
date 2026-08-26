@@ -17,7 +17,6 @@ import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CustomListPreference extends ListPreference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
     private CompoundButton mPlatformCheckBox;

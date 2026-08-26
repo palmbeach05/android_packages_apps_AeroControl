@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CardBox extends LinearLayout {
     private ImageView mImageView;
     private TextView mTextTitle;

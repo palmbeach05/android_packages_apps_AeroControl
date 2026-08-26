@@ -1,6 +1,5 @@
 package com.aero.control.helpers.PerApp.AppMonitor;
 
-/* JADX INFO: loaded from: classes.dex */
 public class Configuration {
     public static final boolean APPLOGGER_ENABLED = true;
     public static final String APPMONITOR_VERSION = "1.0.0";

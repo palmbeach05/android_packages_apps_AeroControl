@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.EditText;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CustomEditText extends EditText {
     public CustomEditText(Context context) {
         super(context);

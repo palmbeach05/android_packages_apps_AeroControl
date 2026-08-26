@@ -30,7 +30,6 @@ import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.Shell;
 import java.io.File;
 
-/* JADX INFO: loaded from: classes.dex */
 public class GPUFragment extends PlaceHolderFragment implements Preference.OnPreferenceChangeListener {
     private static final String NO_DATA_FOUND = "Unavailable";
     private PreferenceCategory PrefCat;
@@ -544,7 +543,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return AeroActivity.shell.toMHz(value.substring(0, value.length() - 3));
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
         int red;
         int green;

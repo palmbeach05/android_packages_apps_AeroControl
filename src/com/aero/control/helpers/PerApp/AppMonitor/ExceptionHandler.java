@@ -1,6 +1,5 @@
 package com.aero.control.helpers.PerApp.AppMonitor;
 
-/* JADX INFO: loaded from: classes.dex */
 public class ExceptionHandler extends RuntimeException {
     public static String EX_APP_NAME_OVERRIDE = "AppName already initialized, overriding is forbidden!";
     public static String EX_NO_IDENTIFIER_FOUND = "There was no valid identifier found for this module!";

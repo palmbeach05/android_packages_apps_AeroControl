@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-/* JADX INFO: loaded from: classes.dex */
 public class UpdaterFragment extends PlaceHolderFragment {
     private static final String AERO_PATH = "/sdcard/com.aero.control/backup";
     private static final String NO_DATA_FOUND = "Unavailable";
@@ -222,7 +221,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void startKernelBackup() {
         new KernelBackupTask().execute();
     }
@@ -296,7 +294,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void restorezImage(String s) {
         if (!isValidBackupName(s)) {
             Log.e("Aero", "Refusing to restore from suspicious backup name: " + s);
@@ -308,7 +305,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void restoreBoot(String s) {
         if (!isValidBackupName(s)) {
             Log.e("Aero", "Refusing to restore from suspicious backup name: " + s);

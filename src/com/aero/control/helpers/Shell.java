@@ -8,13 +8,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Provides an interactive shell session for executing multiple root commands efficiently.
+ * Maintains a persistent shell process to avoid the overhead of launching a new shell
+ * for each command.
+ */
 public class Shell {
     private static final String LOG_TAG = Shell.class.getName();
     private Process mProcess = null;
     private DataOutputStream mShellOutput = null;
     private List<String> mCommands = new ArrayList();
 
+    /**
+     * Creates and initializes an interactive shell session.
+     *
+     * @param commands the shell binary to execute (typically "su" for root)
+     * @param runOnOwnThread whether to initialize the shell on a background thread
+     */
     public Shell(final String commands, boolean runOnOwnThread) {
         if (!runOnOwnThread) {
             initInteractive(commands);
@@ -40,7 +50,6 @@ public class Shell {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public synchronized void initInteractive(String su) {
         checkUIThread();
         try {
@@ -51,14 +60,29 @@ public class Shell {
         }
     }
 
+    /**
+     * Queues a single command to be executed in the shell.
+     *
+     * @param cmd the command string to add
+     */
     public synchronized void addCommand(String cmd) {
         this.mCommands.add(cmd);
     }
 
+    /**
+     * Queues multiple commands to be executed in the shell.
+     *
+     * @param cmds the list of command strings to add
+     */
     public synchronized void addCommand(List<String> cmds) {
         this.mCommands.addAll(cmds);
     }
 
+    /**
+     * Queues multiple commands from an array to be executed in the shell.
+     *
+     * @param cmds the array of command strings to add
+     */
     public synchronized void addCommand(String[] cmds) {
         for (String cmd : cmds) {
             if (cmd != null) {
@@ -67,6 +91,9 @@ public class Shell {
         }
     }
 
+    /**
+     * Executes all queued commands in the interactive shell session and clears the queue.
+     */
     public void runInteractive() {
         List<String> commands = Collections.synchronizedList(this.mCommands);
         try {
@@ -84,6 +111,9 @@ public class Shell {
         this.mCommands.clear();
     }
 
+    /**
+     * Closes the interactive shell session and releases associated resources.
+     */
     public void closeInteractive() {
         try {
             this.mShellOutput.close();
@@ -92,6 +122,9 @@ public class Shell {
         this.mProcess.destroy();
     }
 
+    /**
+     * Exception thrown when shell operations fail or are attempted on the wrong thread.
+     */
     public static class ShellException extends RuntimeException {
         public static final String MAIN_UI_EXCEPTION = "You have tried to execute your commands in the main UI Thread. Consider using async-tasks or a thread instead.";
         public static final String NO_INTERACTIVE_SHELL = "The interactive shell couldn't be created";

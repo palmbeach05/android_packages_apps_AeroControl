@@ -2,7 +2,6 @@ package com.aero.control.testsuite;
 
 import java.lang.reflect.Array;
 
-/* JADX INFO: loaded from: classes.dex */
 public class Linpack {
     private double mMFlops;
     private double mRuns;

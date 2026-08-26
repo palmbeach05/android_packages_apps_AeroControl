@@ -6,7 +6,6 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppElement implements Parcelable {
     public static final Parcelable.Creator<AppElement> CREATOR = new Parcelable.Creator<AppElement>() { // from class: com.aero.control.helpers.PerApp.AppMonitor.model.AppElement.2
         /* JADX WARN: Can't rename method to resolve collision */

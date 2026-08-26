@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CirclePageIndicator extends View implements PageIndicator {
     private static final int INVALID_POINTER = -1;
     private int mActivePointerId;

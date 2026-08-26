@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/* JADX INFO: loaded from: classes.dex */
 public class StatisticsFragment extends Fragment {
     public static final String FILENAME_STATISTICS = "firstrun_statistics";
     private static final String STATE_SELECTED_CLUSTER_MEMBERS = "selected_cluster_members";
@@ -229,7 +228,6 @@ public class StatisticsFragment extends Fragment {
         builder.show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void resetStatistics() {
         if (this.mSelectedCluster == null) {
             return;

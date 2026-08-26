@@ -20,12 +20,21 @@ import com.aero.control.helpers.FilePath;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Final fragment in the first-run tutorial slider that provides links to key
+ * features and allows the user to complete the tutorial and launch the main app.
+ */
 public class TutorialFragment extends Fragment {
     private static final String ARG_PAGE = "Tutorial";
     private static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);
     private CheckBox mCheckbox;
 
+    /**
+     * Creates a new instance of this fragment with the specified page number.
+     *
+     * @param pageNumber the page number in the tutorial sequence
+     * @return a new TutorialFragment instance
+     */
     public static TutorialFragment create(int pageNumber) {
         TutorialFragment fragment = new TutorialFragment();
         Bundle args = new Bundle();

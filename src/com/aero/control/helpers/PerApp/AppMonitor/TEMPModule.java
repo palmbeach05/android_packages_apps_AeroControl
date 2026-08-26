@@ -4,7 +4,6 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class TEMPModule extends AppModule {
     private static final String CPU_TEMP_FILE = "/sys/devices/virtual/thermal/thermal_zone1/temp";
     private final String mClassName;

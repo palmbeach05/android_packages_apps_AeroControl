@@ -16,7 +16,6 @@ import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
 import java.util.ArrayList;
 
-/* JADX INFO: loaded from: classes.dex */
 public class VoltageFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private SharedPreferences mPrefs;

@@ -47,7 +47,12 @@ import com.aero.control.settings.PrefsActivity;
 import com.aero.control.testsuite.TestSuiteFragment;
 import java.util.Stack;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Main activity of the AeroControl application. Provides a navigation drawer
+ * interface for switching between CPU, GPU, memory, and other system control
+ * fragments. Manages fragment lifecycle, theme changes, and integration with
+ * the per-app monitoring service.
+ */
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
@@ -428,7 +433,6 @@ public final class AeroActivity extends Activity {
         return null;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void selectItem(int position) {
         selectItem(position, true);
     }

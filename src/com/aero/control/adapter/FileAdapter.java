@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.aero.control.R;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class FileAdapter extends ArrayAdapter<AeroData> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;

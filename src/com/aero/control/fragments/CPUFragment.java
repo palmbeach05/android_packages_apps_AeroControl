@@ -41,7 +41,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CPUFragment extends PlaceHolderFragment {
     private static final String FILENAME = "firstrun_cpu";
     private static final String NO_DATA_FOUND = "Unavailable";

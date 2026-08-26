@@ -7,13 +7,23 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import com.aero.control.R;
 
-/* Handles persisting and applying the user-selected light/dark/system app theme. */
+/**
+ * Handles persisting and applying the user-selected light/dark/system app theme.
+ * Provides methods to retrieve the current theme preference and apply it to activities.
+ */
 public class ThemeHelper {
     public static final String PREF_KEY = "app_theme";
     public static final String THEME_LIGHT = "light";
     public static final String THEME_DARK = "dark";
     public static final String THEME_SYSTEM = "system";
 
+    /**
+     * Retrieves the user's theme preference from shared preferences. Validates
+     * the stored value and falls back to light theme if invalid.
+     *
+     * @param context the context to access shared preferences
+     * @return the theme identifier (THEME_LIGHT, THEME_DARK, or THEME_SYSTEM)
+     */
     public static String getTheme(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String theme = prefs.getString(PREF_KEY, THEME_LIGHT);
@@ -27,6 +37,12 @@ public class ThemeHelper {
         return theme;
     }
 
+    /**
+     * Applies the user's selected theme to the specified activity. Should be
+     * called before setContentView in onCreate.
+     *
+     * @param activity the activity to apply the theme to
+     */
     public static void applyTheme(Activity activity) {
         String theme = getTheme(activity);
         // The System App Theme option is only exposed to users on API 21+
@@ -42,6 +58,12 @@ public class ThemeHelper {
         }
     }
 
+    /**
+     * Applies the user's selected theme to a settings activity, using the settings-specific
+     * theme variants that include Material Design card styling on API 21+.
+     *
+     * @param activity the settings activity to apply the theme to
+     */
     public static void applySettingsTheme(Activity activity) {
         if (Build.VERSION.SDK_INT < 21) {
             applyTheme(activity);

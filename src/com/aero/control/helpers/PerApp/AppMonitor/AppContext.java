@@ -5,7 +5,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import com.aero.control.helpers.Util;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class AppContext {
     private String mAppName;
     private long mTimeUsage = 0;

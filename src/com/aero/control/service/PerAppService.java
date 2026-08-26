@@ -26,7 +26,6 @@ import com.aero.control.helpers.settingsHelper;
 import java.util.List;
 import java.util.Map;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class PerAppService extends Service {
     private static JobManager mJobManager = null;
     private static final String perAppProfileHandler = "perAppProfileHandler";
@@ -106,7 +105,6 @@ public final class PerAppService extends Service {
         return null;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void runTask() {
         if (this.mPerAppPrefs == null) {
             this.mPerAppPrefs = this.mContext.getSharedPreferences(perAppProfileHandler, 0);

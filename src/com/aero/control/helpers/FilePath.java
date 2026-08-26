@@ -3,7 +3,10 @@ package com.aero.control.helpers;
 import android.graphics.Typeface;
 import android.os.Environment;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Central repository of system file paths, sysfs nodes, and configuration constants
+ * used throughout the application for accessing CPU, GPU, memory, and kernel parameters.
+ */
 public final class FilePath {
     public static final String CMDLINE_ZACHE = "/system/bootstrap/2nd-boot/cmdline";
     public static final String COLOR_CONTROL = "/sys/devices/platform/kcal_ctrl.0/kcal";

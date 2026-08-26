@@ -5,7 +5,6 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class GPUFreqModule extends AppModule {
     private final String mClassName;
     private String mGPUFile;

@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable;
 import java.util.ArrayList;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppModule {
     public static final int MODULE_CPU_FREQ_IDENTIFIER = 10;
     public static final int MODULE_CPU_NUM_IDENTIFIER = 20;

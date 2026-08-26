@@ -5,16 +5,28 @@ import android.os.Build;
 import com.aero.control.R;
 import java.util.ArrayList;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Builds and manages the list of navigation drawer items displayed in the main activity.
+ * Dynamically includes device-specific items based on the device model.
+ */
 public class NavBarItems {
     public ArrayList<PreferenceItem> ITEMS = new ArrayList<>();
     private Context mContext;
 
+    /**
+     * Creates a new navigation bar items builder.
+     *
+     * @param context the context used to access resources and device information
+     */
     public NavBarItems(Context context) {
         this.mContext = context;
         listItems();
     }
 
+    /**
+     * Populates the navigation drawer with items. Includes device-specific items for
+     * certain Motorola models.
+     */
     public void listItems() {
         addItem(new PreferenceItem(R.string.slider_overview, R.drawable.overview));
         addItem(new PreferenceItem(R.string.slider_cpu_settings, R.drawable.cpu));
@@ -32,10 +44,19 @@ public class NavBarItems {
         addItem(new PreferenceItem(R.string.aero_settings, R.drawable.ic_action_settings));
     }
 
+    /**
+     * Represents a single navigation drawer item with a label and icon.
+     */
     public static class PreferenceItem {
         public int content;
         public int drawable;
 
+        /**
+         * Creates a navigation drawer item.
+         *
+         * @param content the string resource ID for the item label
+         * @param drawable the drawable resource ID for the item icon
+         */
         public PreferenceItem(int content, int drawable) {
             this.content = content;
             this.drawable = drawable;

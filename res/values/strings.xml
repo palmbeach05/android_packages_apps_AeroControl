@@ -222,6 +222,7 @@
     <string name="pref_profile_export">Export</string>
     <string name="pref_profile_import">Import</string>
     <string name="pref_profile_import_select">Select profiles for import</string>
+    <string name="pref_profile_invalid_name">Use 1–64 letters, numbers, spaces, underscores, or hyphens.</string>
     <string name="pref_profile_name_exists">This name already exists.</string>
     <string name="pref_profile_no_changes">You haven\'t changed any settings yet!</string>
     <string name="pref_profile_no_import">I couldn\'t find anything to import.</string>

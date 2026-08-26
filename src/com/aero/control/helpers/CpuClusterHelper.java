@@ -20,6 +20,16 @@ public class CpuClusterHelper {
 
     private List<Cluster> mClusters;
 
+    /**
+     * Returns the list of CPU clusters detected on this device. The list is cached
+     * after the first call and reflects the cpufreq topology exposed by the kernel.
+     * <p>
+     * When kernel CPU topology is unavailable, enumerateCpuIds() falls back to
+     * Runtime.getRuntime().availableProcessors() and detectClusters() returns one
+     * cluster per processor, so the result may not reflect cpufreq topology.
+     *
+     * @return an immutable list of clusters, sorted by representative CPU number
+     */
     public List<Cluster> getClusters() {
         if (mClusters == null) {
             mClusters = Collections.unmodifiableList(detectClusters());
@@ -191,10 +201,21 @@ public class CpuClusterHelper {
             mMembers = Collections.unmodifiableList(new ArrayList<>(members));
         }
 
+        /**
+         * Returns the CPU IDs that belong to this cluster.
+         *
+         * @return an immutable list of CPU numbers
+         */
         public List<Integer> getMembers() {
             return mMembers;
         }
 
+        /**
+         * Returns the first (lowest-numbered) CPU in this cluster, used as the
+         * representative for reading or writing cluster-wide cpufreq parameters.
+         *
+         * @return the CPU ID of the representative CPU
+         */
         public int getRepresentativeCpu() {
             return mMembers.get(0);
         }

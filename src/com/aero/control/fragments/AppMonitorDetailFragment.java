@@ -42,7 +42,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppMonitorDetailFragment extends Fragment {
     private static final int MIN_VISIBLE_TABS = 3;
     private final String mClassName = getClass().getName();
@@ -208,7 +207,6 @@ public class AppMonitorDetailFragment extends Fragment {
         return getResources().getColor(fallbackColorResId);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void clearUI() {
         this.mMaxValue = 0;
         this.mRoot.invalidate();
@@ -227,7 +225,6 @@ public class AppMonitorDetailFragment extends Fragment {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void loadUI() {
         int i = 0;
         if (AeroActivity.mJobManager == null) {
@@ -338,7 +335,6 @@ public class AppMonitorDetailFragment extends Fragment {
         return (int) Math.max(Math.ceil(range / 5), 1.0d);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showLineTooltip(int entryIndex, Rect rect) {
         this.mLineTooltip = (TextView) getActivity().getLayoutInflater().inflate(R.layout.circular_tooltip, (ViewGroup) null);
         this.mLineTooltip.setText(((int) mLineChart.getData().get(0).getEntry(entryIndex).getValue()) + "");
@@ -357,7 +353,6 @@ public class AppMonitorDetailFragment extends Fragment {
         mLineChart.showTooltip(this.mLineTooltip);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void dismissLineTooltip(final int entryIndex, final Rect rect) {
         if (Build.VERSION.SDK_INT >= 16) {
             this.mLineTooltip.animate().setDuration(100L).scaleX(0.0f).scaleY(0.0f).alpha(0.0f).setInterpolator(this.exitInterpolator).withEndAction(new Runnable() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.5

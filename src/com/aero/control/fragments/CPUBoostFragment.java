@@ -9,7 +9,6 @@ import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CPUBoostFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;

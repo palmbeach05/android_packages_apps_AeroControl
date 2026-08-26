@@ -33,6 +33,12 @@ class SettingsCardAdapter extends BaseAdapter {
     private final Context mContext;
     private final List<PreferenceCategory> mCategories = new ArrayList<>();
 
+    /**
+     * Creates an adapter that renders preference categories as Material Design cards.
+     *
+     * @param context the context for inflating views
+     * @param preferenceScreen the preference screen containing categories to display
+     */
     SettingsCardAdapter(Context context, PreferenceScreen preferenceScreen) {
         mContext = context;
         for (int i = 0; i < preferenceScreen.getPreferenceCount(); i++) {
@@ -99,6 +105,14 @@ class SettingsCardAdapter extends BaseAdapter {
         return card;
     }
 
+    /**
+     * Creates a custom view for a list preference that displays its icon, title,
+     * and current summary value.
+     *
+     * @param preference the list preference to display
+     * @param parent the parent view group for layout inflation
+     * @return the inflated and configured preference view
+     */
     private View getListPreferenceView(final ListPreference preference, ViewGroup parent) {
         View row = LayoutInflater.from(mContext).inflate(
                 R.layout.settings_list_preference, parent, false);
@@ -127,6 +141,14 @@ class SettingsCardAdapter extends BaseAdapter {
         return row;
     }
 
+    /**
+     * Creates a custom view for a two-state preference that displays its icon,
+     * title, and an interactive switch widget.
+     *
+     * @param preference the two-state preference to display
+     * @param parent the parent view group for layout inflation
+     * @return the inflated and configured preference view
+     */
     private View getSwitchPreferenceView(final TwoStatePreference preference, ViewGroup parent) {
         final View row = LayoutInflater.from(mContext).inflate(
                 R.layout.settings_switch_preference, parent, false);
@@ -153,11 +175,25 @@ class SettingsCardAdapter extends BaseAdapter {
         return row;
     }
 
+    /**
+     * Updates the switch widget's checked state and metadata (enabled state, summary)
+     * to match the preference's current state.
+     *
+     * @param preference the two-state preference to bind
+     * @param row the view containing the switch widget
+     */
     private void bindSwitchState(TwoStatePreference preference, View row) {
         ((Switch) row.findViewById(R.id.settings_switch)).setChecked(preference.isChecked());
         bindSwitchMetadata(preference, row);
     }
 
+    /**
+     * Updates the switch widget's enabled state and summary text to reflect
+     * the preference's current metadata.
+     *
+     * @param preference the two-state preference containing the metadata
+     * @param row the view containing the switch widget and summary text
+     */
     private void bindSwitchMetadata(TwoStatePreference preference, View row) {
         boolean enabled = preference.isEnabled();
         row.setEnabled(enabled);

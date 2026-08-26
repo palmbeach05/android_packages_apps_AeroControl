@@ -2,7 +2,6 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 
 import java.util.ArrayList;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class AppData {
     private final String mClassName = getClass().getName();
     private AppMetaData mMetaData = new AppMetaData();

@@ -20,7 +20,6 @@ import com.aero.control.helpers.ThemeHelper;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/* JADX INFO: loaded from: classes.dex */
 public class TestSuiteFragment extends PreferenceFragment {
     private static final int WARMUP_RUNS = 5;
     private static final long BENCHMARK_DURATION_MS = 5000L;
@@ -139,7 +138,6 @@ public class TestSuiteFragment extends PreferenceFragment {
             this.progressDialog.show();
         }
 
-        /* JADX INFO: Access modifiers changed from: protected */
         @Override // android.os.AsyncTask
         public Double doInBackground(Void... params) {
             final double[] results = new double[this.workerCount];
@@ -187,7 +185,6 @@ public class TestSuiteFragment extends PreferenceFragment {
             return Double.valueOf(mflops);
         }
 
-        /* JADX INFO: Access modifiers changed from: protected */
         @Override // android.os.AsyncTask
         public void onPostExecute(Double result) {
             super.onPostExecute(result);

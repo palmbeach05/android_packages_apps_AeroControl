@@ -16,11 +16,20 @@ import android.widget.TextView;
 import com.aero.control.R;
 import com.aero.control.SplashScreen;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Fragment displaying information about the per-app monitoring feature in the
+ * first-run tutorial slider. Allows users to enable the monitoring service.
+ */
 public class PerAppFragment extends Fragment {
     public static final String ARG_PAGE = "PerApp";
     public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);
 
+    /**
+     * Creates a new instance of this fragment with the specified page number.
+     *
+     * @param pageNumber the page number in the tutorial sequence
+     * @return a new PerAppFragment instance
+     */
     public static PerAppFragment create(int pageNumber) {
         PerAppFragment fragment = new PerAppFragment();
         Bundle args = new Bundle();

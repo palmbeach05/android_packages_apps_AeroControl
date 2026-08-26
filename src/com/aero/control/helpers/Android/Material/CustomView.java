@@ -10,7 +10,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-/* JADX INFO: loaded from: classes.dex */
 public abstract class CustomView extends RelativeLayout {
     protected static final String ANDROIDXML = "http://schemas.android.com/apk/res/android";
     protected static final String MATERIALDESIGNXML = "http://schemas.android.com/apk/res-auto";

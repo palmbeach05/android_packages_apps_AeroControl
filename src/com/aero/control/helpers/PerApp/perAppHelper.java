@@ -8,7 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Helper class for managing the list of applications available for per-app monitoring.
+ * Handles filtering system/user apps, maintaining selection state, and retrieving
+ * package information for display in the per-app configuration UI.
+ */
 public class perAppHelper {
     private Context mContext;
     private String[] mCurrentSelectedPackages;
@@ -18,36 +22,76 @@ public class perAppHelper {
     private List<AeroData> mPerAppData = new ArrayList();
     private boolean mShowSystemApps;
 
+    /**
+     * Creates a new per-app helper.
+     *
+     * @param context the context used to access the package manager
+     */
     public perAppHelper(Context context) {
         this.mContext = context;
     }
 
+    /**
+     * Sets the list of installed applications and rebuilds the display list.
+     *
+     * @param packages the list of application info objects from the package manager
+     */
     public final void setPackages(List<ApplicationInfo> packages) {
         this.mPackages = packages;
         getAllApps(getSystemAppStatus());
     }
 
+    /**
+     * Returns the list of application data ready for display in the UI.
+     *
+     * @return list of AeroData objects containing app names and package names
+     */
     public final List<AeroData> getFullPackages() {
         return this.mPerAppData;
     }
 
+    /**
+     * Returns the raw list of ApplicationInfo objects.
+     *
+     * @return the list of installed applications
+     */
     public final List<ApplicationInfo> getPackages() {
         return this.mPackages;
     }
 
+    /**
+     * Returns whether system applications are currently being shown.
+     *
+     * @return true if system apps are included in the list, false otherwise
+     */
     public final boolean getSystemAppStatus() {
         return this.mShowSystemApps;
     }
 
+    /**
+     * Sets whether to include system applications in the list and resets the selection state.
+     *
+     * @param showSystemApps true to include system apps, false to show only user apps
+     */
     public final void setSystemAppStatus(boolean showSystemApps) {
         this.mShowSystemApps = showSystemApps;
         this.mIsChecked = null;
     }
 
+    /**
+     * Returns the checked state array for all applications in the list.
+     *
+     * @return boolean array indicating which apps are selected for monitoring
+     */
     public final boolean[] getCheckedState() {
         return this.mIsChecked;
     }
 
+    /**
+     * Returns an array of package names for all applications currently selected for monitoring.
+     *
+     * @return array of package name strings for checked apps
+     */
     public final String[] getCurrentSelectedPackages() {
         if (this.mIsChecked == null) {
             return this.mCurrentSelectedPackages;
@@ -65,6 +109,12 @@ public class perAppHelper {
         return this.mCurrentSelectedPackages;
     }
 
+    /**
+     * Updates the checked state for an application at the specified position.
+     *
+     * @param checkedState the new checked state
+     * @param position the position in the application list
+     */
     public final void setChecked(boolean checkedState, int position) {
         if (this.mIsChecked == null) {
             this.mIsChecked = new boolean[this.mPackageNames.length];
@@ -72,6 +122,12 @@ public class perAppHelper {
         this.mIsChecked[position] = checkedState;
     }
 
+    /**
+     * Matches a list of previously selected package names against the current list
+     * and marks them as checked.
+     *
+     * @param selectedApps array of package names to mark as selected
+     */
     public final void findMatch(String[] selectedApps) {
         int i = 0;
         String[] arr$ = this.mPackageNames;

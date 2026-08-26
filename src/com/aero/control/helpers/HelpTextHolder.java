@@ -4,7 +4,10 @@ import android.content.Context;
 import com.aero.control.R;
 import java.util.HashMap;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Singleton repository of help text strings for system tuning preferences. Maps
+ * preference keys to their corresponding help documentation from string resources.
+ */
 public class HelpTextHolder {
     private static final String CLUSTER_KEY_PREFIX = "cpu_cluster_";
     private static final String CLUSTER_MAX_FREQUENCY_SUFFIX = "_max_frequency";
@@ -19,6 +22,12 @@ public class HelpTextHolder {
         loadData();
     }
 
+    /**
+     * Returns the singleton instance of the help text holder.
+     *
+     * @param context the context to load string resources
+     * @return the shared HelpTextHolder instance
+     */
     public static synchronized HelpTextHolder instance(Context context) {
         if (mHelpTextHolder == null) {
             mHelpTextHolder = new HelpTextHolder(context);
@@ -116,6 +125,13 @@ public class HelpTextHolder {
         putInMap("button_brightness", R.string.help_text_button_brightness);
     }
 
+    /**
+     * Retrieves the help text for a given preference key. Supports both static keys
+     * and dynamic cluster-specific keys.
+     *
+     * @param key the preference key to look up
+     * @return the help text string, or a "no data found" message if the key doesn't exist
+     */
     public String getText(String key) {
         if (this.mDataVault.containsKey(key)) {
             return this.mDataVault.get(key);

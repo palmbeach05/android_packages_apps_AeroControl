@@ -37,7 +37,16 @@ import java.util.ArrayList;
  */
 public class NavigationDrawerHelper {
 
+    /**
+     * Callback interface for handling drawer item selection events.
+     */
     public interface OnDrawerItemSelectedListener {
+        /**
+         * Called when a drawer item is selected by the user.
+         *
+         * @param item the selected preference item
+         * @param position the position of the item in the drawer list
+         */
         void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position);
     }
 
@@ -45,6 +54,14 @@ public class NavigationDrawerHelper {
     private final ActionBarDrawerToggle mDrawerToggle;
     private final ItemAdapter mAdapter;
 
+    /**
+     * Creates and configures the navigation drawer for the specified activity.
+     * Sets up the drawer layout, list adapter, action bar integration, and
+     * drawer toggle animation.
+     *
+     * @param activity the activity that hosts this navigation drawer
+     * @param listener callback for handling drawer item selections
+     */
     public NavigationDrawerHelper(final Activity activity, final OnDrawerItemSelectedListener listener) {
         this.mDrawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
         ListView drawerList = (ListView) activity.findViewById(R.id.left_drawer);
@@ -126,26 +143,57 @@ public class NavigationDrawerHelper {
         }
     }
 
+    /**
+     * Synchronizes the state of the drawer toggle indicator with the drawer state.
+     * Should be called from the activity's onPostCreate method.
+     */
     public void syncState() {
         this.mDrawerToggle.syncState();
     }
 
+    /**
+     * Forwards configuration changes to the drawer toggle so it can adjust its
+     * animation behavior. Should be called from the activity's onConfigurationChanged method.
+     *
+     * @param newConfig the new device configuration
+     */
     public void onConfigurationChanged(Configuration newConfig) {
         this.mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    /**
+     * Forwards menu item selections to the drawer toggle to handle the home/up button.
+     * Should be called from the activity's onOptionsItemSelected method.
+     *
+     * @param item the selected menu item
+     * @return true if the drawer toggle handled the event, false otherwise
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         return this.mDrawerToggle.onOptionsItemSelected(item);
     }
 
+    /**
+     * Closes all open drawer views.
+     */
     public void closeDrawers() {
         this.mDrawerLayout.closeDrawers();
     }
 
+    /**
+     * Returns the drawer item at the specified position.
+     *
+     * @param position the position of the item in the drawer list
+     * @return the preference item at that position
+     */
     public NavBarItems.PreferenceItem getItem(int position) {
         return this.mAdapter.getItem(position);
     }
 
+    /**
+     * Returns the total number of items in the drawer.
+     *
+     * @return the number of drawer items
+     */
     public int getItemCount() {
         return this.mAdapter.getCount();
     }

@@ -19,7 +19,6 @@ import android.view.animation.ScaleAnimation;
 import android.widget.RelativeLayout;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public class RippleView extends RelativeLayout {
     private int DURATION;
     private int FRAME_RATE;

@@ -13,7 +13,6 @@ import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
 import java.util.regex.Pattern;
 
-/* JADX INFO: loaded from: classes.dex */
 public class DefyPartsFragment extends PlaceHolderFragment {
     // Only allow the characters property values for these settings can legitimately
     // contain. This prevents shell metacharacters (;, |, &, $, `, etc.) supplied via
@@ -156,7 +155,6 @@ public class DefyPartsFragment extends PlaceHolderFragment {
      *         was rejected (in which case the calling listener should also return false so
      *         the invalid value is not persisted).
      */
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean changePreference(Preference preference, Object o, String file) {
         String value = o == null ? null : o.toString();
         if (value == null || !SAFE_PROP_VALUE.matcher(value).matches()) {

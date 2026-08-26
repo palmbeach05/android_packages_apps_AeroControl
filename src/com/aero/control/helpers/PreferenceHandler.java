@@ -12,7 +12,11 @@ import android.view.ViewConfiguration;
 import com.aero.control.AeroActivity;
 import com.aero.control.helpers.Android.CustomTextPreference;
 
-/* JADX INFO: loaded from: classes.dex */
+/**
+ * Dynamically generates and manages preference UI elements from kernel sysfs files and
+ * configuration paths. Handles creating preferences from file contents and managing
+ * invisible spacing preferences for devices with soft navigation bars.
+ */
 public class PreferenceHandler {
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final String PREF_BLANKED = "BLANKED";
@@ -22,12 +26,22 @@ public class PreferenceHandler {
     public PreferenceManager mPrefMan;
     private SharedPreferences mPreferences;
 
+    /**
+     * Creates a new preference handler for dynamically generating preferences.
+     *
+     * @param context the context
+     * @param PrefCat the preference category to add preferences to
+     * @param PrefMan the preference manager
+     */
     public PreferenceHandler(Context context, PreferenceCategory PrefCat, PreferenceManager PrefMan) {
         this.mContext = context;
         this.mPrefCat = PrefCat;
         this.mPrefMan = PrefMan;
     }
 
+    /**
+     * Removes the invisible spacing preference if it was previously added.
+     */
     public final void removeInvisiblePreference() {
         if (this.mInvisibleAdded) {
             for (int i = 0; i < this.mPrefCat.getPreferenceCount(); i++) {
@@ -39,6 +53,10 @@ public class PreferenceHandler {
         }
     }
 
+    /**
+     * Adds an invisible spacing preference for devices with soft navigation bars
+     * (API 19+) to provide bottom padding in the preference list.
+     */
     public final void addInvisiblePreference() {
         if (this.mPrefCat != null && this.mContext != null && !this.mInvisibleAdded && Build.VERSION.SDK_INT >= 19 && !ViewConfiguration.get(this.mContext).hasPermanentMenuKey()) {
             Preference blankedPref = new Preference(this.mContext);
@@ -49,6 +67,12 @@ public class PreferenceHandler {
         }
     }
 
+    /**
+     * Generates preferences from an array of file names within a base directory path.
+     *
+     * @param array the array of file names to create preferences for
+     * @param path the base directory path containing the files
+     */
     public final void genPrefFromDictionary(String[] array, String path) {
         int counter = array.length;
         int i = 0;
@@ -61,6 +85,13 @@ public class PreferenceHandler {
         }
     }
 
+    /**
+     * Generates preferences from parallel arrays of file names and their corresponding paths.
+     *
+     * @param nameArray the array of file names
+     * @param paraArray the array of directory paths corresponding to each file
+     * @param showEmpty whether to add an invisible preference for spacing after generation
+     */
     public final void genPrefFromFiles(String[] nameArray, String[] paraArray, Boolean showEmpty) {
         int counter = nameArray.length;
         int i = 0;
@@ -77,6 +108,12 @@ public class PreferenceHandler {
         }
     }
 
+    /**
+     * Generates a single preference from a complete file path by extracting the
+     * file name and creating a preference for it.
+     *
+     * @param path the full path to the file
+     */
     public final void genPrefFromSingleFile(String path) {
         removeInvisiblePreference();
         String[] array = path.split("/");

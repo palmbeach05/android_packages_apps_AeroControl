@@ -17,7 +17,6 @@ import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CustomTextPreference extends EditTextPreference implements CheckBox.OnCheckListener {
     private Boolean mChecked;
     private Context mContext;

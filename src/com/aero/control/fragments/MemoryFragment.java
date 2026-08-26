@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-/* JADX INFO: loaded from: classes.dex */
 public class MemoryFragment extends PlaceHolderFragment implements Preference.OnPreferenceChangeListener {
     private static final String IO_SETTINGS_CATEGORY = "io_scheduler_parameter";
     private static final String MEMORY_SETTINGS_CATEGORY = "memory_settings";
@@ -409,7 +408,6 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         builder.setItems(fsystem, new AnonymousClass5(fsystem, update)).show();
     }
 
-    /* JADX INFO: renamed from: com.aero.control.fragments.MemoryFragment$5, reason: invalid class name */
     class AnonymousClass5 implements DialogInterface.OnClickListener {
         final /* synthetic */ CharSequence[] val$fsystem;
         final /* synthetic */ ProgressDialog val$update;

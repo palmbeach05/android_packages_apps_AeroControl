@@ -20,7 +20,6 @@ import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 import java.util.Map;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CustomPreference extends Preference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
     private CompoundButton mPlatformCheckBox;
