@@ -8,6 +8,11 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import com.aero.control.R;
 
+/**
+ * Custom SwitchPreference that binds to a custom switch widget in the preference layout
+ * instead of using the default SwitchPreference behavior. Ensures the switch state
+ * stays synchronized with the preference value.
+ */
 public class TestSuiteSwitchPreference extends SwitchPreference {
     private final CompoundButton.OnCheckedChangeListener mSwitchListener = new CompoundButton.OnCheckedChangeListener() {
         @Override // android.widget.CompoundButton.OnCheckedChangeListener
@@ -22,14 +27,32 @@ public class TestSuiteSwitchPreference extends SwitchPreference {
         }
     };
 
+    /**
+     * Creates a switch preference with the specified style.
+     *
+     * @param context the context
+     * @param attrs the attribute set from XML
+     * @param defStyle the default style resource
+     */
     public TestSuiteSwitchPreference(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
+    /**
+     * Creates a switch preference.
+     *
+     * @param context the context
+     * @param attrs the attribute set from XML
+     */
     public TestSuiteSwitchPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
+    /**
+     * Creates a switch preference.
+     *
+     * @param context the context
+     */
     public TestSuiteSwitchPreference(Context context) {
         super(context);
     }

@@ -25,6 +25,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Overview fragment displaying real-time system information including CPU frequencies
+ * (per-core grid or list), kernel version, CPU governor, memory usage, and other
+ * system metrics. Refreshes every 3 seconds and provides a first-run tutorial.
+ */
 public class AeroFragment extends Fragment {
     private static final String FILENAME = "firstrun";
     private static final int MAX_GRID_CORES = 8;

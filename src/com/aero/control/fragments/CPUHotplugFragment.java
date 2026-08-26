@@ -9,6 +9,10 @@ import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 
+/**
+ * Fragment for configuring CPU hotplug settings. Allows tuning of CPU hotplug
+ * driver parameters that control when cores are brought online or offline.
+ */
 public class CPUHotplugFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private String mHotplugPath;

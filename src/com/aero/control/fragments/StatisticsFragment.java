@@ -39,6 +39,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Fragment displaying CPU time-in-state statistics. Shows how long the CPU has
+ * spent at each frequency level with color-coded bars and percentages. Supports
+ * filtering to display only active frequencies.
+ */
 public class StatisticsFragment extends Fragment {
     public static final String FILENAME_STATISTICS = "firstrun_statistics";
     private static final String STATE_SELECTED_CLUSTER_MEMBERS = "selected_cluster_members";

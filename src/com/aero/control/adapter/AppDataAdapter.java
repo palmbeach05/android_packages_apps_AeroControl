@@ -14,18 +14,32 @@ import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.aero.control.helpers.Util;
 import java.util.List;
 
+/**
+ * Adapter for displaying monitored app data in the AppMonitor fragment. Each row
+ * shows an app icon, name, and timestamp of when it was last monitored or logged.
+ */
 public class AppDataAdapter extends ArrayAdapter<AppElement> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;
     private List<AppElement> data;
     private int layoutResourceId;
 
+    /**
+     * View holder for recycling list item views.
+     */
     public static class Holder {
         ImageView image;
         TextView text;
         TextView textTime;
     }
 
+    /**
+     * Creates an app data adapter.
+     *
+     * @param context the context
+     * @param layoutResourceId the row layout resource
+     * @param data the list of AppElement objects to display
+     */
     public AppDataAdapter(Context context, int layoutResourceId, List<AppElement> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;

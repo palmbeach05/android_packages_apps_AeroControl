@@ -14,6 +14,10 @@ import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.shellHelper;
 import java.util.regex.Pattern;
 
+/**
+ * Fragment for Motorola Defy-specific settings including display color control,
+ * RGB calibration, sweep2wake, and doubletap2wake touch gesture features.
+ */
 public class DefyPartsFragment extends PlaceHolderFragment {
     // Only allow the characters property values for these settings can legitimately
     // contain. This prevents shell metacharacters (;, |, &, $, `, etc.) supplied via

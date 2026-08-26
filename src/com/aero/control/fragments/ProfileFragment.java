@@ -47,6 +47,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Fragment for managing saved system tuning profiles. Allows creating, loading,
+ * and deleting profiles that store CPU, GPU, memory, and other system settings.
+ */
 public class ProfileFragment extends PreferenceFragment {
     public static final String FILENAME_PERAPP = "firstrun_perapp";
     public static final String FILENAME_PROFILES = "firstrun_profiles";

@@ -41,6 +41,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Fragment for configuring CPU settings including min/max frequency, governor,
+ * and governor-specific parameters. Supports multi-cluster CPUs with separate
+ * controls for big and little cores. Provides save/apply functionality for
+ * boot and profile persistence.
+ */
 public class CPUFragment extends PlaceHolderFragment {
     private static final String FILENAME = "firstrun_cpu";
     private static final String NO_DATA_FOUND = "Unavailable";

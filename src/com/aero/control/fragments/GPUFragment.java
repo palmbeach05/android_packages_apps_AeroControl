@@ -30,6 +30,10 @@ import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.Shell;
 import java.io.File;
 
+/**
+ * Fragment for configuring GPU settings including maximum frequency and governor.
+ * Provides save/apply functionality for boot and profile persistence.
+ */
 public class GPUFragment extends PlaceHolderFragment implements Preference.OnPreferenceChangeListener {
     private static final String NO_DATA_FOUND = "Unavailable";
     private PreferenceCategory PrefCat;

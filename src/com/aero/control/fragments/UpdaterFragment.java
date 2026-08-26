@@ -25,6 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * Fragment for backing up and restoring the boot partition on supported devices.
+ * Checks device against a whitelist before allowing backup/restore operations.
+ */
 public class UpdaterFragment extends PlaceHolderFragment {
     private static final String AERO_PATH = "/sdcard/com.aero.control/backup";
     private static final String NO_DATA_FOUND = "Unavailable";

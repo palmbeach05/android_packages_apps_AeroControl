@@ -29,6 +29,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Fragment displaying the list of monitored applications and their usage statistics.
+ * Shows apps sorted by usage time with timestamps. Clicking an app navigates to
+ * detailed monitoring charts.
+ */
 public class AppMonitorFragment extends Fragment {
     private static final String FILENAME = "firstrun_appmonitor";
     private AppMonitorDetailFragment mAppMonitorDetailFragment;

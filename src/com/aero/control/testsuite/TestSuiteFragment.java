@@ -20,6 +20,11 @@ import com.aero.control.helpers.ThemeHelper;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Fragment for running CPU benchmarks using the LINPACK test. Provides options
+ * to run the benchmark on a single core or all cores and displays the results
+ * in MFLOPS.
+ */
 public class TestSuiteFragment extends PreferenceFragment {
     private static final int WARMUP_RUNS = 5;
     private static final long BENCHMARK_DURATION_MS = 5000L;

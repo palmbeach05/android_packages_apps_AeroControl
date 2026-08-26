@@ -5,6 +5,11 @@ import android.graphics.drawable.Drawable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Base class for per-app monitoring modules. Each module collects a specific type
+ * of system metric (CPU frequency, GPU frequency, RAM usage, temperature, etc.) and
+ * maintains a list of timestamped values for charting and analysis.
+ */
 public class AppModule {
     public static final int MODULE_CPU_FREQ_IDENTIFIER = 10;
     public static final int MODULE_CPU_NUM_IDENTIFIER = 20;
@@ -20,6 +25,11 @@ public class AppModule {
     private String mName = this.mClassName;
     private List<Integer> mValues = new ArrayList();
 
+    /**
+     * Creates an app module with the specified context.
+     *
+     * @param context the application context
+     */
     public AppModule(Context context) {
         this.mContext = context;
         AppLogger.print(this.mClassName, "App Module initialized", 0);

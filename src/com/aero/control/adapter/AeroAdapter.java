@@ -12,6 +12,11 @@ import android.widget.TextView;
 import com.aero.control.R;
 import java.util.List;
 
+/**
+ * Adapter for displaying system information in the Overview and other fragments.
+ * Supports both standard text rows (header, content, optional right-aligned text)
+ * and multi-core CPU frequency grid rows when AeroData contains a coreFrequencies list.
+ */
 public class AeroAdapter extends ArrayAdapter<AeroData> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private static final int MAX_GRID_CORES = 8;
@@ -19,6 +24,9 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
     private List<AeroData> data;
     private int layoutResourceId;
 
+    /**
+     * View holder for recycling list item views.
+     */
     public static class Holder {
         TextView content;
         TextView header;
@@ -27,6 +35,13 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView[] freqCells;
     }
 
+    /**
+     * Creates an AeroAdapter.
+     *
+     * @param context the context
+     * @param layoutResourceId the row layout resource
+     * @param data the list of AeroData items to display
+     */
     public AeroAdapter(Context context, int layoutResourceId, List<AeroData> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;

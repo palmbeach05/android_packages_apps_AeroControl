@@ -19,6 +19,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Custom file browser view for selecting files and navigating directories. Displays
+ * a list of files and folders, supports navigation to parent directories, and notifies
+ * a listener when a file is selected or cannot be read.
+ */
 public class FileManager extends RelativeLayout implements AdapterView.OnItemClickListener {
     private static final String mRoot = "/";
     private FileAdapter mAdapter;

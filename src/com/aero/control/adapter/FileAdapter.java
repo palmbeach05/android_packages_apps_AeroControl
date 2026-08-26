@@ -12,17 +12,31 @@ import android.widget.TextView;
 import com.aero.control.R;
 import java.util.List;
 
+/**
+ * Adapter for displaying files and directories in a list. Each row shows an icon
+ * (folder or file) and the filename/content text.
+ */
 public class FileAdapter extends ArrayAdapter<AeroData> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;
     private List<AeroData> data;
     private int layoutResourceId;
 
+    /**
+     * View holder for recycling list item views.
+     */
     public static class Holder {
         TextView content;
         ImageView header;
     }
 
+    /**
+     * Creates a file adapter.
+     *
+     * @param context the context
+     * @param layoutResourceId the row layout resource
+     * @param data the list of AeroData containing file/directory info
+     */
     public FileAdapter(Context context, int layoutResourceId, List<AeroData> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
