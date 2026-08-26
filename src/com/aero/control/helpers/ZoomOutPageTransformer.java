@@ -3,10 +3,21 @@ package com.aero.control.helpers;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 
+/**
+ * ViewPager page transformer that applies a zoom-out animation effect as pages are
+ * scrolled. Pages scale down and fade as they move away from the center.
+ */
 public class ZoomOutPageTransformer implements ViewPager.PageTransformer {
     private static final float MIN_ALPHA = 0.5f;
     private static final float MIN_SCALE = 0.85f;
 
+    /**
+     * Applies the zoom-out transformation to the specified page based on its position
+     * relative to the center of the screen.
+     *
+     * @param view the page view to transform
+     * @param position the position of the page relative to the center (-1 to 1)
+     */
     @Override // android.support.v4.view.ViewPager.PageTransformer
     public void transformPage(View view, float position) {
         int pageWidth = view.getWidth();

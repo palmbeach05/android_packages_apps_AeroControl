@@ -10,11 +10,24 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+/**
+ * Helper class for backing up and restoring boot partition images. Provides device
+ * whitelist checking and file copy operations for boot image backup/restore functionality.
+ */
 public class updateHelper {
     public static final String timeStamp = new SimpleDateFormat("ddMMyyyy").format(Calendar.getInstance().getTime());
     private static final String LOG_TAG = updateHelper.class.getName();
     private static final String[][] WHITE_LIST_DEVICES = {new String[]{"Nexus 4", FilePath.BACKUPPATH[0]}, new String[]{"Nexus 5", FilePath.BACKUPPATH[0]}, new String[]{"ASUS_T00N", FilePath.BACKUPPATH[0]}, new String[]{"XT1032", FilePath.BACKUPPATH[0]}, new String[]{"XT1033", FilePath.BACKUPPATH[0]}, new String[]{"Nexus 7", FilePath.BACKUPPATH[1]}, new String[]{"MB860", "/dev/block/platform/sdhci-tegra.3/by-num/p11"}};
 
+    /**
+     * Copies a file from source to destination. If rest is true, performs a simple copy;
+     * otherwise, copies to a timestamped backup directory on external storage.
+     *
+     * @param original the source file
+     * @param copy the destination file
+     * @param rest whether to perform a simple restore copy (true) or create a timestamped backup (false)
+     * @throws IOException if an I/O error occurs during the copy operation
+     */
     public final void copyFile(File original, File copy, boolean rest) throws IOException {
         FileChannel input = null;
         FileChannel output = null;
@@ -52,6 +65,13 @@ public class updateHelper {
         }
     }
 
+    /**
+     * Checks if a device model is on the whitelist for boot partition backup/restore
+     * operations and returns the corresponding boot partition path.
+     *
+     * @param model the device model name to check
+     * @return the boot partition block device path if whitelisted, null otherwise
+     */
     public String isWhiteListed(String model) {
         String[][] arr$ = WHITE_LIST_DEVICES;
         for (String[] s : arr$) {

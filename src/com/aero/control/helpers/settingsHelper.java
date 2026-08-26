@@ -12,6 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Applies system tuning settings from preferences to kernel sysfs interfaces. Handles
+ * CPU frequency, governors, GPU settings, memory parameters, and other kernel tunables
+ * both on boot and when manually triggered.
+ */
 public class settingsHelper {
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";
     private static final String PREF_CPU_BIG_MAX_FREQ = "big_max_frequency";
@@ -49,6 +54,14 @@ public class settingsHelper {
     private static final ArrayList<String> defaultProfile = new ArrayList<>();
     private static final GenericHelper genHelper = new GenericHelper();
 
+    /**
+     * Applies system settings from the specified profile in a background thread. Optionally
+     * shows a toast notification when complete if running at boot time.
+     *
+     * @param context the context
+     * @param Profile the profile name to load settings from, or null for default preferences
+     * @param onboot whether this is being called during system boot
+     */
     public void setSettings(final Context context, final String Profile, final boolean onboot) {
         new Thread(new Runnable() { // from class: com.aero.control.helpers.settingsHelper.1
             @Override // java.lang.Runnable
