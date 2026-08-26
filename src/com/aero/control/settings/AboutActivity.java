@@ -24,6 +24,11 @@ import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.navItems.NavigationDrawerHelper;
 import com.ikimuhendis.ldrawer.DrawerArrowDrawable;
 
+/**
+ * Activity displaying application information, version, contributors, and links
+ * to external resources such as GitHub and XDA. Includes buttons for opening
+ * the changelog and viewing licenses.
+ */
 public class AboutActivity extends Activity {
 
     @Override

@@ -42,6 +42,11 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment displaying detailed monitoring charts for a specific application.
+ * Shows line charts for CPU frequency, GPU frequency, temperature, RAM usage,
+ * and other metrics collected while the app was in the foreground.
+ */
 public class AppMonitorDetailFragment extends Fragment {
     private static final int MIN_VISIBLE_TABS = 3;
     private final String mClassName = getClass().getName();

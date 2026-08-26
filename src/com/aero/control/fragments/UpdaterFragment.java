@@ -18,12 +18,17 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.shellHelper;
 import com.aero.control.helpers.updateHelper;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * Fragment for backing up and restoring the boot partition on supported devices.
+ * Checks device against a whitelist before allowing backup/restore operations.
+ */
 public class UpdaterFragment extends PlaceHolderFragment {
     private static final String AERO_PATH = "/sdcard/com.aero.control/backup";
     private static final String NO_DATA_FOUND = "Unavailable";
@@ -257,7 +262,9 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 outputName = "zImage";
             }
             File outputFile = new File(backupDir, outputName);
-            String command = "dd if=" + source + " of=" + outputFile.getPath() + " && { chmod 777 " + outputFile.getPath() + "; echo " + SUCCESS_MARKER + "; } || echo " + FAILURE_MARKER;
+            String quotedSource = shellHelper.escapeShellArg(source);
+            String quotedOutput = shellHelper.escapeShellArg(outputFile.getPath());
+            String command = "dd if=" + quotedSource + " of=" + quotedOutput + " && { chmod 777 " + quotedOutput + "; echo " + SUCCESS_MARKER + "; } || echo " + FAILURE_MARKER;
             String output = AeroActivity.shell.runCommandAndWaitForOutput(command);
             if (output == null) {
                 Log.e("Aero", "Kernel backup shell command was interrupted or failed to complete.");
@@ -300,7 +307,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        String[] commands = {"rm -f /system/bootstrap/2nd-boot/zImage", "cp /sdcard/com.aero.control/backup/" + s + "/zImage " + FilePath.zImage};
+        String source = new File(AERO_PATH + "/" + s, "zImage").getPath();
+        String[] commands = {"rm -f /system/bootstrap/2nd-boot/zImage", "cp " + shellHelper.escapeShellArg(source) + " " + shellHelper.escapeShellArg(FilePath.zImage)};
         AeroActivity.shell.setRootInfo(commands);
         Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
     }
@@ -312,7 +320,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
         String filepath = new File("/sdcard/com.aero.control/backup/" + s + "/boot.img").getPath();
-        String[] commands = {"chmod 0777 " + filepath, "dd if=" + filepath + " of=" + this.mBackup};
+        String quotedFilepath = shellHelper.escapeShellArg(filepath);
+        String[] commands = {"chmod 0777 " + quotedFilepath, "dd if=" + quotedFilepath + " of=" + shellHelper.escapeShellArg(this.mBackup)};
         AeroActivity.shell.setRootInfo(commands);
         Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
     }

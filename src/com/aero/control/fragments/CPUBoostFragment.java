@@ -9,6 +9,10 @@ import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 
+/**
+ * Fragment for configuring CPU boost settings. Allows tuning of CPU boost
+ * parameters to control performance bursts on supported kernels.
+ */
 public class CPUBoostFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;

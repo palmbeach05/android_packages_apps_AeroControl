@@ -16,6 +16,11 @@ import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
 import java.util.ArrayList;
 
+/**
+ * Fragment for adjusting CPU voltage levels. Allows undervolting or overvolting
+ * the CPU to reduce power consumption or increase stability. Provides save/apply
+ * functionality for boot and profile persistence.
+ */
 public class VoltageFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private SharedPreferences mPrefs;

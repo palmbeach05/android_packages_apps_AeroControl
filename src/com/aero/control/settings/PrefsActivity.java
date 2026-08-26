@@ -31,6 +31,11 @@ import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppServiceHelper;
 import java.io.File;
 
+/**
+ * Settings activity for configuring application preferences. Provides options for
+ * theme selection, orientation, boot delay, per-app monitoring, and other global
+ * application settings. Uses Material Design cards to group related preferences.
+ */
 public class PrefsActivity extends PreferenceActivity {
     static Context context;
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);

@@ -35,6 +35,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+/**
+ * Fragment for configuring memory and I/O settings including read-ahead buffer,
+ * I/O scheduler, fsync, dynamic fsync, KSM, and writeback options. Provides
+ * save/apply functionality for boot and profile persistence.
+ */
 public class MemoryFragment extends PlaceHolderFragment implements Preference.OnPreferenceChangeListener {
     private static final String IO_SETTINGS_CATEGORY = "io_scheduler_parameter";
     private static final String MEMORY_SETTINGS_CATEGORY = "memory_settings";

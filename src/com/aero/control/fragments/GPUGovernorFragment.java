@@ -9,6 +9,10 @@ import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 
+/**
+ * Fragment for configuring GPU governor-specific parameters. Allows tuning
+ * of settings specific to the currently selected GPU governor.
+ */
 public class GPUGovernorFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;

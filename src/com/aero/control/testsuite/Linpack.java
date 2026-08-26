@@ -2,6 +2,11 @@ package com.aero.control.testsuite;
 
 import java.lang.reflect.Array;
 
+/**
+ * LINPACK benchmark for measuring floating-point performance. Solves a dense
+ * system of linear equations and reports MFLOPS (millions of floating-point
+ * operations per second). Used in the TestSuite to benchmark CPU performance.
+ */
 public class Linpack {
     private double mMFlops;
     private double mRuns;
@@ -13,14 +18,27 @@ public class Linpack {
     private final double[] x = new double[200];
     private final int[] ipvt = new int[200];
 
+    /**
+     * Returns the total time spent in benchmarks.
+     *
+     * @return total benchmark time in seconds
+     */
     public double getTimePassed() {
         return this.mTimePassed;
     }
 
+    /**
+     * Returns the average MFLOPS across all benchmark runs.
+     *
+     * @return average MFLOPS
+     */
     public double getMFlops() {
         return this.mMFlops / this.mRuns;
     }
 
+    /**
+     * Resets all benchmark counters to zero.
+     */
     public void resetBenchmark() {
         this.mTimePassed = 0.0d;
         this.mMFlops = 0.0d;
@@ -43,6 +61,9 @@ public class Linpack {
         return (System.nanoTime() - this.second_orig) / 1.0E9d;
     }
 
+    /**
+     * Runs a single iteration of the LINPACK benchmark and updates timing/MFLOPS statistics.
+     */
     public void run_benchmark() {
         double[][] a = this.a;
         double[] b = this.b;

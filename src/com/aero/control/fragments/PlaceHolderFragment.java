@@ -9,6 +9,11 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import com.aero.control.AeroActivity;
 
+/**
+ * Base fragment class for preference-based settings screens. Provides common
+ * styling (padding, divider customization) and title management for all
+ * preference fragments in the application.
+ */
 public class PlaceHolderFragment extends PreferenceFragment {
     private String mTitle;
 
@@ -25,6 +30,11 @@ public class PlaceHolderFragment extends PreferenceFragment {
         return v;
     }
 
+    /**
+     * Sets the action bar title for this fragment.
+     *
+     * @param title the title to display
+     */
     public final void setTitle(String title) {
         ((AeroActivity) getActivity()).setActionBarTitle(title);
         this.mTitle = title;

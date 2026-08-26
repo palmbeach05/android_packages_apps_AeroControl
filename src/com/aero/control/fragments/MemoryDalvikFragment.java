@@ -9,6 +9,10 @@ import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
 
+/**
+ * Fragment for configuring Dalvik VM and kernel virtual memory parameters
+ * including heap sizes, dirty ratios, and other low-level memory tunables.
+ */
 public class MemoryDalvikFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;

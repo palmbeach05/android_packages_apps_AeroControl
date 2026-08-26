@@ -15,6 +15,12 @@ import com.aero.control.R;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter for displaying CPU frequency statistics with color-coded rows and fade-in
+ * animations. Each row shows a frequency, time in state, and percentage, with colors
+ * assigned based on position or dynamically generated for positions beyond the predefined
+ * color array.
+ */
 public class StatisticAdapter extends ArrayAdapter<statisticInit> {
     private Context mContext;
     private List<statisticInit> mData;
@@ -27,12 +33,22 @@ public class StatisticAdapter extends ArrayAdapter<statisticInit> {
     private static final float EXTRA_COLOR_SATURATION = 0.55f;
     private static final float EXTRA_COLOR_VALUE = 0.85f;
 
+    /**
+     * View holder for recycling list item views.
+     */
     public static class Holder {
         TextView frequency;
         TextView percentage;
         TextView timeInState;
     }
 
+    /**
+     * Creates a statistic adapter.
+     *
+     * @param context the context
+     * @param layoutResourceId the row layout resource
+     * @param data the array of statisticInit objects to display
+     */
     public StatisticAdapter(Context context, int layoutResourceId, statisticInit[] data) {
         super(context, layoutResourceId, data);
         this.mData = new ArrayList();

@@ -34,6 +34,7 @@ import com.aero.control.helpers.PerApp.PerAppManager;
 import com.aero.control.helpers.PerApp.perAppHelper;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.settingsHelper;
+import com.aero.control.helpers.shellHelper;
 import com.aero.control.service.PerAppServiceHelper;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -46,6 +47,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Fragment for managing saved system tuning profiles. Allows creating, loading,
+ * and deleting profiles that store CPU, GPU, memory, and other system settings.
+ */
 public class ProfileFragment extends PreferenceFragment {
     public static final String FILENAME_PERAPP = "firstrun_perapp";
     public static final String FILENAME_PROFILES = "firstrun_profiles";
@@ -509,7 +514,7 @@ public class ProfileFragment extends PreferenceFragment {
         boolean deleted = prefFile.delete();
         if (!deleted && prefFile.exists()) {
             Log.e(LOG_TAG, "Whoop, it still exists, something went wrong");
-            String[] cmd = {"rm " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml")};
+            String[] cmd = {"rm " + shellHelper.escapeShellArg("/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml")};
             AeroActivity.shell.setRootInfo(cmd);
             try {
                 Thread.sleep(350L);
@@ -539,14 +544,6 @@ public class ProfileFragment extends PreferenceFragment {
             return false;
         }
         return isValidProfileName(filename.substring(0, filename.length() - 4));
-    }
-
-    /**
-     * Wraps a value in single quotes for safe use as a single argument in a
-     * shell command, escaping any embedded single quotes.
-     */
-    private static String escapeShellArg(String value) {
-        return "'" + value.replace("'", "'\\''") + "'";
     }
 
     private void saveNewProfile(SharedPreferences AeroProfile) {
@@ -582,18 +579,20 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     public void renameProfile(CharSequence oldName, String newName, TextView txtView, TextView txtViewSummary) {
-        if (!isValidProfileName(newName)) {
+        String oldFilename = oldName == null ? null : oldName.toString() + ".xml";
+        String newFilename = newName + ".xml";
+        if (!isValidProfileName(newName) || !isValidProfileFilename(oldFilename)) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
             return;
         }
-        if (!isValidProfileFilename(newName + ".xml")) {
+        if (!isValidProfileFilename(newFilename)) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
             return;
         }
         File prefFile = new File(FilePath.sharedPrefsPath + oldName.toString() + ".xml");
         boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName + ".xml"));
         if (!renameSuccess) {
-            String[] cmd = {"mv " + escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldName.toString() + ".xml") + " " + escapeShellArg(FilePath.sharedPrefsPath + newName + ".xml")};
+            String[] cmd = {"mv " + shellHelper.escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldFilename) + " " + shellHelper.escapeShellArg(FilePath.sharedPrefsPath + newFilename)};
             AeroActivity.shell.setRootInfo(cmd);
         } else {
             prefFile.delete();

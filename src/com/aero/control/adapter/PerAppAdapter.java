@@ -14,6 +14,11 @@ import com.aero.control.R;
 import com.aero.control.helpers.PerApp.PerAppListener;
 import java.util.List;
 
+/**
+ * Adapter for displaying a list of applications with checkboxes in the per-app
+ * configuration UI. Each row shows the app icon, app name, and a checkbox for
+ * selecting which apps should have per-app profiles applied.
+ */
 public class PerAppAdapter extends ArrayAdapter<AeroData> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;
@@ -22,12 +27,23 @@ public class PerAppAdapter extends ArrayAdapter<AeroData> {
     private boolean[] mCheckedState;
     private PerAppListener mPerAppListener;
 
+    /**
+     * View holder for recycling list item views.
+     */
     public static class Holder {
         CheckBox check;
         TextView content;
         ImageView header;
     }
 
+    /**
+     * Creates a per-app adapter.
+     *
+     * @param context the context
+     * @param layoutResourceId the row layout resource
+     * @param data the list of AeroData containing app info
+     * @param checkedState the initial checked state for each app
+     */
     public PerAppAdapter(Context context, int layoutResourceId, List<AeroData> data, boolean[] checkedState) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
@@ -36,6 +52,11 @@ public class PerAppAdapter extends ArrayAdapter<AeroData> {
         this.mCheckedState = checkedState;
     }
 
+    /**
+     * Sets the listener for checkbox click events.
+     *
+     * @param perAppListener the listener to notify when checkboxes are clicked
+     */
     public void setPerAppListener(PerAppListener perAppListener) {
         this.mPerAppListener = perAppListener;
     }

@@ -32,6 +32,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * Fragment for miscellaneous system settings including TCP congestion control,
+ * vibrator strength, thermal throttling, and headset volume boost. Provides
+ * save/apply functionality for boot and profile persistence.
+ */
 public class MiscSettingsFragment extends PlaceHolderFragment implements FileManagerListener {
     public static final String FILENAME_MISC = "firstrun_misc";
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";

@@ -26,6 +26,12 @@ import com.aero.control.helpers.settingsHelper;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Background service that monitors the foreground application and applies per-app
+ * CPU/GPU/memory profiles when configured apps come to the foreground. Polls every
+ * 5 seconds to detect app switches and screen on/off transitions, restoring default
+ * settings when appropriate.
+ */
 public final class PerAppService extends Service {
     private static JobManager mJobManager = null;
     private static final String perAppProfileHandler = "perAppProfileHandler";
