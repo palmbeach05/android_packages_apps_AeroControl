@@ -6,10 +6,19 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * Monitoring module that tracks free RAM by parsing /proc/meminfo.
+ * Reports the MemFree value in megabytes.
+ */
 public final class RAMModule extends AppModule {
     private static final String mPROC_MEMINFO = "/proc/meminfo";
     private final String mClassName;
 
+    /**
+     * Creates a RAM usage monitoring module.
+     *
+     * @param context the application context
+     */
     public RAMModule(Context context) {
         super(context);
         this.mClassName = getClass().getName();

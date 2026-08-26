@@ -434,9 +434,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     for (Integer cpu : controls.cluster.getMembers()) {
                         String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
                         String maxFrequencyPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ;
-                        if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-                        }
+                        array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
                         array.add("echo " + AeroActivity.shell.escapeShellArg(a) + " > " + AeroActivity.shell.escapeShellArg(maxFrequencyPath));
                     }
                     final String[] commands = (String[]) array.toArray(new String[0]);
@@ -496,9 +494,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     for (Integer cpu : controls.cluster.getMembers()) {
                         String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
                         String minFrequencyPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ;
-                        if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-                        }
+                        array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
                         array.add("echo " + AeroActivity.shell.escapeShellArg(a) + " > " + AeroActivity.shell.escapeShellArg(minFrequencyPath));
                     }
                     final String[] commands = (String[]) array.toArray(new String[0]);
@@ -517,6 +513,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                     if (success) {
                                         synchronized (mPreferenceLock) {
                                             controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.minFrequency.setValue(a);
                                             controls.pendingMinFrequency = a;
                                         }
                                     }
@@ -748,9 +745,7 @@ public class CPUFragment extends PlaceHolderFragment {
             for (Integer cpu : target.cluster.getMembers()) {
                 String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
                 String frequencyPath = FilePath.CPU_BASE_PATH + cpu + sysfsSuffix;
-                if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                    array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-                }
+                array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
                 array.add("echo " + AeroActivity.shell.escapeShellArg(value) + " > " + AeroActivity.shell.escapeShellArg(frequencyPath));
             }
         }
@@ -991,9 +986,7 @@ public class CPUFragment extends PlaceHolderFragment {
         for (Integer cpu : members) {
             String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
             String governorPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE;
-            if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-            }
+            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
             array.add("echo " + AeroActivity.shell.escapeShellArg(s) + " > " + AeroActivity.shell.escapeShellArg(governorPath));
         }
         String[] commands = (String[]) array.toArray(new String[0]);
