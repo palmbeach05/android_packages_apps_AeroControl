@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class shellHelper {
     private static final int BUFF_LEN = 8192;
     private static final int MAX_RESULT_LEN = 65536;
@@ -67,7 +66,6 @@ public final class shellHelper {
         this.mCommands.add(cmd);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public synchronized void openShell() {
         if (this.mCommands == null) {
             this.mCommands = new ArrayList();
@@ -184,7 +182,6 @@ public final class shellHelper {
         private ShellWorkqueue() {
         }
 
-        /* JADX INFO: Access modifiers changed from: private */
         public void addToWork(String work) {
             if (this.mWorkItems == null) {
                 initWork();
@@ -192,7 +189,6 @@ public final class shellHelper {
             this.mWorkItems.add(work);
         }
 
-        /* JADX INFO: Access modifiers changed from: private */
         public String[] execWork() {
             return (String[]) this.mWorkItems.toArray(new String[0]);
         }
@@ -201,7 +197,6 @@ public final class shellHelper {
             this.mWorkItems = new ArrayList<>();
         }
 
-        /* JADX INFO: Access modifiers changed from: private */
         public void flushWork() {
             if (this.mWorkItems != null) {
                 this.mWorkItems.clear();

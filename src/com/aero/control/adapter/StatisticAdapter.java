@@ -15,7 +15,6 @@ import com.aero.control.R;
 import java.util.ArrayList;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class StatisticAdapter extends ArrayAdapter<statisticInit> {
     private Context mContext;
     private List<statisticInit> mData;

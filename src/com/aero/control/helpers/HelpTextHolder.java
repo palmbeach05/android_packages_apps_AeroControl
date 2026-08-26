@@ -4,7 +4,6 @@ import android.content.Context;
 import com.aero.control.R;
 import java.util.HashMap;
 
-/* JADX INFO: loaded from: classes.dex */
 public class HelpTextHolder {
     private static final String CLUSTER_KEY_PREFIX = "cpu_cluster_";
     private static final String CLUSTER_MAX_FREQUENCY_SUFFIX = "_max_frequency";

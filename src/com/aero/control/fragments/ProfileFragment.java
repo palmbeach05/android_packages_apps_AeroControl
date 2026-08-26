@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/* JADX INFO: loaded from: classes.dex */
 public class ProfileFragment extends PreferenceFragment {
     public static final String FILENAME_PERAPP = "firstrun_perapp";
     public static final String FILENAME_PROFILES = "firstrun_profiles";
@@ -125,7 +124,6 @@ public class ProfileFragment extends PreferenceFragment {
         });
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void loadProfiles() {
         this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         String[] arr$ = this.mCompleteProfiles;
@@ -145,7 +143,6 @@ public class ProfileFragment extends PreferenceFragment {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showResetDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.mContext);
         builder.setIcon(R.drawable.warning);
@@ -171,7 +168,6 @@ public class ProfileFragment extends PreferenceFragment {
         builder.show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showDialog(final EditText editText) {
         this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -312,7 +308,6 @@ public class ProfileFragment extends PreferenceFragment {
         dialog.create().show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void addProfile(final String s, boolean flag) {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(this.mContext);
         SharedPreferences AeroProfile = this.mContext.getSharedPreferences(s, 0);
@@ -381,7 +376,6 @@ public class ProfileFragment extends PreferenceFragment {
         toast.show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean checkAllStates() {
         String[] arr$ = this.mCompleteProfiles;
         for (String s : arr$) {
@@ -392,7 +386,6 @@ public class ProfileFragment extends PreferenceFragment {
         return false;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean checkState(String name) {
         String profile = this.mPerAppPrefs.getString(name, null);
         if (profile == null) {
@@ -407,7 +400,6 @@ public class ProfileFragment extends PreferenceFragment {
         return true;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void getPersistentData(final perAppHelper perApp, final String profileName, final TextView txtViewSummary) {
         if (!this.mPerAppDialogVisible) {
             this.mPerAppDialogVisible = true;
@@ -456,7 +448,6 @@ public class ProfileFragment extends PreferenceFragment {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void updateStatus(TextView txtView, boolean toggle) {
         if (toggle) {
             txtView.setText(R.string.per_app_active);
@@ -467,7 +458,6 @@ public class ProfileFragment extends PreferenceFragment {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void showPerAppDialog(final perAppHelper perApp, final String profileName, final TextView txtViewSummary) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this.mContext);
         PerAppManager pam = new PerAppManager(this.mContext, null, perApp);
@@ -511,7 +501,6 @@ public class ProfileFragment extends PreferenceFragment {
         dialog.create().show();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public boolean deleteProfile(String ProfileName) {
         File prefFile = new File(FilePath.sharedPrefsPath + ProfileName + ".xml");
         this.mPerAppPrefs.edit().remove(ProfileName).commit();
@@ -565,7 +554,6 @@ public class ProfileFragment extends PreferenceFragment {
         saveProfile(allKeys, editor);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void applyProfile(SharedPreferences AeroProfile) {
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this.mContext).edit();
         Map<String, ?> allKeys = AeroProfile.getAll();
@@ -591,7 +579,6 @@ public class ProfileFragment extends PreferenceFragment {
         editor.commit();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void renameProfile(CharSequence oldName, String newName, TextView txtView, TextView txtViewSummary) {
         if (!isValidProfileName(newName)) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();

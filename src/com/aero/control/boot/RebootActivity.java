@@ -18,7 +18,6 @@ import com.aero.control.R;
  * typically shown when kernel crash logs are detected. Provides an option
  * to disable future reboot notifications.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class RebootActivity extends Activity {
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {

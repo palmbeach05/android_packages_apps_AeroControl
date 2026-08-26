@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class Shell {
     private static final String LOG_TAG = Shell.class.getName();
     private Process mProcess = null;
@@ -40,7 +39,6 @@ public class Shell {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public synchronized void initInteractive(String su) {
         checkUIThread();
         try {

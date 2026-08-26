@@ -10,7 +10,6 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-/* JADX INFO: loaded from: classes.dex */
 public class updateHelper {
     public static final String timeStamp = new SimpleDateFormat("ddMMyyyy").format(Calendar.getInstance().getTime());
     private static final String LOG_TAG = updateHelper.class.getName();

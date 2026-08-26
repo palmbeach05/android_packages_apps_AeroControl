@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class RAMModule extends AppModule {
     private static final String mPROC_MEMINFO = "/proc/meminfo";
     private final String mClassName;

@@ -29,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class JobManager {
     private static final String FILENAME_APPMONITOR_NOTIFY = "appmonitor_notify";
     private static JobManager mJobManager = null;

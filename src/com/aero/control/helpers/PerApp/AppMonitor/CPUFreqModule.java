@@ -4,7 +4,6 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public final class CPUFreqModule extends AppModule {
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";

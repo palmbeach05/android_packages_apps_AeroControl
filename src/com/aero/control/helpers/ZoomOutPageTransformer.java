@@ -3,7 +3,6 @@ package com.aero.control.helpers;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 
-/* JADX INFO: loaded from: classes.dex */
 public class ZoomOutPageTransformer implements ViewPager.PageTransformer {
     private static final float MIN_ALPHA = 0.5f;
     private static final float MIN_SCALE = 0.85f;

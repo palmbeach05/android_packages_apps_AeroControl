@@ -10,7 +10,6 @@ import com.aero.control.helpers.settingsHelper;
  * This service is started by {@link bootReceiver} after a system reboot to
  * restore CPU, GPU, memory and other system configuration parameters.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class bootService extends Service {
     private static final settingsHelper settings = new settingsHelper();
 

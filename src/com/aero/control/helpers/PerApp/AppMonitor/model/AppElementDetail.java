@@ -3,7 +3,6 @@ package com.aero.control.helpers.PerApp.AppMonitor.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppElementDetail implements Parcelable {
     public static final Parcelable.Creator<AppElementDetail> CREATOR = new Parcelable.Creator<AppElementDetail>() {
         @Override // android.os.Parcelable.Creator

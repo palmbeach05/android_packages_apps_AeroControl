@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class perAppHelper {
     private Context mContext;
     private String[] mCurrentSelectedPackages;

@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-/* JADX INFO: loaded from: classes.dex */
 public class Util {
     public static CharSequence getRandomLoadingText(Context context) {
         ArrayList<Integer> randomData = new ArrayList<>();

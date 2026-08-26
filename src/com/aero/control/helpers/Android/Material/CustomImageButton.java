@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CustomImageButton extends LinearLayout {
     private ImageView mImageView;
 

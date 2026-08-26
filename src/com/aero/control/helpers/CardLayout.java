@@ -5,7 +5,6 @@ import android.util.AttributeSet;
 import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CardLayout extends LinearLayout implements ViewTreeObserver.OnGlobalLayoutListener {
     public CardLayout(Context context, AttributeSet attrs) {
         super(context, attrs);

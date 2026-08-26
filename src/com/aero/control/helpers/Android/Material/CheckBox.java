@@ -17,7 +17,6 @@ import android.widget.RelativeLayout;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 
-/* JADX INFO: loaded from: classes.dex */
 public class CheckBox extends CustomView {
     private int backgroundColor;
     private boolean check;

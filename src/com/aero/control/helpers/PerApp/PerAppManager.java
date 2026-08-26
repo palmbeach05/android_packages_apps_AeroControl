@@ -12,7 +12,6 @@ import com.aero.control.adapter.AeroData;
 import com.aero.control.adapter.PerAppAdapter;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class PerAppManager extends LinearLayout implements PerAppListener {
     private PerAppAdapter mAdapter;
     Context mContext;

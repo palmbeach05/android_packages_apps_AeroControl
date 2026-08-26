@@ -14,7 +14,6 @@ import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.aero.control.helpers.Util;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppDataAdapter extends ArrayAdapter<AppElement> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private Context context;

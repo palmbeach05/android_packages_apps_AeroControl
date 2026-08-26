@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import com.aero.control.AeroActivity;
 
-/* JADX INFO: loaded from: classes.dex */
 public class PlaceHolderFragment extends PreferenceFragment {
     private String mTitle;
 

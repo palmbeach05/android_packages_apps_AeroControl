@@ -24,7 +24,6 @@ import java.io.IOException;
  * Final fragment in the first-run tutorial slider that provides links to key
  * features and allows the user to complete the tutorial and launch the main app.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class TutorialFragment extends Fragment {
     private static final String ARG_PAGE = "Tutorial";
     private static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);

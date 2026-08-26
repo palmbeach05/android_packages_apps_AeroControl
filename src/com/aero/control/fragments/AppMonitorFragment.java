@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppMonitorFragment extends Fragment {
     private static final String FILENAME = "firstrun_appmonitor";
     private AppMonitorDetailFragment mAppMonitorDetailFragment;
@@ -107,7 +106,6 @@ public class AppMonitorFragment extends Fragment {
         new ShowcaseView.Builder(getActivity()).setContentTitle(header).setContentText(content).setTarget(homeTarget).build();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void clearUI() {
         this.mListView = null;
         this.mRoot.invalidate();
@@ -129,7 +127,6 @@ public class AppMonitorFragment extends Fragment {
         new Thread(runnable).start();
     }
 
-    /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2, reason: invalid class name */
     class AnonymousClass2 implements Runnable {
         final int mCapturedGeneration;
 
@@ -145,7 +142,6 @@ public class AppMonitorFragment extends Fragment {
             }
         }
 
-        /* JADX INFO: renamed from: com.aero.control.fragments.AppMonitorFragment$2$1, reason: invalid class name */
         class AnonymousClass1 implements Runnable {
             final /* synthetic */ List<AppElement> val$appData;
             final int mCapturedGeneration;

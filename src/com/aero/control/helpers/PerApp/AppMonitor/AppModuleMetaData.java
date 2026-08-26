@@ -3,7 +3,6 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AppModuleMetaData {
     private AppContext mAppContext;
     private List<AppModule> mAppModules;

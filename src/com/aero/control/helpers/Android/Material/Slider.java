@@ -20,7 +20,6 @@ import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 import com.nineoldandroids.view.ViewHelper;
 
-/* JADX INFO: loaded from: classes.dex */
 public class Slider extends CustomView {
     private Ball ball;
     private Bitmap mBitmap;

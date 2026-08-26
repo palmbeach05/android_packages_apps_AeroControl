@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
  * Collection of utility methods for file operations, input validation, and
  * common helper functions used throughout the application.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class GenericHelper {
     private static final int BYTE = 1024;
     private static final int DEFAULT_DELAY = 200;

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AeroFragment extends Fragment {
     private static final String FILENAME = "firstrun";
     private static final int MAX_GRID_CORES = 8;

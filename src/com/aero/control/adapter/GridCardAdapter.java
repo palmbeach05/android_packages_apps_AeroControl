@@ -7,7 +7,6 @@ import android.widget.ArrayAdapter;
 import com.aero.control.helpers.Android.Material.CardBox;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class GridCardAdapter extends ArrayAdapter<CardBox> {
     private List<CardBox> data;
 

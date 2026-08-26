@@ -35,7 +35,6 @@ import java.util.List;
  * fragments explaining app features. Shows root access warnings if the device is
  * not rooted, and marks the tutorial as completed when the user skips or finishes.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class SplashScreen extends FragmentActivity {
     public static final String FIRSTRUN_AERO = "firstrun_aero";
     private static int NUM_PAGES = 4;

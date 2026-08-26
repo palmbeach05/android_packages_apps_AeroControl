@@ -12,7 +12,6 @@ import android.view.ViewConfiguration;
 import com.aero.control.AeroActivity;
 import com.aero.control.helpers.Android.CustomTextPreference;
 
-/* JADX INFO: loaded from: classes.dex */
 public class PreferenceHandler {
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final String PREF_BLANKED = "BLANKED";

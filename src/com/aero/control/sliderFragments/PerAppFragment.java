@@ -20,7 +20,6 @@ import com.aero.control.SplashScreen;
  * Fragment displaying information about the per-app monitoring feature in the
  * first-run tutorial slider. Allows users to enable the monitoring service.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class PerAppFragment extends Fragment {
     public static final String ARG_PAGE = "PerApp";
     public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);

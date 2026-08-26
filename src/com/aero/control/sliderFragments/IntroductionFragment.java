@@ -17,7 +17,6 @@ import com.aero.control.SplashScreen;
  * Fragment displaying the introduction screen in the first-run tutorial slider.
  * Shows a welcome message and the app logo with animations.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class IntroductionFragment extends Fragment {
     public static final String ARG_PAGE = "Introduction";
     public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);

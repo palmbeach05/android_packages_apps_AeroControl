@@ -8,7 +8,6 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import com.aero.control.R;
 
-/* JADX INFO: loaded from: classes.dex */
 public class TestSuiteSwitchPreference extends SwitchPreference {
     private final CompoundButton.OnCheckedChangeListener mSwitchListener = new CompoundButton.OnCheckedChangeListener() {
         @Override // android.widget.CompoundButton.OnCheckedChangeListener

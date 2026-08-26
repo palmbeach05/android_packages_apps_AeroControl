@@ -53,7 +53,6 @@ import java.util.Stack;
  * fragments. Manages fragment lifecycle, theme changes, and integration with
  * the per-app monitoring service.
  */
-/* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
@@ -434,7 +433,6 @@ public final class AeroActivity extends Activity {
         return null;
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void selectItem(int position) {
         selectItem(position, true);
     }

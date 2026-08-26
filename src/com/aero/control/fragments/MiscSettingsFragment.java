@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-/* JADX INFO: loaded from: classes.dex */
 public class MiscSettingsFragment extends PlaceHolderFragment implements FileManagerListener {
     public static final String FILENAME_MISC = "firstrun_misc";
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";
@@ -216,7 +215,6 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         this.mFileDialog.dismiss();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void initMisc() {
         Map<String, ?> keys = this.mMiscSettings.getAll();
         int i = 0;

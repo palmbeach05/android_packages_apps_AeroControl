@@ -1,6 +1,5 @@
 package com.aero.control.adapter;
 
-/* JADX INFO: loaded from: classes.dex */
 public class statisticInit {
     public String mFrequency;
     public String mPercentage;

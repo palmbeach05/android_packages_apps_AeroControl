@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-/* JADX INFO: loaded from: classes.dex */
 public class settingsHelper {
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";
     private static final String PREF_CPU_BIG_MAX_FREQ = "big_max_frequency";
@@ -75,7 +74,6 @@ public class settingsHelper {
         }).start();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void doBackground(final Context context, String Profile, boolean onboot) {
         if (Profile == null) {
             this.prefs = PreferenceManager.getDefaultSharedPreferences(context);

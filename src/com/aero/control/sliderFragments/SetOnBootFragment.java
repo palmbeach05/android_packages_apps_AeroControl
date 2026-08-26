@@ -14,7 +14,6 @@ import com.aero.control.SplashScreen;
  * Fragment explaining the Set-On-Boot feature in the first-run tutorial slider.
  * Describes how settings can be automatically applied when the device boots.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class SetOnBootFragment extends Fragment {
     public static final String ARG_PAGE = "Set-On-Boot";
     public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);

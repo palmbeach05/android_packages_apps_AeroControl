@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.aero.control.R;
 import java.util.List;
 
-/* JADX INFO: loaded from: classes.dex */
 public class AeroAdapter extends ArrayAdapter<AeroData> {
     private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private static final int MAX_GRID_CORES = 8;

@@ -5,7 +5,6 @@ import android.os.Build;
 import com.aero.control.R;
 import java.util.ArrayList;
 
-/* JADX INFO: loaded from: classes.dex */
 public class NavBarItems {
     public ArrayList<PreferenceItem> ITEMS = new ArrayList<>();
     private Context mContext;

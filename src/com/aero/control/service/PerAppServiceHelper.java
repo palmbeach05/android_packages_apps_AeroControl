@@ -13,7 +13,6 @@ import java.util.Calendar;
  * Provides methods to start, stop, and check the state of the monitoring service based
  * on user preferences.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class PerAppServiceHelper {
     private Intent mBackgroundIntent;
     private Context mContext;

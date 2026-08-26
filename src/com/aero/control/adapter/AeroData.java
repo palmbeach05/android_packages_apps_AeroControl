@@ -8,7 +8,6 @@ import java.util.List;
  * the application. Supports multiple display formats including text, images,
  * and multi-core CPU frequency grids.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class AeroData {
     public String content;
     public int file;

@@ -14,7 +14,6 @@ import java.io.File;
  * saved CPU, GPU, and system settings, optionally displays the reboot analysis
  * activity if enabled, and starts the per-app monitoring service if configured.
  */
-/* JADX INFO: loaded from: classes.dex */
 public class bootReceiver extends BroadcastReceiver {
     private static final String LAST_KMSG = "/proc/last_kmsg";
 

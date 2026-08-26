@@ -31,7 +31,6 @@ import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppServiceHelper;
 import java.io.File;
 
-/* JADX INFO: loaded from: classes.dex */
 public class PrefsActivity extends PreferenceActivity {
     static Context context;
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
@@ -282,7 +281,6 @@ public class PrefsActivity extends PreferenceActivity {
         preference.setDialogIcon(icon);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void setCheckedState(TwoStatePreference preference) {
         if (preference.isChecked()) {
             preference.setSummary(R.string.enabled);
@@ -291,7 +289,6 @@ public class PrefsActivity extends PreferenceActivity {
         }
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void setMinutes(ListPreference preference, String value) {
         if (value != null) {
             if (value.equals(getText(R.string.disabled)) || value.equals("0")) {
@@ -313,7 +310,6 @@ public class PrefsActivity extends PreferenceActivity {
         preference.setValueIndex(0);
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
     public void setThemeSummary(ListPreference preference, String value) {
         int index = preference.findIndexOfValue(value);
         CharSequence[] entries = preference.getEntries();
