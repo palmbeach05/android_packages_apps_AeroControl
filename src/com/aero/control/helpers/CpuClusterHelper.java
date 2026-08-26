@@ -23,6 +23,10 @@ public class CpuClusterHelper {
     /**
      * Returns the list of CPU clusters detected on this device. The list is cached
      * after the first call and reflects the cpufreq topology exposed by the kernel.
+     * <p>
+     * When kernel CPU topology is unavailable, enumerateCpuIds() falls back to
+     * Runtime.getRuntime().availableProcessors() and detectClusters() returns one
+     * cluster per processor, so the result may not reflect cpufreq topology.
      *
      * @return an immutable list of clusters, sorted by representative CPU number
      */

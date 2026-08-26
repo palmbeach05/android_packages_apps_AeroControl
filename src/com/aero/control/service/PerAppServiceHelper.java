@@ -42,9 +42,11 @@ public class PerAppServiceHelper {
     }
 
     /**
-     * Returns the current state of the service.
+     * Returns the cached state of the service based on the mState field and preference
+     * setting. This reflects the preference-backed state rather than whether PerAppService
+     * is currently running.
      *
-     * @return true if the service is running, false otherwise
+     * @return true if the service state is cached as active, false otherwise
      */
     public final boolean getState() {
         if (this.mState == null) {

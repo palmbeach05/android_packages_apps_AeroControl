@@ -209,28 +209,29 @@ public class ProfileFragment extends PreferenceFragment {
         ((Button) content.findViewById(R.id.profile_save)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ProfileFragment.this.saveProfile(editText);
-                dialog.dismiss();
+                if (ProfileFragment.this.saveProfile(editText)) {
+                    dialog.dismiss();
+                }
             }
         });
         dialog.show();
     }
 
-    private void saveProfile(EditText editText) {
+    private boolean saveProfile(EditText editText) {
         String profileTitle = editText.getText().toString();
         if (!isValidProfileName(profileTitle)) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
-            return;
+            return false;
         }
         String targetFilename = profileTitle + ".xml";
         if (!isValidProfileFilename(targetFilename)) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
-            return;
+            return false;
         }
         for (String profile : this.mCompleteProfiles) {
             if (profile.equals(targetFilename)) {
                 Toast.makeText(this.mContext, R.string.pref_profile_name_exists, 1).show();
-                return;
+                return false;
             }
         }
         addProfile(profileTitle, true);
@@ -243,6 +244,7 @@ public class ProfileFragment extends PreferenceFragment {
         }
         this.mContainerView.findViewById(android.R.id.empty).setVisibility(8);
         this.mContainerView.findViewById(R.id.empty_image).setVisibility(8);
+        return true;
     }
 
     private void showImportDialog() {
