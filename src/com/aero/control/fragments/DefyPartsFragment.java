@@ -11,6 +11,7 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.shellHelper;
 import java.util.regex.Pattern;
 
 public class DefyPartsFragment extends PlaceHolderFragment {
@@ -157,15 +158,21 @@ public class DefyPartsFragment extends PlaceHolderFragment {
      */
     public boolean changePreference(Preference preference, Object o, String file) {
         String value = o == null ? null : o.toString();
-        if (value == null || !SAFE_PROP_VALUE.matcher(value).matches()) {
+        if (value == null || !SAFE_PROP_VALUE.matcher(value).matches() || !isAllowedProperty(file)) {
             Toast.makeText(getActivity(), R.string.error_detected, 0).show();
             return false;
         }
-        String[] command = {"setprop " + file + " " + value};
+        String[] command = {"setprop " + shellHelper.escapeShellArg(file) + " " + shellHelper.escapeShellArg(value)};
         if (!AeroActivity.shell.setRootInfo(command)) {
             return false;
         }
         Toast.makeText(getActivity(), R.string.need_reboot, 0).show();
         return true;
+    }
+
+    private static boolean isAllowedProperty(String property) {
+        return FilePath.PROP_CHARGE_LED_MODE.equals(property)
+                || FilePath.PROP_TOUCH_POINTS.equals(property)
+                || FilePath.PROP_BUTTON_BRIGHTNESS.equals(property);
     }
 }

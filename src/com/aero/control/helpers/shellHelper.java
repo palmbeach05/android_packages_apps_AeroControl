@@ -443,25 +443,18 @@ public final class shellHelper {
         }
     }
 
-    public final synchronized boolean setRootInfo(String command, String content) {
-        if (command == null || command.isEmpty() || command.trim().isEmpty() || content == null || content.isEmpty() || content.trim().isEmpty()) {
-            Log.e(LOG_TAG, "setRootInfo called with invalid command or content, ignoring.");
+    public final synchronized boolean setRootInfo(String content, String path) {
+        if (content == null || content.isEmpty() || content.trim().isEmpty() || path == null || path.isEmpty() || path.trim().isEmpty()) {
+            Log.e(LOG_TAG, "setRootInfo called with invalid content or path, ignoring.");
             return false;
         }
-        String tmp;
-        String tmp2 = command.substring(command.length() - 1);
-        if (tmp2.matches("^\\s*$")) {
-            tmp = command.substring(0, command.length() - 1);
-        } else {
-            tmp = command;
-        }
-        String quotedContent = escapeShellArg(content);
-        String[] commands = {"chmod 0666 " + quotedContent, "echo " + escapeShellArg(tmp) + " > " + quotedContent};
+        String quotedPath = escapeShellArg(path);
+        String[] commands = {"chmod 0666 " + quotedPath, "echo " + escapeShellArg(content) + " > " + quotedPath};
         addCommands(commands);
         return runCommands();
     }
 
-    private static String escapeShellArg(String value) {
+    public static String escapeShellArg(String value) {
         return "'" + value.replace("'", "'\\''") + "'";
     }
 
