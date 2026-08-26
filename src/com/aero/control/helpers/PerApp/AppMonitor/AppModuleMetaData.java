@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Metadata container for a single app's monitoring data across all modules.
- * Stores timestamped values for each module and tracks cleanup thresholds.
+ * Stores collected Integer values for each module and tracks cleanup thresholds.
  */
 public class AppModuleMetaData {
     private AppContext mAppContext;
@@ -61,6 +61,7 @@ public class AppModuleMetaData {
      */
     public final void cleanUp() {
         this.mUsage = 0;
+        this.mModuleUsage = 0;
         int i = 0;
         for (List<Integer> moduleData : this.mModules) {
             moduleData.clear();
@@ -119,7 +120,8 @@ public class AppModuleMetaData {
      * Calculates the average value for a specific module identifier.
      *
      * @param identifier the module identifier
-     * @return the average value, or 0 if no data exists
+     * @return the average value, or 0 if the module exists but has no values
+     * @throws ExceptionHandler if the identifier is not registered
      */
     public final int getAverage(int identifier) {
         int k = 0;

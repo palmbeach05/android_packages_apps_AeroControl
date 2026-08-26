@@ -88,9 +88,10 @@ public class settingsHelper {
     }
 
     /**
-     * Applies all system settings from preferences in the background. This method reads
-     * CPU, GPU, memory, and other kernel parameters from SharedPreferences and queues
-     * the corresponding shell commands to apply them.
+     * Applies all system settings from preferences. This method reads CPU, GPU, memory,
+     * and other kernel parameters from SharedPreferences and queues the corresponding
+     * shell commands to apply them. Executes synchronously on the calling thread; callers
+     * must invoke this from a worker thread when background execution is required.
      *
      * @param context the context to access preferences and resources
      * @param Profile the profile name to load settings from, or null to use default preferences

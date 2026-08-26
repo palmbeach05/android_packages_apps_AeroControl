@@ -34,7 +34,7 @@ public final class TEMPModule extends AppModule {
         long temp = System.currentTimeMillis();
         Integer temperature = null;
         try {
-            temperature = Integer.valueOf(Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/virtual/thermal/thermal_zone1/temp")));
+            temperature = Integer.valueOf(Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/virtual/thermal/thermal_zone1/temp")) / 1000);
         } catch (NumberFormatException e) {
         }
         if (temperature != null) {

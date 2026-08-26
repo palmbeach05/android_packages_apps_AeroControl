@@ -102,7 +102,7 @@ public final class AppContext {
     /**
      * Checks if the app has been used for at least the minimum threshold duration.
      *
-     * @return true if time usage exceeds 60 seconds, false otherwise
+     * @return true if time usage is at least 60 seconds, false otherwise
      */
     public final boolean isAboveThreshold() {
         return getTimeUsage() >= 60000;

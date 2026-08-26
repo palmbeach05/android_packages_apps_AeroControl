@@ -144,7 +144,7 @@ public final class JobManager {
 
     /**
      * Retrieves all monitoring data organized as parent-child elements for display in
-     * the expandable list UI. Only includes apps that have exceeded the usage threshold.
+     * the expandable list UI. Only includes apps that have met or exceeded the usage threshold.
      *
      * @param context the context for accessing package information
      * @return a list of AppElement objects sorted by usage time in descending order
@@ -415,7 +415,7 @@ public final class JobManager {
      * Retrieves an app context without triggering time usage tracking or other side effects.
      *
      * @param appname the package name of the app
-     * @return the app context, or null if the manager is disabled or sleeping
+     * @return the app context, or null if the manager is disabled, sleeping, or the app is not found
      */
     public final AppContext getSimpleAppContext(String appname) {
         if (this.mJobManagerEnable && !this.mSleeping) {

@@ -552,7 +552,8 @@ public final class shellHelper {
      *
      * @param content the content to write to the file
      * @param path the sysfs path to write to
-     * @return true if the write operation was queued successfully, false if parameters are invalid
+     * @return true when commands are successfully submitted to the root shell, false when
+     *         parameters are invalid, the shell is unavailable, or command submission fails
      */
     public final synchronized boolean setRootInfo(String content, String path) {
         if (content == null || content.isEmpty() || content.trim().isEmpty() || path == null || path.isEmpty() || path.trim().isEmpty()) {
