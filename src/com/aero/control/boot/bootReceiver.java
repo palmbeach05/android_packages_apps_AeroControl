@@ -8,10 +8,24 @@ import android.preference.PreferenceManager;
 import com.aero.control.service.PerAppServiceHelper;
 import java.io.File;
 
+/**
+ * Broadcast receiver that handles the BOOT_COMPLETED system event to restore
+ * application settings after device reboot. Starts {@link bootService} to apply
+ * saved CPU, GPU, and system settings, optionally displays the reboot analysis
+ * activity if enabled, and starts the per-app monitoring service if configured.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public class bootReceiver extends BroadcastReceiver {
     private static final String LAST_KMSG = "/proc/last_kmsg";
 
+    /**
+     * Called when the device completes booting. Starts the boot service to restore
+     * settings, checks for kernel crash logs to display if reboot analysis is enabled,
+     * and starts the per-app monitoring service if previously enabled by the user.
+     *
+     * @param context the context in which the receiver is running
+     * @param intent the intent being received (typically BOOT_COMPLETED)
+     */
     @Override // android.content.BroadcastReceiver
     public void onReceive(Context context, Intent intent) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

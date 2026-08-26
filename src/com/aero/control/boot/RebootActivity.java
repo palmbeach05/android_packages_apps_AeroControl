@@ -13,6 +13,11 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import com.aero.control.R;
 
+/**
+ * Activity that displays a dialog notifying the user about a system reboot,
+ * typically shown when kernel crash logs are detected. Provides an option
+ * to disable future reboot notifications.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public class RebootActivity extends Activity {
     @Override // android.app.Activity

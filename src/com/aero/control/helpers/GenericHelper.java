@@ -8,12 +8,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.regex.Pattern;
 
+/**
+ * Collection of utility methods for file operations, input validation, and
+ * common helper functions used throughout the application.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public class GenericHelper {
     private static final int BYTE = 1024;
     private static final int DEFAULT_DELAY = 200;
     private static final Pattern SAFE_SHELL_VALUE = Pattern.compile("[\\w.,\\- ]+");
 
+    /**
+     * Returns the default delay in milliseconds used for timing operations.
+     *
+     * @return the default delay value
+     */
     public final int getDefaultDelay() {
         return DEFAULT_DELAY;
     }
@@ -30,6 +39,12 @@ public class GenericHelper {
         return value != null && SAFE_SHELL_VALUE.matcher(value).matches();
     }
 
+    /**
+     * Checks whether the specified file or directory exists.
+     *
+     * @param s the path to check
+     * @return true if the file exists, false otherwise
+     */
     public final boolean doesExist(String s) {
         if (s == null) {
             return false;
@@ -37,10 +52,23 @@ public class GenericHelper {
         return new File(s).exists();
     }
 
+    /**
+     * Creates a new File object for the specified path.
+     *
+     * @param s the file path
+     * @return a new File instance
+     */
     public final File getNewFile(String s) {
         return new File(s);
     }
 
+    /**
+     * Copies a file from source to destination using buffered I/O.
+     *
+     * @param source the source file to copy from
+     * @param destination the destination file to copy to
+     * @throws IOException if an I/O error occurs during the copy operation
+     */
     public void copyFile(File source, File destination) throws IOException {
         InputStream input = new FileInputStream(source);
         OutputStream output = new FileOutputStream(destination);

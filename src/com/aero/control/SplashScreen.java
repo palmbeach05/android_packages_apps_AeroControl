@@ -30,6 +30,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * First-run tutorial activity that displays an introduction slider with multiple
+ * fragments explaining app features. Shows root access warnings if the device is
+ * not rooted, and marks the tutorial as completed when the user skips or finishes.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public class SplashScreen extends FragmentActivity {
     public static final String FIRSTRUN_AERO = "firstrun_aero";
@@ -75,6 +80,10 @@ public class SplashScreen extends FragmentActivity {
         super.onResume();
     }
 
+    /**
+     * Configures the skip button to mark the tutorial as completed and launch
+     * the main activity when clicked.
+     */
     public void initDefaultSkip() {
         this.mSkip.setText(R.string.skip_splash);
         this.mSkip.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.SplashScreen.1
@@ -96,6 +105,10 @@ public class SplashScreen extends FragmentActivity {
         });
     }
 
+    /**
+     * Displays a dialog warning the user that the app requires root access and
+     * exits the app when dismissed.
+     */
     public final void showRootDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();

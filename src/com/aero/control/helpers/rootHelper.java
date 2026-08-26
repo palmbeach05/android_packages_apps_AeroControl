@@ -6,11 +6,20 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Utility class for detecting whether the device has root access by attempting
+ * to execute the 'su' command and checking for uid=0 in the output.
+ */
 public class rootHelper {
     private static final int BUFF_LEN = 1024;
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = rootHelper.class.getName();
 
+    /**
+     * Checks whether the device has root access available.
+     *
+     * @return true if root access is available, false otherwise
+     */
     public boolean isDeviceRooted() {
         return checkRootMethod();
     }

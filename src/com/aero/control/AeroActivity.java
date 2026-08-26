@@ -47,6 +47,12 @@ import com.aero.control.settings.PrefsActivity;
 import com.aero.control.testsuite.TestSuiteFragment;
 import java.util.Stack;
 
+/**
+ * Main activity of the AeroControl application. Provides a navigation drawer
+ * interface for switching between CPU, GPU, memory, and other system control
+ * fragments. Manages fragment lifecycle, theme changes, and integration with
+ * the per-app monitoring service.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";

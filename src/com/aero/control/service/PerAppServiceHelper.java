@@ -8,6 +8,11 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import java.util.Calendar;
 
+/**
+ * Helper class for managing the lifecycle of the per-app monitoring background service.
+ * Provides methods to start, stop, and check the state of the monitoring service based
+ * on user preferences.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public class PerAppServiceHelper {
     private Intent mBackgroundIntent;
@@ -16,6 +21,11 @@ public class PerAppServiceHelper {
     private SharedPreferences mPrefs;
     private Boolean mState;
 
+    /**
+     * Creates a new helper for managing the per-app monitoring service.
+     *
+     * @param context the context used to start and stop the service
+     */
     public PerAppServiceHelper(Context context) {
         this.mBackgroundIntent = null;
         this.mContext = context;
@@ -23,10 +33,20 @@ public class PerAppServiceHelper {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(this.mContext);
     }
 
+    /**
+     * Sets the current state of the service.
+     *
+     * @param state true if the service is running, false otherwise
+     */
     public final void setState(boolean state) {
         this.mState = Boolean.valueOf(state);
     }
 
+    /**
+     * Returns the current state of the service.
+     *
+     * @return true if the service is running, false otherwise
+     */
     public final boolean getState() {
         if (this.mState == null) {
             shouldBeStarted();
@@ -34,6 +54,11 @@ public class PerAppServiceHelper {
         return this.mState.booleanValue();
     }
 
+    /**
+     * Checks the user preference to determine if the service should be running.
+     *
+     * @return true if the service should be started, false otherwise
+     */
     public final boolean shouldBeStarted() {
         boolean tmp = this.mPrefs.getBoolean("per_app_service", false);
         if (!tmp) {
@@ -44,6 +69,9 @@ public class PerAppServiceHelper {
         return getState();
     }
 
+    /**
+     * Starts the per-app monitoring background service.
+     */
     public final void startService() {
         Calendar.getInstance();
         Log.e("Aero", "Service should be started now!");
@@ -53,6 +81,9 @@ public class PerAppServiceHelper {
         setState(true);
     }
 
+    /**
+     * Stops the per-app monitoring background service and cancels any pending intents.
+     */
     public final void stopService() {
         this.mContext.stopService(new Intent(this.mContext, (Class<?>) PerAppService.class));
         if (this.mBackgroundIntent != null) {

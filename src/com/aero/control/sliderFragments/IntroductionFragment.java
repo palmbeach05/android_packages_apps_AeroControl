@@ -13,11 +13,21 @@ import android.widget.TextView;
 import com.aero.control.R;
 import com.aero.control.SplashScreen;
 
+/**
+ * Fragment displaying the introduction screen in the first-run tutorial slider.
+ * Shows a welcome message and the app logo with animations.
+ */
 /* JADX INFO: loaded from: classes.dex */
 public class IntroductionFragment extends Fragment {
     public static final String ARG_PAGE = "Introduction";
     public static final Typeface kitkatFont = Typeface.create("sans-serif-condensed", 0);
 
+    /**
+     * Creates a new instance of this fragment with the specified page number.
+     *
+     * @param pageNumber the page number in the tutorial sequence
+     * @return a new IntroductionFragment instance
+     */
     public static IntroductionFragment create(int pageNumber) {
         IntroductionFragment fragment = new IntroductionFragment();
         Bundle args = new Bundle();
