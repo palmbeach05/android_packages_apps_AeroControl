@@ -178,6 +178,10 @@ public class PreferenceHandler {
         }
     }
 
+    /**
+     * Triggers a haptic vibration feedback to the user, typically used after
+     * changing voltage or amplification settings to provide tactile confirmation.
+     */
     public void forceVibration() {
         try {
             Thread.sleep(100L);

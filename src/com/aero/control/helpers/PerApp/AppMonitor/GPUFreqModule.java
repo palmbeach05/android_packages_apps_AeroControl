@@ -5,10 +5,19 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 
+/**
+ * Monitoring module that tracks GPU frequency by reading from device-specific
+ * sysfs nodes. Auto-detects the correct GPU frequency file at initialization.
+ */
 public final class GPUFreqModule extends AppModule {
     private final String mClassName;
     private String mGPUFile;
 
+    /**
+     * Creates a GPU frequency monitoring module.
+     *
+     * @param context the application context
+     */
     public GPUFreqModule(Context context) {
         super(context);
         this.mClassName = getClass().getName();

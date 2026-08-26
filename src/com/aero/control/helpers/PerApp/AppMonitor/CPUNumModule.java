@@ -4,10 +4,19 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 
+/**
+ * Monitoring module that tracks the number of online CPU cores.
+ * Counts cores by checking their online status in sysfs.
+ */
 public final class CPUNumModule extends AppModule {
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private final String mClassName;
 
+    /**
+     * Creates a CPU core count monitoring module.
+     *
+     * @param context the application context
+     */
     public CPUNumModule(Context context) {
         super(context);
         this.mClassName = getClass().getName();
