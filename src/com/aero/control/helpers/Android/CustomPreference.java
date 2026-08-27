@@ -345,12 +345,12 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
             return;
         }
 
-        onClick();
-
         OnPreferenceClickListener listener = getOnPreferenceClickListener();
-        if (listener != null) {
-            listener.onPreferenceClick(this);
+        if (listener != null && listener.onPreferenceClick(this)) {
+            return;
         }
+
+        onClick();
     }
 
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
