@@ -111,6 +111,9 @@ public class AppMonitorFragment extends Fragment {
         new ShowcaseView.Builder(getActivity()).setContentTitle(header).setContentText(content).setTarget(homeTarget).build();
     }
 
+    /**
+     * Clears the UI references and invalidates the root view.
+     */
     public void clearUI() {
         this.mListView = null;
         this.mRoot.invalidate();

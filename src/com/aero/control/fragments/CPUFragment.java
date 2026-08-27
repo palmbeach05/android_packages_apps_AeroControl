@@ -1,5 +1,6 @@
 package com.aero.control.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -1014,6 +1015,10 @@ public class CPUFragment extends PlaceHolderFragment {
         return false;
     }
 
+    /**
+     * Updates the minimum frequency preference UI for all CPU clusters by reading
+     * current values from sysfs and refreshing the preference controls.
+     */
     public void updateMinFreq() {
         // Read sysfs values outside lock to minimize critical section
         for (ClusterControls controls : this.mClusterControls) {
@@ -1048,6 +1053,10 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Updates the maximum frequency preference UI for all CPU clusters by reading
+     * current values from sysfs and refreshing the preference controls.
+     */
     public void updateMaxFreq() {
         // Read sysfs values outside lock to minimize critical section
         for (ClusterControls controls : this.mClusterControls) {
@@ -1094,6 +1103,12 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Displays the first-time tutorial showcase overlay for the CPU fragment.
+     *
+     * @param header the resource ID for the showcase title
+     * @param content the resource ID for the showcase content text
+     */
     public void DrawFirstStart(int header, int content) {
         try {
             FileOutputStream fos = getActivity().openFileOutput(FILENAME, 0);
@@ -1105,15 +1120,22 @@ public class CPUFragment extends PlaceHolderFragment {
         Target homeTarget = new Target() { // from class: com.aero.control.fragments.CPUFragment.10
             @Override // com.github.amlcurran.showcaseview.targets.Target
             public Point getPoint() {
+                if (!CPUFragment.this.isAdded()) {
+                    return null;
+                }
+                Activity activity = CPUFragment.this.getActivity();
+                if (activity == null) {
+                    return null;
+                }
                 int actionBarSize = 96;
                 try {
-                    int height = CPUFragment.this.getActivity().findViewById(R.id.action_governor_settings).getHeight();
+                    int height = activity.findViewById(R.id.action_governor_settings).getHeight();
                     if (height > 0) {
                         actionBarSize = height;
                     }
                 } catch (NullPointerException e) {
                 }
-                int x = CPUFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
+                int x = activity.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
                 int y = actionBarSize / 2;
                 return new Point(x, y);
             }
