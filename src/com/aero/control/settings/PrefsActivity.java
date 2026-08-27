@@ -197,7 +197,10 @@ public class PrefsActivity extends PreferenceActivity {
                     }
                     AeroActivity.perAppService.stopService();
                     if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
-                        PrefsActivity.this.mSettingsAdapter.refresh();
+                        PrefsActivity.this.mSettingsAdapter.updateSwitchMetadata(
+                                (CardSwitchPreference) PrefsActivity.this.mPer_app_check);
+                        PrefsActivity.this.mSettingsAdapter.updateSwitchState(
+                                (CardSwitchPreference) PrefsActivity.this.mPerAppMonitor);
                     }
                     return false;
                 }
@@ -214,7 +217,10 @@ public class PrefsActivity extends PreferenceActivity {
                 }
                 preference.getEditor().commit();
                 if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
-                    PrefsActivity.this.mSettingsAdapter.refresh();
+                    PrefsActivity.this.mSettingsAdapter.updateSwitchMetadata(
+                            (CardSwitchPreference) PrefsActivity.this.mPer_app_check);
+                    PrefsActivity.this.mSettingsAdapter.updateSwitchState(
+                            (CardSwitchPreference) PrefsActivity.this.mPerAppMonitor);
                 }
                 return true;
             }
@@ -234,7 +240,8 @@ public class PrefsActivity extends PreferenceActivity {
                     }
                 }
                 if (Build.VERSION.SDK_INT >= 21 && PrefsActivity.this.mSettingsAdapter != null) {
-                    PrefsActivity.this.mSettingsAdapter.refresh();
+                    PrefsActivity.this.mSettingsAdapter.updateSwitchMetadata(
+                            (CardSwitchPreference) PrefsActivity.this.mPerAppMonitor);
                 }
                 return false;
             }
