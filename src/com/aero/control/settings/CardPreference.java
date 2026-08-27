@@ -4,6 +4,11 @@ import android.content.Context;
 import android.preference.Preference;
 import android.util.AttributeSet;
 
+/**
+ * A preference displayed inside a Material Design card container. Provides a
+ * public click dispatch method for use by {@link SettingsCardAdapter} to trigger
+ * preference selection from custom card-based layouts.
+ */
 public class CardPreference extends Preference {
 
     public CardPreference(Context context) {
@@ -18,6 +23,11 @@ public class CardPreference extends Preference {
         super(context, attrs, defStyle);
     }
 
+    /**
+     * Triggers this preference's click handling as if the user tapped it directly.
+     * Invokes {@link #onClick()} and notifies any registered
+     * {@link OnPreferenceClickListener}. Does nothing if the preference is disabled.
+     */
     public void performCardClick() {
         if (!isEnabled()) {
             return;
