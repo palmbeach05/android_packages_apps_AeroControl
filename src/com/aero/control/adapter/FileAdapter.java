@@ -44,6 +44,9 @@ public class FileAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
+    /**
+     * Clears all items from the adapter and the underlying data list.
+     */
     @Override // android.widget.ArrayAdapter
     public void clear() {
         super.clear();
@@ -51,11 +54,22 @@ public class FileAdapter extends ArrayAdapter<AeroData> {
         notifyDataSetChanged();
     }
 
+    /**
+     * Notifies observers that the underlying data has changed.
+     */
     @Override // android.widget.ArrayAdapter, android.widget.BaseAdapter
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
     }
 
+    /**
+     * Returns the view for displaying a file or directory row at the specified position.
+     *
+     * @param position the position of the item
+     * @param convertView the recycled view to reuse if available
+     * @param parent the parent view group
+     * @return the configured view for the row
+     */
     @Override // android.widget.ArrayAdapter, android.widget.Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
         Holder holder;

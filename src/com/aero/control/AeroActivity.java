@@ -245,6 +245,10 @@ public final class AeroActivity extends Activity {
         mHandler.post(this.mPendingBackgroundInit);
     }
 
+    /**
+     * Initializes and starts background services, particularly the per-app monitoring
+     * service if it's enabled in preferences and not already running.
+     */
     private void initBackgroundServices() {
         if (perAppService == null) {
             perAppService = new PerAppServiceHelper(getApplicationContext());
@@ -266,6 +270,11 @@ public final class AeroActivity extends Activity {
         handleSelectedItemRequest();
     }
 
+    /**
+     * Checks the incoming intent for a selected item ID extra and switches to that
+     * drawer item if present. Used when launching the activity from a notification
+     * or external intent.
+     */
     private void handleSelectedItemRequest() {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)) {
@@ -300,6 +309,9 @@ public final class AeroActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Closes the navigation drawer and launches the settings activity with a fade transition.
+     */
     private void launchSettings() {
         if (this.mDrawerLayout != null) {
             this.mDrawerLayout.closeDrawers();
@@ -311,6 +323,11 @@ public final class AeroActivity extends Activity {
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
+    /**
+     * Checks whether the per-app monitoring service is currently running.
+     *
+     * @return true if PerAppService is running, false otherwise
+     */
     private boolean isServiceUp() {
         ActivityManager manager = (ActivityManager) getSystemService("activity");
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -321,10 +338,21 @@ public final class AeroActivity extends Activity {
         return false;
     }
 
+    /**
+     * Reconnects fragments that were restored by the FragmentManager to the activity's
+     * fragment field variables and rebuilds the fragment stack.
+     */
     private void reconnectRestoredFragments() {
         reconnectRestoredFragments(null);
     }
 
+    /**
+     * Reconnects fragments that were restored by the FragmentManager to the activity's
+     * fragment field variables and rebuilds the fragment stack from saved resource IDs.
+     *
+     * @param stackResourceIds array of resource IDs representing the saved fragment stack,
+     *                         or null to build a stack with just the current fragment
+     */
     private void reconnectRestoredFragments(int[] stackResourceIds) {
         // Reconnect any fragment restored by FragmentManager to activity fields
         android.app.FragmentManager fm = getFragmentManager();
@@ -368,10 +396,24 @@ public final class AeroActivity extends Activity {
         }
     }
 
+    /**
+     * Returns the fragment associated with the specified resource ID.
+     *
+     * @param resourceId the string resource ID identifying the fragment
+     * @return the fragment instance, or null if not found
+     */
     private Fragment getFragmentByResourceId(int resourceId) {
         return getFragmentByResourceId(resourceId, false);
     }
 
+    /**
+     * Returns the fragment associated with the specified resource ID, optionally
+     * creating a new instance if it doesn't exist yet.
+     *
+     * @param resourceId the string resource ID identifying the fragment
+     * @param createIfMissing if true, creates a new fragment instance when the field is null
+     * @return the fragment instance, or null if not found and createIfMissing is false
+     */
     private Fragment getFragmentByResourceId(int resourceId, boolean createIfMissing) {
         // Map resource ID to fragment instance, optionally creating if missing
         if (resourceId == R.string.slider_overview) {
@@ -433,10 +475,21 @@ public final class AeroActivity extends Activity {
         return null;
     }
 
+    /**
+     * Selects and displays the navigation drawer item at the specified position.
+     *
+     * @param position the position of the item in the drawer list
+     */
     public void selectItem(int position) {
         selectItem(position, true);
     }
 
+    /**
+     * Selects and displays the navigation drawer item at the specified position.
+     *
+     * @param position the position of the item in the drawer list
+     * @param replaceFragment if true, replaces the current fragment; if false, only updates selection
+     */
     private void selectItem(int position, boolean replaceFragment) {
         if (this.mDrawerLayout != null) {
             this.mDrawerLayout.closeDrawers();
@@ -551,10 +604,21 @@ public final class AeroActivity extends Activity {
         this.mDrawerLayout.closeDrawer(this.mDrawerList);
     }
 
+    /**
+     * Selects and displays the navigation drawer item with the specified resource ID.
+     *
+     * @param resourceId the string resource ID of the drawer item to select
+     */
     private void selectItemByResourceId(int resourceId) {
         selectItemByResourceId(resourceId, true);
     }
 
+    /**
+     * Selects and displays the navigation drawer item with the specified resource ID.
+     *
+     * @param resourceId the string resource ID of the drawer item to select
+     * @param replaceFragment if true, replaces the current fragment; if false, only updates selection
+     */
     private void selectItemByResourceId(int resourceId, boolean replaceFragment) {
         // Find the position of the item with this resource ID in the current adapter
         for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
@@ -566,15 +630,29 @@ public final class AeroActivity extends Activity {
         }
     }
 
+    /**
+     * Sets the action bar title to the specified string.
+     *
+     * @param title the title to display in the action bar
+     */
     public void setActionBarTitle(String title) {
         setTitle(title);
     }
 
+    /**
+     * Closes the app detail fragment by popping it from the back stack and restoring
+     * the app monitor title.
+     */
     public void closeAppDetail() {
         getFragmentManager().popBackStack("AppDetail", android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         setActionBarTitle(getString(R.string.slider_app_monitor));
     }
 
+    /**
+     * Checks whether the AppDetail fragment is currently on the back stack.
+     *
+     * @return true if AppDetail is the top back stack entry, false otherwise
+     */
     private boolean hasAppDetailBackStackEntry() {
         android.app.FragmentManager fragmentManager = getFragmentManager();
         int backStackEntryCount = fragmentManager.getBackStackEntryCount();
@@ -761,6 +839,9 @@ public final class AeroActivity extends Activity {
         Toast.makeText(this, R.string.back_for_close, 1).show();
     }
 
+    /**
+     * Clears the pending close state and removes any scheduled close timeout callbacks.
+     */
     private void clearClosePending() {
         this.mClosePending = false;
         if (this.mClearClosePending != null) {
@@ -768,6 +849,12 @@ public final class AeroActivity extends Activity {
         }
     }
 
+    /**
+     * Returns the title string for the specified fragment based on its type.
+     *
+     * @param fragment the fragment to get the title for
+     * @return the title string, or null if the fragment type is not recognized
+     */
     private String getTitleForFragment(Fragment fragment) {
         // Map fragment instances back to their titles
         if (fragment == this.mAeroFragment) {
@@ -796,6 +883,12 @@ public final class AeroActivity extends Activity {
         return null;
     }
 
+    /**
+     * Returns the string resource ID associated with the specified fragment.
+     *
+     * @param fragment the fragment to get the resource ID for
+     * @return the string resource ID, or -1 if the fragment type is not recognized
+     */
     private int getResourceIdForFragment(Fragment fragment) {
         // Map fragment instances to their resource IDs
         if (fragment == this.mAeroFragment) {
@@ -824,10 +917,22 @@ public final class AeroActivity extends Activity {
         return -1;
     }
 
+    /**
+     * Replaces the current fragment with the specified fragment and adds it to the back stack.
+     *
+     * @param fragment the fragment to display
+     */
     public final void switchContent(final Fragment fragment) {
         switchContent(fragment, true);
     }
 
+    /**
+     * Replaces the current fragment with the specified fragment, optionally adding it
+     * to the back stack for navigation.
+     *
+     * @param fragment the fragment to display
+     * @param addToStack if true, pushes the fragment onto the back stack
+     */
     private void switchContent(final Fragment fragment, final boolean addToStack) {
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);

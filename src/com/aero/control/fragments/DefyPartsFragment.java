@@ -27,6 +27,11 @@ public class DefyPartsFragment extends PlaceHolderFragment {
     private CustomListPreference led_charging;
     private CustomListPreference multi_touch;
 
+    /**
+     * Initializes the fragment and creates preferences for Defy-specific hardware settings.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +71,13 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         this.multi_touch.setEntryValues(R.array.touch_point_values);
         this.multi_touch.setEntries(R.array.touch_point_values);
         this.led_charging.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.DefyPartsFragment.1
+            /**
+             * Handles LED charging mode preference changes.
+             *
+             * @param preference the preference that changed
+             * @param o the new value
+             * @return true if the change should be persisted
+             */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String value = o.toString();
@@ -78,6 +90,13 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             }
         });
         this.multi_touch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.DefyPartsFragment.2
+            /**
+             * Handles multi-touch preference changes.
+             *
+             * @param preference the preference that changed
+             * @param o the new value
+             * @return true if the change should be persisted
+             */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 if (!DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_TOUCH_POINTS)) {
@@ -89,6 +108,13 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             }
         });
         this.button_brightness.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.DefyPartsFragment.3
+            /**
+             * Handles button brightness preference changes.
+             *
+             * @param preference the preference that changed
+             * @param o the new value
+             * @return true if the change should be persisted
+             */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 if (!DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_BUTTON_BRIGHTNESS)) {
@@ -107,12 +133,18 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         final AeroActivity activity = (AeroActivity) getActivity();
         final String unavailableMarker = activity.getText(R.string.unavailable).toString();
         new Thread(new Runnable() {
+            /**
+             * Loads current property values from the system in a background thread.
+             */
             @Override // java.lang.Runnable
             public void run() {
                 final String charger = AeroActivity.shell.getRootInfo("getprop ", FilePath.PROP_CHARGE_LED_MODE);
                 final String multitouch = AeroActivity.shell.getRootInfo("getprop ", FilePath.PROP_TOUCH_POINTS);
                 final String brightness = AeroActivity.shell.getRootInfo("getprop", FilePath.PROP_BUTTON_BRIGHTNESS);
                 activity.runOnUiThread(new Runnable() {
+                    /**
+                     * Updates UI with loaded property values on the main thread.
+                     */
                     @Override // java.lang.Runnable
                     public void run() {
                         if (!DefyPartsFragment.this.isAdded()) {
@@ -174,6 +206,12 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         return true;
     }
 
+    /**
+     * Validates that a property name is in the allow-list of settable properties.
+     *
+     * @param property the property name to check
+     * @return true if the property is allowed
+     */
     private static boolean isAllowedProperty(String property) {
         return FilePath.PROP_CHARGE_LED_MODE.equals(property)
                 || FilePath.PROP_TOUCH_POINTS.equals(property)

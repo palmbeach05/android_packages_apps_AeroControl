@@ -43,11 +43,24 @@ public class TutorialFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Called when the fragment is created. Performs no special initialization.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.support.v4.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
+    /**
+     * Creates and returns the view hierarchy for this fragment.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState the saved instance state
+     * @return the root view for this fragment
+     */
     @Override // android.support.v4.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.tutorial_fragment, container, false);
@@ -62,11 +75,21 @@ public class TutorialFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * Called when the fragment resumes. Sets up the completion button with logic to
+     * save tutorial flags and launch the main activity.
+     */
     @Override // android.support.v4.app.Fragment
     public void onResume() {
         super.onResume();
         ((SplashScreen) getActivity()).mSkip.setText(R.string.got_it);
         ((SplashScreen) getActivity()).mSkip.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.sliderFragments.TutorialFragment.1
+            /**
+             * Handles the completion button click by saving tutorial completion markers
+             * and launching the main activity.
+             *
+             * @param v the view that was clicked
+             */
             @Override // android.view.View.OnClickListener
             public void onClick(View v) {
                 boolean check_state = TutorialFragment.this.mCheckbox.isChecked();

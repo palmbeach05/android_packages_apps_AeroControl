@@ -86,6 +86,12 @@ public class Util {
         return usageStatsList;
     }
 
+    /**
+     * Retrieves the UsageStatsManager system service.
+     *
+     * @param context the context to access system services
+     * @return the UsageStatsManager instance
+     */
     @TargetApi(21)
     private static UsageStatsManager getUsageStatsManager(Context context) {
         UsageStatsManager usm = (UsageStatsManager) context.getSystemService("usagestats");

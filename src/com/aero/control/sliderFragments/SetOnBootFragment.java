@@ -32,11 +32,24 @@ public class SetOnBootFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Called when the fragment is created. Performs no special initialization.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.support.v4.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
+    /**
+     * Creates and returns the view hierarchy for this fragment.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState the saved instance state
+     * @return the root view for this fragment
+     */
     @Override // android.support.v4.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.set_on_boot_fragment, container, false);
@@ -49,6 +62,9 @@ public class SetOnBootFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * Called when the fragment resumes. Configures the skip button.
+     */
     @Override // android.support.v4.app.Fragment
     public void onResume() {
         super.onResume();

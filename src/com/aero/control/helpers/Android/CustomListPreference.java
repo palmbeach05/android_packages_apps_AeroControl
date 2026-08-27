@@ -221,7 +221,7 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
             preferenceContent.setOnClickListener(new View.OnClickListener() {
                 @Override // android.view.View.OnClickListener
                 public void onClick(View v) {
-                    CustomListPreference.this.performClick(null);
+                    CustomListPreference.this.performCustomClick();
                 }
             });
         }
@@ -236,6 +236,19 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
             separator_checkbox.setVisibility(8);
         }
         applyEnabledStateToViews(isEnabled());
+    }
+
+    public void performCustomClick() {
+        if (!isEnabled()) {
+            return;
+        }
+
+        onClick();
+
+        OnPreferenceClickListener listener = getOnPreferenceClickListener();
+        if (listener != null) {
+            listener.onPreferenceClick(this);
+        }
     }
 
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener

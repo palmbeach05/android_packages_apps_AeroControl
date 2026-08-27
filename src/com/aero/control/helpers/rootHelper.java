@@ -24,6 +24,12 @@ public class rootHelper {
         return checkRootMethod();
     }
 
+    /**
+     * Checks whether the device has root access by executing the 'id' command via 'su'
+     * and checking for uid=0 in the output.
+     *
+     * @return true if root access is available, false otherwise
+     */
     private boolean checkRootMethod() {
         String output = suCheckRootMethod();
         if (output.equals(NO_DATA_FOUND)) {
@@ -32,6 +38,11 @@ public class rootHelper {
         return output.contains("uid=0");
     }
 
+    /**
+     * Executes the 'id' command via 'su' and returns the output for root detection.
+     *
+     * @return the output of the 'id' command or "Unavailable" if failed
+     */
     private String suCheckRootMethod() {
         Process process = null;
         DataOutputStream os = null;

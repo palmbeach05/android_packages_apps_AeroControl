@@ -128,6 +128,15 @@ public class PreferenceHandler {
         generateSettings(paraName, path.replace("/" + paraName, ""), false);
     }
 
+    /**
+     * Generates a preference widget for a single sysfs parameter file and adds it to
+     * the preference category. Reads the current value, configures input type and summary,
+     * and sets up change listeners to apply new values to the sysfs file.
+     *
+     * @param parameter the file name within the path
+     * @param path the directory path containing the parameter file
+     * @param flag if true, triggers haptic vibration feedback on value change
+     */
     private void generateSettings(String parameter, String path, final boolean flag) {
         final CustomTextPreference prefload = new CustomTextPreference(this.mContext);
         final String parameterPath = path + "/" + parameter;

@@ -88,6 +88,15 @@ public class StatisticAdapter extends ArrayAdapter<statisticInit> {
         return Color.HSVToColor(new float[]{hue, EXTRA_COLOR_SATURATION, EXTRA_COLOR_VALUE});
     }
 
+    /**
+     * Returns the view for displaying a statistic row at the specified position with
+     * color-coded text and fade-in animation.
+     *
+     * @param position the position of the item
+     * @param convertView the recycled view to reuse if available
+     * @param parent the parent view group
+     * @return the configured view for the row
+     */
     @Override // android.widget.ArrayAdapter, android.widget.Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
         Holder holder;

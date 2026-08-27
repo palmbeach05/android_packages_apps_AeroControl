@@ -480,6 +480,13 @@ public class settingsHelper {
         defaultProfile.clear();
     }
 
+    /**
+     * Retrieves a boolean preference value with fallback handling for legacy string-based
+     * boolean storage.
+     *
+     * @param s the preference key
+     * @return the boolean value, reading "1" as true and "0" as false from strings
+     */
     private Boolean getSaveBoolean(String s) {
         try {
             return Boolean.valueOf(this.prefs.getString(s, "0").equals("1"));
@@ -503,6 +510,14 @@ public class settingsHelper {
         return false;
     }
 
+    /**
+     * Checks whether a preference key is a valid dynamic per-cluster CPU control key
+     * (e.g., "cpu_cluster_0_max_frequency") and falls within the cluster count range.
+     *
+     * @param key the preference key to check
+     * @param clusterCount the number of CPU clusters on this device
+     * @return true if the key is a valid dynamic cluster key, false otherwise
+     */
     private boolean isDynamicClusterKey(String key, int clusterCount) {
         if (key == null || !key.startsWith(PREF_CLUSTER_KEY_PREFIX)) {
             return false;
@@ -545,6 +560,16 @@ public class settingsHelper {
         }
     }
 
+    /**
+     * Applies advanced settings for I/O scheduler parameters, VM/Dalvik settings, hotplug
+     * control, CPU boost, GPU governor tuning, and per-governor CPU settings. Runs after
+     * the main settings have been applied and queued.
+     *
+     * @param mem_ios the I/O scheduler name if I/O settings should be applied, null otherwise
+     * @param Profile the profile name if building a rollback profile, null otherwise
+     * @param gpu_gov the GPU governor name if GPU governor settings should be applied, null otherwise
+     * @throws NullPointerException if essential paths are null
+     */
     private void setSubParameters(String mem_ios, String Profile, String gpu_gov) throws NullPointerException {
         shellPara.queueWork("sleep 1");
         String[] completeVMSettings = shellPara.getDirInfo(FilePath.DALVIK_TWEAK, true);

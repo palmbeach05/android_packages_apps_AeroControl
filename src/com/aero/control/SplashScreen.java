@@ -45,6 +45,12 @@ public class SplashScreen extends FragmentActivity {
     private PagerAdapter mPagerAdapter;
     public Button mSkip;
 
+    /**
+     * Initializes the splash screen activity with tutorial fragments and checks for
+     * first-run status and root access.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.support.v4.app.FragmentActivity, android.app.Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +80,9 @@ public class SplashScreen extends FragmentActivity {
         initDefaultSkip();
     }
 
+    /**
+     * Called when the activity is resumed. No special handling is performed.
+     */
     @Override // android.support.v4.app.FragmentActivity, android.app.Activity
     protected void onResume() {
         super.onResume();
@@ -86,6 +95,11 @@ public class SplashScreen extends FragmentActivity {
     public void initDefaultSkip() {
         this.mSkip.setText(R.string.skip_splash);
         this.mSkip.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.SplashScreen.1
+            /**
+             * Handles skip button click by saving first-run marker and launching main activity.
+             *
+             * @param v the view that was clicked
+             */
             @Override // android.view.View.OnClickListener
             public void onClick(View v) {
                 try {
@@ -118,6 +132,12 @@ public class SplashScreen extends FragmentActivity {
         aboutText.setText(getText(R.string.root_required));
         builder.setCancelable(false);
         builder.setView(layout).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.SplashScreen.2
+            /**
+             * Handles dialog button click by finishing the activity.
+             *
+             * @param dialog the dialog interface
+             * @param id the button identifier
+             */
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog, int id) {
                 SplashScreen.this.finish();
@@ -126,17 +146,36 @@ public class SplashScreen extends FragmentActivity {
         builder.show();
     }
 
+    /**
+     * Adapter for managing the tutorial fragments in the view pager.
+     */
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        /**
+         * Creates a new adapter instance.
+         *
+         * @param fm the fragment manager
+         */
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
+        /**
+         * Returns the fragment at the specified position.
+         *
+         * @param position the position in the pager
+         * @return the fragment at the given position
+         */
         @Override // android.support.v4.app.FragmentStatePagerAdapter
         public Fragment getItem(int position) {
             Fragment fragment = (Fragment) SplashScreen.this.mFragments.get(position);
             return fragment;
         }
 
+        /**
+         * Returns the total number of pages in the pager.
+         *
+         * @return the number of tutorial pages
+         */
         @Override // android.support.v4.view.PagerAdapter
         public int getCount() {
             return SplashScreen.NUM_PAGES;

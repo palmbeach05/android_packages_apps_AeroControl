@@ -1,11 +1,9 @@
 package com.aero.control.settings;
 
 import android.content.Context;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.preference.TwoStatePreference;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,21 +15,24 @@ import android.widget.Switch;
 import android.widget.TextView;
 import com.aero.control.R;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Renders each {@link PreferenceCategory} of a {@link PreferenceScreen} as a single
  * list item containing the category header and its child preference rows inside one
  * shared Material card. Existing {@link Preference} instances are bound with
  * {@link Preference#getView}, preserving persistence, change listeners, dialogs,
- * icons and enabled state. {@link TwoStatePreference} and {@link ListPreference}
- * instances are instead bound to dedicated application-owned rows so their content
- * shares the same alignment inside the card.
+ * icons and enabled state. {@link CardSwitchPreference} and
+ * {@link CardListPreference} instances are instead bound to dedicated
+ * application-owned rows so their content shares the same alignment inside the card.
  */
 class SettingsCardAdapter extends BaseAdapter {
 
     private final Context mContext;
     private final List<PreferenceCategory> mCategories = new ArrayList<>();
+    private final Map<CardSwitchPreference, View> mSwitchRows = new HashMap<>();
 
     /**
      * Creates an adapter that renders preference categories as Material Design cards.
@@ -86,18 +87,20 @@ class SettingsCardAdapter extends BaseAdapter {
         for (int i = 0; i < category.getPreferenceCount(); i++) {
             final Preference preference = category.getPreference(i);
             View preferenceView;
-            if (preference instanceof TwoStatePreference) {
-                preferenceView = getSwitchPreferenceView((TwoStatePreference) preference, items);
-            } else if (preference instanceof ListPreference) {
-                preferenceView = getListPreferenceView((ListPreference) preference, items);
-            } else {
+            if (preference instanceof CardSwitchPreference) {
+                preferenceView = getSwitchPreferenceView((CardSwitchPreference) preference, items);
+            } else if (preference instanceof CardListPreference) {
+                preferenceView = getListPreferenceView((CardListPreference) preference, items);
+            } else if (preference instanceof CardPreference) {
                 preferenceView = preference.getView(null, items);
                 preferenceView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        preference.performClick(null);
+                        ((CardPreference) preference).performCardClick();
                     }
                 });
+            } else {
+                preferenceView = preference.getView(null, items);
             }
             items.addView(preferenceView);
         }
@@ -113,7 +116,7 @@ class SettingsCardAdapter extends BaseAdapter {
      * @param parent the parent view group for layout inflation
      * @return the inflated and configured preference view
      */
-    private View getListPreferenceView(final ListPreference preference, ViewGroup parent) {
+    private View getListPreferenceView(final CardListPreference preference, ViewGroup parent) {
         View row = LayoutInflater.from(mContext).inflate(
                 R.layout.settings_list_preference, parent, false);
 
@@ -135,7 +138,7 @@ class SettingsCardAdapter extends BaseAdapter {
         row.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                preference.performClick(null);
+                preference.performCardClick();
             }
         });
         return row;
@@ -149,9 +152,10 @@ class SettingsCardAdapter extends BaseAdapter {
      * @param parent the parent view group for layout inflation
      * @return the inflated and configured preference view
      */
-    private View getSwitchPreferenceView(final TwoStatePreference preference, ViewGroup parent) {
+    private View getSwitchPreferenceView(final CardSwitchPreference preference, ViewGroup parent) {
         final View row = LayoutInflater.from(mContext).inflate(
                 R.layout.settings_switch_preference, parent, false);
+        mSwitchRows.put(preference, row);
 
         ((ImageView) row.findViewById(R.id.settings_switch_icon)).setImageDrawable(preference.getIcon());
         ((TextView) row.findViewById(R.id.settings_switch_title)).setText(preference.getTitle());
@@ -160,8 +164,7 @@ class SettingsCardAdapter extends BaseAdapter {
         switchWidget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                preference.performClick(null);
-                bindSwitchState(preference, row);
+                preference.performCardClick();
             }
         });
         row.setOnClickListener(new View.OnClickListener() {
@@ -182,7 +185,7 @@ class SettingsCardAdapter extends BaseAdapter {
      * @param preference the two-state preference to bind
      * @param row the view containing the switch widget
      */
-    private void bindSwitchState(TwoStatePreference preference, View row) {
+    private void bindSwitchState(CardSwitchPreference preference, View row) {
         ((Switch) row.findViewById(R.id.settings_switch)).setChecked(preference.isChecked());
         bindSwitchMetadata(preference, row);
     }
@@ -194,7 +197,7 @@ class SettingsCardAdapter extends BaseAdapter {
      * @param preference the two-state preference containing the metadata
      * @param row the view containing the switch widget and summary text
      */
-    private void bindSwitchMetadata(TwoStatePreference preference, View row) {
+    private void bindSwitchMetadata(CardSwitchPreference preference, View row) {
         boolean enabled = preference.isEnabled();
         row.setEnabled(enabled);
         row.findViewById(R.id.settings_switch_icon).setEnabled(enabled);
@@ -207,6 +210,32 @@ class SettingsCardAdapter extends BaseAdapter {
         summary.setEnabled(enabled);
         summary.setText(preference.getSummary());
         summary.setVisibility(TextUtils.isEmpty(preference.getSummary()) ? View.GONE : View.VISIBLE);
+    }
+
+    /**
+     * Updates only enabled state and summary for a currently bound switch row.
+     * The checked state is left untouched so a user-initiated switch animation can finish.
+     *
+     * @param preference the switch preference whose metadata changed
+     */
+    public void updateSwitchMetadata(CardSwitchPreference preference) {
+        View row = mSwitchRows.get(preference);
+        if (row != null) {
+            bindSwitchMetadata(preference, row);
+        }
+    }
+
+    /**
+     * Updates checked state, enabled state, and summary for a currently bound
+     * switch row whose state changed as a dependency of another preference.
+     *
+     * @param preference the dependent switch preference whose state changed
+     */
+    public void updateSwitchState(CardSwitchPreference preference) {
+        View row = mSwitchRows.get(preference);
+        if (row != null) {
+            bindSwitchState(preference, row);
+        }
     }
 
     /**

@@ -38,11 +38,24 @@ public class PerAppFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Called when the fragment is created. Performs no special initialization.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.support.v4.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
+    /**
+     * Creates and returns the view hierarchy for this fragment.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState the saved instance state
+     * @return the root view for this fragment
+     */
     @Override // android.support.v4.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.perappshow_fragment, container, false);
@@ -57,6 +70,12 @@ public class PerAppFragment extends Fragment {
         final ProgressBar progressBar = (ProgressBar) rootView.findViewById(R.id.show_progress);
         progressBar.setVisibility(4);
         checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() { // from class: com.aero.control.sliderFragments.PerAppFragment.1
+            /**
+             * Handles checkbox state changes to enable/disable per-app monitoring.
+             *
+             * @param compoundButton the checkbox
+             * @param checked the new checked state
+             */
             @Override // android.widget.CompoundButton.OnCheckedChangeListener
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
                 SharedPreferences mSharedPreference = PreferenceManager.getDefaultSharedPreferences(PerAppFragment.this.getActivity());
@@ -69,6 +88,9 @@ public class PerAppFragment extends Fragment {
                 }
                 editor.commit();
                 new Handler().postDelayed(new Runnable() { // from class: com.aero.control.sliderFragments.PerAppFragment.1.1
+                    /**
+                     * Hides the progress bar after a delay.
+                     */
                     @Override // java.lang.Runnable
                     public void run() {
                         progressBar.setVisibility(4);
@@ -79,6 +101,9 @@ public class PerAppFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * Called when the fragment resumes. Configures the skip button.
+     */
     @Override // android.support.v4.app.Fragment
     public void onResume() {
         super.onResume();
