@@ -53,14 +53,7 @@ android {
                     'library/ldrawer/src/main/java',
                     'library/showcase/java'
             ]
-            res.srcDirs = [
-                    'res',
-                    'library/HoloGraphLibrary/res',
-                    'library/WilliamChart/res',
-                    'library/floatingactionbutton/res',
-                    'library/ldrawer/src/main/res',
-                    'library/showcase/res'
-            ]
+            res.srcDirs = ['res']
         }
     }
 
