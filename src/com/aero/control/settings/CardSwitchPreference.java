@@ -33,14 +33,15 @@ public class CardSwitchPreference extends SwitchPreference {
             return;
         }
 
+        onClick();
+
         OnPreferenceClickListener listener = getOnPreferenceClickListener();
         if (listener != null && listener.onPreferenceClick(this)) {
             return;
         }
 
-        onClick();
-            if (getIntent() != null) {
-                getContext().startActivity(getIntent());
+        if (getIntent() != null) {
+            getContext().startActivity(getIntent());
         }
     }
 }
