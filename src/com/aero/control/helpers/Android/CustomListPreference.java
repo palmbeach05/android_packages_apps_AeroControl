@@ -17,6 +17,11 @@ import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
+/**
+ * An enhanced ListPreference with custom layout, checkbox for save-on-boot functionality,
+ * and integrated help button. Supports Material Design styling and persistent state
+ * management through shared preferences.
+ */
 public class CustomListPreference extends ListPreference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
     private CompoundButton mPlatformCheckBox;
@@ -33,6 +38,11 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
     private CharSequence mSummaryPref;
     private TextView mTitle;
 
+    /**
+     * Creates a new CustomListPreference with custom layout and help support.
+     *
+     * @param context the context in which the preference is created
+     */
     public CustomListPreference(Context context) {
         super(context);
         this.mName = super.getKey();
@@ -68,10 +78,20 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         this.mContext = context;
     }
 
+    /**
+     * Sets whether this preference should be hidden from boot-time save operations.
+     *
+     * @param checked true to hide this preference during boot, false otherwise
+     */
     public void setHideOnBoot(Boolean checked) {
         this.mHideOnBoot = checked;
     }
 
+    /**
+     * Returns whether this preference is hidden from boot-time save operations.
+     *
+     * @return true if hidden during boot, false otherwise
+     */
     public Boolean isHidden() {
         if (this.mHideOnBoot == null) {
             this.mHideOnBoot = false;
@@ -79,6 +99,11 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         return this.mHideOnBoot;
     }
 
+    /**
+     * Enables or disables the help button for this preference.
+     *
+     * @param enable true to show the help button, false to hide it
+     */
     public void setHelpEnable(boolean enable) {
         this.mShowHelp = Boolean.valueOf(enable);
     }

@@ -456,6 +456,13 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         }
     }
 
+    /**
+     * Displays the first-time tutorial showcase overlay for this fragment.
+     *
+     * @param header the resource ID for the showcase title
+     * @param content the resource ID for the showcase content text
+     * @param filename the name of the file to mark tutorial as completed
+     */
     public void DrawFirstStart(int header, int content, String filename) {
         try {
             FileOutputStream fos = getActivity().openFileOutput(filename, 0);

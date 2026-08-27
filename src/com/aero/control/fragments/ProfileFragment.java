@@ -129,6 +129,10 @@ public class ProfileFragment extends PreferenceFragment {
         });
     }
 
+    /**
+     * Loads saved profiles from the shared preferences directory and displays
+     * them in the UI. Checks for running per-app service and shows a warning if needed.
+     */
     public void loadProfiles() {
         this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         String[] arr$ = this.mCompleteProfiles;
@@ -148,6 +152,10 @@ public class ProfileFragment extends PreferenceFragment {
         }
     }
 
+    /**
+     * Displays a confirmation dialog for resetting all saved preferences.
+     * If confirmed, clears all shared preferences data.
+     */
     public void showResetDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.mContext);
         builder.setIcon(R.drawable.warning);
@@ -173,6 +181,11 @@ public class ProfileFragment extends PreferenceFragment {
         builder.show();
     }
 
+    /**
+     * Displays a dialog for creating a new profile or importing an existing one.
+     *
+     * @param editText the text field for entering the profile name
+     */
     public void showDialog(final EditText editText) {
         this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -315,6 +328,12 @@ public class ProfileFragment extends PreferenceFragment {
         dialog.create().show();
     }
 
+    /**
+     * Adds a profile to the UI with delete and assign-to-app functionality.
+     *
+     * @param s the profile name
+     * @param flag true to save current settings to the profile, false to just display it
+     */
     public void addProfile(final String s, boolean flag) {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(this.mContext);
         SharedPreferences AeroProfile = this.mContext.getSharedPreferences(s, 0);
@@ -383,6 +402,11 @@ public class ProfileFragment extends PreferenceFragment {
         toast.show();
     }
 
+    /**
+     * Checks if any profile has been assigned to an app.
+     *
+     * @return true if at least one profile is assigned to an app, false otherwise
+     */
     public boolean checkAllStates() {
         String[] arr$ = this.mCompleteProfiles;
         for (String s : arr$) {

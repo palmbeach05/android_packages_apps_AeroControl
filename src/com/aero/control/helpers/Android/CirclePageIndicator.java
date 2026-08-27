@@ -18,6 +18,11 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import com.aero.control.R;
 
+/**
+ * A circular page indicator for ViewPager. Draws a series of circles representing
+ * pages, with the current page filled and interactive touch support for navigating
+ * between pages.
+ */
 public class CirclePageIndicator extends View implements PageIndicator {
     private static final int INVALID_POINTER = -1;
     private int mActivePointerId;
@@ -38,10 +43,21 @@ public class CirclePageIndicator extends View implements PageIndicator {
     private int mTouchSlop;
     private ViewPager mViewPager;
 
+    /**
+     * Creates a new CirclePageIndicator with default attributes.
+     *
+     * @param context the context in which the indicator is created
+     */
     public CirclePageIndicator(Context context) {
         this(context, null);
     }
 
+    /**
+     * Creates a new CirclePageIndicator with XML attributes.
+     *
+     * @param context the context in which the indicator is created
+     * @param attrs the attribute set from XML
+     */
     public CirclePageIndicator(Context context, AttributeSet attrs) {
         this(context, attrs, R.attr.vpiCirclePageIndicatorStyle);
     }
@@ -51,6 +67,13 @@ public class CirclePageIndicator extends View implements PageIndicator {
         return (int) px;
     }
 
+    /**
+     * Creates a new CirclePageIndicator with XML attributes and a default style.
+     *
+     * @param context the context in which the indicator is created
+     * @param attrs the attribute set from XML
+     * @param defStyle the default style resource
+     */
     public CirclePageIndicator(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.mPaintPageFill = new Paint(1);
@@ -86,6 +109,11 @@ public class CirclePageIndicator extends View implements PageIndicator {
         }
     }
 
+    /**
+     * Sets whether the indicator circles should be centered in the view.
+     *
+     * @param centered true to center the circles, false otherwise
+     */
     public void setCentered(boolean centered) {
         this.mCentered = centered;
         invalidate();

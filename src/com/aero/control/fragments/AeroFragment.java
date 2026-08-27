@@ -71,6 +71,9 @@ public class AeroFragment extends Fragment {
             this.mInterrupt = false;
         }
 
+        /**
+         * Cancels the refresh thread by setting the interrupt flag and interrupting the thread.
+         */
         public void cancel() {
             this.mInterrupt = true;
             interrupt();
@@ -273,6 +276,10 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Creates and populates the overview list with system information including
+     * kernel version, CPU governors, GPU frequency, and memory status.
+     */
     public void createList() {
         if (this.mOverviewData != null) {
             this.mOverviewData.clear();
@@ -305,6 +312,12 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Displays the first-time tutorial showcase overlay for this fragment.
+     *
+     * @param header the resource ID for the showcase title
+     * @param content the resource ID for the showcase content text
+     */
     public void DrawFirstStart(int header, int content) {
         try {
             FileOutputStream fos = getActivity().openFileOutput(FILENAME, 0);
@@ -326,6 +339,10 @@ public class AeroFragment extends Fragment {
         this.mShowCase = new ShowcaseView.Builder(getActivity()).setContentTitle(header).setContentText(content).setTarget(homeTarget).build();
     }
 
+    /**
+     * Sets file permissions for CPU frequency scaling files to allow user modification.
+     * Requires root access to modify system file permissions.
+     */
     public void setPermissions() {
         String[] commands = {"chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", "chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", "chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq"};
         AeroActivity.shell.setRootInfo(commands);

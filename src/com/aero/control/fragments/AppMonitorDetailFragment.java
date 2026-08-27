@@ -192,6 +192,11 @@ public class AppMonitorDetailFragment extends Fragment {
         super.onDestroyView();
     }
 
+    /**
+     * Sets the action bar title for the detail view.
+     *
+     * @param title the title text to display in the action bar
+     */
     public final void setTitle(String title) {
         ((AeroActivity) getActivity()).setActionBarTitle(title);
     }
@@ -212,6 +217,10 @@ public class AppMonitorDetailFragment extends Fragment {
         return getResources().getColor(fallbackColorResId);
     }
 
+    /**
+     * Clears the chart UI and resets visual state including card backgrounds
+     * and removes any active tooltips.
+     */
     public void clearUI() {
         this.mMaxValue = 0;
         this.mRoot.invalidate();
@@ -230,6 +239,10 @@ public class AppMonitorDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * Loads and displays monitoring data for the selected app and module.
+     * Populates the chart with historical data and configures the UI controls.
+     */
     public void loadUI() {
         int i = 0;
         if (AeroActivity.mJobManager == null) {
@@ -340,6 +353,12 @@ public class AppMonitorDetailFragment extends Fragment {
         return (int) Math.max(Math.ceil(range / 5), 1.0d);
     }
 
+    /**
+     * Displays a tooltip at the specified chart entry position.
+     *
+     * @param entryIndex the index of the data entry to show a tooltip for
+     * @param rect the bounding rectangle for positioning the tooltip
+     */
     public void showLineTooltip(int entryIndex, Rect rect) {
         this.mLineTooltip = (TextView) getActivity().getLayoutInflater().inflate(R.layout.circular_tooltip, (ViewGroup) null);
         this.mLineTooltip.setText(((int) mLineChart.getData().get(0).getEntry(entryIndex).getValue()) + "");
@@ -358,6 +377,12 @@ public class AppMonitorDetailFragment extends Fragment {
         mLineChart.showTooltip(this.mLineTooltip);
     }
 
+    /**
+     * Dismisses the currently displayed tooltip with animation.
+     *
+     * @param entryIndex the index of the next entry to show tooltip for, or -1 if none
+     * @param rect the bounding rectangle for the next tooltip position
+     */
     public void dismissLineTooltip(final int entryIndex, final Rect rect) {
         if (Build.VERSION.SDK_INT >= 16) {
             this.mLineTooltip.animate().setDuration(100L).scaleX(0.0f).scaleY(0.0f).alpha(0.0f).setInterpolator(this.exitInterpolator).withEndAction(new Runnable() { // from class: com.aero.control.fragments.AppMonitorDetailFragment.5
