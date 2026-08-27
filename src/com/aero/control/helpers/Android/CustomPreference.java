@@ -20,6 +20,12 @@ import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 import java.util.Map;
 
+/**
+ * Enhanced preference widget with boot-on persistence, integrated help dialogs, and
+ * custom Material Design styling. Provides a checkbox to enable persistence of system
+ * tuning values, an optional help button that displays contextual documentation, and
+ * theme-aware text colors.
+ */
 public class CustomPreference extends Preference implements CheckBox.OnCheckListener {
     private CheckBox mCheckBox;
     private CompoundButton mPlatformCheckBox;
@@ -38,6 +44,12 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
     private CharSequence mSummaryPref;
     private TextView mTitle;
 
+    /**
+     * Constructs a custom preference with the specified context and attribute set.
+     *
+     * @param context the context
+     * @param attrs the attribute set from XML
+     */
     public CustomPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.mName = super.getKey();
@@ -65,6 +77,11 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         setSummary(super.getSummary());
     }
 
+    /**
+     * Constructs a custom preference with the specified context.
+     *
+     * @param context the context
+     */
     public CustomPreference(Context context) {
         super(context);
         this.mName = super.getKey();
@@ -100,10 +117,20 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         this.mContext = context;
     }
 
+    /**
+     * Sets whether to hide the boot-on-startup checkbox for this preference.
+     *
+     * @param checked true to hide the checkbox, false to show it
+     */
     public void setHideOnBoot(Boolean checked) {
         this.mHideOnBoot = checked;
     }
 
+    /**
+     * Returns whether the boot-on-startup checkbox is hidden.
+     *
+     * @return true if the checkbox is hidden, false otherwise
+     */
     public Boolean isHidden() {
         if (this.mHideOnBoot == null) {
             this.mHideOnBoot = false;
@@ -111,10 +138,20 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         return this.mHideOnBoot;
     }
 
+    /**
+     * Enables or disables the help button for this preference.
+     *
+     * @param enable true to show the help button, false to hide it
+     */
     public void setHelpEnable(boolean enable) {
         this.mShowHelp = Boolean.valueOf(enable);
     }
 
+    /**
+     * Returns whether the help button is enabled.
+     *
+     * @return true if the help button is shown, false if hidden
+     */
     public Boolean isHelpEnabled() {
         if (this.mShowHelp == null) {
             this.mShowHelp = true;
@@ -122,10 +159,20 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         return this.mShowHelp;
     }
 
+    /**
+     * Sets whether this preference is checked for boot-on-startup persistence.
+     *
+     * @param checked true if the preference should persist on boot, false otherwise
+     */
     public void setChecked(Boolean checked) {
         this.mChecked = checked;
     }
 
+    /**
+     * Returns whether this preference is checked for boot-on-startup persistence.
+     *
+     * @return true if the preference persists on boot, false otherwise
+     */
     public Boolean isChecked() {
         try {
             if (this.mSharedPreference.getString(getName(), null) != null) {
@@ -140,6 +187,11 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         return this.mChecked;
     }
 
+    /**
+     * Sets the clicked state of the preference and updates the summary text accordingly.
+     *
+     * @param checked true to set enabled state, false for disabled state
+     */
     public void setClicked(Boolean checked) {
         this.mClicked = checked;
         if (this.mSummary != null) {
@@ -153,6 +205,11 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         }
     }
 
+    /**
+     * Returns whether the preference has been clicked/enabled.
+     *
+     * @return true if clicked/enabled, false otherwise
+     */
     public Boolean isClicked() {
         if (this.mClicked == null) {
             return false;
@@ -182,6 +239,11 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         return getName();
     }
 
+    /**
+     * Sets the internal name identifier for this preference.
+     *
+     * @param name the name identifier
+     */
     public void setName(String name) {
         this.mName = name;
     }
@@ -199,6 +261,12 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         }
     }
 
+    /**
+     * Applies the enabled or disabled text color styling to the title and summary views
+     * based on the preference's current enabled state.
+     *
+     * @param enabled true to apply enabled colors, false to apply disabled (dimmed) colors
+     */
     private void applyEnabledStateToViews(boolean enabled) {
         int primaryColor = resolveThemeColor(R.attr.aeroPrimaryTextColor, R.color.text_color);
         int secondaryColor = resolveThemeColor(R.attr.aeroSecondaryTextColor, R.color.text_color);
@@ -219,6 +287,14 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         }
     }
 
+    /**
+     * Resolves a theme attribute to an actual color value, falling back to a color
+     * resource if the attribute is not defined in the current theme.
+     *
+     * @param attrResId the theme attribute resource ID to resolve
+     * @param fallbackColorResId the fallback color resource ID to use if the attribute is not found
+     * @return the resolved color integer
+     */
     private int resolveThemeColor(int attrResId, int fallbackColorResId) {
         TypedValue typedValue = new TypedValue();
         if (this.mContext.getTheme().resolveAttribute(attrResId, typedValue, true)) {
@@ -230,6 +306,13 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         return this.mContext.getResources().getColor(fallbackColorResId);
     }
 
+    /**
+     * Applies the disabled alpha transparency to a color value, respecting the
+     * theme's disabledAlpha attribute if available.
+     *
+     * @param color the original color value
+     * @return the color with disabled alpha applied
+     */
     private int applyDisabledAlpha(int color) {
         TypedValue typedValue = new TypedValue();
         float disabledAlpha = 0.5f;
@@ -240,14 +323,31 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
     }
 
+    /**
+     * Returns the internal name identifier for this preference.
+     *
+     * @return the name identifier
+     */
     public String getName() {
         return this.mName;
     }
 
+    /**
+     * Sets the file path to look up default values from when saving the preference.
+     *
+     * @param filepath the sysfs path to read default values from
+     */
     public void setLookUpDefault(String filepath) {
         this.mLookUpDefault = filepath;
     }
 
+    /**
+     * Retrieves the default value for this preference from the configured lookup file path.
+     * Handles special formatting for RGB values and voltage values.
+     *
+     * @param name the preference name used to determine how to parse the file
+     * @return the formatted default value string, or the raw file content for standard preferences
+     */
     private String getLookUpDefault(String name) {
         String[] content;
         int switcher;
@@ -340,6 +440,10 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         applyEnabledStateToViews(isEnabled());
     }
 
+    /**
+     * Handles click events on the preference content area, dispatching to the
+     * registered listener or launching the associated intent if configured.
+     */
     public void performCustomClick() {
         if (!isEnabled()) {
             return;
@@ -356,6 +460,12 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         }
     }
 
+    /**
+     * Called when the checkbox state changes. Saves or removes the preference value
+     * based on the checked state.
+     *
+     * @param checked true if the checkbox is now checked, false otherwise
+     */
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
     public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();

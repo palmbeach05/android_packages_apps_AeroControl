@@ -73,6 +73,11 @@ public final class shellHelper {
         return mShellHelper;
     }
 
+    /**
+     * Adds multiple commands to the command queue.
+     *
+     * @param commands the array of command strings to add
+     */
     private synchronized void addCommands(String[] commands) {
         for (String cmd : commands) {
             if (cmd != null) {
@@ -139,6 +144,12 @@ public final class shellHelper {
         this.mShellLoaded = false;
     }
 
+    /**
+     * Executes all queued commands in the root shell without waiting for output.
+     * Clears the command queue after execution.
+     *
+     * @return true if commands were executed successfully, false if the shell is not loaded
+     */
     private synchronized boolean runCommands() {
         openShell();
         if (this.mShellLoaded) {
@@ -165,6 +176,13 @@ public final class shellHelper {
         }
     }
 
+    /**
+     * Executes all queued commands and reads the output from the root shell.
+     * Blocks until all output has been read or the read is interrupted. Clears
+     * the command queue after execution.
+     *
+     * @return the command output as a string, or null if reading fails or is interrupted
+     */
     private synchronized String getRootResult() {
         int read;
         List<String> commands = Collections.synchronizedList(this.mCommands);
@@ -421,6 +439,15 @@ public final class shellHelper {
         });
     }
 
+    /**
+     * Parses a string into an array by splitting on spaces, optionally removing brackets
+     * and converting values to MHz format.
+     *
+     * @param s the input string to parse
+     * @param flag if 1, convert values to MHz; otherwise keep raw strings
+     * @param flag_io if 1, remove brackets before splitting; otherwise split as-is
+     * @return the parsed array of strings
+     */
     private String[] buildArray(String s, int flag, int flag_io) {
         String[] completeString = new String[0];
         if (s.charAt(s.length() - 1) == '\n') {
