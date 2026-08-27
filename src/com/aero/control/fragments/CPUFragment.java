@@ -1,5 +1,6 @@
 package com.aero.control.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -1105,15 +1106,22 @@ public class CPUFragment extends PlaceHolderFragment {
         Target homeTarget = new Target() { // from class: com.aero.control.fragments.CPUFragment.10
             @Override // com.github.amlcurran.showcaseview.targets.Target
             public Point getPoint() {
+                if (!CPUFragment.this.isAdded()) {
+                    return null;
+                }
+                Activity activity = CPUFragment.this.getActivity();
+                if (activity == null) {
+                    return null;
+                }
                 int actionBarSize = 96;
                 try {
-                    int height = CPUFragment.this.getActivity().findViewById(R.id.action_governor_settings).getHeight();
+                    int height = activity.findViewById(R.id.action_governor_settings).getHeight();
                     if (height > 0) {
                         actionBarSize = height;
                     }
                 } catch (NullPointerException e) {
                 }
-                int x = CPUFragment.this.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
+                int x = activity.getResources().getDisplayMetrics().widthPixels - (actionBarSize / 2);
                 int y = actionBarSize / 2;
                 return new Point(x, y);
             }
