@@ -55,7 +55,6 @@
         android:background="@null"
         android:gravity="center"
         android:paddingLeft="0dp"
-        android:paddingRight="5dp"
         android:layout_width="64dp"
         android:layout_height="match_parent"/>
 </LinearLayout>
