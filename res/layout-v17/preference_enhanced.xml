@@ -51,6 +51,7 @@
         android:background="?attr/aeroDividerColor"
         android:layout_width="0.5dp"
         android:layout_height="match_parent"/>
+    <!-- Keep the API 17-20 checkbox unpadded so gravity centers it in the full column. -->
     <android.widget.CheckBox
         android:id="@+id/checkbox_pref"
         android:background="@null"
