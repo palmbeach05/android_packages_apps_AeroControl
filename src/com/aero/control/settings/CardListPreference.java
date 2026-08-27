@@ -11,7 +11,6 @@ import android.util.AttributeSet;
  * Provides a public click dispatch method for use by {@link SettingsCardAdapter}
  * to open the selection dialog from custom card-based layouts.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class CardListPreference extends ListPreference {
 
     public CardListPreference(Context context) {
