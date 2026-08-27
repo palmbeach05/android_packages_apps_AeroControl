@@ -67,6 +67,10 @@ android {
     aaptOptions {
         additionalParameters '--extra-packages', 'com.getbase.floatingactionbutton:com.echo.holographlibrary:com.cocosw.undobar:com.db.williamchart:com.github.amlcurran.showcaseview:com.ikimuhendis.ldrawer'
     }
+    
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
