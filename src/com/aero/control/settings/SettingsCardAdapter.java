@@ -15,7 +15,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import com.aero.control.R;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Renders each {@link PreferenceCategory} of a {@link PreferenceScreen} as a single
@@ -30,6 +32,7 @@ class SettingsCardAdapter extends BaseAdapter {
 
     private final Context mContext;
     private final List<PreferenceCategory> mCategories = new ArrayList<>();
+    private final Map<CardSwitchPreference, View> mSwitchRows = new HashMap<>();
 
     /**
      * Creates an adapter that renders preference categories as Material Design cards.
@@ -152,6 +155,7 @@ class SettingsCardAdapter extends BaseAdapter {
     private View getSwitchPreferenceView(final CardSwitchPreference preference, ViewGroup parent) {
         final View row = LayoutInflater.from(mContext).inflate(
                 R.layout.settings_switch_preference, parent, false);
+        mSwitchRows.put(preference, row);
 
         ((ImageView) row.findViewById(R.id.settings_switch_icon)).setImageDrawable(preference.getIcon());
         ((TextView) row.findViewById(R.id.settings_switch_title)).setText(preference.getTitle());
@@ -206,6 +210,32 @@ class SettingsCardAdapter extends BaseAdapter {
         summary.setEnabled(enabled);
         summary.setText(preference.getSummary());
         summary.setVisibility(TextUtils.isEmpty(preference.getSummary()) ? View.GONE : View.VISIBLE);
+    }
+
+    /**
+     * Updates only enabled state and summary for a currently bound switch row.
+     * The checked state is left untouched so a user-initiated switch animation can finish.
+     *
+     * @param preference the switch preference whose metadata changed
+     */
+    public void updateSwitchMetadata(CardSwitchPreference preference) {
+        View row = mSwitchRows.get(preference);
+        if (row != null) {
+            bindSwitchMetadata(preference, row);
+        }
+    }
+
+    /**
+     * Updates checked state, enabled state, and summary for a currently bound
+     * switch row whose state changed as a dependency of another preference.
+     *
+     * @param preference the dependent switch preference whose state changed
+     */
+    public void updateSwitchState(CardSwitchPreference preference) {
+        View row = mSwitchRows.get(preference);
+        if (row != null) {
+            bindSwitchState(preference, row);
+        }
     }
 
     /**
