@@ -1,6 +1,8 @@
 package com.aero.control.settings;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.preference.ListPreference;
 import android.util.AttributeSet;
 
@@ -9,6 +11,7 @@ import android.util.AttributeSet;
  * Provides a public click dispatch method for use by {@link SettingsCardAdapter}
  * to open the selection dialog from custom card-based layouts.
  */
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class CardListPreference extends ListPreference {
 
     public CardListPreference(Context context) {

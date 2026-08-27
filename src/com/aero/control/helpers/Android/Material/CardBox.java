@@ -103,6 +103,10 @@ public class CardBox extends LinearLayout {
      * android.R.color.darker_gray if the attribute cannot be resolved.
      */
     private Drawable applyTouchFeedback(Drawable base) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return base;
+        }
+
         TypedValue typedValue = new TypedValue();
         int highlightColor = getResources().getColor(android.R.color.darker_gray);
         if (getContext().getTheme().resolveAttribute(android.R.attr.colorControlHighlight, typedValue, true)) {
