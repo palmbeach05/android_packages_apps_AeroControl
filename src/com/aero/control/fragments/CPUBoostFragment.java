@@ -17,6 +17,11 @@ public class CPUBoostFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;
 
+    /**
+     * Initializes the fragment and loads CPU boost settings.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +31,9 @@ public class CPUBoostFragment extends PlaceHolderFragment {
         loadCPUBoost();
     }
 
+    /**
+     * Loads CPU boost parameters from the kernel and generates preference UI elements.
+     */
     public void loadCPUBoost() {
         String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.CPU_BOOST, true);
         if (this.PrefCat != null) {

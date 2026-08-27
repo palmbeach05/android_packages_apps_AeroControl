@@ -17,6 +17,11 @@ public class GPUGovernorFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;
 
+    /**
+     * Initializes the fragment and loads GPU governor settings.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +31,9 @@ public class GPUGovernorFragment extends PlaceHolderFragment {
         loadGPUGov();
     }
 
+    /**
+     * Loads GPU governor parameters from the kernel and generates preference UI elements.
+     */
     public void loadGPUGov() {
         String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.GPU_GOV_PATH, true);
         if (this.PrefCat != null) {

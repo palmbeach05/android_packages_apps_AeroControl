@@ -61,6 +61,9 @@ public class PerAppAdapter extends ArrayAdapter<AeroData> {
         this.mPerAppListener = perAppListener;
     }
 
+    /**
+     * Clears all items from the adapter and the underlying data list.
+     */
     @Override // android.widget.ArrayAdapter
     public void clear() {
         super.clear();
@@ -68,11 +71,22 @@ public class PerAppAdapter extends ArrayAdapter<AeroData> {
         notifyDataSetChanged();
     }
 
+    /**
+     * Notifies observers that the underlying data has changed.
+     */
     @Override // android.widget.ArrayAdapter, android.widget.BaseAdapter
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
     }
 
+    /**
+     * Returns the view for displaying an app row with a checkbox at the specified position.
+     *
+     * @param position the position of the item
+     * @param convertView the recycled view to reuse if available
+     * @param parent the parent view group
+     * @return the configured view for the row
+     */
     @Override // android.widget.ArrayAdapter, android.widget.Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
         final Holder holder;
@@ -86,6 +100,11 @@ public class PerAppAdapter extends ArrayAdapter<AeroData> {
             holder.check = (CheckBox) row.findViewById(R.id.rowcheck);
             holder.content.setTypeface(font);
             holder.check.setOnClickListener(new View.OnClickListener() { // from class: com.aero.control.adapter.PerAppAdapter.1
+                /**
+                 * Handles checkbox clicks by updating the checked state and notifying the listener.
+                 *
+                 * @param view the view that was clicked
+                 */
                 @Override // android.view.View.OnClickListener
                 public void onClick(View view) {
                     CheckBox cb = (CheckBox) view;

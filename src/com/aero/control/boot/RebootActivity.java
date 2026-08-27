@@ -19,6 +19,11 @@ import com.aero.control.R;
  * to disable future reboot notifications.
  */
 public class RebootActivity extends Activity {
+    /**
+     * Creates and displays the reboot notification dialog when the activity is created.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +39,12 @@ public class RebootActivity extends Activity {
         aboutText.setText(getText(R.string.reboot_notifier));
         aboutText.setTextSize(14.0f);
         builder.setView(layout).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.boot.RebootActivity.1
+            /**
+             * Handles dialog dismissal and optionally disables future reboot notifications.
+             *
+             * @param dialog the dialog interface
+             * @param id the button identifier
+             */
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();

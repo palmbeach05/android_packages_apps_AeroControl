@@ -31,6 +31,9 @@ public class Shell {
             return;
         }
         Runnable run = new Runnable() { // from class: com.aero.control.helpers.Shell.1
+            /**
+             * Initializes the shell in a background thread.
+             */
             @Override // java.lang.Runnable
             public void run() {
                 try {
@@ -44,12 +47,21 @@ public class Shell {
         worker.start();
     }
 
+    /**
+     * Verifies that the current thread is not the main UI thread and throws an
+     * exception if it is.
+     */
     private void checkUIThread() {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             throw new ShellException(ShellException.MAIN_UI_EXCEPTION);
         }
     }
 
+    /**
+     * Initializes the interactive shell by executing the specified shell command.
+     *
+     * @param su the shell binary to execute (typically "su" for root)
+     */
     public synchronized void initInteractive(String su) {
         checkUIThread();
         try {
@@ -129,6 +141,11 @@ public class Shell {
         public static final String MAIN_UI_EXCEPTION = "You have tried to execute your commands in the main UI Thread. Consider using async-tasks or a thread instead.";
         public static final String NO_INTERACTIVE_SHELL = "The interactive shell couldn't be created";
 
+        /**
+         * Creates a new shell exception with the specified message.
+         *
+         * @param message the detail message
+         */
         public ShellException(String message) {
             super(message);
         }

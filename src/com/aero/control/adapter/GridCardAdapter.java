@@ -27,6 +27,9 @@ public class GridCardAdapter extends ArrayAdapter<CardBox> {
         this.data = data;
     }
 
+    /**
+     * Clears all items from the adapter and the underlying data list.
+     */
     @Override // android.widget.ArrayAdapter
     public void clear() {
         super.clear();
@@ -34,11 +37,22 @@ public class GridCardAdapter extends ArrayAdapter<CardBox> {
         notifyDataSetChanged();
     }
 
+    /**
+     * Notifies observers that the underlying data has changed.
+     */
     @Override // android.widget.ArrayAdapter, android.widget.BaseAdapter
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
     }
 
+    /**
+     * Returns the CardBox view at the specified position.
+     *
+     * @param position the position of the item
+     * @param convertView the recycled view (ignored as CardBox provides its own view)
+     * @param parent the parent view group
+     * @return the CardBox at the given position
+     */
     @Override // android.widget.ArrayAdapter, android.widget.Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
         return this.data.get(position);

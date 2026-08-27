@@ -18,6 +18,11 @@ public class CPUHotplugFragment extends PlaceHolderFragment {
     private String mHotplugPath;
     private PreferenceScreen root;
 
+    /**
+     * Initializes the fragment and loads CPU hotplug settings.
+     *
+     * @param savedInstanceState the saved instance state
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +38,9 @@ public class CPUHotplugFragment extends PlaceHolderFragment {
         loadHotplug();
     }
 
+    /**
+     * Loads CPU hotplug parameters from the kernel and generates preference UI elements.
+     */
     public void loadHotplug() {
         String[] completeParamterList = AeroActivity.shell.getDirInfo(this.mHotplugPath, true);
         if (this.PrefCat != null) {
