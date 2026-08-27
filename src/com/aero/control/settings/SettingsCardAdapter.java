@@ -161,7 +161,6 @@ class SettingsCardAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 preference.performCardClick();
-                bindSwitchState(preference, row);
             }
         });
         row.setOnClickListener(new View.OnClickListener() {
