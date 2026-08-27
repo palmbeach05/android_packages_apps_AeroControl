@@ -44,3 +44,21 @@ jobs:
 
     - name: Run Android lint
       run: ./gradlew lint
+
+    - name: Upload debug APK
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: aerocontrol-debug-apk
+        path: build/outputs/apk/debug/*.apk
+        if-no-files-found: error
+
+    - name: Upload Android lint reports
+      if: always()
+      uses: actions/upload-artifact@v5
+      with:
+        name: android-lint-reports
+        path: |
+          build/reports/lint-results.html
+          build/reports/lint-results.xml
+        if-no-files-found: warn
