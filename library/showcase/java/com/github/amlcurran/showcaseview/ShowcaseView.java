@@ -77,10 +77,24 @@ public class ShowcaseView extends RelativeLayout
     private long fadeOutMillis;
     private boolean isShowing;
 
+    /**
+     * Creates a new ShowcaseView instance.
+     *
+     * @param context the context
+     * @param newStyle if true, uses new showcase drawer style; otherwise uses standard style
+     */
     protected ShowcaseView(Context context, boolean newStyle) {
         this(context, null, R.styleable.CustomTheme_showcaseViewStyle, newStyle);
     }
 
+    /**
+     * Creates a new ShowcaseView instance with custom attributes.
+     *
+     * @param context the context
+     * @param attrs attribute set from XML
+     * @param defStyle default style resource
+     * @param newStyle if true, uses new showcase drawer style; otherwise uses standard style
+     */
     protected ShowcaseView(Context context, AttributeSet attrs, int defStyle, boolean newStyle) {
         super(context, attrs, defStyle);
 
@@ -160,10 +174,21 @@ public class ShowcaseView extends RelativeLayout
         invalidate();
     }
 
+    /**
+     * Set the target of the showcase without animation.
+     *
+     * @param target the target to showcase
+     */
     public void setTarget(final Target target) {
         setShowcase(target, false);
     }
 
+    /**
+     * Set the target of the showcase with optional animation.
+     *
+     * @param target the target to showcase
+     * @param animate if true, animates to the target position; otherwise jumps immediately
+     */
     public void setShowcase(final Target target, final boolean animate) {
         postDelayed(new Runnable() {
             @Override
@@ -210,22 +235,47 @@ public class ShowcaseView extends RelativeLayout
                 getMeasuredHeight() != bitmapBuffer.getHeight();
     }
 
+    /**
+     * Check whether the showcase has a valid target position.
+     *
+     * @return true if showcase has a valid target, false otherwise
+     */
     public boolean hasShowcaseView() {
         return (showcaseX != 1000000 && showcaseY != 1000000) && !hasNoTarget;
     }
 
+    /**
+     * Set the X coordinate of the showcase position.
+     *
+     * @param x the X coordinate
+     */
     public void setShowcaseX(int x) {
         setShowcasePosition(x, showcaseY);
     }
 
+    /**
+     * Set the Y coordinate of the showcase position.
+     *
+     * @param y the Y coordinate
+     */
     public void setShowcaseY(int y) {
         setShowcasePosition(showcaseX, y);
     }
 
+    /**
+     * Get the X coordinate of the showcase position.
+     *
+     * @return the X coordinate
+     */
     public int getShowcaseX() {
         return showcaseX;
     }
 
+    /**
+     * Get the Y coordinate of the showcase position.
+     *
+     * @return the Y coordinate
+     */
     public int getShowcaseY() {
         return showcaseY;
     }
@@ -249,6 +299,11 @@ public class ShowcaseView extends RelativeLayout
         hasCustomClickListener = true;
     }
 
+    /**
+     * Set a listener to receive showcase events (show, hide, etc.).
+     *
+     * @param listener the event listener, or null to use default NONE listener
+     */
     public void setOnShowcaseEventListener(OnShowcaseEventListener listener) {
         if (listener != null) {
             mEventListener = listener;
@@ -257,6 +312,11 @@ public class ShowcaseView extends RelativeLayout
         }
     }
 
+    /**
+     * Set the text displayed on the button.
+     *
+     * @param text the text to display
+     */
     public void setButtonText(CharSequence text) {
         if (mEndButton != null) {
             mEndButton.setText(text);
@@ -272,6 +332,11 @@ public class ShowcaseView extends RelativeLayout
         hasAlteredText = false;
     }
 
+    /**
+     * Draws the showcase view and its children to the canvas.
+     *
+     * @param canvas the canvas to draw to
+     */
     @SuppressWarnings("NullableProblems")
     @Override
     protected void dispatchDraw(Canvas canvas) {
@@ -296,6 +361,10 @@ public class ShowcaseView extends RelativeLayout
 
     }
 
+    /**
+     * Hide the showcase view with animation.
+     * Stores the shot state if configured as single-shot.
+     */
     @Override
     public void hide() {
         clearBitmap();
@@ -323,6 +392,9 @@ public class ShowcaseView extends RelativeLayout
         });
     }
 
+    /**
+     * Show the showcase view with animation.
+     */
     @Override
     public void show() {
         isShowing = true;
@@ -341,6 +413,13 @@ public class ShowcaseView extends RelativeLayout
         );
     }
 
+    /**
+     * Handle touch events on the showcase view.
+     *
+     * @param view the view that was touched
+     * @param motionEvent the motion event
+     * @return true if the event was handled, false otherwise
+     */
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
 
@@ -371,11 +450,21 @@ public class ShowcaseView extends RelativeLayout
         setVisibility(GONE);
     }
 
+    /**
+     * Set the title text of the showcase.
+     *
+     * @param title the title text
+     */
     @Override
     public void setContentTitle(CharSequence title) {
         textDrawer.setContentTitle(title);
     }
 
+    /**
+     * Set the descriptive content text of the showcase.
+     *
+     * @param text the content text
+     */
     @Override
     public void setContentText(CharSequence text) {
         textDrawer.setContentText(text);
@@ -385,10 +474,16 @@ public class ShowcaseView extends RelativeLayout
         this.scaleMultiplier = scaleMultiplier;
     }
 
+    /**
+     * Hide the showcase button.
+     */
     public void hideButton() {
         mEndButton.setVisibility(GONE);
     }
 
+    /**
+     * Show the showcase button.
+     */
     public void showButton() {
         mEndButton.setVisibility(VISIBLE);
     }
@@ -402,10 +497,21 @@ public class ShowcaseView extends RelativeLayout
         final ShowcaseView showcaseView;
         private final Activity activity;
 
+        /**
+         * Create a new Builder for constructing a ShowcaseView.
+         *
+         * @param activity the activity to add the showcase to
+         */
         public Builder(Activity activity) {
             this(activity, false);
         }
 
+        /**
+         * Create a new Builder for constructing a ShowcaseView with optional style.
+         *
+         * @param activity the activity to add the showcase to
+         * @param useNewStyle if true, uses new showcase drawer style; otherwise uses standard style
+         */
         public Builder(Activity activity, boolean useNewStyle) {
             this.activity = activity;
             this.showcaseView = new ShowcaseView(activity, useNewStyle);
@@ -515,6 +621,12 @@ public class ShowcaseView extends RelativeLayout
             return this;
         }
 
+        /**
+         * Set a listener to receive showcase events.
+         *
+         * @param showcaseEventListener the event listener
+         * @return this Builder for method chaining
+         */
         public Builder setShowcaseEventListener(OnShowcaseEventListener showcaseEventListener) {
             showcaseView.setOnShowcaseEventListener(showcaseEventListener);
             return this;
@@ -581,6 +693,11 @@ public class ShowcaseView extends RelativeLayout
         updateStyle(array, true);
     }
 
+    /**
+     * Check if the showcase view is currently showing.
+     *
+     * @return true if showing, false otherwise
+     */
     @Override
     public boolean isShowing() {
         return isShowing;
