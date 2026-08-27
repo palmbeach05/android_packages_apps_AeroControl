@@ -51,7 +51,7 @@
         android:background="?attr/aeroDividerColor"
         android:layout_width="0.5dp"
         android:layout_height="match_parent"/>
-    <com.aero.control.helpers.Android.Material.CheckBox
+    <android.widget.CheckBox
         android:id="@+id/checkbox_pref"
         android:background="?attr/aeroPreferenceControlBackground"
         android:paddingLeft="0dp"
