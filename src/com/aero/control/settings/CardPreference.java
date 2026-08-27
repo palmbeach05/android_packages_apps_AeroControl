@@ -23,11 +23,11 @@ public class CardPreference extends Preference {
             return;
         }
 
-        onClick();
-
         OnPreferenceClickListener listener = getOnPreferenceClickListener();
-        if (listener != null) {
-            listener.onPreferenceClick(this);
+        if (listener != null && listener.onPreferenceClick(this)) {
+            return;
         }
+
+        onClick();
     }
 }
