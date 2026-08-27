@@ -80,6 +80,10 @@ public class VoltageFragment extends PlaceHolderFragment {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Loads voltage settings from the system and creates editable preferences
+     * for each frequency-voltage pair.
+     */
     public void loadVoltage() {
         String[] completeParamterList = AeroActivity.shell.getInfo(FilePath.VOLTAGE_PATH, false);
         if (this.PrefCat != null) {
@@ -133,12 +137,20 @@ public class VoltageFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Applies the specified voltage values to the system.
+     *
+     * @param exeVolt a space-separated string of voltage values in millivolts
+     */
     public void executeVolt(String exeVolt) {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         AeroActivity.shell.setRootInfo(exeVolt, FilePath.VOLTAGE_PATH);
         updateUI();
     }
 
+    /**
+     * Updates the voltage preference UI to reflect the current voltage values.
+     */
     public void updateUI() {
         String[] voltArray = (String[]) this.voltList.toArray(new String[0]);
         for (int i = 0; i < this.PrefCat.getPreferenceCount() - 1; i++) {

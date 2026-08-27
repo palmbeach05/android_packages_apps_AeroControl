@@ -185,6 +185,12 @@ public class StatisticsFragment extends Fragment {
         return this.mClusters.isEmpty() ? null : this.mClusters.get(0);
     }
 
+    /**
+     * Displays the first-time tutorial showcase overlay for the statistics fragment.
+     *
+     * @param header the resource ID for the showcase title
+     * @param content the resource ID for the showcase content text
+     */
     public void DrawFirstStart(int header, int content) {
         try {
             FileOutputStream fos = getActivity().openFileOutput(FILENAME_STATISTICS, 0);

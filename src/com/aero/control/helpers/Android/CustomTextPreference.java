@@ -17,6 +17,11 @@ import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
+/**
+ * An enhanced EditTextPreference with custom layout, checkbox for save-on-boot functionality,
+ * and integrated help button. Supports Material Design styling and persistent state
+ * management through shared preferences.
+ */
 public class CustomTextPreference extends EditTextPreference implements CheckBox.OnCheckListener {
     private Boolean mChecked;
     private Context mContext;
@@ -33,6 +38,11 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
     private String mText;
     private TextView mTitle;
 
+    /**
+     * Creates a new CustomTextPreference with custom layout and help support.
+     *
+     * @param context the context in which the preference is created
+     */
     public CustomTextPreference(Context context) {
         super(context);
         this.mOnClickListener = new View.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomTextPreference.1
@@ -62,10 +72,20 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         this.mContext = context;
     }
 
+    /**
+     * Sets whether this preference should be hidden from boot-time save operations.
+     *
+     * @param checked true to hide this preference during boot, false otherwise
+     */
     public void setHideOnBoot(Boolean checked) {
         this.mHideOnBoot = checked;
     }
 
+    /**
+     * Returns whether this preference is hidden from boot-time save operations.
+     *
+     * @return true if hidden during boot, false otherwise
+     */
     public Boolean isHidden() {
         if (this.mHideOnBoot == null) {
             this.mHideOnBoot = false;
@@ -73,6 +93,11 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         return this.mHideOnBoot;
     }
 
+    /**
+     * Enables or disables the help button for this preference.
+     *
+     * @param enable true to show the help button, false to hide it
+     */
     public void setHelpEnable(boolean enable) {
         this.mShowHelp = Boolean.valueOf(enable);
     }

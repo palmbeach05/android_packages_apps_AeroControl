@@ -1015,6 +1015,10 @@ public class CPUFragment extends PlaceHolderFragment {
         return false;
     }
 
+    /**
+     * Updates the minimum frequency preference UI for all CPU clusters by reading
+     * current values from sysfs and refreshing the preference controls.
+     */
     public void updateMinFreq() {
         // Read sysfs values outside lock to minimize critical section
         for (ClusterControls controls : this.mClusterControls) {
@@ -1049,6 +1053,10 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Updates the maximum frequency preference UI for all CPU clusters by reading
+     * current values from sysfs and refreshing the preference controls.
+     */
     public void updateMaxFreq() {
         // Read sysfs values outside lock to minimize critical section
         for (ClusterControls controls : this.mClusterControls) {
@@ -1095,6 +1103,12 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Displays the first-time tutorial showcase overlay for the CPU fragment.
+     *
+     * @param header the resource ID for the showcase title
+     * @param content the resource ID for the showcase content text
+     */
     public void DrawFirstStart(int header, int content) {
         try {
             FileOutputStream fos = getActivity().openFileOutput(FILENAME, 0);

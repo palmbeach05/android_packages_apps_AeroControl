@@ -226,6 +226,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Initiates a kernel backup operation in the background.
+     * Backs up either the boot partition or zImage depending on device configuration.
+     */
     public void startKernelBackup() {
         new KernelBackupTask().execute();
     }
@@ -301,6 +305,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Restores a zImage kernel from a backup directory.
+     *
+     * @param s the backup directory name
+     */
     public void restorezImage(String s) {
         if (!isValidBackupName(s)) {
             Log.e("Aero", "Refusing to restore from suspicious backup name: " + s);
@@ -313,6 +322,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
         Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
     }
 
+    /**
+     * Restores a boot.img from a backup directory to the boot partition.
+     *
+     * @param s the backup directory name
+     */
     public void restoreBoot(String s) {
         if (!isValidBackupName(s)) {
             Log.e("Aero", "Refusing to restore from suspicious backup name: " + s);

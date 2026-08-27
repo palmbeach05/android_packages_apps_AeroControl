@@ -165,6 +165,12 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         }
     }
 
+    /**
+     * Displays the first-time tutorial showcase overlay for the misc settings fragment.
+     *
+     * @param header the resource ID for the showcase title
+     * @param content the resource ID for the showcase content text
+     */
     public void DrawFirstStart(int header, int content) {
         try {
             FileOutputStream fos = getActivity().openFileOutput(FILENAME_MISC, 0);
@@ -220,6 +226,10 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         this.mFileDialog.dismiss();
     }
 
+    /**
+     * Initializes the misc settings section by loading previously saved
+     * custom tunable parameters from shared preferences.
+     */
     public void initMisc() {
         Map<String, ?> keys = this.mMiscSettings.getAll();
         int i = 0;
@@ -258,6 +268,10 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         setHasOptionsMenu(true);
     }
 
+    /**
+     * Loads and displays the misc settings preferences including custom tunables,
+     * TCP congestion control, and other system parameters.
+     */
     public void loadSettings() {
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
