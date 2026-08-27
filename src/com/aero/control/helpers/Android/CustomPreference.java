@@ -351,6 +351,9 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         }
 
         onClick();
+            if (getIntent() != null) {
+                getContext().startActivity(getIntent());
+        }
     }
 
     @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener

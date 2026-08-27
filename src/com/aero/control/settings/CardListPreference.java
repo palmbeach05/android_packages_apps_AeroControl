@@ -39,5 +39,8 @@ public class CardListPreference extends ListPreference {
         }
 
         onClick();
+            if (getIntent() != null) {
+                getContext().startActivity(getIntent());
+        }
     }
 }

@@ -39,5 +39,8 @@ public class CardSwitchPreference extends SwitchPreference {
         }
 
         onClick();
+            if (getIntent() != null) {
+                getContext().startActivity(getIntent());
+        }
     }
 }
