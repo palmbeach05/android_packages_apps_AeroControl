@@ -52,7 +52,8 @@
         android:layout_height="match_parent"/>
     <android.widget.CheckBox
         android:id="@+id/checkbox_pref"
-        android:background="?attr/aeroPreferenceControlBackground"
+        android:background="@null"
+        android:gravity="center"
         android:paddingLeft="0dp"
         android:paddingRight="5dp"
         android:layout_width="64dp"
