@@ -19,6 +19,11 @@ import android.view.animation.ScaleAnimation;
 import android.widget.RelativeLayout;
 import com.aero.control.R;
 
+/**
+ * A RelativeLayout that provides a Material Design ripple effect animation
+ * when the view is touched. The ripple emanates from the touch point and
+ * provides visual feedback to the user.
+ */
 public class RippleView extends RelativeLayout {
     private int DURATION;
     private int FRAME_RATE;
@@ -47,6 +52,11 @@ public class RippleView extends RelativeLayout {
     private int zoomDuration;
     private float zoomScale;
 
+    /**
+     * Constructs a new RippleView with the specified context.
+     *
+     * @param context the context in which the view is running
+     */
     public RippleView(Context context) {
         super(context);
         this.FRAME_RATE = 8;
@@ -67,6 +77,12 @@ public class RippleView extends RelativeLayout {
         };
     }
 
+    /**
+     * Constructs a new RippleView with the specified context and attributes.
+     *
+     * @param context the context in which the view is running
+     * @param attrs the attributes of the XML tag that is inflating the view
+     */
     public RippleView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.FRAME_RATE = 8;
@@ -88,6 +104,13 @@ public class RippleView extends RelativeLayout {
         init(context, attrs);
     }
 
+    /**
+     * Constructs a new RippleView with the specified context, attributes, and style.
+     *
+     * @param context the context in which the view is running
+     * @param attrs the attributes of the XML tag that is inflating the view
+     * @param defStyle the default style to apply to this view
+     */
     public RippleView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.FRAME_RATE = 8;
@@ -145,6 +168,13 @@ public class RippleView extends RelativeLayout {
         }
     }
 
+    /**
+     * Adds a child view to this container. Stores a reference to the child for ripple calculations.
+     *
+     * @param child the view to add
+     * @param index the position at which to add the child
+     * @param params the layout parameters for the child
+     */
     @Override // android.view.ViewGroup
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
         this.childView = child;
