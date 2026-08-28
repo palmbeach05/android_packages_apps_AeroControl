@@ -896,12 +896,26 @@ public class CPUFragment extends PlaceHolderFragment {
         return false;
     }
 
+    /**
+     * Inflates the CPU fragment's options menu with governor settings menu items.
+     *
+     * @param menu the menu to inflate into
+     * @param inflater the menu inflater to use
+     */
     @Override // android.app.Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.cpu_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    /**
+     * Handles options menu item selections. Shows governor settings for the appropriate
+     * cluster when the governor settings menu item is selected. For multi-cluster systems,
+     * displays a cluster selection dialog first.
+     *
+     * @param item the menu item that was selected
+     * @return true if the item was handled, false otherwise
+     */
     @Override // android.app.Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -963,6 +977,10 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Pauses UI updates when the fragment becomes invisible and removes any displayed
+     * governor parameter preference category.
+     */
     @Override // android.app.Fragment
     public void onPause() {
         super.onPause();
@@ -972,12 +990,19 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Resumes UI updates when the fragment becomes visible again.
+     */
     @Override // com.aero.control.fragments.PlaceHolderFragment, android.app.Fragment
     public void onResume() {
         super.onResume();
         this.mVisible = true;
     }
 
+    /**
+     * Cleans up resources when the fragment is destroyed. Invalidates all pending mirror
+     * request callbacks, shuts down the mirror executor, and interrupts any in-flight work.
+     */
     @Override // android.app.Fragment
     public void onDestroy() {
         // Invalidate any mirror-request UI callback already posted to the main thread before the
@@ -1091,6 +1116,13 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /**
+     * Called when the fragment's activity has been created and this fragment's view hierarchy
+     * instantiated. Checks if this is the first time the fragment is shown and displays a
+     * showcase tutorial highlighting the CPU governor settings if needed.
+     *
+     * @param savedInstanceState the saved instance state bundle
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);

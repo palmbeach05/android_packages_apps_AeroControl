@@ -250,6 +250,13 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         }
     }
 
+    /**
+     * Adds a read-only low memory capability status preference to the memory settings
+     * category. Asynchronously checks if the low memory property is supported and reads
+     * its value, then adds the preference to the UI on the main thread if supported.
+     *
+     * @param memorySettingsCategory the preference category to add the low memory status preference to
+     */
     private void addLowMemoryStatusPreference(final PreferenceCategory memorySettingsCategory) {
         if (memorySettingsCategory == null) {
             return;
@@ -308,6 +315,13 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         }).start();
     }
 
+    /**
+     * Called when the fragment's activity has been created and this fragment's view hierarchy
+     * instantiated. Checks if this is the first time the fragment is shown and displays a
+     * showcase tutorial highlighting the fstrim feature if needed.
+     *
+     * @param savedInstanceState the saved instance state bundle
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -320,12 +334,25 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         }
     }
 
+    /**
+     * Inflates the memory fragment's options menu with I/O settings menu items.
+     *
+     * @param menu the menu to inflate into
+     * @param inflater the menu inflater to use
+     */
     @Override // android.app.Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.memory_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    /**
+     * Handles options menu item selections. Loads I/O scheduler parameters when the
+     * I/O settings menu item is selected.
+     *
+     * @param item the menu item that was selected
+     * @return true if the item was handled, false otherwise
+     */
     @Override // android.app.Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -336,6 +363,14 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Handles clicks on preferences in the preference tree. Delegates to handlePreferenceClick
+     * for processing the specific preference action.
+     *
+     * @param preferenceScreen the preference screen containing the clicked preference
+     * @param preference the preference that was clicked
+     * @return true if the click was handled
+     */
     @Override // android.preference.PreferenceFragment
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         handlePreferenceClick(preference);
@@ -418,6 +453,14 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         return true;
     }
 
+    /**
+     * Handles preference value changes for the I/O scheduler and read-ahead preferences.
+     * Updates preference summaries and applies changes to the kernel via root commands.
+     *
+     * @param preference the preference that changed
+     * @param newValue the new value for the preference
+     * @return true if the change was handled successfully, false otherwise
+     */
     @Override // android.preference.Preference.OnPreferenceChangeListener
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String value = (String) newValue;

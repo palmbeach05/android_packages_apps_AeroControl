@@ -17,6 +17,15 @@ import com.aero.control.AeroActivity;
 public class PlaceHolderFragment extends PreferenceFragment {
     private String mTitle;
 
+    /**
+     * Creates and configures the fragment's view. Applies custom styling to the ListView
+     * including padding and divider settings for a card-like appearance.
+     *
+     * @param inflater the layout inflater to use
+     * @param container the parent view to attach to
+     * @param savedInstanceState the saved instance state bundle
+     * @return the configured view hierarchy
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = super.onCreateView(inflater, container, savedInstanceState);
@@ -40,6 +49,9 @@ public class PlaceHolderFragment extends PreferenceFragment {
         this.mTitle = title;
     }
 
+    /**
+     * Restores the fragment's title when the fragment resumes.
+     */
     @Override // android.app.Fragment
     public void onResume() {
         super.onResume();
