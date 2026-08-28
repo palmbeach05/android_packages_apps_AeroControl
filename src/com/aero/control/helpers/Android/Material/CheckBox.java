@@ -103,7 +103,6 @@ public class CheckBox extends CustomView {
         addView(this.checkView);
     }
 
-    /* JADX WARN: Can't fix incorrect switch cases order, some code will duplicate */
     @Override // android.view.View
     public boolean onTouchEvent(MotionEvent event) {
         if (isEnabled()) {

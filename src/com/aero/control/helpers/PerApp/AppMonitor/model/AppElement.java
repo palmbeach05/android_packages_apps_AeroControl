@@ -13,13 +13,11 @@ import java.util.List;
  */
 public class AppElement implements Parcelable {
     public static final Parcelable.Creator<AppElement> CREATOR = new Parcelable.Creator<AppElement>() { // from class: com.aero.control.helpers.PerApp.AppMonitor.model.AppElement.2
-        /* JADX WARN: Can't rename method to resolve collision */
         @Override // android.os.Parcelable.Creator
         public AppElement createFromParcel(Parcel source) {
             return new AppElement(source);
         }
 
-        /* JADX WARN: Can't rename method to resolve collision */
         @Override // android.os.Parcelable.Creator
         public AppElement[] newArray(int size) {
             return new AppElement[size];
