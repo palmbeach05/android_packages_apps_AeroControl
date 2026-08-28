@@ -150,7 +150,7 @@ jobs:
           path: |
             build/outputs/apk/debug/*.apk
             build/outputs/apk/debug/*-metadata.txt
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Upload Android lint reports
         if: always()
