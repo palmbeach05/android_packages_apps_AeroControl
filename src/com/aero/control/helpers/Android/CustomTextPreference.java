@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.Build;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
@@ -13,7 +12,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import com.aero.control.R;
-import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
@@ -22,7 +20,7 @@ import com.aero.control.helpers.HelpTextHolder;
  * and integrated help button. Supports Material Design styling and persistent state
  * management through shared preferences.
  */
-public class CustomTextPreference extends EditTextPreference implements CheckBox.OnCheckListener {
+public class CustomTextPreference extends EditTextPreference {
     private Boolean mChecked;
     private Context mContext;
     private View mCustomImageButton;
@@ -30,7 +28,7 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
     private Boolean mHideOnBoot;
     private String mName;
     private View.OnClickListener mOnClickListener;
-    private CompoundButton mPlatformCheckBox;
+    private CompoundButton mCheckBox;
     private SharedPreferences mSharedPreference;
     private Boolean mShowHelp;
     private TextView mSummary;
@@ -153,8 +151,8 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         boolean effectiveEnabled = isEnabled();
-        if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(effectiveEnabled);
+        if (this.mCheckBox != null) {
+            this.mCheckBox.setEnabled(effectiveEnabled);
         }
         applyEnabledStateToViews(effectiveEnabled);
     }
@@ -210,24 +208,16 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         this.mSummary.setText(this.mSummaryPref);
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
-        View checkBoxView;
-        if (Build.VERSION.SDK_INT >= 21) {
-            this.mPlatformCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
-            this.mPlatformCheckBox.setOnCheckedChangeListener(null);
-            this.mPlatformCheckBox.setChecked(isChecked().booleanValue());
-            this.mPlatformCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override // android.widget.CompoundButton.OnCheckedChangeListener
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    CustomTextPreference.this.onCheck(isChecked);
-                }
-            });
-            checkBoxView = this.mPlatformCheckBox;
-        } else {
-            CheckBox checkbox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-            checkbox.setOncheckListener(this);
-            checkbox.setChecked(isChecked().booleanValue());
-            checkBoxView = checkbox;
-        }
+        this.mCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
+        this.mCheckBox.setOnCheckedChangeListener(null);
+        this.mCheckBox.setChecked(isChecked().booleanValue());
+        this.mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override // android.widget.CompoundButton.OnCheckedChangeListener
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                CustomTextPreference.this.onCheck(isChecked);
+            }
+        });
+        View checkBoxView = this.mCheckBox;
         this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
@@ -266,7 +256,6 @@ public class CustomTextPreference extends EditTextPreference implements CheckBox
         }
     }
 
-    @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
     public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         setChecked(Boolean.valueOf(checked));

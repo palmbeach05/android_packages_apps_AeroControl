@@ -10,6 +10,11 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+/**
+ * Abstract base class for custom Material Design views. Provides common functionality
+ * for handling view attributes, animations, and background styling for Material Design
+ * components.
+ */
 public abstract class CustomView extends RelativeLayout {
     protected static final String ANDROIDXML = "http://schemas.android.com/apk/res/android";
     protected static final String MATERIALDESIGNXML = "http://schemas.android.com/apk/res-auto";
@@ -22,8 +27,18 @@ public abstract class CustomView extends RelativeLayout {
     protected int minHeight;
     protected int minWidth;
 
+    /**
+     * Initializes default values for the custom view, such as minimum dimensions
+     * and default colors. Subclasses must implement this method.
+     */
     protected abstract void onInitDefaultValues();
 
+    /**
+     * Constructs a new CustomView with the specified context and attributes.
+     *
+     * @param context the context in which the view is running
+     * @param attrs the attributes of the XML tag that is inflating the view
+     */
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.disabledBackgroundColor = Color.parseColor("#E2E2E2");
@@ -33,11 +48,24 @@ public abstract class CustomView extends RelativeLayout {
         onInitDefaultValues();
     }
 
+    /**
+     * Converts density-independent pixels (dp) to actual pixels (px) based on the screen density.
+     *
+     * @param dp the value in density-independent pixels
+     * @param resources the resources object to retrieve display metrics from
+     * @return the value in pixels
+     */
     public static int dpToPx(float dp, Resources resources) {
         float px = TypedValue.applyDimension(1, dp, resources.getDisplayMetrics());
         return (int) px;
     }
 
+    /**
+     * Parses a string dimension value containing "dp" or "dip" and converts it to a float.
+     *
+     * @param value the dimension string (e.g., "16dp" or "24dip")
+     * @return the numeric value as a float
+     */
     public static float dipOrDpToFloat(String value) {
         String value2;
         if (value.contains("dp")) {
@@ -48,12 +76,24 @@ public abstract class CustomView extends RelativeLayout {
         return Float.parseFloat(value2);
     }
 
+    /**
+     * Calculates the absolute top position of a view relative to the screen.
+     *
+     * @param myView the view to get the position for
+     * @return the top position in pixels
+     */
     public static int getRelativeTop(View myView) {
         Rect bounds = new Rect();
         myView.getGlobalVisibleRect(bounds);
         return bounds.top;
     }
 
+    /**
+     * Calculates the absolute left position of a view relative to its root parent.
+     *
+     * @param myView the view to get the position for
+     * @return the left position in pixels
+     */
     public static int getRelativeLeft(View myView) {
         if (myView.getId() == 16908290) {
             return myView.getLeft();
@@ -61,6 +101,11 @@ public abstract class CustomView extends RelativeLayout {
         return getRelativeLeft((View) myView.getParent()) + myView.getLeft();
     }
 
+    /**
+     * Applies XML attributes to the view, including minimum dimensions and background settings.
+     *
+     * @param attrs the attributes of the XML tag that is inflating the view
+     */
     protected void setAttributes(AttributeSet attrs) {
         setMinimumHeight(dpToPx(this.minHeight, getResources()));
         setMinimumWidth(dpToPx(this.minWidth, getResources()));
@@ -70,6 +115,11 @@ public abstract class CustomView extends RelativeLayout {
         setBackgroundAttributes(attrs);
     }
 
+    /**
+     * Parses and applies background color attributes from XML to the view.
+     *
+     * @param attrs the attributes of the XML tag that is inflating the view
+     */
     protected void setBackgroundAttributes(AttributeSet attrs) {
         int backgroundColor = attrs.getAttributeResourceValue(ANDROIDXML, "background", -1);
         if (backgroundColor != -1) {

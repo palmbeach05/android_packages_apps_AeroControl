@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
@@ -15,7 +14,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
-import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 import java.util.Map;
@@ -26,9 +24,8 @@ import java.util.Map;
  * tuning values, an optional help button that displays contextual documentation, and
  * theme-aware text colors.
  */
-public class CustomPreference extends Preference implements CheckBox.OnCheckListener {
-    private CheckBox mCheckBox;
-    private CompoundButton mPlatformCheckBox;
+public class CustomPreference extends Preference {
+    private CompoundButton mCheckBox;
     private Boolean mChecked;
     private Boolean mClicked;
     private Context mContext;
@@ -256,9 +253,6 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         if (this.mCheckBox != null) {
             this.mCheckBox.setEnabled(effectiveEnabled);
         }
-        if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(effectiveEnabled);
-        }
     }
 
     /**
@@ -397,24 +391,16 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
         this.mSummary.setText(this.mSummaryPref);
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
-        View checkBoxView;
-        if (Build.VERSION.SDK_INT >= 21) {
-            this.mPlatformCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
-            this.mPlatformCheckBox.setOnCheckedChangeListener(null);
-            this.mPlatformCheckBox.setChecked(isChecked().booleanValue());
-            this.mPlatformCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override // android.widget.CompoundButton.OnCheckedChangeListener
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    CustomPreference.this.onCheck(isChecked);
-                }
-            });
-            checkBoxView = this.mPlatformCheckBox;
-        } else {
-            this.mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-            this.mCheckBox.setOncheckListener(this);
-            this.mCheckBox.setChecked(isChecked().booleanValue());
-            checkBoxView = this.mCheckBox;
-        }
+        this.mCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
+        this.mCheckBox.setOnCheckedChangeListener(null);
+        this.mCheckBox.setChecked(isChecked().booleanValue());
+        this.mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override // android.widget.CompoundButton.OnCheckedChangeListener
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                CustomPreference.this.onCheck(isChecked);
+            }
+        });
+        View checkBoxView = this.mCheckBox;
         this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
@@ -466,7 +452,6 @@ public class CustomPreference extends Preference implements CheckBox.OnCheckList
      *
      * @param checked true if the checkbox is now checked, false otherwise
      */
-    @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
     public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         String tmp = null;
