@@ -156,6 +156,19 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mDalvikSettings = (CustomPreference) findPreference("dalvik_settings");
         this.mDalvikSettings.setOrder(30);
         this.mDalvikSettings.setHideOnBoot(true);
+        Preference.OnPreferenceClickListener preferenceClickListener = new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                return handlePreferenceClick(preference);
+            }
+        };
+        this.mDynFSync.setOnPreferenceClickListener(preferenceClickListener);
+        this.mFsync.setOnPreferenceClickListener(preferenceClickListener);
+        this.mKSMSettings.setOnPreferenceClickListener(preferenceClickListener);
+        this.mWriteBackControl.setOnPreferenceClickListener(preferenceClickListener);
+        this.mFSTrimToggle.setOnPreferenceClickListener(preferenceClickListener);
+        this.mDalvikSettings.setOnPreferenceClickListener(preferenceClickListener);
+        this.mRandomSettings.setOnPreferenceClickListener(preferenceClickListener);
         this.mIOScheduler = new CustomListPreference(getActivity());
         this.mIOScheduler.setName("io_scheduler_list");
         this.mIOScheduler.setTitle(R.string.io_scheduler);
@@ -258,6 +271,11 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
 
     @Override // android.preference.PreferenceFragment
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+        handlePreferenceClick(preference);
+        return true;
+    }
+
+    private boolean handlePreferenceClick(Preference preference) {
         CustomPreference cusPref = null;
         if (preference == this.mDynFSync) {
             this.mDynFSync.setClicked(Boolean.valueOf(this.mDynFSync.isClicked().booleanValue() ? false : true));
@@ -312,6 +330,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             });
         } else if (preference == this.mRandomSettings) {
             onRandomClick();
+        } else {
+            return false;
         }
         if (cusPref != null && cusPref.isChecked().booleanValue()) {
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
