@@ -35,7 +35,8 @@ public class CheckBox extends CustomView {
      */
     public interface OnCheckListener {
         /**
-         * Called when the checkbox state changes.
+         * Called when the checkbox state changes due to user touch interaction.
+         * This callback is not invoked for programmatic changes via setChecked.
          *
          * @param z true if the checkbox is now checked, false otherwise
          */

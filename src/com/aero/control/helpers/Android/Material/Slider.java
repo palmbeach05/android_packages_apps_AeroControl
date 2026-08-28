@@ -46,7 +46,8 @@ public class Slider extends CustomView {
      */
     public interface OnValueChangedListener {
         /**
-         * Called when the slider value changes.
+         * Called when the slider value changes due to user touch interaction.
+         * This callback is not invoked for programmatic changes via setProgress or setValueInRunnable.
          *
          * @param i the new value
          */
@@ -273,7 +274,8 @@ public class Slider extends CustomView {
      * Sets the slider value programmatically with optional deferred execution.
      *
      * @param value the value to set
-     * @param inRunnable if true, post the update as a Runnable
+     * @param inRunnable if true, defer the update until after the thumb is placed;
+     *                   if the thumb is already placed, the update occurs synchronously
      */
     public void setProgress(int value, boolean inRunnable) {
         if (value <= this.min) {
