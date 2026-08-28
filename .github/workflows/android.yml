@@ -55,11 +55,24 @@ jobs:
             exit "${license_status}"
           fi
 
+          installed_packages="${RUNNER_TEMP}/installed-sdk-packages.txt"
+          platform_tools_zip="${RUNNER_TEMP}/platform-tools_r26.0.2-linux.zip"
+
           {
             "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" \
               "platforms;android-22" \
               "build-tools;26.0.2"
-            "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" --list_installed
+
+            # AGP 3.0.1 installs current Platform-Tools when this directory
+            # is absent. Platform-Tools 37.0.1 has metadata that AGP 3.0.1
+            # cannot parse, so install revision 26.0.2 directly.
+            curl --fail --location --retry 3 \
+              --output "${platform_tools_zip}" \
+              https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip
+            unzip -q "${platform_tools_zip}" -d "${ANDROID_SDK_ROOT}"
+
+            "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" --list_installed \
+              | tee "${installed_packages}"
           } 2>&1 | tee "${sdk_log}"
 
           if grep -E \
@@ -68,6 +81,10 @@ jobs:
             echo "Android SDK metadata parsing error detected during SDK setup." >&2
             exit 1
           fi
+
+          # AGP 3.0.1 does not need current command-line tools for the build.
+          # Do not let its old repository parser scan current tool metadata.
+          rm -rf "${ANDROID_SDK_ROOT}/cmdline-tools"
 
       # AGP 3.0.1 and Gradle 4.1 require JDK 8.
       - name: Set up JDK 8 for Gradle
