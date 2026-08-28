@@ -20,6 +20,7 @@
         android:layout_width="0.5dp"
         android:layout_height="match_parent"/>
     <RelativeLayout
+        android:id="@+id/preference_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="9dp"
