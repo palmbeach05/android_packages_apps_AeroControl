@@ -139,6 +139,8 @@
     <string name="pref_io_scheduler_no_parameter">Looks like there are no parameter for this scheduler?</string>
     <string name="pref_ksm">KSM</string>
     <string name="pref_ksm_summary">Enables or disabled the KSM daemon completely.</string>
+    <string name="pref_low_memory">Low Memory</string>
+    <string name="pref_low_memory_summary">Current ro.config.low_ram value: %1$s</string>
     <string name="pref_memory_settings">Memory Settings</string>
     <string name="pref_readahead">Readahead size</string>
     <string name="pref_readahead_dialog">Readahead size in kB</string>

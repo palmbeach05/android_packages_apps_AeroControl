@@ -52,6 +52,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
     private CustomListPreference mIOScheduler;
     private PreferenceHandler mIOSchedulerHandler;
     private CustomPreference mKSMSettings;
+    private CustomPreference mLowMemoryStatus;
     private MemoryDalvikFragment mMemoryDalvikFragment;
     private CustomPreference mRandomSettings;
     private CustomListPreference mReadAHead;
@@ -75,6 +76,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.root = getPreferenceScreen();
         PreferenceCategory memorySettingsCategory = (PreferenceCategory) findPreference(MEMORY_SETTINGS_CATEGORY);
         PreferenceCategory ioSettingsCategory = (PreferenceCategory) findPreference(IO_SETTINGS_CATEGORY);
+        addLowMemoryStatusPreference(memorySettingsCategory);
         this.mDynFSync = new CustomPreference(getActivity());
         this.mDynFSync.setName("dynFsync");
         this.mDynFSync.setTitle(R.string.pref_dynamic_fsync);
@@ -246,6 +248,50 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             Thread checkThread = new Thread(runnable);
             checkThread.start();
         }
+    }
+
+    private void addLowMemoryStatusPreference(PreferenceCategory memorySettingsCategory) {
+        if (memorySettingsCategory == null) {
+            return;
+        }
+
+        String propertyPattern = "^" + FilePath.LOW_MEM_PROPERTY.replace(".", "\\.") + "=";
+        String capabilityCommand = "grep -q '" + propertyPattern + "' " + FilePath.LOW_MEM
+                + " && echo " + FilePath.LOW_MEM_SUPPORTED + " || echo LOW_MEM_UNSUPPORTED";
+        String capabilityOutput;
+        try {
+            capabilityOutput = AeroActivity.shell.runCommandAndWaitForOutput(capabilityCommand);
+        } catch (RuntimeException e) {
+            Log.w("MemoryFragment", "Unable to check Low Memory support", e);
+            return;
+        }
+        if (capabilityOutput == null
+                || !FilePath.LOW_MEM_SUPPORTED.equals(capabilityOutput.trim())) {
+            return;
+        }
+
+        String valueCommand = "grep '" + propertyPattern + "' " + FilePath.LOW_MEM
+                + " | head -n 1 | cut -d= -f2-";
+        String propertyValue;
+        try {
+            propertyValue = AeroActivity.shell.runCommandAndWaitForOutput(valueCommand);
+        } catch (RuntimeException e) {
+            Log.w("MemoryFragment", "Unable to read Low Memory status", e);
+            return;
+        }
+        if (propertyValue == null) {
+            return;
+        }
+
+        this.mLowMemoryStatus = new CustomPreference(getActivity());
+        this.mLowMemoryStatus.setName("low_memory_status");
+        this.mLowMemoryStatus.setTitle(R.string.pref_low_memory);
+        this.mLowMemoryStatus.setSummary(getString(R.string.pref_low_memory_summary, propertyValue.trim()));
+        this.mLowMemoryStatus.setOrder(18);
+        this.mLowMemoryStatus.setHideOnBoot(true);
+        this.mLowMemoryStatus.setHelpEnable(false);
+        this.mLowMemoryStatus.setSelectable(false);
+        memorySettingsCategory.addPreference(this.mLowMemoryStatus);
     }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
