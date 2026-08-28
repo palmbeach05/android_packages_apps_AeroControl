@@ -262,7 +262,6 @@ public class CirclePageIndicator extends View implements PageIndicator {
         }
     }
 
-    /* JADX WARN: Can't fix incorrect switch cases order, some code will duplicate */
     @Override // android.view.View
     public boolean onTouchEvent(MotionEvent ev) {
         if (super.onTouchEvent(ev)) {
@@ -463,13 +462,11 @@ public class CirclePageIndicator extends View implements PageIndicator {
 
     static class SavedState extends View.BaseSavedState {
         public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() { // from class: com.aero.control.helpers.Android.CirclePageIndicator.SavedState.1
-            /* JADX WARN: Can't rename method to resolve collision */
             @Override // android.os.Parcelable.Creator
             public SavedState createFromParcel(Parcel in) {
                 return new SavedState(in);
             }
 
-            /* JADX WARN: Can't rename method to resolve collision */
             @Override // android.os.Parcelable.Creator
             public SavedState[] newArray(int size) {
                 return new SavedState[size];
