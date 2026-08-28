@@ -51,13 +51,16 @@
         android:background="?attr/aeroDividerColor"
         android:layout_width="0.5dp"
         android:layout_height="match_parent"/>
-    <android.widget.CheckBox
-        android:id="@+id/checkbox_pref"
-        android:background="@null"
-        android:gravity="center"
-        android:paddingLeft="0dp"
-        android:paddingRight="5dp"
+    <FrameLayout
         android:layout_width="64dp"
-        android:layout_height="match_parent"
-        android:paddingEnd="5dp"/>
+        android:layout_height="match_parent">
+
+        <android.widget.CheckBox
+            android:id="@+id/checkbox_pref"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@null"
+            android:paddingLeft="0dp"/>
+    </FrameLayout>
 </LinearLayout>
