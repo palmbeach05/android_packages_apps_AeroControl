@@ -24,7 +24,7 @@ import android.util.Log;
 public class BarSet extends ChartSet{
 	
 	
-	private static final String TAG = "com.db.chart.model.BarSet";
+	private static final String TAG = "WCBarSet";
 	
 	
 	public BarSet(){
