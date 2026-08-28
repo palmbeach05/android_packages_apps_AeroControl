@@ -360,7 +360,7 @@
 	<string name="help_text_laptop_mode">„laptop_mode“ ist eine Einstellung zur Steuerung des Laptop-Modus.</string>
 	<string name="help_text_legacy_va_layout">Ist dieser Wert ungleich 0, wird das neue 32-Bit-mmap-Speicherlayout deaktiviert. Der Kernel verwendet dann für alle Prozesse das ältere Layout aus Kernel-Version 2.4.</string>
 	<string name="help_text_live_oc_uc">Sei vorsichtig mit dieser Einstellung. Du kannst die aufgeführten Frequenzstufen übertakten oder untertakten und die jeweils passende Spannung festlegen. Diese Werte werden aus Sicherheitsgründen nicht auf Per-App-Profile angewendet.</string>
-	<string name="help_text_low_latency">Wenn aktiviert (1), reagiert der Hotplug-Treiber sehr schnell auf kurze Lastspitzen (100 % CPU-Auslastung) und aktiviert zusätzliche CPU-Kerne entsprechend.</string>
+	<string name="help_text_low_latency" formatted="false">Wenn aktiviert (1), reagiert der Hotplug-Treiber sehr schnell auf kurze Lastspitzen (100 % CPU-Auslastung) und aktiviert zusätzliche CPU-Kerne entsprechend.</string>
 	<string name="help_text_lowmem_reserve_ratio">Bei einigen spezialisierten Arbeitslasten auf Systemen mit Highmem kann es problematisch sein, wenn der Kernel Prozessspeicher aus der Lowmem-Zone zuweist. Dieser Speicher kann beispielsweise durch den Systemaufruf „mlock()“ oder durch fehlenden Swap-Speicher dauerhaft belegt werden.</string>
 	<string name="help_text_max_freq_cpu">Mit dieser Einstellung kann die maximale CPU-Frequenz angepasst werden. Ein niedrigerer Wert kann Energie sparen, geht jedoch zulasten der Leistung.</string>
 	<string name="help_text_max_freq_hysteresis">Verbleibt nach Erreichen der maximalen Frequenz mindestens für diesen Zeitraum auf dieser Frequenz, bevor sie wieder reduziert wird.</string>
