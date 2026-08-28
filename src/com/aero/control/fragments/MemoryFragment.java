@@ -250,48 +250,62 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         }
     }
 
-    private void addLowMemoryStatusPreference(PreferenceCategory memorySettingsCategory) {
+    private void addLowMemoryStatusPreference(final PreferenceCategory memorySettingsCategory) {
         if (memorySettingsCategory == null) {
             return;
         }
 
-        String propertyPattern = "^" + FilePath.LOW_MEM_PROPERTY.replace(".", "\\.") + "=";
-        String capabilityCommand = "grep -q '" + propertyPattern + "' " + FilePath.LOW_MEM
+        final String propertyPattern = "^" + FilePath.LOW_MEM_PROPERTY.replace(".", "\\.") + "=";
+        final String capabilityCommand = "grep -q '" + propertyPattern + "' " + FilePath.LOW_MEM
                 + " && echo " + FilePath.LOW_MEM_SUPPORTED + " || echo LOW_MEM_UNSUPPORTED";
-        String capabilityOutput;
-        try {
-            capabilityOutput = AeroActivity.shell.runCommandAndWaitForOutput(capabilityCommand);
-        } catch (RuntimeException e) {
-            Log.w("MemoryFragment", "Unable to check Low Memory support", e);
-            return;
-        }
-        if (capabilityOutput == null
-                || !FilePath.LOW_MEM_SUPPORTED.equals(capabilityOutput.trim())) {
-            return;
-        }
-
-        String valueCommand = "grep '" + propertyPattern + "' " + FilePath.LOW_MEM
+        final String valueCommand = "grep '" + propertyPattern + "' " + FilePath.LOW_MEM
                 + " | head -n 1 | cut -d= -f2-";
-        String propertyValue;
-        try {
-            propertyValue = AeroActivity.shell.runCommandAndWaitForOutput(valueCommand);
-        } catch (RuntimeException e) {
-            Log.w("MemoryFragment", "Unable to read Low Memory status", e);
-            return;
-        }
-        if (propertyValue == null) {
-            return;
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String capabilityOutput;
+                try {
+                    capabilityOutput = AeroActivity.shell.runCommandAndWaitForOutput(capabilityCommand);
+                } catch (RuntimeException e) {
+                    Log.w("MemoryFragment", "Unable to check Low Memory support", e);
+                    return;
+                }
+                if (capabilityOutput == null
+                        || !FilePath.LOW_MEM_SUPPORTED.equals(capabilityOutput.trim())) {
+                    return;
+                }
 
-        this.mLowMemoryStatus = new CustomPreference(getActivity());
-        this.mLowMemoryStatus.setName("low_memory_status");
-        this.mLowMemoryStatus.setTitle(R.string.pref_low_memory);
-        this.mLowMemoryStatus.setSummary(getString(R.string.pref_low_memory_summary, propertyValue.trim()));
-        this.mLowMemoryStatus.setOrder(18);
-        this.mLowMemoryStatus.setHideOnBoot(true);
-        this.mLowMemoryStatus.setHelpEnable(false);
-        this.mLowMemoryStatus.setSelectable(false);
-        memorySettingsCategory.addPreference(this.mLowMemoryStatus);
+                String propertyValue;
+                try {
+                    propertyValue = AeroActivity.shell.runCommandAndWaitForOutput(valueCommand);
+                } catch (RuntimeException e) {
+                    Log.w("MemoryFragment", "Unable to read Low Memory status", e);
+                    return;
+                }
+                if (propertyValue == null) {
+                    return;
+                }
+
+                final String lowMemoryStatus = propertyValue.trim();
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!MemoryFragment.this.isAdded()) {
+                            return;
+                        }
+                        MemoryFragment.this.mLowMemoryStatus = new CustomPreference(MemoryFragment.this.getActivity());
+                        MemoryFragment.this.mLowMemoryStatus.setName("low_memory_status");
+                        MemoryFragment.this.mLowMemoryStatus.setTitle(R.string.pref_low_memory);
+                        MemoryFragment.this.mLowMemoryStatus.setSummary(MemoryFragment.this.getString(R.string.pref_low_memory_summary, lowMemoryStatus));
+                        MemoryFragment.this.mLowMemoryStatus.setOrder(18);
+                        MemoryFragment.this.mLowMemoryStatus.setHideOnBoot(true);
+                        MemoryFragment.this.mLowMemoryStatus.setHelpEnable(false);
+                        MemoryFragment.this.mLowMemoryStatus.setSelectable(false);
+                        memorySettingsCategory.addPreference(MemoryFragment.this.mLowMemoryStatus);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
