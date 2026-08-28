@@ -17,74 +17,56 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # sdkmanager requires a current Java runtime.
-      - name: Set up JDK 17 for Android SDK tools
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "17"
-
       - name: Install isolated legacy Android SDK
         shell: bash
         run: |
           set -euo pipefail
 
-          sdk_log="${RUNNER_TEMP}/android-sdk-setup.log"
-          tools_zip="${RUNNER_TEMP}/commandlinetools.zip"
+          downloads="${RUNNER_TEMP}/android-sdk-downloads"
+          unpacked="${RUNNER_TEMP}/android-sdk-unpacked"
 
-          mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools/latest"
+          mkdir -p "${downloads}" "${unpacked}" \
+            "${ANDROID_SDK_ROOT}/platforms" \
+            "${ANDROID_SDK_ROOT}/build-tools"
 
           curl --fail --location --retry 3 \
-            --output "${tools_zip}" \
-            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+            --output "${downloads}/android-22_r02.zip" \
+            https://dl.google.com/android/repository/android-22_r02.zip
 
-          unzip -q "${tools_zip}" -d "${RUNNER_TEMP}/command-line-tools"
-          mv "${RUNNER_TEMP}/command-line-tools/cmdline-tools/"* \
-            "${ANDROID_SDK_ROOT}/cmdline-tools/latest/"
+          curl --fail --location --retry 3 \
+            --output "${downloads}/build-tools_r26.0.2-linux.zip" \
+            https://dl.google.com/android/repository/build-tools_r26.0.2-linux.zip
 
-          sdkmanager="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          curl --fail --location --retry 3 \
+            --output "${downloads}/platform-tools_r26.0.2-linux.zip" \
+            https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip
 
-          # sdkmanager closes stdin after it accepts the licenses. Disable
-          # pipefail only for `yes`, so its expected SIGPIPE does not fail CI.
-          set +o pipefail
-          yes | "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" --licenses
-          license_status=${PIPESTATUS[1]}
-          set -o pipefail
+          unzip -q "${downloads}/android-22_r02.zip" \
+            -d "${unpacked}/platform"
+          mv "${unpacked}/platform/android-5.1.1" \
+            "${ANDROID_SDK_ROOT}/platforms/android-22"
 
-          if [ "${license_status}" -ne 0 ]; then
-            exit "${license_status}"
-          fi
+          unzip -q "${downloads}/build-tools_r26.0.2-linux.zip" \
+            -d "${unpacked}/build-tools"
+          mv "${unpacked}/build-tools/android-8.1.0" \
+            "${ANDROID_SDK_ROOT}/build-tools/26.0.2"
 
-          installed_packages="${RUNNER_TEMP}/installed-sdk-packages.txt"
-          platform_tools_zip="${RUNNER_TEMP}/platform-tools_r26.0.2-linux.zip"
+          unzip -q "${downloads}/platform-tools_r26.0.2-linux.zip" \
+            -d "${ANDROID_SDK_ROOT}"
 
-          {
-            "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" \
-              "platforms;android-22" \
-              "build-tools;26.0.2"
-
-            # AGP 3.0.1 installs current Platform-Tools when this directory
-            # is absent. Platform-Tools 37.0.1 has metadata that AGP 3.0.1
-            # cannot parse, so install revision 26.0.2 directly.
-            curl --fail --location --retry 3 \
-              --output "${platform_tools_zip}" \
-              https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip
-            unzip -q "${platform_tools_zip}" -d "${ANDROID_SDK_ROOT}"
-
-            "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" --list_installed \
-              | tee "${installed_packages}"
-          } 2>&1 | tee "${sdk_log}"
-
-          if grep -E \
-            'Not a number: 37\.1|SAXParseException|NumberFormatException' \
-            "${sdk_log}"; then
-            echo "Android SDK metadata parsing error detected during SDK setup." >&2
+          # AGP 3.0.1 can read legacy source.properties metadata.
+          # It cannot parse modern package.xml metadata with base-extension.
+          if find "${ANDROID_SDK_ROOT}" -name package.xml -print -quit \
+            | grep -q .; then
+            echo "Unexpected package.xml in isolated Android SDK." >&2
             exit 1
           fi
 
-          # AGP 3.0.1 does not need current command-line tools for the build.
-          # Do not let its old repository parser scan current tool metadata.
-          rm -rf "${ANDROID_SDK_ROOT}/cmdline-tools"
+          {
+            echo "platforms;android-22"
+            echo "build-tools;26.0.2"
+            echo "platform-tools;26.0.2"
+          } > "${RUNNER_TEMP}/installed-sdk-packages.txt"
 
       # AGP 3.0.1 and Gradle 4.1 require JDK 8.
       - name: Set up JDK 8 for Gradle
