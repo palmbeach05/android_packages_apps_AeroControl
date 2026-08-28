@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.Build;
 import android.preference.ListPreference;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
@@ -13,7 +12,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import com.aero.control.R;
-import com.aero.control.helpers.Android.Material.CheckBox;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
 
@@ -22,9 +20,8 @@ import com.aero.control.helpers.HelpTextHolder;
  * and integrated help button. Supports Material Design styling and persistent state
  * management through shared preferences.
  */
-public class CustomListPreference extends ListPreference implements CheckBox.OnCheckListener {
-    private CheckBox mCheckBox;
-    private CompoundButton mPlatformCheckBox;
+public class CustomListPreference extends ListPreference {
+    private CompoundButton mCheckBox;
     private Boolean mChecked;
     private Context mContext;
     private View mCustomImageButton;
@@ -69,11 +66,21 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         this.mSharedPreference = PreferenceManager.getDefaultSharedPreferences(this.mContext);
     }
 
+    /**
+     * Returns the context associated with this preference.
+     *
+     * @return the context
+     */
     @Override // android.preference.Preference
     public Context getContext() {
         return this.mContext;
     }
 
+    /**
+     * Sets the context for this preference.
+     *
+     * @param context the context to set
+     */
     public void setContext(Context context) {
         this.mContext = context;
     }
@@ -108,6 +115,11 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         this.mShowHelp = Boolean.valueOf(enable);
     }
 
+    /**
+     * Returns whether the help button is enabled for this preference.
+     *
+     * @return true if the help button is shown, false otherwise
+     */
     public Boolean isHelpEnabled() {
         if (this.mShowHelp == null) {
             this.mShowHelp = true;
@@ -115,10 +127,20 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         return this.mShowHelp;
     }
 
+    /**
+     * Sets the checked state of the save-on-boot checkbox.
+     *
+     * @param checked true to check the checkbox, false to uncheck it
+     */
     public void setChecked(Boolean checked) {
         this.mChecked = checked;
     }
 
+    /**
+     * Returns whether the save-on-boot checkbox is checked.
+     *
+     * @return true if checked, false otherwise
+     */
     public Boolean isChecked() {
         if (this.mSharedPreference.getString(getName(), null) != null) {
             setChecked(true);
@@ -129,30 +151,60 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         return this.mChecked;
     }
 
+    /**
+     * Returns the summary text for this preference.
+     *
+     * @return the summary text
+     */
     @Override // android.preference.ListPreference, android.preference.Preference
     public CharSequence getSummary() {
         return this.mSummaryPref;
     }
 
+    /**
+     * Sets the summary text for this preference.
+     *
+     * @param value the summary text to set
+     */
     @Override // android.preference.ListPreference, android.preference.Preference
     public void setSummary(CharSequence value) {
         this.mSummaryPref = value;
     }
 
+    /**
+     * Sets the key identifier for this preference.
+     *
+     * @param key the key to set
+     */
     @Override // android.preference.Preference
     public void setKey(String key) {
         setName(key);
     }
 
+    /**
+     * Returns the key identifier for this preference.
+     *
+     * @return the key
+     */
     @Override // android.preference.Preference
     public String getKey() {
         return getName();
     }
 
+    /**
+     * Sets the name identifier for this preference.
+     *
+     * @param name the name to set
+     */
     public void setName(String name) {
         this.mName = name;
     }
 
+    /**
+     * Returns the name identifier for this preference.
+     *
+     * @return the name
+     */
     public String getName() {
         return this.mName;
     }
@@ -164,9 +216,6 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         applyEnabledStateToViews(effectiveEnabled);
         if (this.mCheckBox != null) {
             this.mCheckBox.setEnabled(effectiveEnabled);
-        }
-        if (this.mPlatformCheckBox != null) {
-            this.mPlatformCheckBox.setEnabled(effectiveEnabled);
         }
     }
 
@@ -220,24 +269,16 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         this.mSummary.setText(this.mSummaryPref);
         this.mTitle.setTypeface(FilePath.kitkatFont);
         this.mSummary.setTypeface(FilePath.kitkatFont);
-        View checkBoxView;
-        if (Build.VERSION.SDK_INT >= 21) {
-            this.mPlatformCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
-            this.mPlatformCheckBox.setOnCheckedChangeListener(null);
-            this.mPlatformCheckBox.setChecked(isChecked().booleanValue());
-            this.mPlatformCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override // android.widget.CompoundButton.OnCheckedChangeListener
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    CustomListPreference.this.onCheck(isChecked);
-                }
-            });
-            checkBoxView = this.mPlatformCheckBox;
-        } else {
-            this.mCheckBox = (CheckBox) view.findViewById(R.id.checkbox_pref);
-            this.mCheckBox.setOncheckListener(this);
-            this.mCheckBox.setChecked(isChecked().booleanValue());
-            checkBoxView = this.mCheckBox;
-        }
+        this.mCheckBox = (CompoundButton) view.findViewById(R.id.checkbox_pref);
+        this.mCheckBox.setOnCheckedChangeListener(null);
+        this.mCheckBox.setChecked(isChecked().booleanValue());
+        this.mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override // android.widget.CompoundButton.OnCheckedChangeListener
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                CustomListPreference.this.onCheck(isChecked);
+            }
+        });
+        View checkBoxView = this.mCheckBox;
         this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
@@ -263,6 +304,9 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         applyEnabledStateToViews(isEnabled());
     }
 
+    /**
+     * Handles click events on the preference content area to open the list dialog.
+     */
     public void performCustomClick() {
         if (!isEnabled()) {
             return;
@@ -276,7 +320,12 @@ public class CustomListPreference extends ListPreference implements CheckBox.OnC
         }
     }
 
-    @Override // com.aero.control.helpers.Android.Material.CheckBox.OnCheckListener
+    /**
+     * Called when the save-on-boot checkbox state changes. Persists or removes
+     * the current preference value.
+     *
+     * @param checked true if the checkbox is now checked, false otherwise
+     */
     public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         setChecked(Boolean.valueOf(checked));

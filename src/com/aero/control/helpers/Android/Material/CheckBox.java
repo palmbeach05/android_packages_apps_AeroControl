@@ -17,6 +17,10 @@ import android.widget.RelativeLayout;
 import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 
+/**
+ * A Material Design style checkbox widget with animation and customizable background color.
+ * Provides visual feedback through ripple effects and animated check/uncheck transitions.
+ */
 public class CheckBox extends CustomView {
     private int backgroundColor;
     private boolean check;
@@ -26,7 +30,16 @@ public class CheckBox extends CustomView {
     private boolean press;
     private int step;
 
+    /**
+     * Listener interface for checkbox state changes.
+     */
     public interface OnCheckListener {
+        /**
+         * Called when the checkbox state changes due to user touch interaction.
+         * This callback is not invoked for programmatic changes via setChecked.
+         *
+         * @param z true if the checkbox is now checked, false otherwise
+         */
         void onCheck(boolean z);
     }
 
@@ -42,6 +55,12 @@ public class CheckBox extends CustomView {
         return i;
     }
 
+    /**
+     * Constructs a new CheckBox with the specified context and attributes.
+     *
+     * @param context the context in which the checkbox is running
+     * @param attrs the attributes of the XML tag that is inflating the view
+     */
     public CheckBox(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.backgroundColor = Color.parseColor("#4CAF50");
@@ -133,6 +152,11 @@ public class CheckBox extends CustomView {
         shape.setColor(color);
     }
 
+    /**
+     * Generates a darker, semi-transparent color for the pressed state based on the background color.
+     *
+     * @return the color to use when the checkbox is pressed
+     */
     protected int makePressColor() {
         int r = (this.backgroundColor >> 16) & MotionEventCompat.ACTION_MASK;
         int g = (this.backgroundColor >> 8) & MotionEventCompat.ACTION_MASK;
@@ -140,6 +164,11 @@ public class CheckBox extends CustomView {
         return Color.argb(70, r + (-30) < 0 ? 0 : r - 30, g + (-30) < 0 ? 0 : g - 30, b + (-30) < 0 ? 0 : b - 30);
     }
 
+    /**
+     * Sets the background color of the checkbox.
+     *
+     * @param color the color value to set
+     */
     @Override // android.view.View
     public void setBackgroundColor(int color) {
         this.backgroundColor = color;
@@ -149,6 +178,11 @@ public class CheckBox extends CustomView {
         changeBackgroundColor(color);
     }
 
+    /**
+     * Sets the checked state of the checkbox programmatically.
+     *
+     * @param check true to check the checkbox, false to uncheck it
+     */
     public void setChecked(boolean check) {
         invalidate();
         this.check = check;
@@ -162,6 +196,11 @@ public class CheckBox extends CustomView {
         }
     }
 
+    /**
+     * Returns the current checked state of the checkbox.
+     *
+     * @return true if the checkbox is checked, false otherwise
+     */
     public boolean isCheck() {
         return this.check;
     }
@@ -241,6 +280,11 @@ public class CheckBox extends CustomView {
         }
     }
 
+    /**
+     * Registers a listener to be invoked when the checked state of this checkbox changes.
+     *
+     * @param onCheckListener the callback to call on state change
+     */
     public void setOncheckListener(OnCheckListener onCheckListener) {
         this.onCheckListener = onCheckListener;
     }

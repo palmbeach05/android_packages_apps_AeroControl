@@ -20,6 +20,10 @@ import com.aero.control.R;
 import com.aero.control.helpers.ThemeHelper;
 import com.nineoldandroids.view.ViewHelper;
 
+/**
+ * A Material Design style slider widget for selecting a value from a range.
+ * Provides a draggable thumb control and optional numeric value indicator dialog.
+ */
 public class Slider extends CustomView {
     private Ball ball;
     private Bitmap mBitmap;
@@ -37,10 +41,25 @@ public class Slider extends CustomView {
     private boolean showNumberIndicator;
     private int value;
 
+    /**
+     * Listener interface for slider value changes.
+     */
     public interface OnValueChangedListener {
+        /**
+         * Called when the slider value changes due to user touch interaction.
+         * This callback is not invoked for programmatic changes via setProgress or setValueInRunnable.
+         *
+         * @param i the new value
+         */
         void onValueChanged(int i);
     }
 
+    /**
+     * Constructs a new Slider with the specified context and attributes.
+     *
+     * @param context the context in which the slider is running
+     * @param attrs the attributes of the XML tag that is inflating the view
+     */
     public Slider(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.showNumberIndicator = false;
@@ -206,26 +225,58 @@ public class Slider extends CustomView {
         this.placedBall = true;
     }
 
+    /**
+     * Gets the current value change listener.
+     *
+     * @return the listener, or null if none is set
+     */
     public OnValueChangedListener getOnValueChangedListener() {
         return this.onValueChangedListener;
     }
 
+    /**
+     * Registers a listener to be invoked when the slider value changes.
+     *
+     * @param onValueChangedListener the callback to call on value change
+     */
     public void setOnValueChangedListener(OnValueChangedListener onValueChangedListener) {
         this.onValueChangedListener = onValueChangedListener;
     }
 
+    /**
+     * Sets the size of the draggable thumb control.
+     *
+     * @param size the size in density-independent pixels
+     */
     public void setThumbSize(float size) {
         setBallParams(size);
     }
 
+    /**
+     * Gets the current value of the slider.
+     *
+     * @return the current value
+     */
     public int getValue() {
         return this.value;
     }
 
+    /**
+     * Sets the slider value programmatically.
+     *
+     * @param value the value to set
+     */
     public void setProgress(int value) {
         setProgress(value, false);
     }
 
+    /**
+     * Sets the slider value programmatically with optional deferred execution.
+     *
+     * @param value the value to set
+     * @param inRunnable if true, defer the update until after the thumb is placed;
+     *                   if the thumb is already placed, the update occurs synchronously
+     */
     public void setProgress(int value, boolean inRunnable) {
         if (value <= this.min) {
             value = this.min;
@@ -252,26 +303,56 @@ public class Slider extends CustomView {
         this.ball.changeBackground();
     }
 
+    /**
+     * Gets the maximum value of the slider range.
+     *
+     * @return the maximum value
+     */
     public int getMax() {
         return this.max;
     }
 
+    /**
+     * Sets the maximum value of the slider range.
+     *
+     * @param max the maximum value
+     */
     public void setMax(int max) {
         this.max = max;
     }
 
+    /**
+     * Gets the minimum value of the slider range.
+     *
+     * @return the minimum value
+     */
     public int getMin() {
         return this.min;
     }
 
+    /**
+     * Sets the minimum value of the slider range.
+     *
+     * @param min the minimum value
+     */
     public void setMin(int min) {
         this.min = min;
     }
 
+    /**
+     * Checks whether the numeric value indicator is shown when dragging the slider.
+     *
+     * @return true if the indicator is shown, false otherwise
+     */
     public boolean isShowNumberIndicator() {
         return this.showNumberIndicator;
     }
 
+    /**
+     * Sets whether to show a numeric value indicator dialog when dragging the slider.
+     *
+     * @param showNumberIndicator true to show the indicator, false to hide it
+     */
     public void showNumberIndicator(boolean showNumberIndicator) {
         this.showNumberIndicator = showNumberIndicator;
         if (!isInEditMode()) {
@@ -279,6 +360,11 @@ public class Slider extends CustomView {
         }
     }
 
+    /**
+     * Sets the background color of the slider.
+     *
+     * @param color the color value to set
+     */
     @Override // android.view.View
     public void setBackgroundColor(int color) {
         this.backgroundColor = color;
@@ -315,6 +401,10 @@ public class Slider extends CustomView {
         }
     }
 
+    /**
+     * A dialog that displays a numeric indicator showing the current slider value
+     * as the user drags the thumb control.
+     */
     public class NumberIndicator extends Dialog {
         private Indicator indicator;
         private TextView numberIndicator;
