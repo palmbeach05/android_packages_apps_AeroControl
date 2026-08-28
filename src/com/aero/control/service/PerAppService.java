@@ -121,8 +121,10 @@ public final class PerAppService extends Service {
     }
 
     /**
-     * Reads the foreground app, updates the {@link JobManager}, restores defaults after
-     * an app change, and applies the matching per-app profile.
+     * Reads the foreground app and, after {@link #setAppData()} succeeds, updates the
+     * {@link JobManager}. When the screen is on, both app names are non-null, and the
+     * foreground app changes, restores defaults if {@code mActive} and applies the
+     * matching per-app profile.
      */
     public void runTask() {
         if (this.mPerAppPrefs == null) {
