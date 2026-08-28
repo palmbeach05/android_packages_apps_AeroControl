@@ -396,7 +396,7 @@
     <string name="help_text_laptop_mode">laptop_mode is a knob that controls laptop mode.</string>
     <string name="help_text_legacy_va_layout">If non-zero, this sysctl disables the new 32-bit mmap layout - the kernel will use the legacy (2.4) layout for all processes.</string>
     <string name="help_text_live_oc_uc">Be careful with this option. You can overclock/underclock the listed frequency steps and set the correct voltage for it. Those values won\'t be applied to per-app profiles for your own safety.</string>
-    <string name="help_text_low_latency">If enabled (1) it let\'s the hotplug driver react really quickly to short load spikes (100% CPU load) and brings CPUs online accordingly.</string>
+    <string name="help_text_low_latency" formatted="false">If enabled (1) it let\'s the hotplug driver react really quickly to short load spikes (100% CPU load) and brings CPUs online accordingly.</string>
     <string name="help_text_lowmem_reserve_ratio">For some specialized workloads on highmem machines it is dangerous for the kernel to allow process memory to be allocated from the lowmem zone. This is because that memory could then be pinned via the mlock() system call, or by unavailability of swap space.</string>
     <string name="help_text_max_freq_cpu">This tunable lets you adjust the maximum CPU frequency. Lowering this value can save you power at the cost of performance.</string>
     <string name="help_text_max_freq_hysteresis">Stay at the max frequency for at least this value before dropping frequency again.</string>
