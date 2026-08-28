@@ -59,6 +59,13 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
     private PreferenceScreen root;
     private boolean showDialog = true;
 
+    /**
+     * Initializes the fragment, loads preferences from layout, and configures all memory
+     * and I/O related settings including dynamic fsync, fsync, KSM, writeback, read-ahead,
+     * entropy, fstrim, Dalvik settings, and I/O scheduler preferences.
+     *
+     * @param savedInstanceState the saved instance state bundle
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,6 +163,19 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mDalvikSettings = (CustomPreference) findPreference("dalvik_settings");
         this.mDalvikSettings.setOrder(30);
         this.mDalvikSettings.setHideOnBoot(true);
+        Preference.OnPreferenceClickListener preferenceClickListener = new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                return handlePreferenceClick(preference);
+            }
+        };
+        this.mDynFSync.setOnPreferenceClickListener(preferenceClickListener);
+        this.mFsync.setOnPreferenceClickListener(preferenceClickListener);
+        this.mKSMSettings.setOnPreferenceClickListener(preferenceClickListener);
+        this.mWriteBackControl.setOnPreferenceClickListener(preferenceClickListener);
+        this.mFSTrimToggle.setOnPreferenceClickListener(preferenceClickListener);
+        this.mDalvikSettings.setOnPreferenceClickListener(preferenceClickListener);
+        this.mRandomSettings.setOnPreferenceClickListener(preferenceClickListener);
         this.mIOScheduler = new CustomListPreference(getActivity());
         this.mIOScheduler.setName("io_scheduler_list");
         this.mIOScheduler.setTitle(R.string.io_scheduler);
@@ -258,6 +278,20 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
 
     @Override // android.preference.PreferenceFragment
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+        handlePreferenceClick(preference);
+        return true;
+    }
+
+    /**
+     * Handles clicks on the various memory and I/O preferences. Toggles the state of
+     * CustomPreferences (fsync, dynamic fsync, KSM, writeback), triggers fstrim, opens
+     * the Dalvik settings fragment, or shows the entropy/random settings dialog depending
+     * on which preference is clicked.
+     *
+     * @param preference the preference that was clicked
+     * @return true if the click was handled, false otherwise
+     */
+    private boolean handlePreferenceClick(Preference preference) {
         CustomPreference cusPref = null;
         if (preference == this.mDynFSync) {
             this.mDynFSync.setClicked(Boolean.valueOf(this.mDynFSync.isClicked().booleanValue() ? false : true));
@@ -312,6 +346,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             });
         } else if (preference == this.mRandomSettings) {
             onRandomClick();
+        } else {
+            return false;
         }
         if (cusPref != null && cusPref.isChecked().booleanValue()) {
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -340,6 +376,11 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         return true;
     }
 
+    /**
+     * Displays a dialog for configuring random/entropy pool settings. Shows current
+     * read and write wakeup thresholds and allows editing them. Validates input and
+     * applies changes via root commands if valid.
+     */
     private void onRandomClick() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -380,6 +421,12 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         builder.show();
     }
 
+    /**
+     * Handles the fstrim toggle preference click. Checks for fstrim availability,
+     * detects ext3/ext4 filesystems (system, data, cache), and presents a dialog
+     * allowing the user to select which partition to trim. Displays a progress
+     * dialog while trimming and remounts system partition as necessary.
+     */
     private void fsTrimToggleClick() {
         if (!AeroActivity.genHelper.doesExist("/system/xbin/fstrim")) {
             Toast.makeText(getActivity(), R.string.pref_fstrim_no_busybox, 0).show();
@@ -413,6 +460,11 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         builder.setItems(fsystem, new AnonymousClass5(fsystem, update)).show();
     }
 
+    /**
+     * Click listener for filesystem trim dialog items. Handles the selection of a
+     * filesystem partition to trim and executes the fstrim operation in a background
+     * thread with progress indication.
+     */
     class AnonymousClass5 implements DialogInterface.OnClickListener {
         final /* synthetic */ CharSequence[] val$fsystem;
         final /* synthetic */ ProgressDialog val$update;
@@ -480,6 +532,12 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         new ShowcaseView.Builder(getActivity()).setContentTitle(header).setContentText(content).setTarget(homeTarget).build();
     }
 
+    /**
+     * Loads and displays I/O scheduler parameters for the current scheduler. Removes
+     * the invisible preference placeholder, reads available parameters from the kernel,
+     * and dynamically generates preferences for each parameter. Shows a toast if no
+     * parameters are available.
+     */
     private void loadIOParameter() {
         this.mIOSchedulerHandler.removeInvisiblePreference();
         try {
