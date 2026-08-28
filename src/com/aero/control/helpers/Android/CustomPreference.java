@@ -275,6 +275,12 @@ public class CustomPreference extends Preference {
         this.mName = name;
     }
 
+    /**
+     * Updates the standard preference enabled state and synchronizes the custom row's
+     * text colors and checkbox enabled state.
+     *
+     * @param enabled true to enable this preference, false to disable it
+     */
     @Override // android.preference.Preference
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
@@ -412,6 +418,14 @@ public class CustomPreference extends Preference {
         return tmp1;
     }
 
+    /**
+     * Binds a row that provides the custom {@code preference_enhanced} layout IDs,
+     * including {@link R.id#preference_content}, which invokes
+     * {@link #performCustomClick()}. The checkbox and help button retain separate
+     * listeners.
+     *
+     * @param view the custom preference row
+     */
     @Override // android.preference.Preference
     protected void onBindView(final View view) {
         super.onBindView(view);
