@@ -50,6 +50,10 @@ public final class PerAppService extends Service {
     private final String mClassName = getClass().getName();
     private boolean mShowToasts = true;
 
+    /**
+     * Initializes the service state and starts the foreground-app polling runnable.
+     * After the runnable starts, polling is scheduled through the main-looper handler.
+     */
     @Override // android.app.Service
     public void onCreate() {
         mDestroyed = false;
@@ -92,6 +96,11 @@ public final class PerAppService extends Service {
         new Thread(this.mRunnable).start();
     }
 
+    /**
+     * Stops future polling by marking the service as destroyed and removing pending
+     * handler callbacks. The destroyed state also prevents an already-posted callback
+     * from scheduling another poll.
+     */
     @Override
     public void onDestroy() {
         mDestroyed = true;
@@ -111,6 +120,10 @@ public final class PerAppService extends Service {
         return null;
     }
 
+    /**
+     * Reads the foreground app, updates the {@link JobManager}, restores defaults after
+     * an app change, and applies the matching per-app profile.
+     */
     public void runTask() {
         if (this.mPerAppPrefs == null) {
             this.mPerAppPrefs = this.mContext.getSharedPreferences(perAppProfileHandler, 0);
