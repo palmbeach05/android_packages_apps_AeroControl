@@ -44,8 +44,18 @@ jobs:
 
           sdkmanager="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
 
+          # sdkmanager closes stdin after it accepts the licenses. Disable
+          # pipefail only for `yes`, so its expected SIGPIPE does not fail CI.
+          set +o pipefail
+          yes | "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" --licenses
+          license_status=${PIPESTATUS[1]}
+          set -o pipefail
+
+          if [ "${license_status}" -ne 0 ]; then
+            exit "${license_status}"
+          fi
+
           {
-            yes | "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" --licenses
             "${sdkmanager}" --sdk_root="${ANDROID_SDK_ROOT}" \
               "platforms;android-22" \
               "build-tools;26.0.2"
