@@ -105,11 +105,21 @@ public class CustomPreference extends Preference {
         this.mSharedPreference = PreferenceManager.getDefaultSharedPreferences(this.mContext);
     }
 
+    /**
+     * Returns the context associated with this preference.
+     *
+     * @return the context
+     */
     @Override // android.preference.Preference
     public Context getContext() {
         return this.mContext;
     }
 
+    /**
+     * Sets the context for this preference.
+     *
+     * @param context the context to set
+     */
     public void setContext(Context context) {
         this.mContext = context;
     }
@@ -214,23 +224,43 @@ public class CustomPreference extends Preference {
         return this.mClicked;
     }
 
+    /**
+     * Returns the summary text for this preference.
+     *
+     * @return the summary text
+     */
     @Override // android.preference.Preference
     public CharSequence getSummary() {
         return this.mSummaryPref;
     }
 
+    /**
+     * Sets the summary text for this preference.
+     *
+     * @param value the summary text to set
+     */
     @Override // android.preference.Preference
     public void setSummary(CharSequence value) {
         super.setSummary(value);
         this.mSummaryPref = value;
     }
 
+    /**
+     * Sets the key identifier for this preference.
+     *
+     * @param key the key to set
+     */
     @Override // android.preference.Preference
     public void setKey(String key) {
         super.setKey(key);
         setName(key);
     }
 
+    /**
+     * Returns the key identifier for this preference.
+     *
+     * @return the key
+     */
     @Override // android.preference.Preference
     public String getKey() {
         return getName();

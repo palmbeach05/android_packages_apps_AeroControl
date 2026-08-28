@@ -61,11 +61,21 @@ public class CustomTextPreference extends EditTextPreference {
         setLayoutResource(R.layout.preference_enhanced);
     }
 
+    /**
+     * Returns the context associated with this preference.
+     *
+     * @return the context
+     */
     @Override // android.preference.Preference
     public Context getContext() {
         return this.mContext;
     }
 
+    /**
+     * Sets the context for this preference.
+     *
+     * @param context the context to set
+     */
     public void setContext(Context context) {
         this.mContext = context;
     }
@@ -100,6 +110,11 @@ public class CustomTextPreference extends EditTextPreference {
         this.mShowHelp = Boolean.valueOf(enable);
     }
 
+    /**
+     * Returns whether the help button is enabled for this preference.
+     *
+     * @return true if the help button is shown, false otherwise
+     */
     public Boolean isHelpEnabled() {
         if (this.mShowHelp == null) {
             this.mShowHelp = true;
@@ -107,10 +122,20 @@ public class CustomTextPreference extends EditTextPreference {
         return this.mShowHelp;
     }
 
+    /**
+     * Sets the checked state of the save-on-boot checkbox.
+     *
+     * @param checked true to check the checkbox, false to uncheck it
+     */
     public void setChecked(Boolean checked) {
         this.mChecked = checked;
     }
 
+    /**
+     * Returns whether the save-on-boot checkbox is checked.
+     *
+     * @return true if checked, false otherwise
+     */
     public Boolean isChecked() {
         if (this.mSharedPreference.getString(getName(), null) != null) {
             setChecked(true);
@@ -121,14 +146,29 @@ public class CustomTextPreference extends EditTextPreference {
         return this.mChecked;
     }
 
+    /**
+     * Sets the name identifier for this preference.
+     *
+     * @param name the name to set
+     */
     public void setName(String name) {
         this.mName = name;
     }
 
+    /**
+     * Returns the name identifier for this preference.
+     *
+     * @return the name
+     */
     public String getName() {
         return this.mName;
     }
 
+    /**
+     * Sets the title text for this preference.
+     *
+     * @param title the title text to set
+     */
     public void setPrefText(String title) {
         this.mText = title;
         if (this.mTitle != null) {
@@ -136,6 +176,11 @@ public class CustomTextPreference extends EditTextPreference {
         }
     }
 
+    /**
+     * Sets the summary text for this preference.
+     *
+     * @param summary the summary text to set
+     */
     public void setPrefSummary(CharSequence summary) {
         this.mSummaryPref = summary;
         if (this.mSummary != null) {
@@ -143,6 +188,11 @@ public class CustomTextPreference extends EditTextPreference {
         }
     }
 
+    /**
+     * Returns the summary text for this preference.
+     *
+     * @return the summary text
+     */
     public CharSequence getPrefSummary() {
         return this.mSummaryPref;
     }
@@ -243,6 +293,9 @@ public class CustomTextPreference extends EditTextPreference {
         applyEnabledStateToViews(isEnabled());
     }
 
+    /**
+     * Handles click events on the preference content area to open the text input dialog.
+     */
     public void performCustomClick() {
         if (!isEnabled()) {
             return;
@@ -256,6 +309,12 @@ public class CustomTextPreference extends EditTextPreference {
         }
     }
 
+    /**
+     * Called when the save-on-boot checkbox state changes. Persists or removes
+     * the current preference value.
+     *
+     * @param checked true if the checkbox is now checked, false otherwise
+     */
     public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         setChecked(Boolean.valueOf(checked));

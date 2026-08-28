@@ -399,6 +399,10 @@ public class Slider extends CustomView {
         }
     }
 
+    /**
+     * A dialog that displays a numeric indicator showing the current slider value
+     * as the user drags the thumb control.
+     */
     public class NumberIndicator extends Dialog {
         private Indicator indicator;
         private TextView numberIndicator;

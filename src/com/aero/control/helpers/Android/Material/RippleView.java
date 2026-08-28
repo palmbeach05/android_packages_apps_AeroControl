@@ -262,6 +262,13 @@ public class RippleView extends RelativeLayout {
         return true;
     }
 
+    /**
+     * Intercepts touch events to ensure the ripple effect is triggered before
+     * delegating to child views.
+     *
+     * @param event the motion event
+     * @return true to intercept the event
+     */
     @Override // android.view.ViewGroup
     public boolean onInterceptTouchEvent(MotionEvent event) {
         return true;

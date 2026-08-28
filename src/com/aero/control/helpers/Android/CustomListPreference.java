@@ -66,11 +66,21 @@ public class CustomListPreference extends ListPreference {
         this.mSharedPreference = PreferenceManager.getDefaultSharedPreferences(this.mContext);
     }
 
+    /**
+     * Returns the context associated with this preference.
+     *
+     * @return the context
+     */
     @Override // android.preference.Preference
     public Context getContext() {
         return this.mContext;
     }
 
+    /**
+     * Sets the context for this preference.
+     *
+     * @param context the context to set
+     */
     public void setContext(Context context) {
         this.mContext = context;
     }
@@ -105,6 +115,11 @@ public class CustomListPreference extends ListPreference {
         this.mShowHelp = Boolean.valueOf(enable);
     }
 
+    /**
+     * Returns whether the help button is enabled for this preference.
+     *
+     * @return true if the help button is shown, false otherwise
+     */
     public Boolean isHelpEnabled() {
         if (this.mShowHelp == null) {
             this.mShowHelp = true;
@@ -112,10 +127,20 @@ public class CustomListPreference extends ListPreference {
         return this.mShowHelp;
     }
 
+    /**
+     * Sets the checked state of the save-on-boot checkbox.
+     *
+     * @param checked true to check the checkbox, false to uncheck it
+     */
     public void setChecked(Boolean checked) {
         this.mChecked = checked;
     }
 
+    /**
+     * Returns whether the save-on-boot checkbox is checked.
+     *
+     * @return true if checked, false otherwise
+     */
     public Boolean isChecked() {
         if (this.mSharedPreference.getString(getName(), null) != null) {
             setChecked(true);
@@ -126,30 +151,60 @@ public class CustomListPreference extends ListPreference {
         return this.mChecked;
     }
 
+    /**
+     * Returns the summary text for this preference.
+     *
+     * @return the summary text
+     */
     @Override // android.preference.ListPreference, android.preference.Preference
     public CharSequence getSummary() {
         return this.mSummaryPref;
     }
 
+    /**
+     * Sets the summary text for this preference.
+     *
+     * @param value the summary text to set
+     */
     @Override // android.preference.ListPreference, android.preference.Preference
     public void setSummary(CharSequence value) {
         this.mSummaryPref = value;
     }
 
+    /**
+     * Sets the key identifier for this preference.
+     *
+     * @param key the key to set
+     */
     @Override // android.preference.Preference
     public void setKey(String key) {
         setName(key);
     }
 
+    /**
+     * Returns the key identifier for this preference.
+     *
+     * @return the key
+     */
     @Override // android.preference.Preference
     public String getKey() {
         return getName();
     }
 
+    /**
+     * Sets the name identifier for this preference.
+     *
+     * @param name the name to set
+     */
     public void setName(String name) {
         this.mName = name;
     }
 
+    /**
+     * Returns the name identifier for this preference.
+     *
+     * @return the name
+     */
     public String getName() {
         return this.mName;
     }
@@ -249,6 +304,9 @@ public class CustomListPreference extends ListPreference {
         applyEnabledStateToViews(isEnabled());
     }
 
+    /**
+     * Handles click events on the preference content area to open the list dialog.
+     */
     public void performCustomClick() {
         if (!isEnabled()) {
             return;
@@ -262,6 +320,12 @@ public class CustomListPreference extends ListPreference {
         }
     }
 
+    /**
+     * Called when the save-on-boot checkbox state changes. Persists or removes
+     * the current preference value.
+     *
+     * @param checked true if the checkbox is now checked, false otherwise
+     */
     public void onCheck(boolean checked) {
         SharedPreferences.Editor editor = this.mSharedPreference.edit();
         setChecked(Boolean.valueOf(checked));
