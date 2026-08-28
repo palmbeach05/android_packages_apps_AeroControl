@@ -136,9 +136,7 @@ jobs:
             ./gradlew --version
             echo
             echo "Installed Android SDK packages:"
-            "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" \
-              --sdk_root="${ANDROID_SDK_ROOT}" \
-              --list_installed
+            cat "${RUNNER_TEMP}/installed-sdk-packages.txt"
             echo
             echo "APK SHA-256:"
             sha256sum "${apk}"
