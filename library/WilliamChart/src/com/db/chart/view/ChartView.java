@@ -49,7 +49,7 @@ import android.widget.RelativeLayout;
 public abstract class ChartView extends RelativeLayout{
 	
 	
-	private static final String TAG = "com.db.chart.view.ChartView";
+	private static final String TAG = "WCChartView";
 	
 	
 	public static enum GridType {

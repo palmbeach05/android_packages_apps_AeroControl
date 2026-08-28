@@ -29,7 +29,7 @@ import java.lang.IllegalArgumentException;
 public class LineSet extends ChartSet{
 
 	
-	private static final String TAG = "com.db.chart.model.LineSet";
+	private static final String TAG = "WCLineSet";
 
 	
 	/** Defaults */
