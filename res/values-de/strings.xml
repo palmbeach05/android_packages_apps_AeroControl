@@ -11,23 +11,18 @@
     <string name="average">Ø Durchschnitt</string>
     <string name="back_for_close">Drücken Sie erneut auf „Zurück“, um die App zu schließen.</string>
     <string name="cancel">Abbrechen</string>
-    <string name="default_values">Standardwerte</string>
     <string name="disabled">Deaktiviert</string>
     <string name="dont_show_again">Nicht mehr anzeigen</string>
     <string name="enabled">Aktiviert</string>
     <string name="folder_empty">Ordner ist leer</string>
     <string name="got_it">Verstanden</string>
-    <string name="loading">Wird geladen...</string>
     <string name="maybe_later">Vielleicht später</string>
     <string name="minute">Minute</string>
     <string name="minutes">Minuten</string>
-    <string name="module">Modul</string>
     <string name="need_reboot">Neustart erforderlich.</string>
-    <string name="ok">OK</string>
     <string name="proceed_with_reset">Möchten Sie wirklich fortfahren?</string>
     <string name="refresh">Aktualisieren</string>
     <string name="reload">Neu laden</string>
-    <string name="retry">Erneut versuchen</string>
     <string name="save">Speichern</string>
     <string name="skip_splash">Überspringen</string>
     <string name="successful">Erfolgreich!</string>
@@ -92,11 +87,8 @@
     <string name="pref_max_freq_cpu">Max. Frequenz</string>
     <string name="pref_min_freq_cpu">Min. Frequenz</string>
     <string name="pref_cpu_governor">Governor-Einstellungen</string>
-    <string name="pref_gov_choose">Governor-Einstellungen</string>
-    <string name="pref_gov_choose_summary">Legt den gewünschten Governor fest</string>
     <string name="pref_gov_set">Governor-spezifische Einstellungen</string>
     <string name="pref_gov_set_no_parameter">Für diesen Governor sind keine Parameter verfügbar.</string>
-    <string name="pref_gov_set_summary">Legt Governor-spezifische Einstellungen fest</string>
     <string name="mv_minus">-25 mV</string>
     <string name="mv_plus">+25 mV</string>
 
@@ -135,15 +127,7 @@
     <string name="pref_ksm_summary">Aktiviert oder deaktiviert den KSM-Daemon vollständig.</string>
     <string name="pref_low_memory">Low Memory</string>
     <string name="pref_low_memory_summary">Current ro.config.low_ram value: %1$s</string>
-    <string name="pref_low_mem_option">Low Memory Option</string>
-    <string name="pref_low_mem_option_summary">Low Memory optimiert das System für Geräte mit wenig Arbeitsspeicher. Hierfür wird Android 4.4+ (KitKat) benötigt.</string>
     <string name="pref_memory_settings">Speichereinstellungen</string>
-    <string name="pref_memory_swap">Swap</string>
-    <string name="pref_memory_swap_summary">Erstellt eine Swap-Partition.</string>
-    <string name="pref_memory_zcache">zCache</string>
-    <string name="pref_memory_zcache_compression">zCache-Komprimierung</string>
-    <string name="pref_memory_zcache_compression_summary">Einstellungen für die zCache-Komprimierungsmethode.</string>
-    <string name="pref_memory_zcache_summary">zCache verwendet die CPU für eine effizientere Speicherverwaltung.</string>
     <string name="pref_readahead">Readahead-Größe</string>
     <string name="pref_readahead_dialog">Readahead-Größe in kB</string>
 
@@ -154,7 +138,6 @@
     <string name="defy_green_colors">Defy-Grün</string>
     <string name="defy_red_colors">Defy-Rot</string>
     <string name="pref_button_brightness">Tastenbeleuchtung</string>
-    <string name="pref_button_brightness_summary">Hier kann die Helligkeit der Tastenbeleuchtung angepasst werden.</string>
     <string name="pref_charging_led">Lade-LED-Farbe</string>
     <string name="pref_charging_led_summary">Farbe der LED während des Ladevorgangs</string>
     <string name="pref_charge_led_mode_white">Weiße LED</string>
@@ -194,29 +177,22 @@
     <string name="pref_profile_change_name">Namen ändern</string>
     <string name="pref_profile_change_name_summary">Ändere den Namen deines Profils.</string>
     <string name="pref_profile_deleted">Gelöscht</string>
-    <string name="pref_profile_enter_name">Du musst einen Namen eingeben.</string>
     <string name="pref_profile_export">Exportieren</string>
     <string name="pref_profile_import">Importieren</string>
     <string name="pref_profile_import_select">Profile zum Import auswählen</string>
     <string name="pref_profile_name_exists">Dieser Name existiert bereits.</string>
-    <string name="pref_profile_no_changes">Du hast noch keine Einstellungen geändert!</string>
     <string name="pref_profile_no_import">Es konnten keine Daten zum Importieren gefunden werden.</string>
     <string name="pref_profile_per_app">Apps auswählen</string>
     <string name="pref_profile_reset">Aktuelles Profil zurücksetzen</string>
     <string name="pref_profile_reset_summary">Dadurch wird dein aktuelles Profil vollständig zurückgesetzt. So, als hättest du Aero Control gerade neu installiert.</string>
     <string name="pref_profile_service_not_running">Der Per-App-Dienst läuft nicht, obwohl Apps mit Profilen verknüpft sind!</string>
     <string name="pref_profile_show_system">System-Apps</string>
-    <string name="pref_profile_undo">Rückgängig</string>
     <string name="pref_reboot_check">Zufällige Neustarts erkennen</string>
     <string name="pref_reboot_check_summary">Informiert dich, wenn ein unerwarteter Neustart aufgetreten ist.</string>
     <string name="pref_reset_tutorials">Tutorials zurücksetzen</string>
     <string name="pref_reset_tutorials_dialog">Dadurch werden alle Tutorials zurückgesetzt.</string>
     <string name="pref_reset_tutorials_title">Es gibt kein Zurück</string>
-    <string name="pref_set_on_boot">Beim Start anwenden</string>
-    <string name="pref_set_on_boot_summary">Achtung: Diese Einstellungen werden beim Gerätestart automatisch angewendet.</string>
     <string name="pref_set_on_boot_settings">Beim Start anwenden</string>
-    <string name="pref_update_path">Update-Kanal</string>
-    <string name="pref_update_path_summary">Gewünschter Update-Kanal.</string>
 
     <!-- ========================================================= -->
     <!-- App Monitor & CPU Statistics Tracker                      -->
@@ -242,10 +218,7 @@
     <string name="pref_backup_kernel_summary">Erstellt eine Sicherungskopie deines aktuellen Kernels.</string>
     <string name="pref_restore">Sicherung wiederherstellen</string>
     <string name="pref_restore_kernel">Wiederherstellen</string>
-    <string name="pref_restore_kernel_summary">Aus einer Kernel-Sicherung wiederherstellen.</string>
     <string name="pref_updater">Kernel-Updater und Sicherung</string>
-    <string name="pref_updater_kernel">Kernel aktualisieren</string>
-    <string name="pref_updater_kernel_summary">Aktualisiert deinen Kernel.</string>
     <string name="proceed_backup">Mit der Sicherung fortfahren? Dadurch wird dein aktueller Kernel gesichert.</string>
     <string name="restore_from_backup">Möchtest du die Sicherung wiederherstellen von</string>
 
@@ -298,8 +271,6 @@
     <string name="showcase_app_monitor_fragment_summary">AppMonitor zeigt nützliche Informationen über deine verwendeten Apps an. Du wirst benachrichtigt, sobald genügend Daten gesammelt wurden. Deine Daten gehören dir – es werden keine Informationen an Dritte übertragen.</string>
     <string name="showcase_cpu_fragment_governor">CPU-Governor</string>
     <string name="showcase_cpu_fragment_governor_summary">Tippe auf dieses Symbol, um auf die vollständige Governor-Steuerung zuzugreifen. Du kannst die Parameter aller verfügbaren Governor anpassen, um die Leistung zu optimieren.</string>
-    <string name="showcase_hidden_feature">Glückwunsch!</string>
-    <string name="showcase_hidden_feature_summary">Du hast eine geheime Funktion entdeckt! Verrate sie niemandem. Und falls etwas nicht funktioniert, keine Sorge – das bleibt unser kleines Geheimnis.</string>
     <string name="showcase_memory_fragment_trim">TRIM-Optionen</string>
     <string name="showcase_memory_fragment_trim_summary">Um die Leistung des Geräts aufrechtzuerhalten, kannst du verschiedene Bereiche des Betriebssystems optimieren. Dies kann einige Zeit dauern, insbesondere wenn viele Daten gespeichert sind.</string>
     <string name="showcase_perapp_profiles">Profile deinen Apps zuweisen!</string>
