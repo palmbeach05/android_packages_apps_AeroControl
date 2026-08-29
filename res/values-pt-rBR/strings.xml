@@ -8,7 +8,7 @@
     <string name="aero_continue">Continue</string>
     <string name="app_name">Aero Control</string>
     <string name="apply">Apply</string>
-    <string name="average">Average</string>
+    <string name="average">Avg.</string>
     <string name="back_for_close">Press Back again to close the App.</string>
     <string name="cancel">Cancel</string>
     <string name="disabled">Disabled</string>
@@ -23,6 +23,7 @@
     <string name="proceed_with_reset">Are you sure you want to proceed?</string>
     <string name="refresh">Refresh</string>
     <string name="reload">Reset</string>
+    <string name="retry">Retry</string>
     <string name="save">Save</string>
     <string name="skip_splash">Skip</string>
     <string name="successful">Successful!</string>
@@ -47,6 +48,12 @@
     <string name="slider_profile">Profiles</string>
     <string name="slider_statistics">CPU Statistics</string>
     <string name="slider_test_suite_settings">Test Suite</string>
+    <string name="testsuite_linpack_test_title">Linpack Test</string>
+    <string name="testsuite_linpack_test_summary">Runs the linpack test.</string>
+    <string name="testsuite_linpack_running">Running Linpack</string>
+    <string name="testsuite_linpack_running_summary">Burning your CPUs...</string>
+    <string name="testsuite_use_all_cpus_title">Use All CPUs</string>
+    <string name="testsuite_use_all_cpus_summary">Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness.</string>
 
     <!-- ========================================================= -->
     <!-- Overview & Live Hardware Information                      -->
@@ -54,6 +61,7 @@
     <string name="available_memory">Total Memory:</string>
     <string name="current_cpu_speed">CPU Frequency:</string>
     <string name="current_governor">Governor:</string>
+    <string name="current_governor_cluster">Governor (CPU %1$s):</string>
     <string name="current_gpu_speed">GPU Frequency:</string>
     <string name="current_io_governor">I/O-Scheduler:</string>
     <string name="kernel_version">Kernel:</string>
@@ -64,11 +72,13 @@
     <string name="add_a_name">Profile name</string>
     <string name="apply_profile">Applying Per-App Profile:</string>
     <string name="define_a_name">Define a name for this profile.</string>
-    <string name="nothing_added_yet">Whoop! You haven\'t added any profiles yet.</string>
+    <string name="nothing_added_yet">Whoops! You haven\'t added any profiles yet.</string>
     <string name="per_app_active">Per-App: Active</string>
     <string name="per_app_not_active">Per-App: Not active</string>
     <string name="profile_assign_to_apps">Assign to apps</string>
     <string name="profile_remove">Remove this profile</string>
+    <string name="profile_remove_confirmation">This profile will be permanently deleted.</string>
+    <string name="delete">Delete</string>
     <string name="return_to_normal">Returning to normal usage</string>
 
     <!-- ========================================================= -->
@@ -87,6 +97,11 @@
     <string name="pref_max_freq_cpu">Max. Frequency</string>
     <string name="pref_min_freq_cpu">Min. Frequency</string>
     <string name="pref_cpu_governor">Governor Settings</string>
+    <string name="pref_max_freq_cpu_cluster">Max. Frequency (CPU %1$s)</string>
+    <string name="pref_min_freq_cpu_cluster">Min. Frequency (CPU %1$s)</string>
+    <string name="pref_cpu_governor_cluster">Governor Settings (CPU %1$s)</string>
+    <string name="pref_apply_to_all_cpu_clusters">Apply to all clusters</string>
+    <string name="pref_apply_to_all_cpu_clusters_summary">Applies changes from the first cluster\'s controls to every detected CPU cluster.</string>
     <string name="pref_gov_set">Governor Specific Settings</string>
     <string name="pref_gov_set_no_parameter">Looks like there are no parameter for this governor?</string>
     <string name="mv_minus">-25 mV</string>
@@ -155,11 +170,19 @@
     <string name="pref_sweeptowake_summary">May drain your battery a bit more than usual.</string>
 
     <!-- ========================================================= -->
+    <!-- Accessibility / Content Descriptions                      -->
+    <!-- ========================================================= -->
+    <string name="info_button_description">Show help information</string>
+
+    <!-- ========================================================= -->
     <!-- Settings Screen Configuration Elements                     -->
     <!-- ========================================================= -->
     <string name="aero_settings">Settings</string>
     <string name="app_theme_dark">Dark - Dark background with black action bar</string>
     <string name="app_theme_light">Light - Light Holo with blue accent</string>
+    <string name="app_theme_system">System - Uses your device\'s Material theme</string>
+    <string name="pref_category_application">Application</string>
+    <string name="pref_category_per_app_profiles">Per-App Profiles</string>
     <string name="pref_app_theme">App Theme</string>
     <string name="pref_app_theme_summary">Defines the default app theme.</string>
     <string name="pref_boot_delay">Boot Timer Delay</string>
@@ -174,13 +197,17 @@
     <string name="pref_per_app_service">Per-App Profile Service</string>
     <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
     <string name="pref_perapp_monitor">Per-App Monitor</string>
+    <string name="pref_perapp_monitor_summary">Enable or disable the App Monitor.</string>
     <string name="pref_perapp_toasts">Per-App Toasts</string>
+    <string name="pref_perapp_toasts_summary">Enable or disable toast notifications.</string>
     <string name="pref_profile_change_name">Set another name</string>
     <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
     <string name="pref_profile_deleted">Deleted</string>
+    <string name="pref_profile_not_deleted">Could not delete profile</string>
     <string name="pref_profile_export">Export</string>
     <string name="pref_profile_import">Import</string>
     <string name="pref_profile_import_select">Select profiles for import</string>
+    <string name="pref_profile_invalid_name">Use 1–64 letters, numbers, spaces, underscores, or hyphens.</string>
     <string name="pref_profile_name_exists">This name already exists.</string>
     <string name="pref_profile_no_import">I couldn\'t find anything to import.</string>
     <string name="pref_profile_per_app">Choose your apps</string>
@@ -192,13 +219,17 @@
     <string name="pref_reboot_check_summary">It will inform you if your device had a sudden reboot.</string>
     <string name="pref_reset_tutorials">Reset Tutorials</string>
     <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
-    <string name="pref_set_on_boot">Set at Boot</string>
+    <string name="pref_reset_tutorials_title">There is no way back</string>
+    <string name="pref_screen_rotation">Screen Rotation</string>
+    <string name="pref_screen_rotation_summary">Allow screen rotation when the device is rotated.</string>
     <string name="pref_set_on_boot_settings">set-on-boot settings.</string>
 
     <!-- ========================================================= -->
     <!-- App Monitor & CPU Statistics Tracker                      -->
     <!-- ========================================================= -->
     <string name="delete_statistics">This will reset your current usage statistics. It\'s like you just rebooted your phone.</string>
+    <string name="select_cluster_title">Select cluster</string>
+    <string name="select_cluster_cpu_label">CPU %1$s</string>
     <string name="notify_app_monitor_data">We collected enough data, check them out in the App Monitor section!</string>
     <string name="pref_cpu_frequency">CPU frequency</string>
     <string name="pref_cpu_number">CPU cores</string>
@@ -241,6 +272,8 @@
     <!-- About Screen & Social / Legal Open-Source Notice Items    -->
     <!-- ========================================================= -->
     <string name="about">About</string>
+    <string name="about_version_label">Version:</string>
+    <string name="about_build_label">Build:</string>
     <string name="about_dialog">Aero Control was originally created by Alexander Christ (Blechd0se) while assisting Quarx and other developers with the Motorola Defy. It is open-source and compatible with a variety of devices. If you wish to show your support, you can donate to Blechd0se.</string>
     <string name="donation_blechdose">Blechd0se</string>
     <string name="github">GitHub</string>
@@ -248,6 +281,7 @@
     <string name="legal_dialog">This App is licensed under the Apache license. A copy of this can be downloaded here:\n http://www.apache.org/licenses/LICENSE-2.0\n ShowCase Library by Alex Curran is licensed under the Apache 2.0 License.\n HoloGraph Library by Daniel Nadeau is licensed under the Apache 2.0 License. </string>
     <string name="send_email">Send an Email</string>
     <string name="xda">XDA Thread</string>
+    <string name="no_activity_for_link">No app available to open this link</string>
 
     <!-- ========================================================= -->
     <!-- Introduction Guide System Walkthrough                     -->
@@ -303,6 +337,7 @@
     <string name="help_text_amp">This value lets you increase or decrease the strength of the vibration module. Usually 100 is the max.</string>
     <string name="help_text_battery_saver">If enabled (1), only one core will stay active as soon as you turn off your screen. If you are getting strange audio quality while the screen is off, try switching it off via 0. This will let both cores stay active during suspend.</string>
     <string name="help_text_block_dump">block_dump enables block I/O debugging when set to a nonzero value.</string>
+    <string name="help_text_button_brightness">Sets the backlight brightness level for the capacitive buttons.</string>
     <string name="help_text_boostpulse_duration">The duration of the input boost.</string>
     <string name="help_text_dalvik_settings">This submenu lets you interact with the virtual machine of your device. Mostly there are memory related options.</string>
     <string name="help_text_debug">A debug flag intended for the developer. Nothing to do here!</string>
