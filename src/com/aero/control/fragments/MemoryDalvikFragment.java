@@ -17,6 +17,12 @@ public class MemoryDalvikFragment extends PlaceHolderFragment {
     private PreferenceCategory PrefCat;
     private PreferenceScreen root;
 
+    /**
+     * Initializes the fragment, loads the empty preference layout, and populates it
+     * with Dalvik VM and kernel memory parameters from the filesystem.
+     *
+     * @param savedInstanceState the saved instance state bundle
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +32,11 @@ public class MemoryDalvikFragment extends PlaceHolderFragment {
         loadDalvik();
     }
 
+    /**
+     * Loads and displays Dalvik VM and kernel memory tunable parameters from the filesystem.
+     * Dynamically generates preferences for each available parameter found in the Dalvik
+     * tweak directory.
+     */
     public void loadDalvik() {
         String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.DALVIK_TWEAK, true);
         if (this.PrefCat != null) {

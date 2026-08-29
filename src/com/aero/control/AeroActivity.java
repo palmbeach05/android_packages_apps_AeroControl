@@ -263,6 +263,12 @@ public final class AeroActivity extends Activity {
         }
     }
 
+    /**
+     * Handles new intents delivered to the activity when it's already running.
+     * Processes any selected item requests from the incoming intent.
+     *
+     * @param intent the new intent that was used to restart the activity
+     */
     @Override // android.app.Activity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -301,6 +307,13 @@ public final class AeroActivity extends Activity {
         getIntent().putExtra("NOTIFY_STRING", new String());
     }
 
+    /**
+     * Handles options menu item selections. Delegates to the navigation drawer helper
+     * for drawer toggle handling.
+     *
+     * @param item the menu item that was selected
+     * @return true if the item was handled, false otherwise
+     */
     @Override // android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
@@ -675,12 +688,24 @@ public final class AeroActivity extends Activity {
         }
     }
 
+    /**
+     * Synchronizes the navigation drawer toggle state after the activity has been
+     * fully initialized.
+     *
+     * @param savedInstanceState the saved instance state bundle
+     */
     @Override // android.app.Activity
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         this.mNavigationDrawer.syncState();
     }
 
+    /**
+     * Saves the current state including selected drawer item position and fragment stack
+     * so it can be restored on configuration changes or process recreation.
+     *
+     * @param outState the bundle to save instance state into
+     */
     @Override // android.app.Activity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -700,6 +725,13 @@ public final class AeroActivity extends Activity {
         outState.putIntArray("FRAGMENT_STACK_IDS", stackResourceIds);
     }
 
+    /**
+     * Handles configuration changes such as screen rotation. Notifies the navigation
+     * drawer and cancels any pending drawer transactions, handing them off to the
+     * recreated instance if recreation is triggered.
+     *
+     * @param newConfig the new device configuration
+     */
     @Override // android.app.Activity, android.content.ComponentCallbacks
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -805,6 +837,10 @@ public final class AeroActivity extends Activity {
         selectItemByResourceId(savedItemId, true);
     }
 
+    /**
+     * Handles the back button press. Closes app detail if open, navigates back through
+     * the fragment stack, or initiates the double-tap-to-close confirmation flow.
+     */
     @Override // android.app.Activity
     public void onBackPressed() {
         if (hasAppDetailBackStackEntry()) {
@@ -963,6 +999,10 @@ public final class AeroActivity extends Activity {
         mHandler.post(this.mPendingSwitch);
     }
 
+    /**
+     * Cleans up resources when the activity is being destroyed. Removes all pending
+     * callbacks from the main handler to prevent memory leaks.
+     */
     @Override // android.app.Activity
     protected void onDestroy() {
         if (this.mPendingSwitch != null) {

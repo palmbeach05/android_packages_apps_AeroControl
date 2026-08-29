@@ -39,6 +39,8 @@ public final class FilePath {
     public static final String GPU_GOV_PATH = "/sys/module/msm_kgsl_core/parameters";
     public static final String KSM_SETTINGS = "/sys/kernel/mm/ksm/run";
     public static final String LOW_MEM = "/system/build.prop";
+    public static final String LOW_MEM_PROPERTY = "ro.config.low_ram";
+    public static final String LOW_MEM_SUPPORTED = "LOW_MEM_SUPPORTED";
     public static final String MISC_HEADSET_VOLUME_BOOST = "/sys/class/misc/soundcontrol";
     public static final String MISC_HEADSET_VOLUME_BOOST_FILE = "/sys/class/misc/soundcontrol/volume_boost";
     public static final String MISC_TCP_CONGESTION_AVAILABLE = "/proc/sys/net/ipv4/tcp_available_congestion_control";
