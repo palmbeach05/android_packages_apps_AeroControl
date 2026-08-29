@@ -133,6 +133,8 @@
     <string name="pref_io_scheduler_no_parameter">Looks like there are no parameter for this scheduler?</string>
     <string name="pref_ksm">KSM</string>
     <string name="pref_ksm_summary">Enables or disabled the KSM daemon completely.</string>
+    <string name="pref_low_memory">Low Memory</string>
+    <string name="pref_low_memory_summary">Current ro.config.low_ram value: %1$s</string>
     <string name="pref_low_mem_option">Low Memory Option</string>
     <string name="pref_low_mem_option_summary">Enable or Disable the low memory option here. This might help on devices with 4.4+ (Kitkat).</string>
     <string name="pref_memory_settings">Memory Settings</string>

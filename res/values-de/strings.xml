@@ -133,6 +133,8 @@
     <string name="pref_io_scheduler_no_parameter">Für diesen Scheduler sind keine Parameter verfügbar.</string>
     <string name="pref_ksm">KSM</string>
     <string name="pref_ksm_summary">Aktiviert oder deaktiviert den KSM-Daemon vollständig.</string>
+    <string name="pref_low_memory">Low Memory</string>
+    <string name="pref_low_memory_summary">Current ro.config.low_ram value: %1$s</string>
     <string name="pref_low_mem_option">Low Memory Option</string>
     <string name="pref_low_mem_option_summary">Low Memory optimiert das System für Geräte mit wenig Arbeitsspeicher. Hierfür wird Android 4.4+ (KitKat) benötigt.</string>
     <string name="pref_memory_settings">Speichereinstellungen</string>
