@@ -23,6 +23,7 @@
     <string name="proceed_with_reset">Are you sure you want to proceed?</string>
     <string name="refresh">Refresh</string>
     <string name="reload">Reset</string>
+    <string name="retry">Retry</string>
     <string name="save">Save</string>
     <string name="skip_splash">Skip</string>
     <string name="successful">Successful!</string>
