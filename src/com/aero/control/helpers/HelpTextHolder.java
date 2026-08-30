@@ -55,6 +55,12 @@ public class HelpTextHolder {
         putInMap("gpu_gov_settings", R.string.help_text_gpu_gov_settings);
         putInMap("read_ahead", R.string.help_text_read_ahead);
         putInMap("fsync", R.string.help_text_fsync);
+        putInMap("dynFsync", R.string.help_text_dyn_fsync);
+        putInMap("writeback", R.string.help_text_writeback);
+        putInMap("gpu_control_enable", R.string.help_text_gpu_control_enable);
+        putInMap("sweeptowake", R.string.help_text_sweeptowake);
+        putInMap("doubletaptowake", R.string.help_text_doubletaptowake);
+        putInMap("display_control", R.string.help_text_display_control);
         putInMap("entropy_settings", R.string.help_text_entropy_settings);
         putInMap("fstrim_toggle", R.string.help_text_fstrim_toggle);
         putInMap("dalvik_settings", R.string.help_text_dalvik_settings);

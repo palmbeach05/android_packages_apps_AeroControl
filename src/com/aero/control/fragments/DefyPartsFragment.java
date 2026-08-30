@@ -47,6 +47,7 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         defyParts.addPreference(this.led_charging);
         this.button_brightness = new CustomTextPreference(getActivity());
         this.button_brightness.setName("button_brightness");
+        this.button_brightness.setHelpLookupKey("button_brightness");
         this.button_brightness.setPrefText(getText(R.string.pref_button_brightness).toString());
         this.button_brightness.setDialogTitle(getText(R.string.pref_button_brightness).toString());
         this.button_brightness.setTitle(getText(R.string.pref_button_brightness).toString());
