@@ -453,7 +453,7 @@ public class CustomPreference extends Preference {
             preferenceContent.setOnClickListener(new View.OnClickListener() {
                 @Override // android.view.View.OnClickListener
                 public void onClick(View v) {
-                    CustomPreference.this.performCustomClick();
+                    CustomPreference.this.performClick(null);
                 }
             });
         }
