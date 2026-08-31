@@ -419,10 +419,8 @@ public class CustomPreference extends Preference {
     }
 
     /**
-     * Binds a row that provides the custom {@code preference_enhanced} layout IDs,
-     * including {@link R.id#preference_content}, which invokes
-     * {@link #performCustomClick()}. The checkbox and help button retain separate
-     * listeners.
+     * Binds a row that provides the custom {@code preference_enhanced} layout IDs.
+     * The checkbox and help button retain separate listeners.
      *
      * @param view the custom preference row
      */
@@ -448,15 +446,6 @@ public class CustomPreference extends Preference {
         this.mCustomImageButton = view.findViewById(R.id.info_button);
         View separator_checkbox = view.findViewById(R.id.separator_checkbox);
         View seperator_info = view.findViewById(R.id.separator_info);
-        View preferenceContent = view.findViewById(R.id.preference_content);
-        if (preferenceContent != null) {
-            preferenceContent.setOnClickListener(new View.OnClickListener() {
-                @Override // android.view.View.OnClickListener
-                public void onClick(View v) {
-                    CustomPreference.this.performClick(null);
-                }
-            });
-        }
         if (isHelpEnabled().booleanValue()) {
             this.mCustomImageButton.setOnClickListener(this.mOnClickListener);
         } else {
