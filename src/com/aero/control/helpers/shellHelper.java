@@ -588,7 +588,7 @@ public final class shellHelper {
             return false;
         }
         String quotedPath = escapeShellArg(path);
-        String[] commands = {"chmod 0666 " + quotedPath, "printf %s " + escapeShellArg(content) + " > " + quotedPath};
+        String[] commands = {"chmod 0666 " + quotedPath, "printf '%s\\n' " + escapeShellArg(content) + " > " + quotedPath};
         addCommands(commands);
         return runCommands();
     }
