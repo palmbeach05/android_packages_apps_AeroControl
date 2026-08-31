@@ -233,6 +233,11 @@ public final class shellHelper {
         private ShellWorkqueue() {
         }
 
+        /**
+         * Adds a command to the work queue, initializing the queue if necessary.
+         *
+         * @param work the command string to add
+         */
         public void addToWork(String work) {
             if (this.mWorkItems == null) {
                 initWork();
@@ -240,14 +245,25 @@ public final class shellHelper {
             this.mWorkItems.add(work);
         }
 
+        /**
+         * Returns all queued commands as an array.
+         *
+         * @return array of queued command strings
+         */
         public String[] execWork() {
             return (String[]) this.mWorkItems.toArray(new String[0]);
         }
 
+        /**
+         * Initializes an empty work items list.
+         */
         private void initWork() {
             this.mWorkItems = new ArrayList<>();
         }
 
+        /**
+         * Clears all queued work items and releases the list.
+         */
         public void flushWork() {
             if (this.mWorkItems != null) {
                 this.mWorkItems.clear();

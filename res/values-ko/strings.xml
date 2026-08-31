@@ -347,7 +347,10 @@
     <string name="help_text_dirty_expire_centisecs">This tunable is used to define when dirty data is old enough to be eligible for writeout by the kernel flusher threads. It is expressed in 100ths of a second. Data which has been dirty in-memory for longer than this interval will be written out next time a flusher thread wakes up.</string>
     <string name="help_text_dirty_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which a process which is generating disk writes will itself start writing out dirty data.</string>
     <string name="help_text_dirty_writeback_centisecs">The kernel flusher threads will periodically wake up and write \'old\' data out to disk. This tunable expresses the interval between those wakeups, in 100ths of a second.\nSetting this to zero disables periodic writeback altogether.</string>
+    <string name="help_text_display_control">Adjusts the display color profile. Available modes and their effects depend on the device and kernel.</string>
     <string name="help_text_drop_caches">Writing to this will cause the kernel to drop clean caches, as well as reclaimable slab objects like dentries and inodes. Once dropped, their memory becomes free. (1 = free page cache, 2 = free reclaimable slab objects, 3 = free slab objects and page cache)</string>
+    <string name="help_text_doubletaptowake">Wakes the device when you double-tap the screen while it is off. Availability depends on kernel support.</string>
+    <string name="help_text_dyn_fsync">Dynamically disables fsync while the screen is on and restores it when the screen turns off. This may improve performance, but can increase the risk of data loss after a crash.</string>
     <string name="help_text_entropy_settings">The entropy pool stores random numbers for various applications. Higher values for read/write can help in some cases, but can also increase the battery drain. In general, your pool should be always above 200 at any point of time.</string>
     <string name="help_text_extfrag_threshold">This parameter affects whether the kernel will compact memory or direct reclaim to satisfy a high-order allocation. Values tending towards 0 imply allocations would fail due to lack of memory, values towards 1000 imply failures are due to fragmentation and -1 implies that the allocation will succeed as long as watermarks are met.</string>
     <string name="help_text_extra_free_kbytes">This parameter tells the VM to keep extra free memory between the threshold where background reclaim (kswapd) kicks in, and the threshold where direct reclaim (by allocating processes) kicks in.</string>
@@ -356,6 +359,7 @@
     <string name="help_text_fstrim_toggle">Trims various parts of your system to free up unused blocks on your storage. This requires BusyBox and might take a while to complete.</string>
     <string name="help_text_fsync">The fsync() call forces a physical write of data from the buffer cache. Disabling this feature may give a performance boost, but at the cost of data loss if your system crashes.</string>
     <string name="help_text_go_hispeed_load">Go to hispeed when CPU load at or above this value.</string>
+    <string name="help_text_gpu_control_enable">Enables the kernel interface used to change GPU frequencies and governors. Availability depends on kernel support.</string>
     <string name="help_text_gpu_gov_settings">Your GPU governor has some special tunables to fine-tune its behavior. This is very similar to a CPU governor.</string>
     <string name="help_text_gpu_max_freq">This tunable lets you change the maximum GPU frequency. Lowering this value can save battery power at the cost of performance.</string>
     <string name="help_text_highmem_is_dirtyable">This defaults to 0 (false), meaning that the dirty_ratio and dirty_background_ratio ratios are calculated as a percentage of low memory only. This protects against excessive scanning in page reclaim, swapping and general VM distress.</string>
@@ -397,6 +401,7 @@
     <string name="help_text_single_core_threshold" formatted="false">The threshold for a single core to online another one. For example, if core 1 is at 100% and the average load is above 60% core 3 will get online.</string>
     <string name="help_text_stat_interval">The time interval between which vm statistics are updated. The default is 1 second.</string>
     <string name="help_text_swappiness">This control is used to define how aggressive the kernel will swap memory pages. Higher values will increase aggressiveness, while lower values will decrease the amount of swap. A value of 0 instructs the kernel not to initiate swap until the amount of free and file-backed pages is less than the high-water mark in a zone.</string>
+    <string name="help_text_sweeptowake">Wakes the device when you swipe across the screen while it is off. Availability depends on kernel support.</string>
     <string name="help_text_target_loads">At or above this value, the governor will ramp up the frequency. Lower values result in higher CPU speeds. An example would be \'85 1200000:80 1500000:95\'. This means the overall target load is 85, but if the frequency is higher than 1.2 GHz its 80. The same applies for 1.5 GHz but with 95.</string>
     <string name="help_text_tcp_congestion">Choose the algorithm behind your network congestion control. Usually the default is \'cubic\' or \'reno\'.</string>
     <string name="help_text_temp_threshold">The temperature threshold when your CPU starts to throttle to save it from overheating. This value is usually in °C.</string>
@@ -408,6 +413,7 @@
     <string name="help_text_voltage_values">In this submenu you can change the voltage values of your CPU. This might increase your battery life or allows your CPU to run on higher frequencies. However, this can cause massive issues if overdone too much.</string>
     <string name="help_text_volume_boost">This value gives your speakers or your headphones a boost to get them a little louder.</string>
     <string name="help_text_write_expire">Similar to read_expire, but for writes.</string>
+    <string name="help_text_writeback">Dynamically controls delayed writeback of cached data. This may improve performance or battery life, but can increase the risk of data loss after a crash.</string>
     <string name="help_text_writes_starved">So writes_starved controls how many times we give preference to reads over writes. When that has been done writes_starved number of times, we dispatch some writes based on the same criteria as reads.</string>
     <string name="help_text_vtg_level">This tunable controls the vibration module of your phone. A lower value usually means a softer vibration.</string>
 </resources>

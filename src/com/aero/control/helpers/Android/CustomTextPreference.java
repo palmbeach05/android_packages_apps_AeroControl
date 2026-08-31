@@ -25,6 +25,7 @@ public class CustomTextPreference extends EditTextPreference {
     private Context mContext;
     private View mCustomImageButton;
     private String mHelpContent;
+    private String mHelpLookupKey;
     private Boolean mHideOnBoot;
     private String mName;
     private View.OnClickListener mOnClickListener;
@@ -47,7 +48,11 @@ public class CustomTextPreference extends EditTextPreference {
             @Override // android.view.View.OnClickListener
             public void onClick(View v) {
                 if (CustomTextPreference.this.mHelpContent == null) {
-                    CustomTextPreference.this.mHelpContent = HelpTextHolder.instance(CustomTextPreference.this.mContext).getText(CustomTextPreference.this.getTitle().toString());
+                    String lookupKey = CustomTextPreference.this.mHelpLookupKey;
+                    if (lookupKey == null) {
+                        lookupKey = CustomTextPreference.this.getTitle().toString();
+                    }
+                    CustomTextPreference.this.mHelpContent = HelpTextHolder.instance(CustomTextPreference.this.mContext).getText(lookupKey);
                 }
                 AlertDialog dialog = new AlertDialog.Builder(CustomTextPreference.this.mContext).setTitle(CustomTextPreference.this.getTitle().toString()).setMessage(CustomTextPreference.this.mHelpContent).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.helpers.Android.CustomTextPreference.1.1
                     @Override // android.content.DialogInterface.OnClickListener
@@ -108,6 +113,16 @@ public class CustomTextPreference extends EditTextPreference {
      */
     public void setHelpEnable(boolean enable) {
         this.mShowHelp = Boolean.valueOf(enable);
+    }
+
+    /**
+     * Overrides the title-based key used to look up this preference's help text.
+     *
+     * @param key the key registered in {@link HelpTextHolder}
+     */
+    public void setHelpLookupKey(String key) {
+        this.mHelpLookupKey = key;
+        this.mHelpContent = null;
     }
 
     /**
