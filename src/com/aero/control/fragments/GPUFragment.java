@@ -267,6 +267,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         }
     }
 
+    /**
+     * Displays the RGB color control dialog with sliders for red, green, and blue values.
+     * Creates an interactive dialog allowing users to adjust display color values with
+     * real-time preview using SeekBar (API 21+) or custom Slider components.
+     *
+     * @param editor the SharedPreferences editor for persisting color values
+     * @param cusPref the CustomPreference associated with this color control
+     */
     private void showColorControl(final SharedPreferences.Editor editor, final CustomPreference cusPref) {
         if (this.mShell == null) {
             this.mShell = new Shell("su", true);
@@ -557,6 +565,17 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return AeroActivity.shell.toMHz(value.substring(0, value.length() - 3));
     }
 
+    /**
+     * Applies RGB color values from the color control dialog to the display hardware.
+     * Validates that values are within the 0-255 range and writes them to the kernel
+     * color control interface via root shell commands.
+     *
+     * @param redValue the EditText containing the red component value
+     * @param greenValue the EditText containing the green component value
+     * @param blueValue the EditText containing the blue component value
+     * @param cusPref the CustomPreference for this color control setting
+     * @param editor the SharedPreferences editor for saving the color values if enabled
+     */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
         int red;
         int green;
@@ -600,6 +619,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return handlePreferenceClick(preference);
     }
 
+    /**
+     * Handles click events for GPU preferences including GPU control, sweep2wake,
+     * doubletap2wake, and RGB color control. Toggles boolean preferences and opens
+     * the color control dialog when appropriate.
+     *
+     * @param preference the preference that was clicked
+     * @return true if the click was handled
+     */
     private boolean handlePreferenceClick(Preference preference) {
         CustomPreference cusPref = null;
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -689,6 +716,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return true;
     }
 
+    /**
+     * Checks whether a value is present in a preference's configured entry values.
+     * Used to validate user input before applying display control settings.
+     *
+     * @param preference the CustomListPreference to check
+     * @param candidate the value to validate
+     * @return true if the candidate is a valid entry value, false otherwise
+     */
     private boolean isConfiguredListValue(CustomListPreference preference, String candidate) {
         CharSequence[] entryValues = preference.getEntryValues();
         if (candidate == null || entryValues == null) {
