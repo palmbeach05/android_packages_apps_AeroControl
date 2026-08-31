@@ -112,6 +112,16 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         this.mColorControl = (CustomPreference) this.root.findPreference("rgbValues");
         this.mColorControl.setOrder(40);
         this.mColorControl.setLookUpDefault(FilePath.COLOR_CONTROL);
+        Preference.OnPreferenceClickListener preferenceClickListener = new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                return handlePreferenceClick(preference);
+            }
+        };
+        this.mGPUControl.setOnPreferenceClickListener(preferenceClickListener);
+        this.mSweep2wake.setOnPreferenceClickListener(preferenceClickListener);
+        this.mDoubletap2Wake.setOnPreferenceClickListener(preferenceClickListener);
+        this.mColorControl.setOnPreferenceClickListener(preferenceClickListener);
         this.mGPUGovernor.setOnPreferenceChangeListener(this);
         this.mGPUGovernor.setOrder(45);
         this.mGPUControlFrequencies.setOnPreferenceChangeListener(this);
@@ -587,6 +597,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
     @Override // android.preference.PreferenceFragment
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+        return handlePreferenceClick(preference);
+    }
+
+    private boolean handlePreferenceClick(Preference preference) {
         CustomPreference cusPref = null;
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPrefs.edit();
