@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="aero_array">
+        <item>@string/slider_overview</item>
+        <item>@string/slider_cpu_settings</item>
+        <item>@string/slider_statistics</item>
+        <item>@string/slider_gpu_settings</item>
+        <item>@string/slider_memory_settings</item>
+        <item>@string/slider_misc_settings</item>
+        <item>@string/slider_defy_parts</item>
+        <item>@string/slider_backup_restore</item>
+        <item>@string/slider_profile</item>
+        <item>@string/slider_app_monitor</item>
+        <item>@string/slider_test_suite_settings</item>
+    </array>
+    <array name="overview_array">
+        <item>@string/kernel_version</item>
+        <item>@string/current_cpu_speed</item>
+        <item>@string/current_gpu_speed</item>
+        <item>@string/current_governor</item>
+        <item>@string/available_memory</item>
+    </array>
+    <array name="gpu_frequency_list">
+        <item>100 MHz</item>
+        <item>133 MHz</item>
+        <item>160 MHz</item>
+        <item>200 MHz</item>
+        <item>266 MHz</item>
+    </array>
+    <string-array name="gpu_frequency_list_values">
+        <item>100000000</item>
+        <item>133333333</item>
+        <item>160000000</item>
+        <item>200000000</item>
+        <item>266666666</item>
+    </string-array>
+    <array name="charge_led_mode_entries">
+        <item>@string/pref_charge_led_mode_white</item>
+        <item>@string/pref_charge_led_mode_rgb</item>
+        <item>@string/pref_charge_led_mode_off</item>
+    </array>
+    <array name="charge_led_mode_values">
+        <item>white</item>
+        <item>rgb</item>
+        <item>off</item>
+    </array>
+    <array name="charge_led_mode_entries_droidx">
+        <item>@string/pref_charge_led_mode_green</item>
+        <item>@string/pref_charge_led_mode_rgb</item>
+        <item>@string/pref_charge_led_mode_off</item>
+    </array>
+    <array name="charge_led_mode_values_droidx">
+        <item>green</item>
+        <item>rgb</item>
+        <item>off</item>
+    </array>
+    <string-array name="touch_point_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>8</item>
+        <item>10</item>
+    </string-array>
+    <array name="app_themes">
+        <item>@string/app_theme_light</item>
+        <item>@string/app_theme_dark</item>
+    </array>
+    <string-array name="app_theme_values">
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string-array name="boot_delay">
+        <item>@string/disabled</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+</resources>

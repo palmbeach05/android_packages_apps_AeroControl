@@ -1,0 +1,810 @@
+package com.aero.control.helpers;
+
+import android.os.SystemClock;
+import android.util.Log;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Shell command execution helper that provides a persistent root shell session
+ * for reading system files, executing commands, and managing kernel tunables.
+ * Maintains a single su process to avoid repeated privilege escalation overhead.
+ */
+public final class shellHelper {
+    private static final int BUFF_LEN = 8192;
+    private static final int MAX_RESULT_LEN = 65536;
+    private static final String NO_DATA_FOUND = "Unavailable";
+    private static shellHelper mShellHelper;
+    private List<String> mCommands = new ArrayList<>();
+    private static final String LOG_TAG = shellHelper.class.getName();
+    private ShellWorkqueue shWork = new ShellWorkqueue();
+    private Process mProcess = null;
+    private DataOutputStream mShellOutput = null;
+    private BufferedReader mOutput = null;
+    private boolean mShellLoaded = false;
+
+    /**
+     * Private constructor. Opens the root shell in a background thread.
+     */
+    private shellHelper() {
+        Runnable run = new Runnable() { // from class: com.aero.control.helpers.shellHelper.1
+            @Override // java.lang.Runnable
+            public void run() {
+                shellHelper.this.openShell();
+            }
+        };
+        Thread worker = new Thread(run);
+        worker.start();
+    }
+
+    /**
+     * Returns the singleton shellHelper instance, creating it if necessary.
+     *
+     * @return the shared shellHelper instance
+     */
+    public static synchronized shellHelper instance() {
+        if (mShellHelper == null) {
+            mShellHelper = new shellHelper();
+        }
+        return mShellHelper;
+    }
+
+    /**
+     * Creates and returns a new shellHelper instance, discarding any existing one.
+     * Used when multiple independent shell sessions are needed.
+     *
+     * @return a new shellHelper instance
+     */
+    public static synchronized shellHelper forceInstance() {
+        mShellHelper = new shellHelper();
+        return mShellHelper;
+    }
+
+    /**
+     * Adds multiple commands to the command queue.
+     *
+     * @param commands the array of command strings to add
+     */
+    private synchronized void addCommands(String[] commands) {
+        for (String cmd : commands) {
+            if (cmd != null) {
+                this.mCommands.add(cmd);
+            }
+        }
+    }
+
+    /**
+     * Adds a single command to the queue.
+     *
+     * @param cmd the command to add
+     */
+    public synchronized void addCommand(String cmd) {
+        this.mCommands.add(cmd);
+    }
+
+    /**
+     * Opens a root shell session if not already open.
+     */
+    public synchronized void openShell() {
+        if (this.mCommands == null) {
+            this.mCommands = new ArrayList();
+        }
+        try {
+            if (this.mProcess == null) {
+                this.mProcess = Runtime.getRuntime().exec("su");
+            }
+            if (this.mShellOutput == null) {
+                this.mShellOutput = new DataOutputStream(this.mProcess.getOutputStream());
+            }
+            if (this.mOutput == null) {
+                this.mOutput = new BufferedReader(new InputStreamReader(this.mProcess.getInputStream()));
+            }
+            this.mShellLoaded = true;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "We were not able to create a shell!", e);
+            this.mShellLoaded = false;
+        }
+    }
+
+    /**
+     * Closes the root shell session and cleans up resources.
+     */
+    public synchronized void closeShell() {
+        if (this.mShellOutput != null) {
+            try {
+                this.mShellOutput.close();
+            } catch (IOException e) {
+            }
+            this.mShellOutput = null;
+        }
+        if (this.mOutput != null) {
+            try {
+                this.mOutput.close();
+            } catch (IOException e) {
+            }
+            this.mOutput = null;
+        }
+        if (this.mProcess != null) {
+            this.mProcess.destroy();
+            this.mProcess = null;
+        }
+        this.mShellLoaded = false;
+    }
+
+    /**
+     * Executes all queued commands in the root shell without waiting for output.
+     * Clears the command queue after execution.
+     *
+     * @return true if commands were executed successfully, false if the shell is not loaded
+     */
+    private synchronized boolean runCommands() {
+        openShell();
+        if (this.mShellLoaded) {
+            List<String> commands = Collections.synchronizedList(this.mCommands);
+            try {
+                for (String cmd : commands) {
+                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
+                    this.mShellOutput.flush();
+                }
+                try {
+                    this.mShellOutput.flush();
+                } catch (IOException e) {
+                }
+            } catch (IOException e2) {
+                Log.e(LOG_TAG, "Something interrupted our operations...", e2);
+                this.mCommands.clear();
+                return false;
+            }
+            this.mCommands.clear();
+            return true;
+        } else {
+            this.mCommands.clear();
+            return false;
+        }
+    }
+
+    /**
+     * Executes all queued commands and reads the output from the root shell.
+     * Blocks until all output has been read or the read is interrupted. Clears
+     * the command queue after execution.
+     *
+     * @return the command output as a string, or null if reading fails or is interrupted
+     */
+    private synchronized String getRootResult() {
+        int read;
+        List<String> commands = Collections.synchronizedList(this.mCommands);
+        char[] buf = new char[8192];
+        StringBuilder response = new StringBuilder();
+        try {
+            if (this.mShellLoaded) {
+                for (String cmd : commands) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        return null;
+                    }
+                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
+                    do {
+                        if (Thread.currentThread().isInterrupted()) {
+                            return null;
+                        }
+                        read = this.mOutput.read(buf);
+                        if (read == -1) {
+                            return null;
+                        }
+                        int remaining = MAX_RESULT_LEN - response.length();
+                        if (remaining > 0) {
+                            response.append(buf, 0, Math.min(read, remaining));
+                        }
+                    } while (read >= 8192);
+                    this.mShellOutput.flush();
+                }
+                try {
+                    this.mShellOutput.flush();
+                } catch (IOException e) {
+                }
+            }
+            return response.toString().trim();
+        } catch (IOException e2) {
+            Log.e(LOG_TAG, "Something interrupted our operations...", e2);
+            return null;
+        } finally {
+            this.mCommands.clear();
+        }
+    }
+
+    /**
+     * Internal work queue for batching shell commands.
+     */
+    private class ShellWorkqueue {
+        private ArrayList<String> mWorkItems;
+
+        private ShellWorkqueue() {
+        }
+
+        /**
+         * Adds a command to the work queue, initializing the queue if necessary.
+         *
+         * @param work the command string to add
+         */
+        public void addToWork(String work) {
+            if (this.mWorkItems == null) {
+                initWork();
+            }
+            this.mWorkItems.add(work);
+        }
+
+        /**
+         * Returns all queued commands as an array.
+         *
+         * @return array of queued command strings
+         */
+        public String[] execWork() {
+            return (String[]) this.mWorkItems.toArray(new String[0]);
+        }
+
+        /**
+         * Initializes an empty work items list.
+         */
+        private void initWork() {
+            this.mWorkItems = new ArrayList<>();
+        }
+
+        /**
+         * Clears all queued work items and releases the list.
+         */
+        public void flushWork() {
+            if (this.mWorkItems != null) {
+                this.mWorkItems.clear();
+                this.mWorkItems = null;
+            }
+        }
+    }
+
+    /**
+     * Adds a command to the work queue.
+     *
+     * @param work the command to queue
+     */
+    public void queueWork(String work) {
+        this.shWork.addToWork(work);
+    }
+
+    /**
+     * Executes all queued work items and clears the queue.
+     */
+    public void execWork() {
+        this.shWork.addToWork("echo ");
+        setRootInfo(this.shWork.execWork());
+    }
+
+    /**
+     * Clears all queued work items without executing them.
+     */
+    public void flushWork() {
+        this.shWork.flushWork();
+    }
+
+    /**
+     * Parses and returns kernel version information from /proc/version.
+     *
+     * @return formatted kernel version string, or "Unavailable" if parsing fails
+     */
+    public final String getKernel() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("/proc/version"), 8192);
+            try {
+                String procVersionStr = reader.readLine();
+                reader.close();
+                Pattern p = Pattern.compile("\\w+\\s+\\w+\\s+([^\\s]+)\\s+\\(([^\\s@]+(?:@[^\\s.]+)?)[^)]*\\)\\s+\\((?:[^(]*\\([^)]*\\))?[^)]*\\)\\s+([^\\s]+)\\s+(?:PREEMPT\\s+)?(.+)");
+                Matcher m = p.matcher(procVersionStr);
+                if (!m.matches()) {
+                    Log.e(LOG_TAG, "Regex did not match on /proc/version: " + procVersionStr);
+                    return NO_DATA_FOUND;
+                }
+                if (m.groupCount() < 4) {
+                    Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount() + " groups");
+                    return NO_DATA_FOUND;
+                }
+                return m.group(1) + "\n" + m.group(2) + " " + m.group(3) + "\n" + m.group(4);
+            } catch (Throwable th) {
+                reader.close();
+                throw th;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "IO Exception when getting kernel version for Device Info screen", e);
+            return NO_DATA_FOUND;
+        }
+    }
+
+    /**
+     * Reads the first line from a file, falling back to root cat if direct read fails.
+     *
+     * @param s the file path to read
+     * @return the first line of the file, or "Unavailable" if the file cannot be read
+     */
+    public final String getInfo(String s) {
+        String info = NO_DATA_FOUND;
+        if (s == null || !new File(s).exists()) {
+            return NO_DATA_FOUND;
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
+            try {
+                info = reader.readLine();
+                if (info == null) {
+                    info = NO_DATA_FOUND;
+                }
+                return info;
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            synchronized (this) {
+                openShell();
+                addCommand("ls -l " + s);
+                String tmp = getRootResult();
+                if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
+                    addCommand("cat " + s);
+                    String catResult = getRootResult();
+                    if (catResult != null) {
+                        info = catResult;
+                    }
+                }
+                if (info.equals(NO_DATA_FOUND)) {
+                    Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+                }
+                return info;
+            }
+        }
+    }
+
+    /**
+     * Reads a file's first line without fallback to root. Faster than getInfo when
+     * the file is known to be readable without root.
+     *
+     * @param path the file path to read
+     * @return the first line of the file
+     */
+    public final String getFastInfo(String path) {
+        try {
+            FileInputStream fis = new FileInputStream(path);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            String tmp = br.readLine();
+            return tmp;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "IO Exception when trying to get information. Fallback to getInfo()", e);
+            String tmp2 = getInfo(path);
+            return tmp2;
+        }
+    }
+
+    /**
+     * Reads all lines from a file. Optionally prepends deep sleep time as the first element.
+     *
+     * @param s the file path to read
+     * @param deepsleep if true, prepends the deep sleep time in centiseconds
+     * @return array of lines from the file, or null if reading fails
+     */
+    public final String[] getInfo(String s, boolean deepsleep) {
+        ArrayList<String> al = new ArrayList<>();
+        if (deepsleep) {
+            long sleepTime = (SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()) / 10;
+            al.add(Long.toString(sleepTime));
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
+            try {
+                for (String info = reader.readLine(); info != null; info = reader.readLine()) {
+                    al.add(info);
+                }
+                reader.close();
+                return (String[]) al.toArray(new String[0]);
+            } catch (Throwable th) {
+                reader.close();
+                throw th;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+            return null;
+        }
+    }
+
+    /**
+     * Lists directory contents. If flag is true, returns only files; otherwise returns only directories.
+     *
+     * @param s the directory path
+     * @param flag if true, list files; if false, list directories
+     * @return array of names, or null if the directory does not exist
+     */
+    public final String[] getDirInfo(String s, boolean flag) {
+        if (!new File(s).exists()) {
+            return null;
+        }
+        if (flag) {
+            List<String> results = new ArrayList<>();
+            File[] files = new File(s).listFiles();
+            for (File file : files) {
+                if (file.isFile()) {
+                    results.add(file.getName());
+                }
+            }
+            String[] result = new String[results.size()];
+            for (int i = 0; i < results.size(); i++) {
+                result[i] = results.get(i);
+            }
+            Arrays.sort(result);
+            return result;
+        }
+        return new File(s).list(new FilenameFilter() { // from class: com.aero.control.helpers.shellHelper.2
+            @Override // java.io.FilenameFilter
+            public boolean accept(File file2, String s2) {
+                return new File(file2, s2).isDirectory();
+            }
+        });
+    }
+
+    /**
+     * Parses a string into an array by splitting on spaces, optionally removing brackets
+     * and converting values to MHz format.
+     *
+     * @param s the input string to parse
+     * @param flag if 1, convert values to MHz; otherwise keep raw strings
+     * @param flag_io if 1, remove brackets before splitting; otherwise split as-is
+     * @return the parsed array of strings
+     */
+    private String[] buildArray(String s, int flag, int flag_io) {
+        String[] completeString = new String[0];
+        if (s.charAt(s.length() - 1) == '\n') {
+            s = s.replace(Character.toString('\n'), "");
+        }
+        if (flag_io == 1) {
+            completeString = s.replace("[", "").replace("]", "").split(" ");
+        } else if (flag_io == 0) {
+            completeString = s.split(" ");
+        }
+        String[] output = new String[completeString.length];
+        output[0] = NO_DATA_FOUND;
+        for (int i = 0; i < output.length; i++) {
+            if (flag == 1) {
+                output[i] = toMHz(completeString[i]);
+            } else {
+                output[i] = completeString[i];
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Reads a file and returns its contents as a space-separated array, optionally converting
+     * to MHz and optionally removing brackets.
+     *
+     * @param s the file path to read
+     * @param flag if 1, convert values to MHz; otherwise return raw strings
+     * @param flag_io if 1, remove brackets; otherwise keep raw format
+     * @return array of parsed values, or {"Unavailable"} if reading fails
+     */
+    public final String[] getInfoArray(String s, int flag, int flag_io) {
+        String[] output = {NO_DATA_FOUND};
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
+            try {
+                output = buildArray(reader.readLine(), flag, flag_io);
+                return output;
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            synchronized (this) {
+                openShell();
+                String result = getRootInfo("ls -l", s);
+                if (result != null && result.length() > 10 && !result.substring(0, 10).equals("--w-------")) {
+                    String tmp = getRootInfo("cat", s);
+                    output = buildArray(tmp, flag, flag_io);
+                }
+                if (output[0].equals(NO_DATA_FOUND)) {
+                    Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
+                }
+                return output;
+            }
+        }
+    }
+
+    /**
+     * Extracts the substring between the first '[' and last ']' in a string.
+     *
+     * @param s the input string
+     * @return the substring between brackets, or "Unavailable" if brackets not found
+     */
+    public final String getInfoString(String s) {
+        int open = s.indexOf("[");
+        int close = s.lastIndexOf("]");
+        if (open < 0 || close < 0) {
+            return NO_DATA_FOUND;
+        }
+        String finalString = s.substring(open + 1, close);
+        return finalString;
+    }
+
+    /**
+     * Converts a frequency string from kHz or Hz to MHz with proper formatting.
+     *
+     * @param mhzString the frequency string to convert
+     * @return the frequency in MHz with " MHz" suffix, or "Unavailable" if conversion fails
+     */
+    public final String toMHz(String mhzString) {
+        String str;
+        if (mhzString.equals(NO_DATA_FOUND) || mhzString.equals("Unavaila")) {
+            return NO_DATA_FOUND;
+        }
+        try {
+            if (mhzString.length() < 8) {
+                str = (Integer.valueOf(mhzString).intValue() / 1000) + " MHz";
+            } else {
+                str = (Integer.valueOf(mhzString).intValue() / 1000000) + " MHz";
+            }
+            return str;
+        } catch (NumberFormatException e) {
+            Log.e(LOG_TAG, "Tried to add something to a non existing string.", e);
+            return NO_DATA_FOUND;
+        }
+    }
+
+    /**
+     * Reads /proc/meminfo and returns free/total memory as a formatted string.
+     *
+     * @param s the path to meminfo (typically /proc/meminfo)
+     * @return formatted string "free MB / total MB", or "Unavailable" if reading fails
+     */
+    public final String getMemory(String s) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
+            String totalMemory = reader.readLine();
+            String totalFreeMemory = reader.readLine();
+            if (totalMemory != null && totalFreeMemory != null) {
+                String[] parts = totalMemory.split("\\s+");
+                if (parts.length == 3) {
+                    totalMemory = (Long.parseLong(parts[1]) / 1024) + " MB";
+                }
+                String[] parts2 = totalFreeMemory.split("\\s+");
+                if (parts2.length == 3) {
+                    totalFreeMemory = (Long.parseLong(parts2[1]) / 1024) + " MB";
+                }
+            }
+            return totalFreeMemory + " / " + totalMemory;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Yep, i can't read your memory stats :( .", e);
+            return NO_DATA_FOUND;
+        }
+    }
+
+    /**
+     * Writes content to a sysfs file using root permissions. Changes file permissions to
+     * writable and uses printf to write the value safely.
+     *
+     * @param content the content to write to the file
+     * @param path the sysfs path to write to
+     * @return true when commands are successfully submitted to the root shell, false when
+     *         parameters are invalid, the shell is unavailable, or command submission fails
+     */
+    public final synchronized boolean setRootInfo(String content, String path) {
+        if (content == null || content.isEmpty() || content.trim().isEmpty() || path == null || path.isEmpty() || path.trim().isEmpty()) {
+            Log.e(LOG_TAG, "setRootInfo called with invalid content or path, ignoring.");
+            return false;
+        }
+        String quotedPath = escapeShellArg(path);
+        String[] commands = {"chmod 0666 " + quotedPath, "printf %s " + escapeShellArg(content) + " > " + quotedPath};
+        addCommands(commands);
+        return runCommands();
+    }
+
+    /**
+     * Escapes a string value for safe use as a shell argument by wrapping it in single
+     * quotes and escaping any embedded single quotes.
+     *
+     * @param value the string to escape
+     * @return the shell-escaped string
+     */
+    public static String escapeShellArg(String value) {
+        return "'" + value.replace("'", "'\\''") + "'";
+    }
+
+    /**
+     * Executes an array of shell commands as root.
+     *
+     * @param array the array of commands to execute
+     * @return true if commands were executed successfully, false otherwise
+     */
+    public final synchronized boolean setRootInfo(String[] array) {
+        addCommands(array);
+        return runCommands();
+    }
+
+    /**
+     * Remounts /system as read-write.
+     */
+    public final synchronized void remountSystem() {
+        addCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
+        runCommands();
+    }
+
+    /**
+     * Executes a root command with a parameter and returns the output.
+     *
+     * @param command the command to execute
+     * @param parameter the parameter to pass to the command
+     * @return the command output, or "Unavailable" if the command fails
+     */
+    public final synchronized String getRootInfo(String command, String parameter) {
+        addCommand(command + " " + parameter);
+        String ret = getRootResult();
+        if (ret == null) {
+            return NO_DATA_FOUND;
+        }
+        return ret;
+    }
+
+    /**
+     * Sends a single command to the root shell and blocks until the shell
+     * produces a result for it (or the read fails/is interrupted), unlike
+     * {@link #setRootInfo(String[])} which only writes the command and
+     * returns immediately. Operations such as {@code dd} produce no output
+     * of their own, so the caller should chain an {@code echo} marker onto
+     * the command to give the blocking read something to return once the
+     * preceding operation has actually finished.
+     */
+    public final synchronized boolean runCommandAndWait(String command) {
+        openShell();
+        if (!this.mShellLoaded) {
+            return false;
+        }
+        addCommand(command);
+        return getRootResult() != null;
+    }
+
+    /**
+     * Sends a single command to the root shell and blocks until the shell
+     * produces a result, returning the actual output. Returns null if the
+     * shell is not loaded or the command fails.
+     */
+    public final synchronized String runCommandAndWaitForOutput(String command) {
+        openShell();
+        if (!this.mShellLoaded) {
+            return null;
+        }
+        addCommand(command);
+        return getRootResult();
+    }
+
+    /**
+     * Root-aware check for whether a path is a readable block device.
+     * Unlike {@link com.aero.control.helpers.GenericHelper#doesExist(String)},
+     * which uses app-level {@code File.exists()} and can reject a boot
+     * partition that the app can't see directly but the root shell can,
+     * this runs the check through the shared root shell. Only intended for
+     * use with a fixed, application-controlled set of candidate paths.
+     */
+    public final synchronized boolean isReadableBlockDevice(String path) {
+        if (path == null) {
+            return false;
+        }
+        String command = "[ -b \"" + path + "\" ] && [ -r \"" + path + "\" ] && echo BLOCK_OK || echo BLOCK_FAIL";
+        String output = runCommandAndWaitForOutput(command);
+        return output != null && output.contains("BLOCK_OK");
+    }
+
+    /**
+     * Executes a root command and splits the output into an array using the specified delimiter.
+     *
+     * @param command the command to execute
+     * @param split the delimiter regex to use for splitting the output
+     * @return an array of strings split from the command output
+     */
+    public final synchronized String[] getRootArray(String command, String split) {
+        ArrayList<String> temp = new ArrayList<>();
+        addCommand(command);
+        String ret = getRootResult();
+        if (ret == null) {
+            ret = NO_DATA_FOUND;
+        }
+        String[] arr$ = ret.split(split);
+        for (String a : arr$) {
+            temp.add(a);
+        }
+        return (String[]) temp.toArray(new String[0]);
+    }
+
+    /**
+     * Legacy method that spawns a new root process for each command. Used for
+     * operations that cannot use the persistent shell.
+     *
+     * @param command the command to execute
+     * @param parameter the parameter to pass to the command
+     * @return the command output, or "Unavailable" if the command fails
+     */
+    public String getLegacyRootInfo(String command, String parameter) {
+        Process process = null;
+        DataOutputStream os = null;
+        InputStream is = null;
+        try {
+            process = Runtime.getRuntime().exec("su");
+            os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes(command + " " + parameter + "\n");
+            os.flush();
+            is = process.getInputStream();
+            byte[] localBuffer = new byte[BUFF_LEN];
+            String result = "";
+            while (true) {
+                int read = is.read(localBuffer);
+                if (read == -1) {
+                    result = NO_DATA_FOUND;
+                    break;
+                }
+                result = result + new String(localBuffer, 0, read);
+                if (read < BUFF_LEN) {
+                    os.writeBytes("exit\n");
+                    os.flush();
+                    break;
+                }
+            }
+            return result;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Do you even root, bro? :/", e);
+            return NO_DATA_FOUND;
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
+            if (process != null) {
+                process.destroy();
+                try {
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets kernel overclock addresses by reading kallsyms and writing to procfs.
+     * Device-specific feature for legacy overclock support.
+     *
+     * @return true if addresses were set successfully, false otherwise
+     */
+    public final boolean setOverclockAddress() {
+        if (!new File("/proc/overclock/omap2_clk_init_cpufreq_table_addr").exists() || !new File("/proc/overclock/cpufreq_stats_update_addr").exists()) {
+            return false;
+        }
+        String omap_result = getLegacyRootInfo("busybox egrep \"omap2_clk_init_cpufreq_table$\"", "/proc/kallsyms");
+        String cpufreq_result = getLegacyRootInfo("busybox egrep \"cpufreq_stats_update$\"", "/proc/kallsyms");
+        if (omap_result.length() < 8 || cpufreq_result.length() < 8) {
+            return false;
+        }
+        String omap_address = omap_result.substring(0, 8);
+        String cpufreq_address = cpufreq_result.substring(0, 8);
+        String[] commands = {"echo 0x" + omap_address + " > /proc/overclock/omap2_clk_init_cpufreq_table_addr", "echo 0x" + cpufreq_address + " > /proc/overclock/cpufreq_stats_update_addr"};
+        setRootInfo(commands);
+        return true;
+    }
+}

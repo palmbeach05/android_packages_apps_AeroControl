@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="UndoBar" parent="@style/UndoBarClassic">
+    </style>
+    <style name="UndoBarMessage" parent="@style/UndoBarMessageClassic">
+    </style>
+    <style name="UndoBarButton" parent="@style/UndoBarButtonClassic">
+    </style>
+    <style name="UndoBarClassic" parent="">
+        <item name="android:layout_gravity">bottom</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:background">@drawable/undobar</item>
+        <item name="android:clickable">true</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">@dimen/marginLeft</item>
+        <item name="android:layout_marginRight">@dimen/marginRight</item>
+        <item name="android:layout_marginBottom">@dimen/marginBottom</item>
+        <item name="android:maxHeight">150dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+    <style name="UndoBarMessageClassic" parent="">
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+    <style name="UndoBarButtonClassic" parent="">
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">@drawable/undobar_button</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:text">@string/undo</item>
+        <item name="android:drawableLeft">@drawable/ic_undobar_undo</item>
+        <item name="android:drawablePadding">12dp</item>
+    </style>
+    <style name="UndoBarKitKat" parent="@style/UndoBarClassic">
+        <item name="android:background">@drawable/toast_frame_holo</item>
+        <item name="android:padding">0dp</item>
+    </style>
+    <style name="UndoBarButtonKitKat" parent="@style/UndoBarButtonClassic">
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:background">@drawable/toast_frame_holo_button</item>
+        <item name="android:paddingRight">25dp</item>
+    </style>
+    <style name="UndoBarMessageKitKat" parent="@style/UndoBarMessageClassic">
+        <item name="android:layout_gravity">start|center_vertical</item>
+        <item name="android:layout_marginLeft">25dp</item>
+        <item name="android:shadowColor">#bb000000</item>
+        <item name="android:shadowRadius">2.75</item>
+        <item name="android:freezesText">true</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+    <style name="UndoBarDivider" parent="">
+        <item name="android:background">@drawable/undobar_divider</item>
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+    <style name="AppBaseTheme" parent="@android:style/Theme.Light">
+    </style>
+    <style name="AppTheme" parent="@android:style/Theme.Light">
+    </style>
+    <style name="ShowcaseButton" parent="">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/button</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">96dp</item>
+    </style>
+    <style name="ShowcaseView.Light" parent="@style/ShowcaseView">
+        <item name="sv_backgroundColor">#bd2158b7</item>
+        <item name="sv_buttonText">@android:string/ok</item>
+        <item name="sv_detailTextAppearance">@style/TextAppearance.ShowcaseView.Detail.Light</item>
+        <item name="sv_titleTextAppearance">@style/TextAppearance.ShowcaseView.Title</item>
+    </style>
+    <style name="ShowcaseView" parent="">
+        <item name="sv_backgroundColor">#bd2158b7</item>
+        <item name="sv_buttonText">@android:string/ok</item>
+        <item name="sv_detailTextAppearance">@style/TextAppearance.ShowcaseView.Detail</item>
+        <item name="sv_titleTextAppearance">@style/TextAppearance.ShowcaseView.Title</item>
+    </style>
+    <style name="TextAppearance.ShowcaseView.Title" parent="@android:style/TextAppearance.Large">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+    <style name="TextAppearance.ShowcaseView.Detail" parent="@android:style/TextAppearance">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+    <style name="TextAppearance.ShowcaseView.Detail.Light" parent="@style/TextAppearance.ShowcaseView.Detail">
+        <item name="android:textColor">#333333</item>
+        <item name="android:shadowColor">#ff0000</item>
+        <item name="android:shadowRadius">0</item>
+    </style>
+    <style name="TextAppearance.ShowcaseView.Title.Light" parent="@style/TextAppearance.ShowcaseView.Title">
+        <item name="android:shadowRadius">0</item>
+    </style>
+    <style name="Theme.Transparent" parent="@android:style/Theme.Holo.Light">
+    </style>
+    <style name="Translucent" parent="@android:style/Theme.Translucent">
+    </style>
+    <style name="menu_labels_style" parent="">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:background">@drawable/fab_label_background</item>
+    </style>
+    <style name="RebootDialog" parent="@style/AeroTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+    <style name="AeroActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">#263238</item>
+        <item name="android:titleTextStyle">@style/AeroTheme.ActionBar.TitleTextStyle</item>
+    </style>
+    <style name="AeroTheme.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+    <style name="AeroCardSurface" parent="">
+        <item name="android:background">?attr/aeroCardBackground</item>
+    </style>
+    <style name="AeroDialog.Light" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="aeroPrimaryTextColor">@color/text_color</item>
+        <item name="aeroSecondaryTextColor">@color/light_grey</item>
+    </style>
+    <style name="AeroDialog.Light.Alert" parent="@style/AeroDialog.Light">
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/light_grey</item>
+        <item name="android:textColorAlertDialogListItem">@color/text_color</item>
+    </style>
+    <style name="AeroDialog.Light.Alert.Linpack" parent="@style/AeroDialog.Light.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <style name="AeroDialog.Dark" parent="@android:style/Theme.Holo.Dialog">
+        <item name="android:colorBackground">@color/dark_card_background</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="android:textColorSecondary">@color/dark_secondary_text_color</item>
+        <item name="aeroPrimaryTextColor">@color/dark_text_color</item>
+        <item name="aeroSecondaryTextColor">@color/dark_secondary_text_color</item>
+    </style>
+    <style name="AeroDialog.Dark.Alert" parent="@style/AeroDialog.Dark">
+        <item name="android:colorBackground">@color/dark_card_background</item>
+        <item name="android:windowBackground">@color/dark_card_background</item>
+        <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="android:textColorSecondary">@color/dark_secondary_text_color</item>
+        <item name="android:textColorAlertDialogListItem">@color/dark_text_color</item>
+    </style>
+    <style name="AeroDialog.Dark.Alert.Linpack" parent="@style/AeroDialog.Dark.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <style name="AeroTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/AeroActionBar</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
+        <item name="android:actionMenuTextColor">@android:color/white</item>
+        <item name="aeroDrawerLayoutBackground">@color/drawer_layout_background</item>
+        <item name="aeroDrawerListBackground">@color/drawer_list_background</item>
+        <item name="aeroPrimaryTextColor">@color/text_color</item>
+        <item name="aeroSecondaryTextColor">@color/light_grey</item>
+        <item name="aeroCardBackground">@drawable/card</item>
+        <item name="aeroCardBackgroundClicked">@drawable/card_clicked</item>
+        <item name="aeroGraphBackground">@drawable/card_rect</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface</item>
+        <item name="aeroTooltipBackground">@drawable/circle</item>
+        <item name="aeroIconTint">@color/text_color</item>
+        <item name="aeroDividerColor">@android:color/darker_gray</item>
+        <item name="aeroPreferenceControlBackground">@color/bg_preference</item>
+        <item name="aeroGraphLabelColor">@color/text_color</item>
+        <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Light</item>
+    </style>
+    <style name="AeroActionBar.Dark" parent="@android:style/Widget.Holo.ActionBar">
+        <item name="android:background">@color/dark_actionbar_color</item>
+        <item name="android:titleTextStyle">@style/AeroTheme.ActionBar.TitleTextStyle</item>
+    </style>
+    <style name="AeroTheme.Dark" parent="@android:style/Theme.Holo">
+        <item name="android:actionBarStyle">@style/AeroActionBar.Dark</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/activated_background_holo_light</item>
+        <item name="android:actionMenuTextColor">@android:color/white</item>
+        <item name="android:windowBackground">@color/dark_window_background</item>
+        <item name="android:textColorPrimary">@color/dark_text_color</item>
+        <item name="aeroDrawerLayoutBackground">@color/dark_window_background</item>
+        <item name="aeroDrawerListBackground">@color/dark_drawer_list_background</item>
+        <item name="aeroPrimaryTextColor">@color/dark_text_color</item>
+        <item name="aeroSecondaryTextColor">@color/dark_secondary_text_color</item>
+        <item name="aeroCardBackground">@drawable/card_dark</item>
+        <item name="aeroCardBackgroundClicked">@drawable/card_clicked_dark</item>
+        <item name="aeroGraphBackground">@drawable/card_rect_dark</item>
+        <item name="aeroCardStyle">@style/AeroCardSurface</item>
+        <item name="aeroTooltipBackground">@drawable/circle_dark</item>
+        <item name="aeroIconTint">@color/dark_text_color</item>
+        <item name="aeroDividerColor">@color/dark_secondary_text_color</item>
+        <item name="aeroPreferenceControlBackground">@color/dark_card_background</item>
+        <item name="aeroGraphLabelColor">@color/dark_text_color</item>
+        <item name="aeroGraphLineColor">@color/material_blue</item>
+        <item name="android:dialogTheme">@style/AeroDialog.Dark</item>
+    </style>
+</resources>
