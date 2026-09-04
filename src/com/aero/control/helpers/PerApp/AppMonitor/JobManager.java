@@ -315,7 +315,11 @@ public final class JobManager {
                             while (dataKeys.hasNext()) {
                                 String tempData = dataKeys.next().toString();
                                 try {
-                                    Integer.parseInt(tempData);
+                                    int moduleIdentifier = Integer.parseInt(tempData);
+                                    if (!isModuleRegistered(moduleIdentifier)) {
+                                        AppLogger.print(this.mClassName, "Skipping data for unregistered module: " + moduleIdentifier, 0);
+                                        continue;
+                                    }
                                     JSONObject moduleData = appData.getJSONObject(tempData);
                                     Iterator<?> moduleKeys = moduleData.keys();
                                     while (moduleKeys.hasNext()) {
@@ -325,12 +329,10 @@ public final class JobManager {
                                         for (int j = 0; j < length; j++) {
                                             values.add(Integer.valueOf(Integer.parseInt(moduleData.getJSONArray(tempModule).get(j).toString())));
                                         }
-                                        for (AppModule appModule : this.mModules) {
-                                            try {
-                                                this.mAppModuleData.addData(localContext, values, Integer.valueOf(Integer.parseInt(tempData)));
-                                            } catch (RuntimeException e) {
-                                                AppLogger.print(this.mClassName, "The data for this module was not added, maybe you tried to add data for a non-existing module?", 0);
-                                            }
+                                        try {
+                                            this.mAppModuleData.addData(localContext, values, Integer.valueOf(moduleIdentifier));
+                                        } catch (RuntimeException e) {
+                                            AppLogger.print(this.mClassName, "The data for this module was not added, maybe you tried to add data for a non-existing module?", 0);
                                         }
                                         AppLogger.print(this.mClassName, tempModule + ": " + moduleData.getJSONArray(tempModule), 1);
                                     }
@@ -487,9 +489,6 @@ public final class JobManager {
             this.mModules.add(new CPUNumModule(this.mContext));
         }
         this.mModules.add(new RAMModule(this.mContext));
-        if (AeroActivity.genHelper.doesExist(FilePath.CPU_TEMP_FILE)) {
-            this.mModules.add(new TEMPModule(this.mContext));
-        }
         String[] arr$ = FilePath.GPU_FILES_RATE;
         for (String s : arr$) {
             if (AeroActivity.genHelper.doesExist(s)) {
@@ -500,6 +499,15 @@ public final class JobManager {
             this.mModules.add(new GPUFreqModule(this.mContext));
         }
         AppLogger.print(this.mClassName, "Modules successfully initialized!", 0);
+    }
+
+    private boolean isModuleRegistered(int identifier) {
+        for (AppModule module : this.mModules) {
+            if (module.getIdentifier() == identifier) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private AppModuleData getModuleData() {

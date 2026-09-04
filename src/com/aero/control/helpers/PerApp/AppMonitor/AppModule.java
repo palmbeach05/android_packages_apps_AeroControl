@@ -15,7 +15,6 @@ public class AppModule {
     public static final int MODULE_CPU_NUM_IDENTIFIER = 20;
     public static final int MODULE_GPU_IDENTIFIER = 50;
     public static final int MODULE_RAM_IDENTIFIER = 30;
-    public static final int MODULE_TEMP_IDENTIFIER = 40;
     private Context mContext;
     private Drawable mDrawable;
     private Integer mModuleIdentifier;
