@@ -482,6 +482,10 @@ public final class JobManager {
         }
     }
 
+    /**
+     * Initializes and registers all available monitoring modules based on hardware
+     * capabilities and file system availability.
+     */
     private void loadModules() {
         int counter = 0;
         this.mModules.add(new CPUFreqModule(this.mContext));
@@ -501,6 +505,12 @@ public final class JobManager {
         AppLogger.print(this.mClassName, "Modules successfully initialized!", 0);
     }
 
+    /**
+     * Checks whether a module with the given identifier is currently registered.
+     *
+     * @param identifier the module identifier to check
+     * @return true if a module with this identifier exists, false otherwise
+     */
     private boolean isModuleRegistered(int identifier) {
         for (AppModule module : this.mModules) {
             if (module.getIdentifier() == identifier) {
@@ -510,6 +520,11 @@ public final class JobManager {
         return false;
     }
 
+    /**
+     * Returns the central data structure holding all module metadata for monitored apps.
+     *
+     * @return the AppModuleData instance
+     */
     private AppModuleData getModuleData() {
         return this.mAppModuleData;
     }
