@@ -12,6 +12,7 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.CpuTemperatureReader;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElementDetail;
@@ -487,7 +488,7 @@ public final class JobManager {
             this.mModules.add(new CPUNumModule(this.mContext));
         }
         this.mModules.add(new RAMModule(this.mContext));
-        if (AeroActivity.genHelper.doesExist(FilePath.CPU_TEMP_FILE)) {
+        if (CpuTemperatureReader.readCelsius() != null) {
             this.mModules.add(new TEMPModule(this.mContext));
         }
         String[] arr$ = FilePath.GPU_FILES_RATE;
