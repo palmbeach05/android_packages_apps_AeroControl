@@ -44,6 +44,7 @@ public class AeroFragment extends Fragment {
     private static final Pattern THERMAL_ZONE_NAME_PATTERN = Pattern.compile("thermal_zone\\d+");
     private static final String THERMAL_ZONE_TYPE_FILE = "type";
     private static final String THERMAL_ZONE_TEMP_FILE = "temp";
+    private static final int INVALID_THERMAL_ZONE_PRIORITY = Integer.MAX_VALUE;
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
@@ -231,9 +232,13 @@ public class AeroFragment extends Fragment {
     private String getCPUTemp() {
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones == null) {
+            thermalZones = AeroActivity.shell.getRootArray("ls -1 " + THERMAL_ZONE_DIRECTORY, "\n");
+        }
+        if (thermalZones == null) {
             return null;
         }
 
+        List<ThermalZoneCandidate> candidates = new ArrayList<>();
         for (String thermalZone : thermalZones) {
             if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
                 continue;
@@ -245,21 +250,57 @@ public class AeroFragment extends Fragment {
             }
             String temperature = formatCPUTemperature(AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE));
             if (temperature != null) {
-                return temperature;
+                candidates.add(new ThermalZoneCandidate(
+                        thermalZone, getCPUThermalZonePriority(type), temperature));
             }
         }
-        return null;
+
+        ThermalZoneCandidate selected = null;
+        for (ThermalZoneCandidate candidate : candidates) {
+            if (selected == null
+                    || candidate.typePriority < selected.typePriority
+                    || (candidate.typePriority == selected.typePriority
+                            && candidate.zoneName.compareTo(selected.zoneName) < 0)) {
+                selected = candidate;
+            }
+        }
+        return selected == null ? null : selected.temperature;
     }
 
     private boolean isCPUThermalZone(String type) {
+        return getCPUThermalZonePriority(type) != INVALID_THERMAL_ZONE_PRIORITY;
+    }
+
+    private int getCPUThermalZonePriority(String type) {
         if (type == null) {
-            return false;
+            return INVALID_THERMAL_ZONE_PRIORITY;
         }
         String normalizedType = type.trim().toLowerCase(Locale.US).replace('_', '-');
-        return normalizedType.equals("cpu")
-                || normalizedType.equals("cpu-therm")
-                || normalizedType.equals("cpu-thermal")
-                || normalizedType.equals("soc");
+        if (normalizedType.equals("cpu")) {
+            return 0;
+        }
+        if (normalizedType.equals("cpu-therm")) {
+            return 1;
+        }
+        if (normalizedType.equals("cpu-thermal")) {
+            return 2;
+        }
+        if (normalizedType.equals("soc")) {
+            return 3;
+        }
+        return INVALID_THERMAL_ZONE_PRIORITY;
+    }
+
+    private static final class ThermalZoneCandidate {
+        private final String zoneName;
+        private final int typePriority;
+        private final String temperature;
+
+        private ThermalZoneCandidate(String zoneName, int typePriority, String temperature) {
+            this.zoneName = zoneName;
+            this.typePriority = typePriority;
+            this.temperature = temperature;
+        }
     }
 
     private String formatCPUTemperature(String rawTemperature) {
