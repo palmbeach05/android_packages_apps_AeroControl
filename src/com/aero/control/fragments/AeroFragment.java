@@ -17,7 +17,6 @@ import com.aero.control.R;
 import com.aero.control.adapter.AeroAdapter;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.helpers.CpuClusterHelper;
-import com.aero.control.helpers.CpuTemperatureReader;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
@@ -221,8 +220,14 @@ public class AeroFragment extends Fragment {
     }
 
     private String getCPUTemp() {
-        Integer temperature = CpuTemperatureReader.readCelsius();
-        return temperature == null ? null : temperature + " °C";
+        if (!AeroActivity.genHelper.doesExist(FilePath.CPU_TEMP_FILE)) {
+            return null;
+        }
+        String tmp = AeroActivity.shell.getInfo(FilePath.CPU_TEMP_FILE);
+        if (tmp.length() > 2) {
+            tmp = tmp.substring(0, 2);
+        }
+        return tmp + " °C";
     }
 
     private void fillData(String gpu_freq) {
