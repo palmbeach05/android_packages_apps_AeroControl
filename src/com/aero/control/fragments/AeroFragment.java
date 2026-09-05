@@ -108,11 +108,20 @@ public class AeroFragment extends Fragment {
     private class ThermalThread extends Thread {
         private volatile boolean mInterrupt;
 
+        /**
+         * Cancels the thermal thread by setting the interrupt flag and interrupting the thread.
+         */
         public void cancel() {
             this.mInterrupt = true;
             interrupt();
         }
 
+        /**
+         * Continuously monitors CPU temperature by detecting the appropriate thermal zone path
+         * and reading temperature values. Retries path detection every second until a valid
+         * CPU thermal zone is found, then polls temperature every second and triggers UI
+         * refresh when the temperature changes.
+         */
         @Override
         public void run() {
             String temperaturePath = null;
@@ -148,18 +157,31 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Called when the fragment is paused. Sets the visibility flag to false
+     * to prevent UI updates while the fragment is not visible.
+     */
     @Override // android.app.Fragment
     public void onPause() {
         super.onPause();
         this.mVisible = false;
     }
 
+    /**
+     * Called when the fragment is resumed. Sets the visibility flag to true
+     * to allow UI updates to proceed.
+     */
     @Override // android.app.Fragment
     public void onResume() {
         super.onResume();
         this.mVisible = true;
     }
 
+    /**
+     * Called when the view is being destroyed. Cleans up background threads,
+     * removes pending messages from the handler, and nullifies view references
+     * to prevent memory leaks.
+     */
     @Override // android.app.Fragment
     public void onDestroyView() {
         super.onDestroyView();
@@ -175,6 +197,16 @@ public class AeroFragment extends Fragment {
         this.root = null;
     }
 
+    /**
+     * Creates and initializes the fragment's view hierarchy. Inflates the layout,
+     * detects available GPU frequency file, starts background refresh and thermal
+     * monitoring threads, and sets file permissions if needed.
+     *
+     * @param inflater the LayoutInflater to inflate views
+     * @param container the parent view that this fragment's UI will be attached to
+     * @param savedInstanceState saved state from a previous instance, if any
+     * @return the root view of the fragment
+     */
     @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.root = (ViewGroup) inflater.inflate(R.layout.overviewlist_item, (ViewGroup) null);
@@ -210,6 +242,12 @@ public class AeroFragment extends Fragment {
         return this.root;
     }
 
+    /**
+     * Called after the activity has been created. Checks if this is the first run
+     * and displays a tutorial showcase if the first-run marker file does not exist.
+     *
+     * @param savedInstanceState saved state from a previous instance, if any
+     */
     @Override // android.app.Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -285,6 +323,15 @@ public class AeroFragment extends Fragment {
         return cpu_util.replace("Unavailable%", "--");
     }
 
+    /**
+     * Scans the /sys/devices/virtual/thermal directory for CPU thermal zones and
+     * returns the temperature file path of the best candidate. Prioritizes zones
+     * by type ("cpu", "cpu-therm", "cpu-thermal", "soc") and by zone name if tied.
+     * Validates that each candidate returns a valid temperature reading.
+     *
+     * @return the absolute path to the temperature file of the selected CPU thermal zone,
+     *         or null if no valid CPU thermal zone is found
+     */
     private String findCPUTemperaturePath() {
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones == null) {
@@ -324,10 +371,25 @@ public class AeroFragment extends Fragment {
         return selected == null ? null : selected.temperaturePath;
     }
 
+    /**
+     * Determines whether the given thermal zone type string represents a CPU thermal zone.
+     *
+     * @param type the thermal zone type string to check
+     * @return true if the type is recognized as a CPU thermal zone, false otherwise
+     */
     private boolean isCPUThermalZone(String type) {
         return getCPUThermalZonePriority(type) != INVALID_THERMAL_ZONE_PRIORITY;
     }
 
+    /**
+     * Returns the priority ranking for a given thermal zone type. Lower values indicate
+     * higher priority. Recognizes "cpu" (priority 0), "cpu-therm" (1), "cpu-thermal" (2),
+     * and "soc" (3). Type comparison is case-insensitive and normalizes underscores to hyphens.
+     *
+     * @param type the thermal zone type string to evaluate
+     * @return the priority value (lower is better), or {@link #INVALID_THERMAL_ZONE_PRIORITY}
+     *         if the type is not recognized as a CPU thermal zone
+     */
     private int getCPUThermalZonePriority(String type) {
         if (type == null) {
             return INVALID_THERMAL_ZONE_PRIORITY;
@@ -353,6 +415,13 @@ public class AeroFragment extends Fragment {
         private final int typePriority;
         private final String temperaturePath;
 
+        /**
+         * Constructs a thermal zone candidate record.
+         *
+         * @param zoneName the name of the thermal zone directory (e.g., "thermal_zone0")
+         * @param typePriority the priority ranking of the zone's type (lower is better)
+         * @param temperaturePath the absolute path to the zone's temperature file
+         */
         private ThermalZoneCandidate(String zoneName, int typePriority, String temperaturePath) {
             this.zoneName = zoneName;
             this.typePriority = typePriority;
@@ -360,6 +429,15 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Requests a UI refresh to update the displayed CPU temperature. Posts a runnable
+     * to the main thread handler that updates the frequency data's right_name field
+     * with the current temperature and notifies the adapter. Includes safety checks
+     * to ensure the thermal thread, views, and adapter are still valid.
+     *
+     * @param thermalThread the thermal thread requesting the refresh, used to verify
+     *                      it is still the active thread
+     */
     private void requestTemperatureRefresh(final ThermalThread thermalThread) {
         this.mRefreshHandler.post(new Runnable() {
             @Override
@@ -380,6 +458,16 @@ public class AeroFragment extends Fragment {
         });
     }
 
+    /**
+     * Formats a raw temperature value read from a thermal zone file into a human-readable
+     * string with degrees Celsius. Handles values in millidegrees (divides by 1000 if needed),
+     * validates the temperature is within reasonable bounds (-100 to 250 degrees C), and
+     * strips trailing zeros from the decimal representation.
+     *
+     * @param rawTemperature the raw temperature string from the thermal zone file
+     * @return a formatted temperature string (e.g., "45.5 °C"), or null if the value
+     *         is invalid, out of range, or unavailable
+     */
     private String formatCPUTemperature(String rawTemperature) {
         if (rawTemperature == null) {
             return null;
@@ -405,6 +493,13 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Populates or updates the internal data objects (kernel, governors, I/O scheduler,
+     * CPU frequencies, GPU frequency, and memory) with current system information.
+     * Reuses existing AeroData objects when available to avoid unnecessary allocations.
+     *
+     * @param gpu_freq the raw GPU frequency string read from the GPU frequency file
+     */
     private void fillData(String gpu_freq) {
         if (this.mKernelData == null) {
             this.mKernelData = new AeroData(getString(R.string.kernel_version), AeroActivity.shell.getKernel(), null);
