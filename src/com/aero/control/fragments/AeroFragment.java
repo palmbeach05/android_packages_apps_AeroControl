@@ -340,7 +340,8 @@ public class AeroFragment extends Fragment {
                     + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
             snapshot.governorLabels.add(cluster.getMemberRangeLabel());
         }
-        snapshot.ioScheduler = AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE);
+        snapshot.ioScheduler = AeroActivity.shell.getInfoString(
+                AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE));
         int coreCount = Runtime.getRuntime().availableProcessors();
         snapshot.coreFrequencies = coreCount <= MAX_GRID_CORES ? getCoreFrequencyList() : null;
         snapshot.frequencyContent = coreCount <= MAX_GRID_CORES ? getCpuUtilizationLine() : getFreqPerCore();
