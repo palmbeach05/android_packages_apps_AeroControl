@@ -73,10 +73,13 @@ public class AeroFragment extends Fragment {
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
         public void handleMessage(Message msg) {
-            if (msg.what == 1 && AeroFragment.this.isVisible() && AeroFragment.this.mVisible
-                    && msg.obj instanceof OverviewSnapshot) {
-                AeroFragment.this.applySnapshot((OverviewSnapshot) msg.obj);
+            if (!(msg.obj instanceof OverviewSnapshot)) {
+                return;
             }
+            if (msg.what != 1 || !AeroFragment.this.isCurrentViewActive()) {
+                return;
+            }
+            AeroFragment.this.applySnapshot((OverviewSnapshot) msg.obj);
         }
     };
 
@@ -136,6 +139,8 @@ public class AeroFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.root = (ViewGroup) inflater.inflate(R.layout.overviewlist_item, (ViewGroup) null);
         this.mOverView = (ListView) this.root.findViewById(R.id.listView1);
+        this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item, this.mOverviewData);
+        this.mOverView.setAdapter((ListAdapter) this.mAdapter);
         String[] arr$ = FilePath.GPU_FILES_RATE;
         int len$ = arr$.length;
         int i$ = 0;
@@ -156,6 +161,11 @@ public class AeroFragment extends Fragment {
         this.mRefreshThread.start();
         this.mRefreshThread.setPriority(1);
         return this.root;
+    }
+
+    private boolean isCurrentViewActive() {
+        return this.mOverView != null && this.root != null && getView() == this.root
+                && isVisible() && this.mVisible;
     }
 
     @Override // android.app.Fragment
@@ -414,12 +424,7 @@ public class AeroFragment extends Fragment {
         }
 
         rebuildOrderedOverview();
-        if (this.mAdapter == null) {
-            this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item, this.mOverviewData);
-            this.mOverView.setAdapter((ListAdapter) this.mAdapter);
-        } else {
-            this.mAdapter.notifyDataSetChanged();
-        }
+        this.mAdapter.notifyDataSetChanged();
     }
 
     private void rebuildOrderedOverview() {
