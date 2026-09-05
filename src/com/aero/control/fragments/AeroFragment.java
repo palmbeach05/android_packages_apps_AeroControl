@@ -64,6 +64,9 @@ public class AeroFragment extends Fragment {
     private boolean mVisible = true;
     private boolean mExecuted = false;
     private RefreshThread mRefreshThread = new RefreshThread();
+    private ThermalThread mThermalThread;
+    private volatile String mCPUTemperature;
+    private volatile String mCPUTemperaturePath;
     private Handler mRefreshHandler = new Handler() { // from class: com.aero.control.fragments.AeroFragment.1
         @Override // android.os.Handler
         public void handleMessage(Message msg) {
@@ -102,6 +105,41 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    private class ThermalThread extends Thread {
+        private volatile boolean mInterrupt;
+
+        public void cancel() {
+            this.mInterrupt = true;
+            interrupt();
+        }
+
+        @Override
+        public void run() {
+            String temperaturePath = findCPUTemperaturePath();
+            if (this.mInterrupt || temperaturePath == null) {
+                return;
+            }
+            AeroFragment.this.mCPUTemperaturePath = temperaturePath;
+            while (!this.mInterrupt) {
+                String temperature = formatCPUTemperature(
+                        AeroActivity.shell.getInfo(temperaturePath));
+                if (this.mInterrupt) {
+                    return;
+                }
+                if (temperature != null
+                        && !temperature.equals(AeroFragment.this.mCPUTemperature)) {
+                    AeroFragment.this.mCPUTemperature = temperature;
+                    requestTemperatureRefresh(this);
+                }
+                try {
+                    sleep(1000L);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        }
+    }
+
     @Override // android.app.Fragment
     public void onPause() {
         super.onPause();
@@ -118,7 +156,12 @@ public class AeroFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         this.mRefreshThread.cancel();
+        if (this.mThermalThread != null) {
+            this.mThermalThread.cancel();
+            this.mThermalThread = null;
+        }
         this.mRefreshHandler.removeMessages(1);
+        this.mRefreshHandler.removeCallbacksAndMessages(null);
         this.mAdapter = null;
         this.mOverView = null;
         this.root = null;
@@ -147,7 +190,12 @@ public class AeroFragment extends Fragment {
         this.mRefreshThread = new RefreshThread();
         this.mRefreshThread.start();
         this.mRefreshThread.setPriority(1);
+        this.mCPUTemperature = null;
+        this.mCPUTemperaturePath = null;
         createList();
+        this.mThermalThread = new ThermalThread();
+        this.mThermalThread.start();
+        this.mThermalThread.setPriority(Thread.MIN_PRIORITY);
         if (!this.mExecuted) {
             setPermissions();
         }
@@ -229,7 +277,7 @@ public class AeroFragment extends Fragment {
         return cpu_util.replace("Unavailable%", "--");
     }
 
-    private String getCPUTemp() {
+    private String findCPUTemperaturePath() {
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones == null) {
             thermalZones = AeroActivity.shell.getRootArray("ls -1 " + THERMAL_ZONE_DIRECTORY, "\n");
@@ -248,10 +296,11 @@ public class AeroFragment extends Fragment {
             if (!isCPUThermalZone(type)) {
                 continue;
             }
-            String temperature = formatCPUTemperature(AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE));
+            String temperaturePath = zonePath + THERMAL_ZONE_TEMP_FILE;
+            String temperature = formatCPUTemperature(AeroActivity.shell.getInfo(temperaturePath));
             if (temperature != null) {
                 candidates.add(new ThermalZoneCandidate(
-                        thermalZone, getCPUThermalZonePriority(type), temperature));
+                        thermalZone, getCPUThermalZonePriority(type), temperaturePath));
             }
         }
 
@@ -264,7 +313,7 @@ public class AeroFragment extends Fragment {
                 selected = candidate;
             }
         }
-        return selected == null ? null : selected.temperature;
+        return selected == null ? null : selected.temperaturePath;
     }
 
     private boolean isCPUThermalZone(String type) {
@@ -294,13 +343,33 @@ public class AeroFragment extends Fragment {
     private static final class ThermalZoneCandidate {
         private final String zoneName;
         private final int typePriority;
-        private final String temperature;
+        private final String temperaturePath;
 
-        private ThermalZoneCandidate(String zoneName, int typePriority, String temperature) {
+        private ThermalZoneCandidate(String zoneName, int typePriority, String temperaturePath) {
             this.zoneName = zoneName;
             this.typePriority = typePriority;
-            this.temperature = temperature;
+            this.temperaturePath = temperaturePath;
         }
+    }
+
+    private void requestTemperatureRefresh(final ThermalThread thermalThread) {
+        this.mRefreshHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (AeroFragment.this.mThermalThread != thermalThread
+                        || AeroFragment.this.root == null
+                        || AeroFragment.this.mOverView == null
+                        || AeroFragment.this.mAdapter == null
+                        || !AeroFragment.this.isAdded()) {
+                    return;
+                }
+                if (AeroFragment.this.mFrequencyData != null) {
+                    AeroFragment.this.mFrequencyData.right_name =
+                            AeroFragment.this.mCPUTemperature;
+                    AeroFragment.this.mAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
 
     private String formatCPUTemperature(String rawTemperature) {
@@ -356,10 +425,10 @@ public class AeroFragment extends Fragment {
         List<String> coreFrequencies = coreCount <= MAX_GRID_CORES ? getCoreFrequencyList() : null;
         String frequencyContent = coreCount <= MAX_GRID_CORES ? getCpuUtilizationLine() : getFreqPerCore();
         if (this.mFrequencyData == null) {
-            this.mFrequencyData = new AeroData(getString(R.string.current_cpu_speed), frequencyContent, getCPUTemp());
+            this.mFrequencyData = new AeroData(getString(R.string.current_cpu_speed), frequencyContent, this.mCPUTemperature);
         } else {
             this.mFrequencyData.content = frequencyContent;
-            this.mFrequencyData.right_name = getCPUTemp();
+            this.mFrequencyData.right_name = this.mCPUTemperature;
         }
         this.mFrequencyData.coreFrequencies = coreFrequencies;
         if (this.mGPUData == null) {
