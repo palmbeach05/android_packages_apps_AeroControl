@@ -22,8 +22,11 @@ import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Overview fragment displaying real-time system information including CPU frequencies
@@ -37,6 +40,13 @@ public class AeroFragment extends Fragment {
     private static final String SCALE_CPU_UTIL = "/cpufreq/cpu_utilization";
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";
+    private static final String THERMAL_ZONE_DIRECTORY = "/sys/devices/virtual/thermal";
+    private static final Pattern THERMAL_ZONE_NAME_PATTERN = Pattern.compile("thermal_zone\\d+");
+    private static final String THERMAL_ZONE_TYPE_FILE = "type";
+    private static final String THERMAL_ZONE_TEMP_FILE = "temp";
+    private static final int INVALID_THERMAL_ZONE_PRIORITY = Integer.MAX_VALUE;
+    private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
+    private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
     private AeroAdapter mAdapter;
     private AeroData mFrequencyData;
@@ -220,14 +230,99 @@ public class AeroFragment extends Fragment {
     }
 
     private String getCPUTemp() {
-        if (!AeroActivity.genHelper.doesExist(FilePath.CPU_TEMP_FILE)) {
+        String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
+        if (thermalZones == null) {
             return null;
         }
-        String tmp = AeroActivity.shell.getInfo(FilePath.CPU_TEMP_FILE);
-        if (tmp.length() > 2) {
-            tmp = tmp.substring(0, 2);
+
+        List<ThermalZoneCandidate> candidates = new ArrayList<>();
+        for (String thermalZone : thermalZones) {
+            if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
+                continue;
+            }
+            String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
+            String type = AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TYPE_FILE);
+            if (!isCPUThermalZone(type)) {
+                continue;
+            }
+            String temperature = formatCPUTemperature(AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE));
+            if (temperature != null) {
+                candidates.add(new ThermalZoneCandidate(
+                        thermalZone, getCPUThermalZonePriority(type), temperature));
+            }
         }
-        return tmp + " °C";
+
+        ThermalZoneCandidate selected = null;
+        for (ThermalZoneCandidate candidate : candidates) {
+            if (selected == null
+                    || candidate.typePriority < selected.typePriority
+                    || (candidate.typePriority == selected.typePriority
+                            && candidate.zoneName.compareTo(selected.zoneName) < 0)) {
+                selected = candidate;
+            }
+        }
+        return selected == null ? null : selected.temperature;
+    }
+
+    private boolean isCPUThermalZone(String type) {
+        return getCPUThermalZonePriority(type) != INVALID_THERMAL_ZONE_PRIORITY;
+    }
+
+    private int getCPUThermalZonePriority(String type) {
+        if (type == null) {
+            return INVALID_THERMAL_ZONE_PRIORITY;
+        }
+        String normalizedType = type.trim().toLowerCase(Locale.US).replace('_', '-');
+        if (normalizedType.equals("cpu")) {
+            return 0;
+        }
+        if (normalizedType.equals("cpu-therm")) {
+            return 1;
+        }
+        if (normalizedType.equals("cpu-thermal")) {
+            return 2;
+        }
+        if (normalizedType.equals("soc")) {
+            return 3;
+        }
+        return INVALID_THERMAL_ZONE_PRIORITY;
+    }
+
+    private static final class ThermalZoneCandidate {
+        private final String zoneName;
+        private final int typePriority;
+        private final String temperature;
+
+        private ThermalZoneCandidate(String zoneName, int typePriority, String temperature) {
+            this.zoneName = zoneName;
+            this.typePriority = typePriority;
+            this.temperature = temperature;
+        }
+    }
+
+    private String formatCPUTemperature(String rawTemperature) {
+        if (rawTemperature == null) {
+            return null;
+        }
+        String value = rawTemperature.trim();
+        if (value.length() == 0 || value.equalsIgnoreCase(NO_DATA_FOUND)) {
+            return null;
+        }
+        try {
+            double celsius = Double.parseDouble(value);
+            if (Double.isNaN(celsius) || Double.isInfinite(celsius)) {
+                return null;
+            }
+            if (Math.abs(celsius) >= 1000.0d) {
+                celsius /= 1000.0d;
+            }
+            if (celsius < MIN_CPU_TEMPERATURE_CELSIUS || celsius > MAX_CPU_TEMPERATURE_CELSIUS) {
+                return null;
+            }
+            return BigDecimal.valueOf(celsius).stripTrailingZeros().toPlainString() + " °C";
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private void fillData(String gpu_freq) {
