@@ -232,9 +232,6 @@ public class AeroFragment extends Fragment {
     private String getCPUTemp() {
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones == null) {
-            thermalZones = AeroActivity.shell.getRootArray("ls -1 " + THERMAL_ZONE_DIRECTORY, "\n");
-        }
-        if (thermalZones == null) {
             return null;
         }
 
