@@ -225,7 +225,7 @@ public final class AeroActivity extends Activity {
             // recovery this activity actually needs.
             int recoveryItemId = (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM)
                     ? pendingDrawerItemResourceId : savedItemId;
-            scheduleBlankStatisticsContentRecoveryCheck(recoveryItemId);
+            scheduleBlankContentRecoveryCheck(recoveryItemId);
         }
         // Initialize mJobManager synchronously so restored fragments can access it.
         mJobManager = JobManager.instance(this);
@@ -777,11 +777,10 @@ public final class AeroActivity extends Activity {
     }
 
     // Schedules a one-time, post-layout check for a blank content_frame
-    // after restoring the CPU Statistics selection. Only CPU Statistics is
-    // affected by the res/layout-land/statistics.xml recreation described
-    // above, so other saved selections don't need this check.
-    private void scheduleBlankStatisticsContentRecoveryCheck(final int savedItemId) {
-        if (savedItemId != R.string.slider_statistics) {
+    // after restoring the Overview or CPU Statistics selection.
+    private void scheduleBlankContentRecoveryCheck(final int savedItemId) {
+        if (savedItemId != R.string.slider_overview
+                && savedItemId != R.string.slider_statistics) {
             return;
         }
         final View contentFrame = findViewById(R.id.content_frame);
@@ -791,7 +790,7 @@ public final class AeroActivity extends Activity {
         contentFrame.post(new Runnable() { // from class: com.aero.control.AeroActivity.6
             @Override
             public void run() {
-                AeroActivity.this.recoverBlankStatisticsContentIfNeeded(savedItemId);
+                AeroActivity.this.recoverBlankContentIfNeeded(savedItemId);
             }
         });
     }
@@ -799,9 +798,9 @@ public final class AeroActivity extends Activity {
     // Runs after this restored activity's layout has completed (and, if a
     // matching drawer transaction was still in flight, after that
     // transaction has settled too). If content_frame is still blank for the
-    // restored CPU Statistics selection, performs a single replacement
+    // restored Overview or CPU Statistics selection, performs a single replacement
     // transaction to force the fragment's view to be created.
-    private void recoverBlankStatisticsContentIfNeeded(int savedItemId) {
+    private void recoverBlankContentIfNeeded(int savedItemId) {
         if (isFinishing() || hasAppDetailBackStackEntry()) {
             return;
         }
@@ -820,7 +819,7 @@ public final class AeroActivity extends Activity {
             // be judged blank or not yet -- wait for it to settle instead of
             // giving up permanently.
             if (this.mPendingDrawerTransactionItemResourceId == savedItemId) {
-                scheduleBlankStatisticsContentRecoveryCheck(savedItemId);
+                scheduleBlankContentRecoveryCheck(savedItemId);
             }
             // Otherwise a different, newer drawer selection is pending;
             // don't fight it with a stale replacement for the restored CPU
@@ -829,8 +828,14 @@ public final class AeroActivity extends Activity {
         }
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
         FrameLayout contentFrame = (FrameLayout) findViewById(R.id.content_frame);
-        boolean contentFramePresent = currentFragment != null && currentFragment.getView() != null
-                && contentFrame != null && contentFrame.getChildCount() > 0;
+        boolean contentFramePresent;
+        if (savedItemId == R.string.slider_overview) {
+            contentFramePresent = this.mAeroFragment != null && this.mAeroFragment.getView() != null
+                    && contentFrame != null && contentFrame.getChildCount() > 0;
+        } else {
+            contentFramePresent = currentFragment != null && currentFragment.getView() != null
+                    && contentFrame != null && contentFrame.getChildCount() > 0;
+        }
         if (contentFramePresent) {
             return;
         }
