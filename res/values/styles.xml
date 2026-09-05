@@ -131,6 +131,15 @@
     <style name="AeroCardSurface" parent="">
         <item name="android:background">?attr/aeroCardBackground</item>
     </style>
+    <style name="OverviewFrequencyCell" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:textColor">?attr/aeroPrimaryTextColor</item>
+        <item name="android:textSize">12sp</item>
+    </style>
     <style name="AeroDialog.Light" parent="@android:style/Theme.Holo.Light.Dialog">
         <item name="android:colorBackground">@android:color/white</item>
         <item name="android:windowBackground">@android:color/transparent</item>

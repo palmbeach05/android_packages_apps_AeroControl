@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="?attr/aeroCardStyle" android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginLeft="6dp" android:layout_marginTop="3dp" android:layout_marginRight="6dp" android:layout_marginBottom="3dp"
+    android:orientation="vertical" android:padding="8dp">
+    <TextView android:id="@+id/header" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/aeroPrimaryTextColor" android:textSize="18sp"/>
+    <TextView android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:textColor="?attr/aeroSecondaryTextColor" android:textSize="13sp"/>
+    <TableLayout android:id="@+id/freq_table" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:stretchColumns="0,1,2,3">
+        <TableRow>
+            <TextView android:id="@+id/freq_cell_0" style="@style/OverviewFrequencyCell"/><TextView android:id="@+id/freq_cell_1" style="@style/OverviewFrequencyCell"/><TextView android:id="@+id/freq_cell_2" style="@style/OverviewFrequencyCell"/><TextView android:id="@+id/freq_cell_3" style="@style/OverviewFrequencyCell"/>
+        </TableRow>
+        <TableRow>
+            <TextView android:id="@+id/freq_cell_4" style="@style/OverviewFrequencyCell"/><TextView android:id="@+id/freq_cell_5" style="@style/OverviewFrequencyCell"/><TextView android:id="@+id/freq_cell_6" style="@style/OverviewFrequencyCell"/><TextView android:id="@+id/freq_cell_7" style="@style/OverviewFrequencyCell"/>
+        </TableRow>
+    </TableLayout>
+</LinearLayout>

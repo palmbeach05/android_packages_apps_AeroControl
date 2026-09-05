@@ -44,13 +44,19 @@ public class AeroFragment extends Fragment {
     private static final Pattern THERMAL_ZONE_NAME_PATTERN = Pattern.compile("thermal_zone\\d+");
     private static final String THERMAL_ZONE_TYPE_FILE = "type";
     private static final String THERMAL_ZONE_TEMP_FILE = "temp";
-    private static final int INVALID_THERMAL_ZONE_PRIORITY = Integer.MAX_VALUE;
+    private static final String BATTERY_TEMPERATURE_FILE = "/sys/devices/platform/cpcap_battery/power_supply/battery/temp";
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
     private AeroAdapter mAdapter;
     private AeroData mFrequencyData;
     private AeroData mGPUData;
+    private AeroData mTemperatureData;
+    private AeroData mSystemSection;
+    private AeroData mPerformanceSection;
+    private AeroData mTemperaturesSection;
+    private AeroData mMemorySection;
+    private AeroData mConfigurationSection;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
     private final List<AeroData> mGovernorData = new ArrayList<>();
     private AeroData mIOSchedulerData;
@@ -59,17 +65,17 @@ public class AeroFragment extends Fragment {
     private AeroData mRAMData;
     private ShowcaseView mShowCase;
     private ViewGroup root;
-    private List<AeroData> mOverviewData = new ArrayList();
+    private List<AeroData> mOverviewData = new ArrayList<AeroData>();
     private int mActionBarHeight = 0;
     private boolean mVisible = true;
     private boolean mExecuted = false;
     private RefreshThread mRefreshThread = new RefreshThread();
-    private Handler mRefreshHandler = new Handler() { // from class: com.aero.control.fragments.AeroFragment.1
+    private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
         public void handleMessage(Message msg) {
-            if (msg.what >= 1 && AeroFragment.this.isVisible() && AeroFragment.this.mVisible) {
-                AeroFragment.this.createList();
-                AeroFragment.this.mVisible = true;
+            if (msg.what == 1 && AeroFragment.this.isVisible() && AeroFragment.this.mVisible
+                    && msg.obj instanceof OverviewSnapshot) {
+                AeroFragment.this.applySnapshot((OverviewSnapshot) msg.obj);
             }
         }
     };
@@ -93,8 +99,10 @@ public class AeroFragment extends Fragment {
         public void run() {
             while (!this.mInterrupt) {
                 try {
-                    sleep(1000L);
-                    AeroFragment.this.mRefreshHandler.sendEmptyMessage(1);
+                    OverviewSnapshot snapshot = AeroFragment.this.collectOverviewData();
+                    Message message = AeroFragment.this.mRefreshHandler.obtainMessage(1, snapshot);
+                    message.sendToTarget();
+                    sleep(3000L);
                 } catch (InterruptedException e) {
                     return;
                 }
@@ -147,10 +155,6 @@ public class AeroFragment extends Fragment {
         this.mRefreshThread = new RefreshThread();
         this.mRefreshThread.start();
         this.mRefreshThread.setPriority(1);
-        createList();
-        if (!this.mExecuted) {
-            setPermissions();
-        }
         return this.root;
     }
 
@@ -229,78 +233,61 @@ public class AeroFragment extends Fragment {
         return cpu_util.replace("Unavailable%", "--");
     }
 
-    private String getCPUTemp() {
+    private List<RawTemperature> getTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
-        if (thermalZones == null) {
-            return null;
+        if (thermalZones != null) {
+            for (String thermalZone : thermalZones) {
+                if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
+                    continue;
+                }
+                String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
+                String type = AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TYPE_FILE);
+                String temperature = formatTemperature(
+                        AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE), false);
+                if (temperature != null) {
+                    readings.add(new RawTemperature(getTemperatureLabel(type), safeSensorName(type, thermalZone), temperature));
+                }
+            }
         }
-
-        List<ThermalZoneCandidate> candidates = new ArrayList<>();
-        for (String thermalZone : thermalZones) {
-            if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
-                continue;
-            }
-            String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
-            String type = AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TYPE_FILE);
-            if (!isCPUThermalZone(type)) {
-                continue;
-            }
-            String temperature = formatCPUTemperature(AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE));
+        if (AeroActivity.genHelper.doesExist(BATTERY_TEMPERATURE_FILE)) {
+            String temperature = formatTemperature(AeroActivity.shell.getInfo(BATTERY_TEMPERATURE_FILE), true);
             if (temperature != null) {
-                candidates.add(new ThermalZoneCandidate(
-                        thermalZone, getCPUThermalZonePriority(type), temperature));
+                readings.add(new RawTemperature(R.string.temperature_source_battery, "Battery", temperature));
             }
         }
-
-        ThermalZoneCandidate selected = null;
-        for (ThermalZoneCandidate candidate : candidates) {
-            if (selected == null
-                    || candidate.typePriority < selected.typePriority
-                    || (candidate.typePriority == selected.typePriority
-                            && candidate.zoneName.compareTo(selected.zoneName) < 0)) {
-                selected = candidate;
-            }
-        }
-        return selected == null ? null : selected.temperature;
+        return readings;
     }
 
-    private boolean isCPUThermalZone(String type) {
-        return getCPUThermalZonePriority(type) != INVALID_THERMAL_ZONE_PRIORITY;
+    private String safeSensorName(String type, String fallback) {
+        if (type == null || type.trim().length() == 0 || type.equalsIgnoreCase(NO_DATA_FOUND)) {
+            return fallback;
+        }
+        return type.trim();
     }
 
-    private int getCPUThermalZonePriority(String type) {
-        if (type == null) {
-            return INVALID_THERMAL_ZONE_PRIORITY;
-        }
+    private int getTemperatureLabel(String type) {
+        if (type == null) return R.string.temperature_source_other;
         String normalizedType = type.trim().toLowerCase(Locale.US).replace('_', '-');
-        if (normalizedType.equals("cpu")) {
-            return 0;
-        }
-        if (normalizedType.equals("cpu-therm")) {
-            return 1;
-        }
-        if (normalizedType.equals("cpu-thermal")) {
-            return 2;
-        }
-        if (normalizedType.equals("soc")) {
-            return 3;
-        }
-        return INVALID_THERMAL_ZONE_PRIORITY;
+        if (normalizedType.contains("battery") || normalizedType.contains("batt")) return R.string.temperature_source_battery;
+        if (normalizedType.contains("gpu")) return R.string.temperature_source_gpu;
+        if (normalizedType.equals("soc") || normalizedType.contains("soc-therm")) return R.string.temperature_source_soc;
+        if (normalizedType.contains("cpu") || normalizedType.contains("x86-pkg")) return R.string.temperature_source_cpu;
+        return R.string.temperature_source_other;
     }
 
-    private static final class ThermalZoneCandidate {
-        private final String zoneName;
-        private final int typePriority;
-        private final String temperature;
-
-        private ThermalZoneCandidate(String zoneName, int typePriority, String temperature) {
-            this.zoneName = zoneName;
-            this.typePriority = typePriority;
-            this.temperature = temperature;
+    private static final class RawTemperature {
+        private final int labelResource;
+        private final String source;
+        private final String value;
+        private RawTemperature(int labelResource, String source, String value) {
+            this.labelResource = labelResource;
+            this.source = source;
+            this.value = value;
         }
     }
 
-    private String formatCPUTemperature(String rawTemperature) {
+    private String formatTemperature(String rawTemperature, boolean batteryTenths) {
         if (rawTemperature == null) {
             return null;
         }
@@ -313,7 +300,9 @@ public class AeroFragment extends Fragment {
             if (Double.isNaN(celsius) || Double.isInfinite(celsius)) {
                 return null;
             }
-            if (Math.abs(celsius) >= 1000.0d) {
+            if (batteryTenths && Math.abs(celsius) < 1000.0d) {
+                celsius /= 10.0d;
+            } else if (Math.abs(celsius) >= 1000.0d) {
                 celsius /= 1000.0d;
             }
             if (celsius < MIN_CPU_TEMPERATURE_CELSIUS || celsius > MAX_CPU_TEMPERATURE_CELSIUS) {
@@ -325,86 +314,134 @@ public class AeroFragment extends Fragment {
         }
     }
 
-    private void fillData(String gpu_freq) {
-        if (this.mKernelData == null) {
-            this.mKernelData = new AeroData(getString(R.string.kernel_version), AeroActivity.shell.getKernel(), null);
-        } else {
-            this.mKernelData.content = AeroActivity.shell.getKernel();
+    private static final class OverviewSnapshot {
+        private String kernel;
+        private List<String> governors;
+        private List<String> governorLabels;
+        private String ioScheduler;
+        private String frequencyContent;
+        private List<String> coreFrequencies;
+        private String gpuFrequency;
+        private String memory;
+        private List<RawTemperature> temperatures;
+    }
+
+    private OverviewSnapshot collectOverviewData() {
+        if (!this.mExecuted) {
+            setPermissions();
         }
+        OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.kernel = AeroActivity.shell.getKernel();
+        snapshot.governors = new ArrayList<>();
+        snapshot.governorLabels = new ArrayList<>();
         List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
-        for (int i = 0; i < clusters.size(); i++) {
-            CpuClusterHelper.Cluster cluster = clusters.get(i);
-            String governor = AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE);
+        for (CpuClusterHelper.Cluster cluster : clusters) {
+            snapshot.governors.add(AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH
+                    + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
+            snapshot.governorLabels.add(cluster.getMemberRangeLabel());
+        }
+        snapshot.ioScheduler = AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE);
+        int coreCount = Runtime.getRuntime().availableProcessors();
+        snapshot.coreFrequencies = coreCount <= MAX_GRID_CORES ? getCoreFrequencyList() : null;
+        snapshot.frequencyContent = coreCount <= MAX_GRID_CORES ? getCpuUtilizationLine() : getFreqPerCore();
+        String gpuFrequency = AeroActivity.shell.getInfo(this.gpu_file);
+        if (gpuFrequency == null || gpuFrequency.length() <= 3 || gpuFrequency.equals(NO_DATA_FOUND)) {
+            snapshot.gpuFrequency = NO_DATA_FOUND;
+        } else {
+            snapshot.gpuFrequency = AeroActivity.shell.toMHz(gpuFrequency.substring(0, gpuFrequency.length() - 3));
+        }
+        snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
+        snapshot.temperatures = getTemperatures();
+        return snapshot;
+    }
+
+    private void applySnapshot(OverviewSnapshot snapshot) {
+        if (this.mKernelData == null) {
+            this.mKernelData = AeroData.standardCard(getString(R.string.kernel_version), snapshot.kernel);
+        } else {
+            this.mKernelData.content = snapshot.kernel;
+        }
+        for (int i = 0; i < snapshot.governors.size(); i++) {
             if (i < this.mGovernorData.size()) {
-                this.mGovernorData.get(i).content = governor;
+                this.mGovernorData.get(i).content = snapshot.governors.get(i);
+                this.mGovernorData.get(i).name = getString(R.string.current_governor_cluster, snapshot.governorLabels.get(i));
             } else {
-                this.mGovernorData.add(new AeroData(getString(R.string.current_governor_cluster, cluster.getMemberRangeLabel()), governor, null));
+                this.mGovernorData.add(AeroData.standardCard(getString(R.string.current_governor_cluster,
+                        snapshot.governorLabels.get(i)), snapshot.governors.get(i)));
             }
         }
-        while (this.mGovernorData.size() > clusters.size()) {
+        while (this.mGovernorData.size() > snapshot.governors.size()) {
             this.mGovernorData.remove(this.mGovernorData.size() - 1);
         }
         if (this.mIOSchedulerData == null) {
-            this.mIOSchedulerData = new AeroData(getString(R.string.current_io_governor), AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE), null);
+            this.mIOSchedulerData = AeroData.standardCard(getString(R.string.current_io_governor), snapshot.ioScheduler);
         } else {
-            this.mIOSchedulerData.content = AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE);
+            this.mIOSchedulerData.content = snapshot.ioScheduler;
         }
-        int coreCount = Runtime.getRuntime().availableProcessors();
-        List<String> coreFrequencies = coreCount <= MAX_GRID_CORES ? getCoreFrequencyList() : null;
-        String frequencyContent = coreCount <= MAX_GRID_CORES ? getCpuUtilizationLine() : getFreqPerCore();
         if (this.mFrequencyData == null) {
-            this.mFrequencyData = new AeroData(getString(R.string.current_cpu_speed), frequencyContent, getCPUTemp());
+            this.mFrequencyData = AeroData.cpuFrequencyCard(getString(R.string.current_cpu_speed), snapshot.frequencyContent);
         } else {
-            this.mFrequencyData.content = frequencyContent;
-            this.mFrequencyData.right_name = getCPUTemp();
+            this.mFrequencyData.content = snapshot.frequencyContent;
         }
-        this.mFrequencyData.coreFrequencies = coreFrequencies;
+        this.mFrequencyData.right_name = null;
+        this.mFrequencyData.coreFrequencies = snapshot.coreFrequencies;
         if (this.mGPUData == null) {
-            this.mGPUData = new AeroData(getString(R.string.current_gpu_speed), AeroActivity.shell.toMHz(gpu_freq.substring(0, gpu_freq.length() - 3)), null);
+            this.mGPUData = AeroData.standardCard(getString(R.string.current_gpu_speed), snapshot.gpuFrequency);
         } else {
-            this.mGPUData.content = AeroActivity.shell.toMHz(gpu_freq.substring(0, gpu_freq.length() - 3));
+            this.mGPUData.content = snapshot.gpuFrequency;
         }
         if (this.mRAMData == null) {
-            this.mRAMData = new AeroData(getString(R.string.available_memory), AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO), null);
+            this.mRAMData = AeroData.standardCard(getString(R.string.available_memory), snapshot.memory);
         } else {
-            this.mRAMData.content = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
+            this.mRAMData.content = snapshot.memory;
         }
-    }
+        List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
+        for (RawTemperature reading : snapshot.temperatures) {
+            String label = reading.labelResource == R.string.temperature_source_other
+                    ? getString(reading.labelResource, reading.source) : getString(reading.labelResource);
+            temperatures.add(new AeroData.TemperatureReading(label, reading.value));
+        }
+        if (temperatures.isEmpty()) {
+            temperatures.add(new AeroData.TemperatureReading(
+                    getString(R.string.temperature_status), getString(R.string.temperature_unavailable)));
+        }
+        if (this.mTemperatureData == null) {
+            this.mTemperatureData = AeroData.temperatureCard(
+                    getString(R.string.overview_section_temperatures), temperatures);
+        } else {
+            this.mTemperatureData.temperatures = temperatures;
+        }
 
-    /**
-     * Creates and populates the overview list with system information including
-     * kernel version, CPU governors, GPU frequency, and memory status.
-     */
-    public void createList() {
-        if (this.mOverviewData != null) {
-            this.mOverviewData.clear();
-        }
-        if (this.mAdapter != null) {
-            this.mAdapter.clear();
-            this.mAdapter.notifyDataSetChanged();
-        }
-        String gpu_freq = AeroActivity.shell.getInfo(this.gpu_file);
-        if (gpu_freq.length() <= 3) {
-            gpu_freq = NO_DATA_FOUND;
-        }
-        fillData(gpu_freq);
-        this.mOverviewData.add(this.mKernelData);
-        this.mOverviewData.addAll(this.mGovernorData);
-        this.mOverviewData.add(this.mIOSchedulerData);
-        this.mOverviewData.add(this.mFrequencyData);
-        this.mOverviewData.add(this.mGPUData);
-        this.mOverviewData.add(this.mRAMData);
+        rebuildOrderedOverview();
         if (this.mAdapter == null) {
             this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item, this.mOverviewData);
             this.mOverView.setAdapter((ListAdapter) this.mAdapter);
         } else {
-            getActivity().runOnUiThread(new Runnable() { // from class: com.aero.control.fragments.AeroFragment.2
-                @Override // java.lang.Runnable
-                public void run() {
-                    AeroFragment.this.mAdapter.notifyDataSetChanged();
-                }
-            });
+            this.mAdapter.notifyDataSetChanged();
         }
+    }
+
+    private void rebuildOrderedOverview() {
+        if (this.mSystemSection == null) {
+            this.mSystemSection = AeroData.section(getString(R.string.overview_section_system));
+            this.mPerformanceSection = AeroData.section(getString(R.string.overview_section_performance));
+            this.mTemperaturesSection = AeroData.section(getString(R.string.overview_section_temperatures));
+            this.mMemorySection = AeroData.section(getString(R.string.overview_section_memory));
+            this.mConfigurationSection = AeroData.section(getString(R.string.overview_section_configuration));
+        }
+        this.mOverviewData.clear();
+        this.mOverviewData.add(this.mSystemSection);
+        this.mOverviewData.add(this.mKernelData);
+        this.mOverviewData.add(this.mPerformanceSection);
+        this.mOverviewData.add(this.mFrequencyData);
+        this.mOverviewData.add(this.mGPUData);
+        this.mOverviewData.add(this.mTemperaturesSection);
+        this.mOverviewData.add(this.mTemperatureData);
+        this.mOverviewData.add(this.mMemorySection);
+        this.mOverviewData.add(this.mRAMData);
+        this.mOverviewData.add(this.mConfigurationSection);
+        this.mOverviewData.addAll(this.mGovernorData);
+        this.mOverviewData.add(this.mIOSchedulerData);
     }
 
     /**
