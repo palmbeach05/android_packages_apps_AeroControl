@@ -115,12 +115,20 @@ public class AeroFragment extends Fragment {
 
         @Override
         public void run() {
-            String temperaturePath = findCPUTemperaturePath();
-            if (this.mInterrupt || temperaturePath == null) {
-                return;
-            }
-            AeroFragment.this.mCPUTemperaturePath = temperaturePath;
+            String temperaturePath = null;
             while (!this.mInterrupt) {
+                if (temperaturePath == null) {
+                    temperaturePath = findCPUTemperaturePath();
+                    if (temperaturePath == null) {
+                        try {
+                            sleep(1000L);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                        continue;
+                    }
+                    AeroFragment.this.mCPUTemperaturePath = temperaturePath;
+                }
                 String temperature = formatCPUTemperature(
                         AeroActivity.shell.getInfo(temperaturePath));
                 if (this.mInterrupt) {
