@@ -992,7 +992,13 @@ public final class AeroActivity extends Activity {
                     return;
                 }
                 try {
-                    AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+                    Fragment currentFragment = AeroActivity.this.getFragmentManager()
+                            .findFragmentById(R.id.content_frame);
+                    if (currentFragment != fragment) {
+                        AeroActivity.this.getFragmentManager().beginTransaction()
+                                .replace(R.id.content_frame, fragment)
+                                .commitAllowingStateLoss();
+                    }
                     // Only add to stack after the transaction has been committed
                     // and only if the fragment is not already at the top of the stack
                     if (addToStack && (mFragmentStack.isEmpty() || mFragmentStack.peek() != fragment)) {
