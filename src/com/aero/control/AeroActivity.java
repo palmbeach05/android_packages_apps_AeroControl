@@ -994,7 +994,12 @@ public final class AeroActivity extends Activity {
                 try {
                     Fragment currentFragment = AeroActivity.this.getFragmentManager()
                             .findFragmentById(R.id.content_frame);
-                    if (currentFragment != fragment) {
+                    FrameLayout contentFrame = (FrameLayout) AeroActivity.this
+                            .findViewById(R.id.content_frame);
+                    boolean fragmentAlreadyRendered = currentFragment == fragment
+                            && fragment.getView() != null
+                            && contentFrame != null && contentFrame.getChildCount() > 0;
+                    if (!fragmentAlreadyRendered) {
                         AeroActivity.this.getFragmentManager().beginTransaction()
                                 .replace(R.id.content_frame, fragment)
                                 .commitAllowingStateLoss();
