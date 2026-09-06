@@ -273,6 +273,15 @@ public final class AeroActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)
+                && !ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
+            int selectedItemId = intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1);
+            intent.removeExtra(EXTRA_SELECTED_ITEM_ID);
+            if (selectedItemId != -1) {
+                sPendingDrawerItemResourceId = selectedItemId;
+            }
+            return;
+        }
         handleSelectedItemRequest();
     }
 
