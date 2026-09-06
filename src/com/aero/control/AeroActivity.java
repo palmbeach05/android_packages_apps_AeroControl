@@ -280,6 +280,8 @@ public final class AeroActivity extends Activity {
             if (selectedItemId != -1) {
                 sPendingDrawerItemResourceId = selectedItemId;
             }
+            sPendingRecreation = true;
+            recreate();
             return;
         }
         handleSelectedItemRequest();
