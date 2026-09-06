@@ -202,7 +202,8 @@ public final class AeroActivity extends Activity {
         // restored selection instead of racing with it.
         int pendingDrawerItemResourceId = sPendingDrawerItemResourceId;
         sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
-        if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+        if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM
+                && pendingDrawerItemResourceId != savedItemId) {
             selectItemByResourceId(pendingDrawerItemResourceId);
         }
         if (savedInstanceState != null) {
