@@ -163,6 +163,9 @@ public final class AeroActivity extends Activity {
         this.mNavigationDrawer.syncState();
         int savedItemId = -1;
         if (savedInstanceState == null) {
+            NavBarItems.PreferenceItem initialItem = this.mNavigationDrawer.getItem(0);
+            logSelectionRequest("onCreate.initialSelection",
+                    initialItem == null ? -1 : initialItem.content, true);
             selectItem(0);
         } else {
             // Restore full fragment stack from saved resource IDs
@@ -184,18 +187,27 @@ public final class AeroActivity extends Activity {
             boolean needsReplacement = (currentFragment != expectedFragment) && !hasAppDetailBackStackEntry();
 
             if (savedItemId != -1) {
+                logSelectionRequest("onCreate.savedStateResourceId", savedItemId, needsReplacement);
                 selectItemByResourceId(savedItemId, needsReplacement);
             } else {
-                selectItem(savedInstanceState.getInt(SELECTED_ITEM), needsReplacement);
+                int savedPosition = savedInstanceState.getInt(SELECTED_ITEM);
+                NavBarItems.PreferenceItem savedItem = this.mNavigationDrawer.getItem(savedPosition);
+                logSelectionRequest("onCreate.savedStatePosition",
+                        savedItem == null ? -1 : savedItem.content, needsReplacement);
+                selectItem(savedPosition, needsReplacement);
             }
         }
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
+                logSelectionRequest("onCreate.notificationIntent",
+                        R.string.slider_app_monitor, true);
                 selectItemByResourceId(R.string.slider_app_monitor);
             }
         } else {
             if (savedInstanceState.getSerializable("NOTIFY_STRING") != null && savedInstanceState.getSerializable("NOTIFY_STRING").equals("APPMONITOR")) {
+                logSelectionRequest("onCreate.savedNotificationState",
+                        R.string.slider_app_monitor, true);
                 selectItemByResourceId(R.string.slider_app_monitor);
             }
         }
@@ -207,6 +219,8 @@ public final class AeroActivity extends Activity {
         int pendingDrawerItemResourceId = sPendingDrawerItemResourceId;
         sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
         if (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            logSelectionRequest("onCreate.pendingDrawerItemHandoff",
+                    pendingDrawerItemResourceId, true);
             selectItemByResourceId(pendingDrawerItemResourceId);
         }
         if (savedInstanceState != null) {
@@ -297,10 +311,8 @@ public final class AeroActivity extends Activity {
      */
     private void handleSelectedItemRequest() {
         Intent intent = getIntent();
-        Log.d("Aero", "AeroActivity.handleSelectedItemRequest activity="
-                + System.identityHashCode(this) + " requestedResourceId="
-                + (intent == null ? -1 : intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1))
-                + " replaceFragment=true sPendingRecreation=" + sPendingRecreation);
+        logSelectionRequest("handleSelectedItemRequest",
+                intent == null ? -1 : intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1), true);
         if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)) {
             int selectedItemId = intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1);
             intent.removeExtra(EXTRA_SELECTED_ITEM_ID);
@@ -323,6 +335,8 @@ public final class AeroActivity extends Activity {
         }
         Bundle extras = getIntent().getExtras();
         if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
+            logSelectionRequest("onResume.notificationIntent",
+                    R.string.slider_app_monitor, true);
             selectItemByResourceId(R.string.slider_app_monitor);
         }
         getIntent().putExtra("NOTIFY_STRING", new String());
@@ -820,6 +834,9 @@ public final class AeroActivity extends Activity {
         contentFrame.post(new Runnable() { // from class: com.aero.control.AeroActivity.6
             @Override
             public void run() {
+                AeroActivity.this.logSelectionRequest(
+                        "scheduleBlankStatisticsContentRecoveryCheck.postedCallback",
+                        savedItemId, true);
                 AeroActivity.this.recoverBlankStatisticsContentIfNeeded(savedItemId);
             }
         });
@@ -863,7 +880,20 @@ public final class AeroActivity extends Activity {
         if (contentFramePresent) {
             return;
         }
+        logSelectionRequest("recoverBlankStatisticsContentIfNeeded", savedItemId, true);
         selectItemByResourceId(savedItemId, true);
+    }
+
+    private void logSelectionRequest(String caller, int requestedResourceId,
+            boolean replaceFragment) {
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        Log.d("Aero", "AeroActivity.selectionRequest caller=" + caller
+                + " activity=" + System.identityHashCode(this)
+                + " requestedResourceId=" + requestedResourceId
+                + " replaceFragment=" + replaceFragment
+                + " contentFragmentPresent=" + (currentFragment != null)
+                + " currentFragmentClass=" + (currentFragment == null ? "null"
+                        : currentFragment.getClass().getName()));
     }
 
     /**
