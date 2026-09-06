@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -106,6 +107,9 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         this.mCurrentTheme = ThemeHelper.getTheme(this);
+        Log.d("Aero", "AeroActivity.onCreate activity=" + System.identityHashCode(this)
+                + " savedInstanceState=" + (savedInstanceState != null)
+                + " mCurrentTheme=" + this.mCurrentTheme);
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -227,6 +231,12 @@ public final class AeroActivity extends Activity {
                     ? pendingDrawerItemResourceId : savedItemId;
             scheduleBlankStatisticsContentRecoveryCheck(recoveryItemId);
         }
+        Log.d("Aero", "AeroActivity.onCreate state activity=" + System.identityHashCode(this)
+                + " selectedItemResourceId=" + (this.mNavigationDrawer.getItem(this.mSelectedItemPosition) == null
+                        ? -1 : this.mNavigationDrawer.getItem(this.mSelectedItemPosition).content)
+                + " contentFragment=" + getFragmentManager().findFragmentById(R.id.content_frame)
+                + " pendingDrawerItemResourceId=" + sPendingDrawerItemResourceId
+                + " pendingDrawerTransactionItemResourceId=" + this.mPendingDrawerTransactionItemResourceId);
         // Initialize mJobManager synchronously so restored fragments can access it.
         mJobManager = JobManager.instance(this);
         // Defer heavier service-starting work until after the restored fragment has rendered,
@@ -272,6 +282,10 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        Log.d("Aero", "AeroActivity.onNewIntent activity=" + System.identityHashCode(this)
+                + " selectedItemResourceId=" + intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1)
+                + " mCurrentTheme=" + this.mCurrentTheme
+                + " configuredTheme=" + ThemeHelper.getTheme(this));
         setIntent(intent);
         handleSelectedItemRequest();
     }
@@ -283,6 +297,10 @@ public final class AeroActivity extends Activity {
      */
     private void handleSelectedItemRequest() {
         Intent intent = getIntent();
+        Log.d("Aero", "AeroActivity.handleSelectedItemRequest activity="
+                + System.identityHashCode(this) + " requestedResourceId="
+                + (intent == null ? -1 : intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1))
+                + " replaceFragment=true sPendingRecreation=" + sPendingRecreation);
         if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)) {
             int selectedItemId = intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1);
             intent.removeExtra(EXTRA_SELECTED_ITEM_ID);
@@ -296,6 +314,9 @@ public final class AeroActivity extends Activity {
     protected void onResume() {
         super.onResume();
         OrientationHelper.applyOrientation(this);
+        Log.d("Aero", "AeroActivity.onResume activity=" + System.identityHashCode(this)
+                + " mCurrentTheme=" + this.mCurrentTheme + " configuredTheme=" + ThemeHelper.getTheme(this)
+                + " callsRecreate=" + !ThemeHelper.getTheme(this).equals(this.mCurrentTheme));
         if (!ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
             recreate();
             return;
@@ -512,6 +533,10 @@ public final class AeroActivity extends Activity {
 
         // Get the item's resource ID to identify it, rather than using position
         NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(position);
+        Log.d("Aero", "AeroActivity.selectItem activity=" + System.identityHashCode(this)
+                + " position=" + position + " requestedResourceId="
+                + (item == null ? -1 : item.content) + " replaceFragment=" + replaceFragment
+                + " sPendingRecreation=" + sPendingRecreation);
         if (item == null) {
             return;
         }
@@ -633,6 +658,10 @@ public final class AeroActivity extends Activity {
      * @param replaceFragment if true, replaces the current fragment; if false, only updates selection
      */
     private void selectItemByResourceId(int resourceId, boolean replaceFragment) {
+        Log.d("Aero", "AeroActivity.selectItemByResourceId activity="
+                + System.identityHashCode(this) + " requestedResourceId=" + resourceId
+                + " replaceFragment=" + replaceFragment
+                + " sPendingRecreation=" + sPendingRecreation);
         // Find the position of the item with this resource ID in the current adapter
         for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
             NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(i);
@@ -976,6 +1005,10 @@ public final class AeroActivity extends Activity {
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                Log.d("Aero", "AeroActivity.switchContent runnableBegin activity="
+                        + System.identityHashCode(AeroActivity.this) + " fragment="
+                        + fragment.getClass().getName() + " finishing="
+                        + AeroActivity.this.isFinishing());
                 // This transaction is about to run (or be skipped below), so
                 // it's no longer pending.
                 AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
@@ -984,18 +1017,26 @@ public final class AeroActivity extends Activity {
                 }
                 try {
                     AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+                    Log.d("Aero", "AeroActivity.switchContent transactionSuccess activity="
+                            + System.identityHashCode(AeroActivity.this) + " fragment="
+                            + fragment.getClass().getName());
                     // Only add to stack after the transaction has been committed
                     // and only if the fragment is not already at the top of the stack
                     if (addToStack && (mFragmentStack.isEmpty() || mFragmentStack.peek() != fragment)) {
                         mFragmentStack.push(fragment);
                     }
                 } catch (IllegalStateException e) {
+                    Log.d("Aero", "AeroActivity.switchContent IllegalStateException activity="
+                            + System.identityHashCode(AeroActivity.this) + " fragment="
+                            + fragment.getClass().getName(), e);
                     if (!AeroActivity.this.isFinishing()) {
                         AeroActivity.this.recreate();
                     }
                 }
             }
         };
+        Log.d("Aero", "AeroActivity.switchContent post activity=" + System.identityHashCode(this)
+                + " fragment=" + fragment.getClass().getName() + " finishing=" + isFinishing());
         mHandler.post(this.mPendingSwitch);
     }
 
@@ -1005,6 +1046,9 @@ public final class AeroActivity extends Activity {
      */
     @Override // android.app.Activity
     protected void onDestroy() {
+        Log.d("Aero", "AeroActivity.onDestroy activity=" + System.identityHashCode(this)
+                + " finishing=" + isFinishing()
+                + " changingConfigurations=" + isChangingConfigurations());
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
         }

@@ -73,6 +73,15 @@ public class AeroFragment extends Fragment {
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
         public void handleMessage(Message msg) {
+            Log.d("Aero", "AeroFragment.handleMessage fragment="
+                    + System.identityHashCode(AeroFragment.this) + " snapshotReceipt="
+                    + (msg.obj instanceof OverviewSnapshot)
+                    + " msgWhat=" + msg.what + " isVisible=" + AeroFragment.this.isVisible()
+                    + " mVisible=" + AeroFragment.this.mVisible
+                    + " snapshotType=" + (msg.obj == null ? "null" : msg.obj.getClass().getName())
+                    + " action=" + (msg.what == 1 && AeroFragment.this.isVisible()
+                            && AeroFragment.this.mVisible && msg.obj instanceof OverviewSnapshot
+                            ? "applySnapshot" : "discard"));
             if (msg.what == 1 && AeroFragment.this.isVisible() && AeroFragment.this.mVisible
                     && msg.obj instanceof OverviewSnapshot) {
                 AeroFragment.this.applySnapshot((OverviewSnapshot) msg.obj);
@@ -99,11 +108,25 @@ public class AeroFragment extends Fragment {
         public void run() {
             while (!this.mInterrupt) {
                 try {
+                    Log.d("Aero", "AeroFragment.RefreshThread collectionStart fragment="
+                            + System.identityHashCode(AeroFragment.this) + " thread="
+                            + System.identityHashCode(this));
                     OverviewSnapshot snapshot = AeroFragment.this.collectOverviewData();
+                    Log.d("Aero", "AeroFragment.RefreshThread collectionSuccess fragment="
+                            + System.identityHashCode(AeroFragment.this) + " thread="
+                            + System.identityHashCode(this) + " snapshot="
+                            + System.identityHashCode(snapshot));
                     Message message = AeroFragment.this.mRefreshHandler.obtainMessage(1, snapshot);
+                    Log.d("Aero", "AeroFragment.RefreshThread snapshotDispatch fragment="
+                            + System.identityHashCode(AeroFragment.this) + " thread="
+                            + System.identityHashCode(this) + " snapshot="
+                            + System.identityHashCode(snapshot));
                     message.sendToTarget();
                     sleep(3000L);
                 } catch (InterruptedException e) {
+                    Log.d("Aero", "AeroFragment.RefreshThread interrupted fragment="
+                            + System.identityHashCode(AeroFragment.this) + " thread="
+                            + System.identityHashCode(this));
                     return;
                 }
             }
@@ -114,16 +137,34 @@ public class AeroFragment extends Fragment {
     public void onPause() {
         super.onPause();
         this.mVisible = false;
+        Log.d("Aero", "AeroFragment.onPause fragment=" + System.identityHashCode(this)
+                + " mVisible=" + this.mVisible + " isAdded=" + isAdded()
+                + " isVisible=" + isVisible() + " viewNull=" + (getView() == null)
+                + " listView=" + this.mOverView + " adapter=" + this.mAdapter
+                + " adapterCount=" + (this.mAdapter == null ? -1 : this.mAdapter.getCount())
+                + " listViewAdapter=" + (this.mOverView == null ? null : this.mOverView.getAdapter()));
     }
 
     @Override // android.app.Fragment
     public void onResume() {
         super.onResume();
         this.mVisible = true;
+        Log.d("Aero", "AeroFragment.onResume fragment=" + System.identityHashCode(this)
+                + " mVisible=" + this.mVisible + " isAdded=" + isAdded()
+                + " isVisible=" + isVisible() + " viewNull=" + (getView() == null)
+                + " listView=" + this.mOverView + " adapter=" + this.mAdapter
+                + " adapterCount=" + (this.mAdapter == null ? -1 : this.mAdapter.getCount())
+                + " listViewAdapter=" + (this.mOverView == null ? null : this.mOverView.getAdapter()));
     }
 
     @Override // android.app.Fragment
     public void onDestroyView() {
+        Log.d("Aero", "AeroFragment.onDestroyView fragment=" + System.identityHashCode(this)
+                + " mVisible=" + this.mVisible + " isAdded=" + isAdded()
+                + " isVisible=" + isVisible() + " viewNull=" + (getView() == null)
+                + " listView=" + this.mOverView + " adapter=" + this.mAdapter
+                + " adapterCount=" + (this.mAdapter == null ? -1 : this.mAdapter.getCount())
+                + " listViewAdapter=" + (this.mOverView == null ? null : this.mOverView.getAdapter()));
         super.onDestroyView();
         this.mRefreshThread.cancel();
         this.mRefreshHandler.removeMessages(1);
@@ -134,6 +175,9 @@ public class AeroFragment extends Fragment {
 
     @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d("Aero", "AeroFragment.onCreateView entry fragment=" + System.identityHashCode(this)
+                + " priorAdapterExists=" + (this.mAdapter != null) + " refreshThreadBefore="
+                + System.identityHashCode(this.mRefreshThread));
         this.root = (ViewGroup) inflater.inflate(R.layout.overviewlist_item, (ViewGroup) null);
         this.mOverView = (ListView) this.root.findViewById(R.id.listView1);
         String[] arr$ = FilePath.GPU_FILES_RATE;
@@ -153,6 +197,11 @@ public class AeroFragment extends Fragment {
         }
         // Always create a fresh thread for each view instance
         this.mRefreshThread = new RefreshThread();
+        Log.d("Aero", "AeroFragment.onCreateView created fragment=" + System.identityHashCode(this)
+                + " root=" + System.identityHashCode(this.root) + " listView="
+                + System.identityHashCode(this.mOverView) + " priorAdapterExists="
+                + (this.mAdapter != null) + " refreshThreadAfter="
+                + System.identityHashCode(this.mRefreshThread));
         this.mRefreshThread.start();
         this.mRefreshThread.setPriority(1);
         return this.root;
@@ -357,6 +406,10 @@ public class AeroFragment extends Fragment {
     }
 
     private void applySnapshot(OverviewSnapshot snapshot) {
+        Log.d("Aero", "AeroFragment.applySnapshot entry fragment=" + System.identityHashCode(this)
+                + " snapshot=" + System.identityHashCode(snapshot)
+                + " adapterBefore=" + (this.mAdapter == null ? "null"
+                        : String.valueOf(System.identityHashCode(this.mAdapter))));
         if (this.mKernelData == null) {
             this.mKernelData = AeroData.standardCard(getString(R.string.kernel_version), snapshot.kernel);
         } else {
@@ -414,11 +467,21 @@ public class AeroFragment extends Fragment {
         }
 
         rebuildOrderedOverview();
+        Log.d("Aero", "AeroFragment.applySnapshot rebuilt fragment=" + System.identityHashCode(this)
+                + " overviewDataSize=" + this.mOverviewData.size());
         if (this.mAdapter == null) {
             this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item, this.mOverviewData);
             this.mOverView.setAdapter((ListAdapter) this.mAdapter);
+            Log.d("Aero", "AeroFragment.applySnapshot setAdapter fragment="
+                    + System.identityHashCode(this) + " adapterCount=" + this.mAdapter.getCount()
+                    + " listViewAdapter=" + (this.mOverView.getAdapter() == null ? "null"
+                            : String.valueOf(System.identityHashCode(this.mOverView.getAdapter()))));
         } else {
             this.mAdapter.notifyDataSetChanged();
+            Log.d("Aero", "AeroFragment.applySnapshot notifyDataSetChanged fragment="
+                    + System.identityHashCode(this) + " adapterCount=" + this.mAdapter.getCount()
+                    + " listViewAdapter=" + (this.mOverView == null || this.mOverView.getAdapter() == null
+                            ? "null" : String.valueOf(System.identityHashCode(this.mOverView.getAdapter()))));
         }
     }
 
