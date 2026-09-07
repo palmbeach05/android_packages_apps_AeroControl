@@ -48,6 +48,12 @@ public class AeroFragment extends Fragment {
     private static final String POWER_SUPPLY_DIRECTORY = "/sys/class/power_supply";
     private static final String POWER_SUPPLY_TYPE_FILE = "type";
     private static final String POWER_SUPPLY_TEMP_FILE = "temp";
+    private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
+    private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
+            Pattern.compile("tegra-i2c\\.(\\d+)");
+    private static final Pattern TEGRA_I2C_BUS_PATTERN = Pattern.compile("i2c-(\\d+)");
+    private static final Pattern TEGRA_I2C_DEVICE_PATTERN =
+            Pattern.compile("(\\d+)-[0-9a-fA-F]{4}");
     private static final String HWMON_DIRECTORY = "/sys/class/hwmon";
     private static final String HWMON_NAME_FILE = "name";
     private static final Pattern HWMON_TEMP_INPUT_PATTERN = Pattern.compile("(temp\\d+)_input");
@@ -262,6 +268,7 @@ public class AeroFragment extends Fragment {
                 }
             }
         }
+        readings.addAll(getTegraI2cTemperatures());
         readings.addAll(getHwmonTemperatures());
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones != null) {
@@ -285,6 +292,76 @@ public class AeroFragment extends Fragment {
             }
         }
         return readings;
+    }
+
+    private List<RawTemperature> getTegraI2cTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
+        String[] controllers = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+                TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        for (String controller : controllers) {
+            Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
+            String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
+            if (!controllerMatcher.matches()) {
+                Log.d(AeroFragment.class.getName(),
+                        "Rejected Tegra I2C node path: " + controllerPath);
+                continue;
+            }
+            String busNumber = controllerMatcher.group(1);
+            String[] buses = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+                    controllerPath, false);
+            for (String bus : buses) {
+                Matcher busMatcher = TEGRA_I2C_BUS_PATTERN.matcher(bus);
+                String busPath = controllerPath + "/" + bus;
+                if (!busMatcher.matches() || !busNumber.equals(busMatcher.group(1))) {
+                    Log.d(AeroFragment.class.getName(),
+                            "Rejected Tegra I2C node path: " + busPath);
+                    continue;
+                }
+                String[] devices = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+                        busPath, false);
+                for (String device : devices) {
+                    Matcher deviceMatcher = TEGRA_I2C_DEVICE_PATTERN.matcher(device);
+                    String devicePath = busPath + "/" + device;
+                    if (!deviceMatcher.matches()
+                            || !busNumber.equals(deviceMatcher.group(1))) {
+                        Log.d(AeroFragment.class.getName(),
+                                "Rejected Tegra I2C node path: " + devicePath);
+                        continue;
+                    }
+                    Log.d(AeroFragment.class.getName(),
+                            "Discovered Tegra I2C temperature device: " + devicePath);
+                    addTegraI2cDeviceTemperatures(
+                            readings, busNumber, device, devicePath);
+                }
+            }
+        }
+        return readings;
+    }
+
+    private void addTegraI2cDeviceTemperatures(List<RawTemperature> readings,
+            String busNumber, String device, String devicePath) {
+        String[] files = AeroActivity.shell.getRootAwareTegraI2cDirInfo(devicePath, true);
+        for (String file : files) {
+            String filePath = devicePath + "/" + file;
+            Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(file);
+            if (!inputMatcher.matches()) {
+                Log.d(AeroFragment.class.getName(),
+                        "Rejected Tegra I2C node path: " + filePath);
+                continue;
+            }
+            String temperature = formatTemperature(
+                    AeroActivity.shell.getRootAwareTegraI2cInfo(filePath), false);
+            if (temperature == null) {
+                Log.d(AeroFragment.class.getName(),
+                        "Rejected Tegra I2C node path: " + filePath);
+                continue;
+            }
+            Log.d(AeroFragment.class.getName(),
+                    "Accepted Tegra I2C node path: " + filePath);
+            readings.add(new RawTemperature(R.string.temperature_source_other,
+                    "i2c-" + busNumber + " " + device + " " + inputMatcher.group(1),
+                    temperature));
+        }
     }
 
     private List<RawTemperature> getHwmonTemperatures() {

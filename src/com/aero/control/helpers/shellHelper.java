@@ -29,6 +29,15 @@ public final class shellHelper {
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final Pattern HWMON_DIRECTORY_PATTERN =
             Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
+    private static final Pattern TEGRA_I2C_DIRECTORY_PATTERN = Pattern.compile(
+            "/sys/devices/platform(?:/tegra-i2c\\.(\\d+)"
+                    + "(?:/i2c-\\1(?:/\\1-[0-9a-fA-F]{4})?)?)?");
+    private static final Pattern TEGRA_I2C_DEVICE_DIRECTORY_PATTERN = Pattern.compile(
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
+                    + "\\1-[0-9a-fA-F]{4}");
+    private static final Pattern TEGRA_I2C_TEMPERATURE_FILE_PATTERN = Pattern.compile(
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
+                    + "\\1-[0-9a-fA-F]{4}/temp\\d+_input");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -499,6 +508,96 @@ public final class shellHelper {
             String[] results = output.split("\\r?\\n");
             Arrays.sort(results);
             return results;
+        }
+    }
+
+    /**
+     * Lists entries in the allowlisted Tegra I2C temperature hierarchy, using the
+     * shared root shell only when direct directory enumeration is unavailable.
+     *
+     * @param path an allowlisted Tegra I2C hierarchy directory
+     * @param files if true, list files; if false, list directories
+     * @return sorted child names, or an empty array when access is rejected or fails
+     */
+    public final String[] getRootAwareTegraI2cDirInfo(String path, boolean files) {
+        if (path == null
+                || !TEGRA_I2C_DIRECTORY_PATTERN.matcher(path).matches()
+                || (files && !TEGRA_I2C_DEVICE_DIRECTORY_PATTERN.matcher(path).matches())) {
+            return new String[0];
+        }
+
+        File[] entries = null;
+        try {
+            entries = new File(path).listFiles();
+        } catch (SecurityException e) {
+            // Fall through to the shared root shell.
+        }
+        if (entries != null) {
+            List<String> results = new ArrayList<>();
+            for (File entry : entries) {
+                if ((files && entry.isFile()) || (!files && entry.isDirectory())) {
+                    results.add(entry.getName());
+                }
+            }
+            Collections.sort(results);
+            return results.toArray(new String[0]);
+        }
+
+        String test = files ? "-f" : "-d";
+        String command = "for entry in " + escapeShellArg(path)
+                + "/*; do [ " + test + " \"$entry\" ]"
+                + " && printf '%s\\n' \"${entry##*/}\"; done";
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return new String[0];
+            }
+            addCommand(command);
+            String output = getRootResult();
+            if (output == null || output.length() == 0) {
+                return new String[0];
+            }
+            String[] results = output.split("\\r?\\n");
+            Arrays.sort(results);
+            return results;
+        }
+    }
+
+    /**
+     * Reads an allowlisted Tegra I2C tempN_input node, using the shared root shell only
+     * when a direct read fails.
+     *
+     * @param path an allowlisted Tegra I2C tempN_input path
+     * @return the node contents, or "Unavailable" when access is rejected or fails
+     */
+    public final String getRootAwareTegraI2cInfo(String path) {
+        if (path == null || !TEGRA_I2C_TEMPERATURE_FILE_PATTERN.matcher(path).matches()) {
+            return NO_DATA_FOUND;
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                String info = reader.readLine();
+                return info == null ? NO_DATA_FOUND : info;
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            // Fall through to the shared root shell.
+        } catch (SecurityException e) {
+            // Fall through to the shared root shell.
+        }
+
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return NO_DATA_FOUND;
+            }
+            addCommand("[ -f " + escapeShellArg(path) + " ] && cat "
+                    + escapeShellArg(path));
+            String output = getRootResult();
+            return output == null || output.length() == 0 ? NO_DATA_FOUND : output;
         }
     }
 
