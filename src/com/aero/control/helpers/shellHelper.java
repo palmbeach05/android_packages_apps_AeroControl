@@ -27,8 +27,14 @@ public final class shellHelper {
     private static final int BUFF_LEN = 8192;
     private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
-    private static final Pattern HWMON_DIRECTORY_PATTERN =
-            Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
+    private static final Pattern TEMPERATURE_DIRECTORY_PATTERN = Pattern.compile(
+            "(?:/sys/class/hwmon(?:/hwmon\\d+)?|" +
+            "/sys/devices/virtual/thermal(?:/thermal_zone\\d+)?|" +
+            "/sys/devices/platform(?:/tegra-i2c\\.(\\d+)(?:/i2c-\\1(?:/\\1-[0-9a-fA-F]{4})?)?)?)/?");
+    private static final Pattern TEMPERATURE_FILE_PATTERN = Pattern.compile(
+            "(?:/sys/class/hwmon/hwmon\\d+/(?:name|temp\\d+_(?:input|label))|" +
+            "/sys/devices/virtual/thermal/thermal_zone\\d+/(?:type|temp)|" +
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/\\1-[0-9a-fA-F]{4}/temp\\d+_input)");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -373,6 +379,43 @@ public final class shellHelper {
     }
 
     /**
+     * Reads an allowlisted temperature sysfs attribute, falling back to root without
+     * requiring the path to be visible to the app UID first.
+     *
+     * @param path a supported hwmon, thermal-zone, or Tegra I2C temperature attribute path
+     * @return the first line, or "Unavailable" when direct and root reads both fail
+     */
+    public final String getRootAwareTemperatureInfo(String path) {
+        if (path == null || !TEMPERATURE_FILE_PATTERN.matcher(path).matches()) {
+            return NO_DATA_FOUND;
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                String info = reader.readLine();
+                if (info != null && info.length() > 0) {
+                    return info;
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (IOException | SecurityException e) {
+            // The root fallback below is expected for protected sysfs attributes.
+        }
+
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return NO_DATA_FOUND;
+            }
+            addCommand("cat " + escapeShellArg(path));
+            String result = getRootResult();
+            return result == null || result.length() == 0 ? NO_DATA_FOUND : result;
+        }
+    }
+
+    /**
      * Reads a file's first line without fallback to root. Faster than getInfo when
      * the file is known to be readable without root.
      *
@@ -458,15 +501,15 @@ public final class shellHelper {
     }
 
     /**
-     * Lists entries in the fixed hwmon sysfs hierarchy, falling back to the shared root
-     * shell when the app cannot enumerate the directory directly.
+     * Lists entries in the fixed temperature sysfs hierarchies, falling back to the shared
+     * root shell when the app cannot enumerate the directory directly.
      *
-     * @param path /sys/class/hwmon or one of its hwmonN directories
+     * @param path a directory in the fixed hwmon, thermal-zone, or Tegra I2C hierarchy
      * @param files if true, list files; if false, list directories
      * @return sorted entry names, or an empty array when the directory cannot be listed
      */
-    public final String[] getRootAwareHwmonDirInfo(String path, boolean files) {
-        if (path == null || !HWMON_DIRECTORY_PATTERN.matcher(path).matches()) {
+    public final String[] getRootAwareTemperatureDirInfo(String path, boolean files) {
+        if (path == null || !TEMPERATURE_DIRECTORY_PATTERN.matcher(path).matches()) {
             return new String[0];
         }
 
@@ -500,6 +543,13 @@ public final class shellHelper {
             Arrays.sort(results);
             return results;
         }
+    }
+
+    /**
+     * Compatibility wrapper for callers that only enumerate the hwmon hierarchy.
+     */
+    public final String[] getRootAwareHwmonDirInfo(String path, boolean files) {
+        return getRootAwareTemperatureDirInfo(path, files);
     }
 
     /**
