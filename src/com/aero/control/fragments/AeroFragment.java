@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  * system metrics. Refreshes every 3 seconds and provides a first-run tutorial.
  */
 public class AeroFragment extends Fragment {
+    private static final String RECREATION_DIAGNOSTIC_TAG = "AeroRecreation";
     private static final String FILENAME = "firstrun";
     private static final int MAX_GRID_CORES = 8;
     private static final String NO_DATA_FOUND = "Unavailable";
@@ -124,6 +125,7 @@ public class AeroFragment extends Fragment {
 
     @Override // android.app.Fragment
     public void onDestroyView() {
+        logViewDiagnostic("onDestroyView", getView());
         super.onDestroyView();
         this.mRefreshThread.cancel();
         this.mRefreshHandler.removeMessages(1);
@@ -155,7 +157,24 @@ public class AeroFragment extends Fragment {
         this.mRefreshThread = new RefreshThread();
         this.mRefreshThread.start();
         this.mRefreshThread.setPriority(1);
+        logViewDiagnostic("onCreateView", this.root);
         return this.root;
+    }
+
+    @Override // android.app.Fragment
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        logViewDiagnostic("onViewCreated", view);
+    }
+
+    private void logViewDiagnostic(String event, View view) {
+        int activityIdentity = getActivity() instanceof AeroActivity
+                ? System.identityHashCode(getActivity()) : 0;
+        Log.d(RECREATION_DIAGNOSTIC_TAG, event
+                + " fragmentClass=" + getClass().getName()
+                + " fragment=" + System.identityHashCode(this)
+                + " activity=" + activityIdentity
+                + " view=" + (view != null ? System.identityHashCode(view) : 0));
     }
 
     @Override // android.app.Fragment

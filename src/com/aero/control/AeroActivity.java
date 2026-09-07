@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,6 +55,7 @@ import java.util.Stack;
  * the per-app monitoring service.
  */
 public final class AeroActivity extends Activity {
+    private static final String RECREATION_DIAGNOSTIC_TAG = "AeroRecreation";
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
     public static final String EXTRA_SELECTED_ITEM_ID = "com.aero.control.SELECTED_ITEM_ID";
@@ -246,6 +248,8 @@ public final class AeroActivity extends Activity {
             }
         };
         mHandler.post(this.mPendingBackgroundInit);
+        logRecreationDiagnostic("onCreate savedInstanceState=" + (savedInstanceState != null),
+                recoveryItemIdForDiagnostic());
     }
 
     /**
@@ -299,6 +303,7 @@ public final class AeroActivity extends Activity {
     protected void onResume() {
         super.onResume();
         OrientationHelper.applyOrientation(this);
+        logRecreationDiagnostic("onResume", recoveryItemIdForDiagnostic());
         if (!ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
             recreate();
             return;
@@ -787,13 +792,17 @@ public final class AeroActivity extends Activity {
     // Schedules a one-time, post-layout check for a blank content_frame after
     // restoring a drawer selection known to need blank-content recovery.
     private void scheduleBlankRestoredContentRecoveryCheck(final int savedItemId) {
+        logRecreationDiagnostic("scheduleRecovery request item=" + savedItemId, savedItemId);
         if (!isRestoredContentRecoveryItem(savedItemId)) {
+            logRecreationDiagnostic("scheduleRecovery skipped reason=unsupported_item", savedItemId);
             return;
         }
         final View contentFrame = findViewById(R.id.content_frame);
         if (contentFrame == null) {
+            logRecreationDiagnostic("scheduleRecovery skipped reason=missing_content_frame", savedItemId);
             return;
         }
+        logRecreationDiagnostic("scheduleRecovery posted", savedItemId);
         contentFrame.post(new Runnable() { // from class: com.aero.control.AeroActivity.6
             @Override
             public void run() {
@@ -814,13 +823,20 @@ public final class AeroActivity extends Activity {
     // reattaches the restored instance to force its view to be recreated
     // without changing navigation state.
     private void recoverBlankRestoredContentIfNeeded(int savedItemId) {
-        if (isFinishing() || hasAppDetailBackStackEntry()) {
+        logRecreationDiagnostic("recoverRecovery start", savedItemId);
+        if (isFinishing()) {
+            logRecreationDiagnostic("recoverRecovery return reason=activity_finishing", savedItemId);
+            return;
+        }
+        if (hasAppDetailBackStackEntry()) {
+            logRecreationDiagnostic("recoverRecovery return reason=app_detail_back_stack", savedItemId);
             return;
         }
         // This instance is itself about to be recreated again (e.g. another
         // rotation raced in before this check ran); let the next instance's
         // own restoration handle recovery instead of fighting it here.
         if (sPendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            logRecreationDiagnostic("recoverRecovery return reason=pending_drawer_handoff", savedItemId);
             return;
         }
         if (this.mPendingDrawerTransactionItemResourceId != NO_PENDING_DRAWER_ITEM) {
@@ -832,7 +848,12 @@ public final class AeroActivity extends Activity {
             // be judged blank or not yet -- wait for it to settle instead of
             // giving up permanently.
             if (this.mPendingDrawerTransactionItemResourceId == savedItemId) {
+                logRecreationDiagnostic("recoverRecovery retry reason=matching_pending_transaction",
+                        savedItemId);
                 scheduleBlankRestoredContentRecoveryCheck(savedItemId);
+            } else {
+                logRecreationDiagnostic("recoverRecovery return reason=different_pending_transaction",
+                        savedItemId);
             }
             // Otherwise a different, newer drawer selection is pending;
             // don't fight it with a stale replacement for the restored
@@ -845,9 +866,14 @@ public final class AeroActivity extends Activity {
         // owns content_frame; recovery is only for the attached restored instance.
         if (currentFragment == null || currentFragment != expectedFragment
                 || !currentFragment.isAdded()) {
+            String reason = currentFragment == null ? "missing_current_fragment"
+                    : currentFragment != expectedFragment ? "unexpected_current_fragment"
+                    : "current_fragment_not_added";
+            logRecreationDiagnostic("recoverRecovery return reason=" + reason, savedItemId);
             return;
         }
         if (currentFragment.getView() != null) {
+            logRecreationDiagnostic("recoverRecovery return reason=view_present", savedItemId);
             return;
         }
         try {
@@ -855,9 +881,56 @@ public final class AeroActivity extends Activity {
                     .detach(currentFragment)
                     .attach(currentFragment)
                     .commitAllowingStateLoss();
-        } catch (IllegalStateException ignored) {
+            logRecreationDiagnostic("recoverRecovery transaction_committed", savedItemId);
+        } catch (IllegalStateException e) {
+            Log.e(RECREATION_DIAGNOSTIC_TAG,
+                    recreationDiagnosticState("recoverRecovery transaction_failed", savedItemId), e);
             // A later recreation will restore the selected fragment normally.
         }
+    }
+
+    private int recoveryItemIdForDiagnostic() {
+        return this.mPendingRestoredContentRecoveryItemResourceId;
+    }
+
+    private int selectedItemResourceIdForDiagnostic() {
+        if (this.mNavigationDrawer == null || this.mSelectedItemPosition < 0
+                || this.mSelectedItemPosition >= this.mNavigationDrawer.getItemCount()) {
+            return -1;
+        }
+        NavBarItems.PreferenceItem selectedItem = this.mNavigationDrawer
+                .getItem(this.mSelectedItemPosition);
+        return selectedItem != null ? selectedItem.content : -1;
+    }
+
+    private void logRecreationDiagnostic(String event, int expectedItemResourceId) {
+        Log.d(RECREATION_DIAGNOSTIC_TAG,
+                recreationDiagnosticState(event, expectedItemResourceId));
+    }
+
+    private String recreationDiagnosticState(String event, int expectedItemResourceId) {
+        Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        Fragment expectedFragment = getFragmentByResourceId(expectedItemResourceId);
+        return event
+                + " activity=" + System.identityHashCode(this)
+                + " selectedItem=" + selectedItemResourceIdForDiagnostic()
+                + " pendingItem=" + this.mPendingDrawerTransactionItemResourceId
+                + " pendingHandoffItem=" + sPendingDrawerItemResourceId
+                + " recoveryItem=" + this.mPendingRestoredContentRecoveryItemResourceId
+                + " expectedItem=" + expectedItemResourceId
+                + " current={" + fragmentDiagnosticState(currentFragment) + "}"
+                + " expected={" + fragmentDiagnosticState(expectedFragment) + "}";
+    }
+
+    private static String fragmentDiagnosticState(Fragment fragment) {
+        if (fragment == null) {
+            return "null";
+        }
+        return "class=" + fragment.getClass().getName()
+                + " identity=" + System.identityHashCode(fragment)
+                + " added=" + fragment.isAdded()
+                + " detached=" + fragment.isDetached()
+                + " viewNull=" + (fragment.getView() == null);
     }
 
     /**
@@ -993,12 +1066,19 @@ public final class AeroActivity extends Activity {
      * @param addToStack if true, pushes the fragment onto the back stack
      */
     private void switchContent(final Fragment fragment, final boolean addToStack) {
+        final int requestedItemResourceId = getResourceIdForFragment(fragment);
+        logRecreationDiagnostic("switchContent request fragment={"
+                + fragmentDiagnosticState(fragment) + "} addToStack=" + addToStack,
+                requestedItemResourceId);
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
         }
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                AeroActivity.this.logRecreationDiagnostic("switchContent runnable fragment={"
+                        + fragmentDiagnosticState(fragment) + "} addToStack=" + addToStack,
+                        requestedItemResourceId);
                 // This transaction is about to run (or be skipped below), so
                 // it's no longer pending.
                 AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
