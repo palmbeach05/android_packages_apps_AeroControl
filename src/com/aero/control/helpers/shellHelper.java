@@ -27,6 +27,8 @@ public final class shellHelper {
     private static final int BUFF_LEN = 8192;
     private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final Pattern HWMON_DIRECTORY_PATTERN =
+            Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -453,6 +455,51 @@ public final class shellHelper {
                 return new File(file2, s2).isDirectory();
             }
         });
+    }
+
+    /**
+     * Lists entries in the fixed hwmon sysfs hierarchy, falling back to the shared root
+     * shell when the app cannot enumerate the directory directly.
+     *
+     * @param path /sys/class/hwmon or one of its hwmonN directories
+     * @param files if true, list files; if false, list directories
+     * @return sorted entry names, or an empty array when the directory cannot be listed
+     */
+    public final String[] getRootAwareHwmonDirInfo(String path, boolean files) {
+        if (path == null || !HWMON_DIRECTORY_PATTERN.matcher(path).matches()) {
+            return new String[0];
+        }
+
+        File directory = new File(path);
+        File[] entries = directory.listFiles();
+        if (entries != null) {
+            List<String> results = new ArrayList<>();
+            for (File entry : entries) {
+                if ((files && entry.isFile()) || (!files && entry.isDirectory())) {
+                    results.add(entry.getName());
+                }
+            }
+            Collections.sort(results);
+            return results.toArray(new String[0]);
+        }
+
+        String test = files ? "-f" : "-d";
+        String command = "for entry in " + escapeShellArg(path) +
+                "/*; do [ " + test + " \"$entry\" ] && printf '%s\\n' \"${entry##*/}\"; done";
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return new String[0];
+            }
+            addCommand(command);
+            String output = getRootResult();
+            if (output == null || output.length() == 0) {
+                return new String[0];
+            }
+            String[] results = output.split("\\r?\\n");
+            Arrays.sort(results);
+            return results;
+        }
     }
 
     /**

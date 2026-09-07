@@ -289,18 +289,13 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getHwmonTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] hwmonDevices = AeroActivity.shell.getDirInfo(HWMON_DIRECTORY, false);
-        if (hwmonDevices == null) {
-            return readings;
-        }
+        String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
+                HWMON_DIRECTORY, false);
         for (String hwmonDevice : hwmonDevices) {
             String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
             String deviceName = safeSensorName(
                     AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
-            String[] deviceFiles = AeroActivity.shell.getDirInfo(devicePath, true);
-            if (deviceFiles == null) {
-                continue;
-            }
+            String[] deviceFiles = AeroActivity.shell.getRootAwareHwmonDirInfo(devicePath, true);
             for (String deviceFile : deviceFiles) {
                 Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
                 if (!inputMatcher.matches()) {
