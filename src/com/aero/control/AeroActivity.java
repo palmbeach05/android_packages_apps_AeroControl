@@ -90,6 +90,7 @@ public final class AeroActivity extends Activity {
     private static final int NO_PENDING_DRAWER_ITEM = -1;
     private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static boolean sPendingRecreation = false;
+    private int mPendingRestoredContentRecoveryItemResourceId = NO_PENDING_DRAWER_ITEM;
     // Resource ID of the drawer item for a switchContent() transaction that
     // selectItem() has posted on mHandler but that hasn't committed yet. Lets
     // onConfigurationChanged() hand the selection off to the recreated
@@ -212,10 +213,10 @@ public final class AeroActivity extends Activity {
             // view, leaving the restored drawer screen blank even though
             // currentFragment already matched
             // expectedFragment earlier. Unlike checking getView() during
-            // onCreate() itself, this schedules a one-time check to run
-            // after this activity's layout has completed, so it only reacts
-            // to an actually-blank content_frame instead of racing with a
-            // still-in-progress normal restoration.
+            // onCreate() itself, this queues a one-time check to run after
+            // this activity has resumed and its layout has completed, so it
+            // only reacts to an actually-blank content_frame instead of
+            // racing with a still-in-progress normal restoration.
             //
             // Schedule the check for the item that remains selected after
             // the hand-off above, not the restored savedItemId: on the
@@ -225,7 +226,9 @@ public final class AeroActivity extends Activity {
             // recovery this activity actually needs.
             int recoveryItemId = (pendingDrawerItemResourceId != NO_PENDING_DRAWER_ITEM)
                     ? pendingDrawerItemResourceId : savedItemId;
-            scheduleBlankRestoredContentRecoveryCheck(recoveryItemId);
+            if (isRestoredContentRecoveryItem(recoveryItemId)) {
+                mPendingRestoredContentRecoveryItemResourceId = recoveryItemId;
+            }
         }
         // Initialize mJobManager synchronously so restored fragments can access it.
         mJobManager = JobManager.instance(this);
@@ -299,6 +302,11 @@ public final class AeroActivity extends Activity {
         if (!ThemeHelper.getTheme(this).equals(this.mCurrentTheme)) {
             recreate();
             return;
+        }
+        if (this.mPendingRestoredContentRecoveryItemResourceId != NO_PENDING_DRAWER_ITEM) {
+            int recoveryItemId = this.mPendingRestoredContentRecoveryItemResourceId;
+            this.mPendingRestoredContentRecoveryItemResourceId = NO_PENDING_DRAWER_ITEM;
+            scheduleBlankRestoredContentRecoveryCheck(recoveryItemId);
         }
         Bundle extras = getIntent().getExtras();
         if (extras != null && "APPMONITOR".equals(extras.getString("NOTIFY_STRING"))) {
@@ -799,11 +807,12 @@ public final class AeroActivity extends Activity {
                 || itemResourceId == R.string.slider_statistics;
     }
 
-    // Runs after this restored activity's layout has completed (and, if a
-    // matching drawer transaction was still in flight, after that
-    // transaction has settled too). If content_frame is still blank for the
-    // supported restored drawer selection, performs a single replacement
-    // transaction to force the fragment's view to be created.
+    // Runs after this restored activity has resumed and its layout has
+    // completed (and, if a matching drawer transaction was still in flight,
+    // after that transaction has settled too). If content_frame is still
+    // blank for the supported restored drawer selection, detaches and
+    // reattaches the restored instance to force its view to be recreated
+    // without changing navigation state.
     private void recoverBlankRestoredContentIfNeeded(int savedItemId) {
         if (isFinishing() || hasAppDetailBackStackEntry()) {
             return;
@@ -832,18 +841,23 @@ public final class AeroActivity extends Activity {
         }
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
         Fragment expectedFragment = getFragmentByResourceId(savedItemId);
-        // A different fragment means a newer selection has already committed.
-        if (currentFragment != null && currentFragment != expectedFragment) {
+        // A missing or different fragment means restoration or a newer selection
+        // owns content_frame; recovery is only for the attached restored instance.
+        if (currentFragment == null || currentFragment != expectedFragment
+                || !currentFragment.isAdded()) {
             return;
         }
-        FrameLayout contentFrame = (FrameLayout) findViewById(R.id.content_frame);
-        boolean contentFramePresent = currentFragment == expectedFragment
-                && expectedFragment != null && expectedFragment.getView() != null
-                && contentFrame != null && contentFrame.getChildCount() > 0;
-        if (contentFramePresent) {
+        if (currentFragment.getView() != null) {
             return;
         }
-        selectItemByResourceId(savedItemId, true);
+        try {
+            getFragmentManager().beginTransaction()
+                    .detach(currentFragment)
+                    .attach(currentFragment)
+                    .commitAllowingStateLoss();
+        } catch (IllegalStateException ignored) {
+            // A later recreation will restore the selected fragment normally.
+        }
     }
 
     /**
@@ -994,12 +1008,7 @@ public final class AeroActivity extends Activity {
                 try {
                     Fragment currentFragment = AeroActivity.this.getFragmentManager()
                             .findFragmentById(R.id.content_frame);
-                    FrameLayout contentFrame = (FrameLayout) AeroActivity.this
-                            .findViewById(R.id.content_frame);
-                    boolean fragmentAlreadyRendered = currentFragment == fragment
-                            && fragment.getView() != null
-                            && contentFrame != null && contentFrame.getChildCount() > 0;
-                    if (!fragmentAlreadyRendered) {
+                    if (currentFragment != fragment) {
                         AeroActivity.this.getFragmentManager().beginTransaction()
                                 .replace(R.id.content_frame, fragment)
                                 .commitAllowingStateLoss();
