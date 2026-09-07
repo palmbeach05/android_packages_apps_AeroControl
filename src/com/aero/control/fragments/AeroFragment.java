@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
  * system metrics. Refreshes every 3 seconds and provides a first-run tutorial.
  */
 public class AeroFragment extends Fragment {
+    private static final String LOG_TAG = AeroFragment.class.getName();
     private static final String FILENAME = "firstrun";
     private static final int MAX_GRID_CORES = 8;
     private static final String NO_DATA_FOUND = "Unavailable";
@@ -52,6 +54,11 @@ public class AeroFragment extends Fragment {
     private static final String HWMON_NAME_FILE = "name";
     private static final Pattern HWMON_TEMP_INPUT_PATTERN = Pattern.compile("(temp\\d+)_input");
     private static final String HWMON_TEMP_LABEL_SUFFIX = "_label";
+    private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
+    private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
+            Pattern.compile("tegra-i2c\\.(\\d+)");
+    private static final Pattern TEGRA_I2C_DEVICE_PATTERN =
+            Pattern.compile("(\\d+)-[0-9a-fA-F]{4}");
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
@@ -262,25 +269,85 @@ public class AeroFragment extends Fragment {
                 }
             }
         }
+        readings.addAll(getTegraI2cTemperatures());
         readings.addAll(getHwmonTemperatures());
-        String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
-        if (thermalZones != null) {
-            for (String thermalZone : thermalZones) {
-                if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
+        String[] thermalZones = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                THERMAL_ZONE_DIRECTORY, false);
+        Log.d(LOG_TAG, "Discovered thermal zones: " + Arrays.toString(thermalZones));
+        for (String thermalZone : thermalZones) {
+            if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
+                continue;
+            }
+            String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
+            String type = AeroActivity.shell.getRootAwareTemperatureInfo(
+                    zonePath + THERMAL_ZONE_TYPE_FILE);
+            int labelResource = getTemperatureLabel(type);
+            if (hasPowerSupplyBatteryTemperature
+                    && labelResource == R.string.temperature_source_battery) {
+                continue;
+            }
+            String temperaturePath = zonePath + THERMAL_ZONE_TEMP_FILE;
+            String temperature = formatTemperature(
+                    AeroActivity.shell.getRootAwareTemperatureInfo(temperaturePath), false);
+            if (temperature != null) {
+                readings.add(new RawTemperature(
+                        labelResource, safeSensorName(type, thermalZone), temperature));
+            } else {
+                logRejectedTemperature(temperaturePath);
+            }
+        }
+        return readings;
+    }
+
+    private List<RawTemperature> getTegraI2cTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
+        String[] controllers = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        for (String controller : controllers) {
+            Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
+            if (!controllerMatcher.matches()) {
+                continue;
+            }
+            String bus = controllerMatcher.group(1);
+            String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
+            String busDirectory = "i2c-" + bus;
+            String[] busDirectories = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                    controllerPath, false);
+            if (!Arrays.asList(busDirectories).contains(busDirectory)) {
+                continue;
+            }
+            String busPath = controllerPath + "/" + busDirectory;
+            String[] devices = AeroActivity.shell.getRootAwareTemperatureDirInfo(busPath, false);
+            for (String device : devices) {
+                Matcher deviceMatcher = TEGRA_I2C_DEVICE_PATTERN.matcher(device);
+                if (!deviceMatcher.matches() || !bus.equals(deviceMatcher.group(1))) {
                     continue;
                 }
-                String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
-                String type = AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TYPE_FILE);
-                int labelResource = getTemperatureLabel(type);
-                if (hasPowerSupplyBatteryTemperature
-                        && labelResource == R.string.temperature_source_battery) {
-                    continue;
-                }
-                String temperature = formatTemperature(
-                        AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE), false);
-                if (temperature != null) {
+                String devicePath = busPath + "/" + device;
+                Log.d(LOG_TAG, "Discovered Tegra I2C temperature device: " + devicePath);
+                String[] deviceFiles = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                        devicePath, true);
+                for (String deviceFile : deviceFiles) {
+                    Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
+                    String temperaturePath = devicePath + "/" + deviceFile;
+                    if (!inputMatcher.matches()) {
+                        if (deviceFile.startsWith("temp")) {
+                            Log.d(LOG_TAG,
+                                    "Rejected Tegra I2C temperature node: " + temperaturePath);
+                        }
+                        continue;
+                    }
+                    String temperature = formatTemperature(
+                            AeroActivity.shell.getRootAwareTemperatureInfo(temperaturePath), false);
+                    if (temperature == null) {
+                        logRejectedTemperature(temperaturePath);
+                        continue;
+                    }
+                    Log.d(LOG_TAG, "Accepted Tegra I2C temperature node: " + temperaturePath);
+                    String sourceName = busDirectory + " " + device + " " +
+                            inputMatcher.group(1);
                     readings.add(new RawTemperature(
-                            labelResource, safeSensorName(type, thermalZone), temperature));
+                            R.string.temperature_source_other, sourceName, temperature));
                 }
             }
         }
@@ -289,25 +356,30 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getHwmonTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
+        String[] hwmonDevices = AeroActivity.shell.getRootAwareTemperatureDirInfo(
                 HWMON_DIRECTORY, false);
+        Log.d(LOG_TAG, "Discovered hwmon devices: " + Arrays.toString(hwmonDevices));
         for (String hwmonDevice : hwmonDevices) {
             String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
             String deviceName = safeSensorName(
-                    AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
-            String[] deviceFiles = AeroActivity.shell.getRootAwareHwmonDirInfo(devicePath, true);
+                    AeroActivity.shell.getRootAwareTemperatureInfo(
+                            devicePath + HWMON_NAME_FILE), hwmonDevice);
+            String[] deviceFiles = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                    devicePath, true);
             for (String deviceFile : deviceFiles) {
                 Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
                 if (!inputMatcher.matches()) {
                     continue;
                 }
+                String temperaturePath = devicePath + deviceFile;
                 String temperature = formatTemperature(
-                        AeroActivity.shell.getInfo(devicePath + deviceFile), false);
+                        AeroActivity.shell.getRootAwareTemperatureInfo(temperaturePath), false);
                 if (temperature == null) {
+                    logRejectedTemperature(temperaturePath);
                     continue;
                 }
                 String inputName = inputMatcher.group(1);
-                String label = AeroActivity.shell.getInfo(
+                String label = AeroActivity.shell.getRootAwareTemperatureInfo(
                         devicePath + inputName + HWMON_TEMP_LABEL_SUFFIX);
                 String sourceName = deviceName + " " + inputName;
                 if (label != null
@@ -320,6 +392,10 @@ public class AeroFragment extends Fragment {
             }
         }
         return readings;
+    }
+
+    private void logRejectedTemperature(String path) {
+        Log.d(LOG_TAG, "Rejected unavailable, non-numeric, or out-of-range temperature: " + path);
     }
 
     private String safeSensorName(String type, String fallback) {
