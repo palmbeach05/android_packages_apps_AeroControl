@@ -296,8 +296,11 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getTegraI2cTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] controllers = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+        String[] controllers = AeroActivity.shell.getDirInfo(
                 TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        if (controllers == null) {
+            return readings;
+        }
         for (String controller : controllers) {
             Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
             String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
