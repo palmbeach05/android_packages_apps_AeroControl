@@ -44,7 +44,9 @@ public class AeroFragment extends Fragment {
     private static final Pattern THERMAL_ZONE_NAME_PATTERN = Pattern.compile("thermal_zone\\d+");
     private static final String THERMAL_ZONE_TYPE_FILE = "type";
     private static final String THERMAL_ZONE_TEMP_FILE = "temp";
-    private static final String BATTERY_TEMPERATURE_FILE = "/sys/devices/platform/cpcap_battery/power_supply/battery/temp";
+    private static final String POWER_SUPPLY_DIRECTORY = "/sys/class/power_supply";
+    private static final String POWER_SUPPLY_TYPE_FILE = "type";
+    private static final String POWER_SUPPLY_TEMP_FILE = "temp";
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
@@ -236,6 +238,25 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
+        boolean hasPowerSupplyBatteryTemperature = false;
+        String[] powerSupplies = AeroActivity.shell.getDirInfo(POWER_SUPPLY_DIRECTORY, false);
+        if (powerSupplies != null) {
+            for (String powerSupply : powerSupplies) {
+                String supplyPath = POWER_SUPPLY_DIRECTORY + "/" + powerSupply + "/";
+                String type = AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_TYPE_FILE);
+                if (type == null || !type.trim().equalsIgnoreCase("Battery")) {
+                    continue;
+                }
+                String temperature = formatTemperature(
+                        AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_TEMP_FILE), true);
+                if (temperature != null) {
+                    readings.add(new RawTemperature(
+                            R.string.temperature_source_battery, "Battery", temperature));
+                    hasPowerSupplyBatteryTemperature = true;
+                    break;
+                }
+            }
+        }
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones != null) {
             for (String thermalZone : thermalZones) {
@@ -244,17 +265,17 @@ public class AeroFragment extends Fragment {
                 }
                 String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
                 String type = AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TYPE_FILE);
+                int labelResource = getTemperatureLabel(type);
+                if (hasPowerSupplyBatteryTemperature
+                        && labelResource == R.string.temperature_source_battery) {
+                    continue;
+                }
                 String temperature = formatTemperature(
                         AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE), false);
                 if (temperature != null) {
-                    readings.add(new RawTemperature(getTemperatureLabel(type), safeSensorName(type, thermalZone), temperature));
+                    readings.add(new RawTemperature(
+                            labelResource, safeSensorName(type, thermalZone), temperature));
                 }
-            }
-        }
-        if (AeroActivity.genHelper.doesExist(BATTERY_TEMPERATURE_FILE)) {
-            String temperature = formatTemperature(AeroActivity.shell.getInfo(BATTERY_TEMPERATURE_FILE), true);
-            if (temperature != null) {
-                readings.add(new RawTemperature(R.string.temperature_source_battery, "Battery", temperature));
             }
         }
         return readings;
