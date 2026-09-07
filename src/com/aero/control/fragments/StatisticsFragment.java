@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
  * filtering to display only active frequencies.
  */
 public class StatisticsFragment extends Fragment {
-    private static final String RECREATION_DIAGNOSTIC_TAG = "AeroRecreation";
     public static final String FILENAME_STATISTICS = "firstrun_statistics";
     private static final String STATE_SELECTED_CLUSTER_MEMBERS = "selected_cluster_members";
     public ArrayList<Long> cpuResetTime;
@@ -85,30 +84,7 @@ public class StatisticsFragment extends Fragment {
         clearUI();
         loadResetState();
         loadUI(true);
-        logViewDiagnostic("onCreateView", this.root);
         return this.root;
-    }
-
-    @Override // android.app.Fragment
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        logViewDiagnostic("onViewCreated", view);
-    }
-
-    @Override // android.app.Fragment
-    public void onDestroyView() {
-        logViewDiagnostic("onDestroyView", getView());
-        super.onDestroyView();
-    }
-
-    private void logViewDiagnostic(String event, View view) {
-        int activityIdentity = getActivity() instanceof AeroActivity
-                ? System.identityHashCode(getActivity()) : 0;
-        Log.d(RECREATION_DIAGNOSTIC_TAG, event
-                + " fragmentClass=" + getClass().getName()
-                + " fragment=" + System.identityHashCode(this)
-                + " activity=" + activityIdentity
-                + " view=" + (view != null ? System.identityHashCode(view) : 0));
     }
 
     @Override // android.app.Fragment
