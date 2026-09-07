@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -47,6 +48,10 @@ public class AeroFragment extends Fragment {
     private static final String POWER_SUPPLY_DIRECTORY = "/sys/class/power_supply";
     private static final String POWER_SUPPLY_TYPE_FILE = "type";
     private static final String POWER_SUPPLY_TEMP_FILE = "temp";
+    private static final String HWMON_DIRECTORY = "/sys/class/hwmon";
+    private static final String HWMON_NAME_FILE = "name";
+    private static final Pattern HWMON_TEMP_INPUT_PATTERN = Pattern.compile("(temp\\d+)_input");
+    private static final String HWMON_TEMP_LABEL_SUFFIX = "_label";
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
@@ -257,6 +262,7 @@ public class AeroFragment extends Fragment {
                 }
             }
         }
+        readings.addAll(getHwmonTemperatures());
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones != null) {
             for (String thermalZone : thermalZones) {
@@ -276,6 +282,46 @@ public class AeroFragment extends Fragment {
                     readings.add(new RawTemperature(
                             labelResource, safeSensorName(type, thermalZone), temperature));
                 }
+            }
+        }
+        return readings;
+    }
+
+    private List<RawTemperature> getHwmonTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
+        String[] hwmonDevices = AeroActivity.shell.getDirInfo(HWMON_DIRECTORY, false);
+        if (hwmonDevices == null) {
+            return readings;
+        }
+        for (String hwmonDevice : hwmonDevices) {
+            String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
+            String deviceName = safeSensorName(
+                    AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
+            String[] deviceFiles = AeroActivity.shell.getDirInfo(devicePath, true);
+            if (deviceFiles == null) {
+                continue;
+            }
+            for (String deviceFile : deviceFiles) {
+                Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
+                if (!inputMatcher.matches()) {
+                    continue;
+                }
+                String temperature = formatTemperature(
+                        AeroActivity.shell.getInfo(devicePath + deviceFile), false);
+                if (temperature == null) {
+                    continue;
+                }
+                String inputName = inputMatcher.group(1);
+                String label = AeroActivity.shell.getInfo(
+                        devicePath + inputName + HWMON_TEMP_LABEL_SUFFIX);
+                String sourceName = deviceName + " " + inputName;
+                if (label != null
+                        && label.trim().length() > 0
+                        && !label.trim().equalsIgnoreCase(NO_DATA_FOUND)) {
+                    sourceName = deviceName + ": " + label.trim();
+                }
+                readings.add(new RawTemperature(
+                        R.string.temperature_source_other, sourceName, temperature));
             }
         }
         return readings;
