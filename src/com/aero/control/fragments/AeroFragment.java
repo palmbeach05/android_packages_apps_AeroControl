@@ -73,7 +73,8 @@ public class AeroFragment extends Fragment {
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
         public void handleMessage(Message msg) {
-            if (msg.what == 1 && AeroFragment.this.isVisible() && AeroFragment.this.mVisible
+            if (msg.what == 1
+                    && AeroFragment.this.isVisible()
                     && msg.obj instanceof OverviewSnapshot) {
                 AeroFragment.this.applySnapshot((OverviewSnapshot) msg.obj);
             }
