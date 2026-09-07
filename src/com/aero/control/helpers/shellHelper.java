@@ -29,10 +29,12 @@ public final class shellHelper {
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final Pattern TEMPERATURE_DIRECTORY_PATTERN = Pattern.compile(
             "(?:/sys/class/hwmon(?:/hwmon\\d+)?|" +
-            "/sys/devices/virtual/thermal(?:/thermal_zone\\d+)?)/?");
+            "/sys/devices/virtual/thermal(?:/thermal_zone\\d+)?|" +
+            "/sys/devices/platform(?:/tegra-i2c\\.(\\d+)(?:/i2c-\\1(?:/\\1-[0-9a-fA-F]{4})?)?)?)/?");
     private static final Pattern TEMPERATURE_FILE_PATTERN = Pattern.compile(
             "(?:/sys/class/hwmon/hwmon\\d+/(?:name|temp\\d+_(?:input|label))|" +
-            "/sys/devices/virtual/thermal/thermal_zone\\d+/(?:type|temp))");
+            "/sys/devices/virtual/thermal/thermal_zone\\d+/(?:type|temp)|" +
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/\\1-[0-9a-fA-F]{4}/temp\\d+_input)");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -380,7 +382,7 @@ public final class shellHelper {
      * Reads an allowlisted temperature sysfs attribute, falling back to root without
      * requiring the path to be visible to the app UID first.
      *
-     * @param path a supported hwmon or thermal-zone attribute path
+     * @param path a supported hwmon, thermal-zone, or Tegra I2C temperature attribute path
      * @return the first line, or "Unavailable" when direct and root reads both fail
      */
     public final String getRootAwareTemperatureInfo(String path) {
@@ -502,8 +504,7 @@ public final class shellHelper {
      * Lists entries in the fixed temperature sysfs hierarchies, falling back to the shared
      * root shell when the app cannot enumerate the directory directly.
      *
-     * @param path /sys/class/hwmon, one of its hwmonN directories, the thermal directory,
-     *             or one of its thermal_zoneN directories
+     * @param path a directory in the fixed hwmon, thermal-zone, or Tegra I2C hierarchy
      * @param files if true, list files; if false, list directories
      * @return sorted entry names, or an empty array when the directory cannot be listed
      */

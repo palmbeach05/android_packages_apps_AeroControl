@@ -54,6 +54,11 @@ public class AeroFragment extends Fragment {
     private static final String HWMON_NAME_FILE = "name";
     private static final Pattern HWMON_TEMP_INPUT_PATTERN = Pattern.compile("(temp\\d+)_input");
     private static final String HWMON_TEMP_LABEL_SUFFIX = "_label";
+    private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
+    private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
+            Pattern.compile("tegra-i2c\\.(\\d+)");
+    private static final Pattern TEGRA_I2C_DEVICE_PATTERN =
+            Pattern.compile("(\\d+)-[0-9a-fA-F]{4}");
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
@@ -264,6 +269,7 @@ public class AeroFragment extends Fragment {
                 }
             }
         }
+        readings.addAll(getTegraI2cTemperatures());
         readings.addAll(getHwmonTemperatures());
         String[] thermalZones = AeroActivity.shell.getRootAwareTemperatureDirInfo(
                 THERMAL_ZONE_DIRECTORY, false);
@@ -288,6 +294,61 @@ public class AeroFragment extends Fragment {
                         labelResource, safeSensorName(type, thermalZone), temperature));
             } else {
                 logRejectedTemperature(temperaturePath);
+            }
+        }
+        return readings;
+    }
+
+    private List<RawTemperature> getTegraI2cTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
+        String[] controllers = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        for (String controller : controllers) {
+            Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
+            if (!controllerMatcher.matches()) {
+                continue;
+            }
+            String bus = controllerMatcher.group(1);
+            String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
+            String busDirectory = "i2c-" + bus;
+            String[] busDirectories = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                    controllerPath, false);
+            if (!Arrays.asList(busDirectories).contains(busDirectory)) {
+                continue;
+            }
+            String busPath = controllerPath + "/" + busDirectory;
+            String[] devices = AeroActivity.shell.getRootAwareTemperatureDirInfo(busPath, false);
+            for (String device : devices) {
+                Matcher deviceMatcher = TEGRA_I2C_DEVICE_PATTERN.matcher(device);
+                if (!deviceMatcher.matches() || !bus.equals(deviceMatcher.group(1))) {
+                    continue;
+                }
+                String devicePath = busPath + "/" + device;
+                Log.d(LOG_TAG, "Discovered Tegra I2C temperature device: " + devicePath);
+                String[] deviceFiles = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                        devicePath, true);
+                for (String deviceFile : deviceFiles) {
+                    Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
+                    String temperaturePath = devicePath + "/" + deviceFile;
+                    if (!inputMatcher.matches()) {
+                        if (deviceFile.startsWith("temp")) {
+                            Log.d(LOG_TAG,
+                                    "Rejected Tegra I2C temperature node: " + temperaturePath);
+                        }
+                        continue;
+                    }
+                    String temperature = formatTemperature(
+                            AeroActivity.shell.getRootAwareTemperatureInfo(temperaturePath), false);
+                    if (temperature == null) {
+                        logRejectedTemperature(temperaturePath);
+                        continue;
+                    }
+                    Log.d(LOG_TAG, "Accepted Tegra I2C temperature node: " + temperaturePath);
+                    String sourceName = busDirectory + " " + device + " " +
+                            inputMatcher.group(1);
+                    readings.add(new RawTemperature(
+                            R.string.temperature_source_other, sourceName, temperature));
+                }
             }
         }
         return readings;
