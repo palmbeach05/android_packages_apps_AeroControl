@@ -26,6 +26,9 @@ import java.util.regex.Pattern;
 public final class shellHelper {
     private static final int BUFF_LEN = 8192;
     private static final int MAX_RESULT_LEN = 65536;
+    private static final long ROOT_DIRECTORY_TIMEOUT_MILLIS = 2000L;
+    private static final long ROOT_DIRECTORY_POLL_MILLIS = 10L;
+    private static final String ROOT_DIRECTORY_MARKER = "__AERO_DIRECTORY_COMPLETE__";
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final Pattern TEMPERATURE_DIRECTORY_PATTERN = Pattern.compile(
             "(?:/sys/class/hwmon(?:/hwmon\\d+)?|" +
@@ -230,6 +233,47 @@ public final class shellHelper {
         } finally {
             this.mCommands.clear();
         }
+    }
+
+    /**
+     * Runs one directory-listing command with an explicit completion marker and deadline.
+     * The shell is discarded after an incomplete command so its delayed output cannot be
+     * mistaken for the result of a later command.
+     */
+    private synchronized String getRootDirectoryResult(String command) {
+        StringBuilder response = new StringBuilder();
+        long deadline = SystemClock.elapsedRealtime() + ROOT_DIRECTORY_TIMEOUT_MILLIS;
+        try {
+            this.mShellOutput.write((command + "\nprintf '" + ROOT_DIRECTORY_MARKER
+                    + "\\n'\n").getBytes("UTF-8"));
+            this.mShellOutput.flush();
+            while (SystemClock.elapsedRealtime() < deadline) {
+                if (Thread.currentThread().isInterrupted()) {
+                    closeShell();
+                    return null;
+                }
+                if (!this.mOutput.ready()) {
+                    SystemClock.sleep(ROOT_DIRECTORY_POLL_MILLIS);
+                    continue;
+                }
+                int value = this.mOutput.read();
+                if (value == -1) {
+                    closeShell();
+                    return null;
+                }
+                if (response.length() < MAX_RESULT_LEN + ROOT_DIRECTORY_MARKER.length()) {
+                    response.append((char) value);
+                }
+                int markerIndex = response.indexOf(ROOT_DIRECTORY_MARKER);
+                if (markerIndex >= 0) {
+                    return response.substring(0, markerIndex).trim();
+                }
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Root directory listing did not complete", e);
+        }
+        closeShell();
+        return null;
     }
 
     /**
@@ -534,8 +578,7 @@ public final class shellHelper {
             if (!mShellLoaded) {
                 return new String[0];
             }
-            addCommand(command);
-            String output = getRootResult();
+            String output = getRootDirectoryResult(command);
             if (output == null || output.length() == 0) {
                 return new String[0];
             }

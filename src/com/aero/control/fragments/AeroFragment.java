@@ -269,32 +269,44 @@ public class AeroFragment extends Fragment {
                 }
             }
         }
-        readings.addAll(getTegraI2cTemperatures());
-        readings.addAll(getHwmonTemperatures());
-        String[] thermalZones = AeroActivity.shell.getRootAwareTemperatureDirInfo(
-                THERMAL_ZONE_DIRECTORY, false);
-        Log.d(LOG_TAG, "Discovered thermal zones: " + Arrays.toString(thermalZones));
-        for (String thermalZone : thermalZones) {
-            if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
-                continue;
+        try {
+            readings.addAll(getTegraI2cTemperatures());
+        } catch (RuntimeException e) {
+            Log.e(LOG_TAG, "Unable to discover Tegra I2C temperatures", e);
+        }
+        try {
+            readings.addAll(getHwmonTemperatures());
+        } catch (RuntimeException e) {
+            Log.e(LOG_TAG, "Unable to discover hwmon temperatures", e);
+        }
+        try {
+            String[] thermalZones = AeroActivity.shell.getRootAwareTemperatureDirInfo(
+                    THERMAL_ZONE_DIRECTORY, false);
+            Log.d(LOG_TAG, "Discovered thermal zones: " + Arrays.toString(thermalZones));
+            for (String thermalZone : thermalZones) {
+                if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
+                    continue;
+                }
+                String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
+                String type = AeroActivity.shell.getRootAwareTemperatureInfo(
+                        zonePath + THERMAL_ZONE_TYPE_FILE);
+                int labelResource = getTemperatureLabel(type);
+                if (hasPowerSupplyBatteryTemperature
+                        && labelResource == R.string.temperature_source_battery) {
+                    continue;
+                }
+                String temperaturePath = zonePath + THERMAL_ZONE_TEMP_FILE;
+                String temperature = formatTemperature(
+                        AeroActivity.shell.getRootAwareTemperatureInfo(temperaturePath), false);
+                if (temperature != null) {
+                    readings.add(new RawTemperature(
+                            labelResource, safeSensorName(type, thermalZone), temperature));
+                } else {
+                    logRejectedTemperature(temperaturePath);
+                }
             }
-            String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
-            String type = AeroActivity.shell.getRootAwareTemperatureInfo(
-                    zonePath + THERMAL_ZONE_TYPE_FILE);
-            int labelResource = getTemperatureLabel(type);
-            if (hasPowerSupplyBatteryTemperature
-                    && labelResource == R.string.temperature_source_battery) {
-                continue;
-            }
-            String temperaturePath = zonePath + THERMAL_ZONE_TEMP_FILE;
-            String temperature = formatTemperature(
-                    AeroActivity.shell.getRootAwareTemperatureInfo(temperaturePath), false);
-            if (temperature != null) {
-                readings.add(new RawTemperature(
-                        labelResource, safeSensorName(type, thermalZone), temperature));
-            } else {
-                logRejectedTemperature(temperaturePath);
-            }
+        } catch (RuntimeException e) {
+            Log.e(LOG_TAG, "Unable to discover thermal-zone temperatures", e);
         }
         return readings;
     }
@@ -491,7 +503,12 @@ public class AeroFragment extends Fragment {
             snapshot.gpuFrequency = AeroActivity.shell.toMHz(gpuFrequency.substring(0, gpuFrequency.length() - 3));
         }
         snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
-        snapshot.temperatures = getTemperatures();
+        try {
+            snapshot.temperatures = getTemperatures();
+        } catch (RuntimeException e) {
+            Log.e(LOG_TAG, "Unable to collect temperatures", e);
+            snapshot.temperatures = new ArrayList<>();
+        }
         return snapshot;
     }
 
