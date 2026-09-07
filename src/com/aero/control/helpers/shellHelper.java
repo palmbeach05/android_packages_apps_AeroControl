@@ -35,9 +35,9 @@ public final class shellHelper {
     private static final Pattern TEGRA_I2C_DEVICE_DIRECTORY_PATTERN = Pattern.compile(
             "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
                     + "\\1-[0-9a-fA-F]{4}");
-    private static final Pattern TEGRA_I2C_TEMPERATURE_FILE_PATTERN = Pattern.compile(
+    private static final Pattern TEGRA_I2C_METADATA_FILE_PATTERN = Pattern.compile(
             "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
-                    + "\\1-[0-9a-fA-F]{4}/temp\\d+_input");
+                    + "\\1-[0-9a-fA-F]{4}/(?:temp\\d+_(?:input|label)|name)");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -564,14 +564,14 @@ public final class shellHelper {
     }
 
     /**
-     * Reads an allowlisted Tegra I2C tempN_input node, using the shared root shell only
+     * Reads an allowlisted Tegra I2C metadata node, using the shared root shell only
      * when a direct read fails.
      *
-     * @param path an allowlisted Tegra I2C tempN_input path
+     * @param path an allowlisted Tegra I2C tempN_input, tempN_label, or name path
      * @return the node contents, or "Unavailable" when access is rejected or fails
      */
     public final String getRootAwareTegraI2cInfo(String path) {
-        if (path == null || !TEGRA_I2C_TEMPERATURE_FILE_PATTERN.matcher(path).matches()) {
+        if (path == null || !TEGRA_I2C_METADATA_FILE_PATTERN.matcher(path).matches()) {
             return NO_DATA_FOUND;
         }
 
