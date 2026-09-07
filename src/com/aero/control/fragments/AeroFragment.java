@@ -113,7 +113,14 @@ public class AeroFragment extends Fragment {
         public void run() {
             while (!this.mInterrupt) {
                 try {
-                    OverviewSnapshot snapshot = AeroFragment.this.collectOverviewData();
+                    OverviewSnapshot snapshot;
+                    try {
+                        snapshot = AeroFragment.this.collectOverviewData();
+                    } catch (RuntimeException e) {
+                        Log.e(AeroFragment.class.getName(),
+                                "Failed to collect overview data", e);
+                        snapshot = AeroFragment.this.createFallbackOverviewSnapshot();
+                    }
                     Message message = AeroFragment.this.mRefreshHandler.obtainMessage(1, snapshot);
                     message.sendToTarget();
                     sleep(3000L);
@@ -296,8 +303,11 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getTegraI2cTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] controllers = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+        String[] controllers = AeroActivity.shell.getDirInfo(
                 TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        if (controllers == null) {
+            return readings;
+        }
         for (String controller : controllers) {
             Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
             String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
@@ -366,13 +376,18 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getHwmonTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
-                HWMON_DIRECTORY, false);
+        String[] hwmonDevices = AeroActivity.shell.getDirInfo(HWMON_DIRECTORY, false);
+        if (hwmonDevices == null) {
+            return readings;
+        }
         for (String hwmonDevice : hwmonDevices) {
             String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
             String deviceName = safeSensorName(
                     AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
-            String[] deviceFiles = AeroActivity.shell.getRootAwareHwmonDirInfo(devicePath, true);
+            String[] deviceFiles = AeroActivity.shell.getDirInfo(devicePath, true);
+            if (deviceFiles == null) {
+                continue;
+            }
             for (String deviceFile : deviceFiles) {
                 Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
                 if (!inputMatcher.matches()) {
@@ -467,9 +482,6 @@ public class AeroFragment extends Fragment {
     }
 
     private OverviewSnapshot collectOverviewData() {
-        if (!this.mExecuted) {
-            setPermissions();
-        }
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.kernel = AeroActivity.shell.getKernel();
         snapshot.governors = new ArrayList<>();
@@ -493,6 +505,20 @@ public class AeroFragment extends Fragment {
         }
         snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
         snapshot.temperatures = getTemperatures();
+        return snapshot;
+    }
+
+    private OverviewSnapshot createFallbackOverviewSnapshot() {
+        OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.kernel = NO_DATA_FOUND;
+        snapshot.governors = new ArrayList<>();
+        snapshot.governorLabels = new ArrayList<>();
+        snapshot.ioScheduler = NO_DATA_FOUND;
+        snapshot.frequencyContent = NO_DATA_FOUND;
+        snapshot.coreFrequencies = null;
+        snapshot.gpuFrequency = NO_DATA_FOUND;
+        snapshot.memory = NO_DATA_FOUND;
+        snapshot.temperatures = new ArrayList<>();
         return snapshot;
     }
 
