@@ -63,8 +63,7 @@ public class AeroFragment extends Fragment {
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
     private AeroAdapter mAdapter;
-    private AeroData mFrequencyData;
-    private AeroData mGPUData;
+    private AeroData mPerformanceData;
     private AeroData mTemperatureData;
     private AeroData mSystemSection;
     private AeroData mPerformanceSection;
@@ -561,17 +560,15 @@ public class AeroFragment extends Fragment {
         } else {
             this.mIOSchedulerData.content = snapshot.ioScheduler;
         }
-        if (this.mFrequencyData == null) {
-            this.mFrequencyData = AeroData.cpuFrequencyCard(getString(R.string.current_cpu_speed), snapshot.frequencyContent);
+        if (this.mPerformanceData == null) {
+            this.mPerformanceData = AeroData.performanceCard(
+                    getString(R.string.current_cpu_speed), snapshot.frequencyContent,
+                    snapshot.coreFrequencies, getString(R.string.current_gpu_speed),
+                    snapshot.gpuFrequency);
         } else {
-            this.mFrequencyData.content = snapshot.frequencyContent;
-        }
-        this.mFrequencyData.right_name = null;
-        this.mFrequencyData.coreFrequencies = snapshot.coreFrequencies;
-        if (this.mGPUData == null) {
-            this.mGPUData = AeroData.standardCard(getString(R.string.current_gpu_speed), snapshot.gpuFrequency);
-        } else {
-            this.mGPUData.content = snapshot.gpuFrequency;
+            this.mPerformanceData.cpuFrequencyContent = snapshot.frequencyContent;
+            this.mPerformanceData.coreFrequencies = snapshot.coreFrequencies;
+            this.mPerformanceData.gpuFrequencyValue = snapshot.gpuFrequency;
         }
         if (this.mRAMData == null) {
             this.mRAMData = AeroData.standardCard(getString(R.string.available_memory), snapshot.memory);
@@ -616,8 +613,7 @@ public class AeroFragment extends Fragment {
         this.mOverviewData.add(this.mSystemSection);
         this.mOverviewData.add(this.mKernelData);
         this.mOverviewData.add(this.mPerformanceSection);
-        this.mOverviewData.add(this.mFrequencyData);
-        this.mOverviewData.add(this.mGPUData);
+        this.mOverviewData.add(this.mPerformanceData);
         this.mOverviewData.add(this.mTemperaturesSection);
         this.mOverviewData.add(this.mTemperatureData);
         this.mOverviewData.add(this.mMemorySection);

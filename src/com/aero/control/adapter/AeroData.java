@@ -13,6 +13,7 @@ public class AeroData {
     public static final int TYPE_STANDARD_CARD = 1;
     public static final int TYPE_CPU_FREQUENCY_CARD = 2;
     public static final int TYPE_TEMPERATURE_CARD = 3;
+    public static final int TYPE_PERFORMANCE_CARD = 4;
 
     public String content;
     public int file;
@@ -27,6 +28,10 @@ public class AeroData {
      * larger than 8 entries falls back to plain content rendering.
      */
     public List<String> coreFrequencies;
+    public String cpuFrequencyTitle;
+    public String cpuFrequencyContent;
+    public String gpuFrequencyTitle;
+    public String gpuFrequencyValue;
     public List<TemperatureReading> temperatures;
 
     public static final class TemperatureReading {
@@ -59,6 +64,19 @@ public class AeroData {
         AeroData data = new AeroData(name, null, null);
         data.itemType = TYPE_TEMPERATURE_CARD;
         data.temperatures = temperatures;
+        return data;
+    }
+
+    public static AeroData performanceCard(String cpuFrequencyTitle,
+            String cpuFrequencyContent, List<String> coreFrequencies,
+            String gpuFrequencyTitle, String gpuFrequencyValue) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_PERFORMANCE_CARD;
+        data.cpuFrequencyTitle = cpuFrequencyTitle;
+        data.cpuFrequencyContent = cpuFrequencyContent;
+        data.coreFrequencies = coreFrequencies;
+        data.gpuFrequencyTitle = gpuFrequencyTitle;
+        data.gpuFrequencyValue = gpuFrequencyValue;
         return data;
     }
 

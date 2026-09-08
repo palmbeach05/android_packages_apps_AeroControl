@@ -23,6 +23,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
     private static class SectionHolder { TextView header; }
     private static class StandardHolder { TextView header; TextView content; }
     private static class FrequencyHolder { TextView header; TextView content; TableLayout table; TextView[] cells; }
+    private static class PerformanceHolder {
+        TextView cpuHeader;
+        TextView cpuContent;
+        TableLayout cpuTable;
+        TextView[] cpuCells;
+        TextView gpuHeader;
+        TextView gpuValue;
+    }
     private static class TemperatureHolder { TextView header; LinearLayout rows; }
 
     public AeroAdapter(Context context, int ignoredLayoutResourceId, List<AeroData> data) {
@@ -31,7 +39,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    @Override public int getViewTypeCount() { return 4; }
+    @Override public int getViewTypeCount() { return 5; }
     @Override public int getItemViewType(int position) { return data.get(position).itemType; }
     @Override public boolean isEnabled(int position) { return false; }
 
@@ -42,6 +50,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             case AeroData.TYPE_SECTION_HEADER: return bindSection(item, convertView, parent);
             case AeroData.TYPE_CPU_FREQUENCY_CARD: return bindFrequency(item, convertView, parent);
             case AeroData.TYPE_TEMPERATURE_CARD: return bindTemperatures(item, convertView, parent);
+            case AeroData.TYPE_PERFORMANCE_CARD: return bindPerformance(item, convertView, parent);
             default: return bindStandard(item, convertView, parent);
         }
     }
@@ -141,6 +150,56 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 label.setVisibility(View.VISIBLE);
                 value.setVisibility(View.VISIBLE);
                 holder.rows.addView(readingView);
+            }
+        }
+        return row;
+    }
+
+    private View bindPerformance(AeroData item, View row, ViewGroup parent) {
+        PerformanceHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_performance_card, parent, false);
+            holder = new PerformanceHolder();
+            holder.cpuHeader = (TextView) row.findViewById(R.id.cpu_frequency_header);
+            holder.cpuContent = (TextView) row.findViewById(R.id.cpu_frequency_content);
+            holder.cpuTable = (TableLayout) row.findViewById(R.id.compact_frequency_table);
+            holder.gpuHeader = (TextView) row.findViewById(R.id.gpu_frequency_header);
+            holder.gpuValue = (TextView) row.findViewById(R.id.gpu_frequency_value);
+            int[] ids = {R.id.compact_freq_cell_0, R.id.compact_freq_cell_1,
+                    R.id.compact_freq_cell_2, R.id.compact_freq_cell_3,
+                    R.id.compact_freq_cell_4, R.id.compact_freq_cell_5,
+                    R.id.compact_freq_cell_6, R.id.compact_freq_cell_7};
+            holder.cpuCells = new TextView[ids.length];
+            holder.cpuHeader.setTypeface(FONT);
+            holder.cpuContent.setTypeface(FONT);
+            holder.gpuHeader.setTypeface(FONT);
+            holder.gpuValue.setTypeface(FONT);
+            for (int i = 0; i < ids.length; i++) {
+                holder.cpuCells[i] = (TextView) row.findViewById(ids[i]);
+                holder.cpuCells[i].setTypeface(Typeface.MONOSPACE);
+            }
+            row.setTag(holder);
+        } else { holder = (PerformanceHolder) row.getTag(); }
+
+        holder.cpuHeader.setText(item.cpuFrequencyTitle == null ? "" : item.cpuFrequencyTitle);
+        holder.gpuHeader.setText(item.gpuFrequencyTitle == null ? "" : item.gpuFrequencyTitle);
+        holder.gpuValue.setText(item.gpuFrequencyValue == null ? "" : item.gpuFrequencyValue);
+
+        List<String> frequencies = item.coreFrequencies == null
+                ? Collections.<String>emptyList() : item.coreFrequencies;
+        boolean showGrid = frequencies.size() > 0 && frequencies.size() <= MAX_GRID_CORES;
+        holder.cpuTable.setVisibility(showGrid ? View.VISIBLE : View.GONE);
+        holder.cpuContent.setText(item.cpuFrequencyContent == null
+                ? "" : item.cpuFrequencyContent);
+        holder.cpuContent.setVisibility(item.cpuFrequencyContent == null
+                || item.cpuFrequencyContent.length() == 0 ? View.GONE : View.VISIBLE);
+        for (int i = 0; i < holder.cpuCells.length; i++) {
+            if (showGrid && i < frequencies.size()) {
+                holder.cpuCells[i].setText(frequencies.get(i));
+                holder.cpuCells[i].setVisibility(View.VISIBLE);
+            } else {
+                holder.cpuCells[i].setText("");
+                holder.cpuCells[i].setVisibility(View.GONE);
             }
         }
         return row;
