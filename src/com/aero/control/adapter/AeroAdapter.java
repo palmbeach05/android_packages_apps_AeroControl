@@ -24,6 +24,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
     private static class StandardHolder { TextView header; TextView content; }
     private static class FrequencyHolder { TextView header; TextView content; TableLayout table; TextView[] cells; }
     private static class TemperatureHolder { TextView header; LinearLayout rows; }
+    private static class ConfigurationHolder { LinearLayout rows; }
 
     public AeroAdapter(Context context, int ignoredLayoutResourceId, List<AeroData> data) {
         super(context, 0, data);
@@ -31,7 +32,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    @Override public int getViewTypeCount() { return 4; }
+    @Override public int getViewTypeCount() { return 5; }
     @Override public int getItemViewType(int position) { return data.get(position).itemType; }
     @Override public boolean isEnabled(int position) { return false; }
 
@@ -42,6 +43,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             case AeroData.TYPE_SECTION_HEADER: return bindSection(item, convertView, parent);
             case AeroData.TYPE_CPU_FREQUENCY_CARD: return bindFrequency(item, convertView, parent);
             case AeroData.TYPE_TEMPERATURE_CARD: return bindTemperatures(item, convertView, parent);
+            case AeroData.TYPE_CONFIGURATION_CARD: return bindConfiguration(item, convertView, parent);
             default: return bindStandard(item, convertView, parent);
         }
     }
@@ -144,5 +146,85 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             }
         }
         return row;
+    }
+
+    private View bindConfiguration(AeroData item, View row, ViewGroup parent) {
+        ConfigurationHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_configuration_card, parent, false);
+            holder = new ConfigurationHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.configuration_rows);
+            row.setTag(holder);
+        } else { holder = (ConfigurationHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        List<String> governors = item.governorValues == null
+                ? Collections.<String>emptyList() : item.governorValues;
+        if (governors.size() == 1) {
+            LinearLayout compactRow = createConfigurationRow();
+            addConfigurationCard(compactRow, getContext().getString(R.string.configuration_cpu_governor),
+                    governors.get(0), true);
+            addConfigurationCard(compactRow, getContext().getString(R.string.current_io_governor),
+                    item.ioScheduler, true);
+            holder.rows.addView(compactRow);
+        } else if (governors.size() == 2) {
+            LinearLayout compactRow = createConfigurationRow();
+            addConfigurationCard(compactRow, getGovernorTitle(item, 0), governors.get(0), true);
+            addConfigurationCard(compactRow, getGovernorTitle(item, 1), governors.get(1), true);
+            holder.rows.addView(compactRow);
+            addConfigurationCard(holder.rows, getContext().getString(R.string.current_io_governor),
+                    item.ioScheduler, false);
+        } else {
+            for (int i = 0; i < governors.size(); i++) {
+                addConfigurationCard(holder.rows, getGovernorTitle(item, i), governors.get(i), false);
+            }
+            addConfigurationCard(holder.rows, getContext().getString(R.string.current_io_governor),
+                    item.ioScheduler, false);
+        }
+        return row;
+    }
+
+    private LinearLayout createConfigurationRow() {
+        LinearLayout row = new LinearLayout(getContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        return row;
+    }
+
+    private void addConfigurationCard(LinearLayout parent, String title, String value,
+            boolean equalWidth) {
+        View card = inflater.inflate(R.layout.overview_standard_card, parent, false);
+        TextView header = (TextView) card.findViewById(R.id.header);
+        TextView content = (TextView) card.findViewById(R.id.content);
+        header.setTypeface(FONT);
+        content.setTypeface(FONT);
+        header.setText(title == null ? "" : title);
+        content.setText(value == null ? "" : value);
+        if (equalWidth) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+            int spacing = (int) (3.0f * getContext().getResources().getDisplayMetrics().density + 0.5f);
+            if (parent.getChildCount() == 0) {
+                params.rightMargin = spacing;
+            } else {
+                params.leftMargin = spacing;
+            }
+            card.setLayoutParams(params);
+        } else {
+            card.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+        parent.addView(card);
+    }
+
+    private String getGovernorTitle(AeroData item, int index) {
+        if (item.governorLabels != null && index < item.governorLabels.size()) {
+            String label = item.governorLabels.get(index);
+            if (label != null && label.length() > 0) {
+                return getContext().getString(R.string.current_governor_cluster, label);
+            }
+        }
+        return getContext().getString(R.string.configuration_cpu_governor);
     }
 }

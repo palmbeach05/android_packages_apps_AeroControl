@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -72,8 +73,7 @@ public class AeroFragment extends Fragment {
     private AeroData mMemorySection;
     private AeroData mConfigurationSection;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
-    private final List<AeroData> mGovernorData = new ArrayList<>();
-    private AeroData mIOSchedulerData;
+    private AeroData mConfigurationData;
     private AeroData mKernelData;
     private ListView mOverView;
     private AeroData mRAMData;
@@ -544,22 +544,29 @@ public class AeroFragment extends Fragment {
         } else {
             this.mKernelData.content = snapshot.kernel;
         }
+        LinkedHashMap<String, String> distinctGovernors = new LinkedHashMap<>();
         for (int i = 0; i < snapshot.governors.size(); i++) {
-            if (i < this.mGovernorData.size()) {
-                this.mGovernorData.get(i).content = snapshot.governors.get(i);
-                this.mGovernorData.get(i).name = getString(R.string.current_governor_cluster, snapshot.governorLabels.get(i));
-            } else {
-                this.mGovernorData.add(AeroData.standardCard(getString(R.string.current_governor_cluster,
-                        snapshot.governorLabels.get(i)), snapshot.governors.get(i)));
+            String governor = snapshot.governors.get(i);
+            String normalized = governor == null || governor.trim().length() == 0
+                    ? NO_DATA_FOUND : governor.trim();
+            if (!distinctGovernors.containsKey(normalized)) {
+                String label = i < snapshot.governorLabels.size()
+                        ? snapshot.governorLabels.get(i) : null;
+                distinctGovernors.put(normalized, label);
             }
         }
-        while (this.mGovernorData.size() > snapshot.governors.size()) {
-            this.mGovernorData.remove(this.mGovernorData.size() - 1);
+        if (distinctGovernors.isEmpty()) {
+            distinctGovernors.put(NO_DATA_FOUND, null);
         }
-        if (this.mIOSchedulerData == null) {
-            this.mIOSchedulerData = AeroData.standardCard(getString(R.string.current_io_governor), snapshot.ioScheduler);
+        List<String> governorValues = new ArrayList<>(distinctGovernors.keySet());
+        List<String> governorLabels = new ArrayList<>(distinctGovernors.values());
+        if (this.mConfigurationData == null) {
+            this.mConfigurationData = AeroData.configurationCard(
+                    governorValues, governorLabels, snapshot.ioScheduler);
         } else {
-            this.mIOSchedulerData.content = snapshot.ioScheduler;
+            this.mConfigurationData.governorValues = governorValues;
+            this.mConfigurationData.governorLabels = governorLabels;
+            this.mConfigurationData.ioScheduler = snapshot.ioScheduler;
         }
         if (this.mFrequencyData == null) {
             this.mFrequencyData = AeroData.cpuFrequencyCard(getString(R.string.current_cpu_speed), snapshot.frequencyContent);
@@ -623,8 +630,7 @@ public class AeroFragment extends Fragment {
         this.mOverviewData.add(this.mMemorySection);
         this.mOverviewData.add(this.mRAMData);
         this.mOverviewData.add(this.mConfigurationSection);
-        this.mOverviewData.addAll(this.mGovernorData);
-        this.mOverviewData.add(this.mIOSchedulerData);
+        this.mOverviewData.add(this.mConfigurationData);
     }
 
     /**
