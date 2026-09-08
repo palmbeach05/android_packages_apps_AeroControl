@@ -25,8 +25,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,9 +72,8 @@ public class AeroFragment extends Fragment {
     private AeroData mTemperaturesSection;
     private AeroData mMemorySection;
     private AeroData mConfigurationSection;
+    private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
-    private final List<AeroData> mGovernorData = new ArrayList<>();
-    private AeroData mIOSchedulerData;
     private AeroData mKernelData;
     private ListView mOverView;
     private AeroData mRAMData;
@@ -543,22 +544,12 @@ public class AeroFragment extends Fragment {
         } else {
             this.mKernelData.content = snapshot.kernel;
         }
-        for (int i = 0; i < snapshot.governors.size(); i++) {
-            if (i < this.mGovernorData.size()) {
-                this.mGovernorData.get(i).content = snapshot.governors.get(i);
-                this.mGovernorData.get(i).name = getString(R.string.current_governor_cluster, snapshot.governorLabels.get(i));
-            } else {
-                this.mGovernorData.add(AeroData.standardCard(getString(R.string.current_governor_cluster,
-                        snapshot.governorLabels.get(i)), snapshot.governors.get(i)));
-            }
-        }
-        while (this.mGovernorData.size() > snapshot.governors.size()) {
-            this.mGovernorData.remove(this.mGovernorData.size() - 1);
-        }
-        if (this.mIOSchedulerData == null) {
-            this.mIOSchedulerData = AeroData.standardCard(getString(R.string.current_io_governor), snapshot.ioScheduler);
+        List<AeroData.ConfigurationReading> configurations =
+                buildConfigurationReadings(snapshot);
+        if (this.mConfigurationData == null) {
+            this.mConfigurationData = AeroData.configurationCard(configurations);
         } else {
-            this.mIOSchedulerData.content = snapshot.ioScheduler;
+            this.mConfigurationData.configurations = configurations;
         }
         if (this.mPerformanceData == null) {
             this.mPerformanceData = AeroData.performanceCard(
@@ -619,8 +610,46 @@ public class AeroFragment extends Fragment {
         this.mOverviewData.add(this.mMemorySection);
         this.mOverviewData.add(this.mRAMData);
         this.mOverviewData.add(this.mConfigurationSection);
-        this.mOverviewData.addAll(this.mGovernorData);
-        this.mOverviewData.add(this.mIOSchedulerData);
+        this.mOverviewData.add(this.mConfigurationData);
+    }
+
+    private List<AeroData.ConfigurationReading> buildConfigurationReadings(
+            OverviewSnapshot snapshot) {
+        Map<String, String> distinctGovernors = new LinkedHashMap<>();
+        for (int i = 0; i < snapshot.governors.size(); i++) {
+            String governor = normalizeValue(snapshot.governors.get(i));
+            if (governor != null && !distinctGovernors.containsKey(governor)) {
+                String label = i < snapshot.governorLabels.size()
+                        ? snapshot.governorLabels.get(i) : null;
+                distinctGovernors.put(governor, label);
+            }
+        }
+        if (distinctGovernors.isEmpty()) {
+            distinctGovernors.put(NO_DATA_FOUND, null);
+        }
+
+        List<AeroData.ConfigurationReading> readings = new ArrayList<>();
+        boolean showClusterLabels = distinctGovernors.size() > 1;
+        for (Map.Entry<String, String> entry : distinctGovernors.entrySet()) {
+            String label = showClusterLabels && entry.getValue() != null
+                    ? getString(R.string.current_governor_cluster, entry.getValue())
+                    : getString(R.string.overview_cpu_governor);
+            readings.add(new AeroData.ConfigurationReading(label, entry.getKey()));
+        }
+        String scheduler = normalizeValue(snapshot.ioScheduler);
+        readings.add(new AeroData.ConfigurationReading(
+                getString(R.string.current_io_governor),
+                scheduler == null ? NO_DATA_FOUND : scheduler));
+        return readings;
+    }
+
+    private String normalizeValue(String value) {
+        if (value == null) return null;
+        String normalized = value.trim();
+        if (normalized.length() == 0 || normalized.equalsIgnoreCase(NO_DATA_FOUND)) {
+            return null;
+        }
+        return normalized;
     }
 
     /**

@@ -32,6 +32,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView gpuValue;
     }
     private static class TemperatureHolder { TextView header; LinearLayout rows; }
+    private static class ConfigurationHolder { LinearLayout rows; }
 
     public AeroAdapter(Context context, int ignoredLayoutResourceId, List<AeroData> data) {
         super(context, 0, data);
@@ -39,7 +40,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    @Override public int getViewTypeCount() { return 5; }
+    @Override public int getViewTypeCount() { return 6; }
     @Override public int getItemViewType(int position) { return data.get(position).itemType; }
     @Override public boolean isEnabled(int position) { return false; }
 
@@ -51,6 +52,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             case AeroData.TYPE_CPU_FREQUENCY_CARD: return bindFrequency(item, convertView, parent);
             case AeroData.TYPE_TEMPERATURE_CARD: return bindTemperatures(item, convertView, parent);
             case AeroData.TYPE_PERFORMANCE_CARD: return bindPerformance(item, convertView, parent);
+            case AeroData.TYPE_CONFIGURATION_CARD: return bindConfiguration(item, convertView, parent);
             default: return bindStandard(item, convertView, parent);
         }
     }
@@ -203,5 +205,66 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             }
         }
         return row;
+    }
+
+    private View bindConfiguration(AeroData item, View row, ViewGroup parent) {
+        ConfigurationHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_configuration_card, parent, false);
+            holder = new ConfigurationHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.configuration_rows);
+            row.setTag(holder);
+        } else { holder = (ConfigurationHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        List<AeroData.ConfigurationReading> readings = item.configurations == null
+                ? Collections.<AeroData.ConfigurationReading>emptyList() : item.configurations;
+        int governorCount = Math.max(0, readings.size() - 1);
+        if (governorCount == 1) {
+            addConfigurationPair(holder.rows, readings.get(0), readings.get(1));
+        } else if (governorCount == 2) {
+            addConfigurationPair(holder.rows, readings.get(0), readings.get(1));
+            addConfigurationCard(holder.rows, readings.get(2), false, false);
+        } else {
+            for (AeroData.ConfigurationReading reading : readings) {
+                addConfigurationCard(holder.rows, reading, false, false);
+            }
+        }
+        return row;
+    }
+
+    private void addConfigurationPair(LinearLayout rows,
+            AeroData.ConfigurationReading left, AeroData.ConfigurationReading right) {
+        LinearLayout pair = new LinearLayout(getContext());
+        pair.setOrientation(LinearLayout.HORIZONTAL);
+        pair.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        addConfigurationCard(pair, left, true, true);
+        addConfigurationCard(pair, right, true, false);
+        rows.addView(pair);
+    }
+
+    private void addConfigurationCard(LinearLayout parent,
+            AeroData.ConfigurationReading reading, boolean weighted, boolean leftCard) {
+        View card = inflater.inflate(R.layout.overview_standard_card, parent, false);
+        TextView header = (TextView) card.findViewById(R.id.header);
+        TextView content = (TextView) card.findViewById(R.id.content);
+        header.setTypeface(FONT);
+        content.setTypeface(FONT);
+        header.setText(reading.label == null ? "" : reading.label);
+        content.setText(reading.value == null ? "" : reading.value);
+        if (weighted) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+            int spacing = dpToPixels(2);
+            if (leftCard) params.rightMargin = spacing;
+            else params.leftMargin = spacing;
+            card.setLayoutParams(params);
+        }
+        parent.addView(card);
+    }
+
+    private int dpToPixels(int dp) {
+        return Math.round(dp * getContext().getResources().getDisplayMetrics().density);
     }
 }
