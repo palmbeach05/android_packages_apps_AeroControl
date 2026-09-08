@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,8 @@ public final class shellHelper {
     private static final int BUFF_LEN = 8192;
     private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final String ROOT_COMPLETION_MARKER_PREFIX = "__AERO_ROOT_COMPLETE_";
+    private static final AtomicLong ROOT_COMPLETION_SEQUENCE = new AtomicLong();
     private static final Pattern HWMON_DIRECTORY_PATTERN =
             Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
     private static final Pattern TEGRA_I2C_DIRECTORY_PATTERN = Pattern.compile(
@@ -191,51 +194,64 @@ public final class shellHelper {
     }
 
     /**
-     * Executes all queued commands and reads the output from the root shell.
-     * Blocks until all output has been read or the read is interrupted. Clears
-     * the command queue after execution.
+     * Executes all queued commands and reads output through a unique completion
+     * marker. Clears the command queue after execution.
      *
      * @return the command output as a string, or null if reading fails or is interrupted
      */
     private synchronized String getRootResult() {
-        int read;
         List<String> commands = Collections.synchronizedList(this.mCommands);
-        char[] buf = new char[8192];
-        StringBuilder response = new StringBuilder();
         try {
             if (this.mShellLoaded) {
+                String completionMarker = newRootCompletionMarker();
                 for (String cmd : commands) {
                     if (Thread.currentThread().isInterrupted()) {
                         return null;
                     }
                     this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-                    do {
-                        if (Thread.currentThread().isInterrupted()) {
-                            return null;
-                        }
-                        read = this.mOutput.read(buf);
-                        if (read == -1) {
-                            return null;
-                        }
-                        int remaining = MAX_RESULT_LEN - response.length();
-                        if (remaining > 0) {
-                            response.append(buf, 0, Math.min(read, remaining));
-                        }
-                    } while (read >= 8192);
-                    this.mShellOutput.flush();
                 }
-                try {
-                    this.mShellOutput.flush();
-                } catch (IOException e) {
-                }
+                this.mShellOutput.write(("printf '\\n%s\\n' "
+                        + escapeShellArg(completionMarker) + "\n").getBytes("UTF-8"));
+                this.mShellOutput.flush();
+                return readUntilCompletionMarker(this.mOutput, completionMarker);
             }
-            return response.toString().trim();
+            return "";
         } catch (IOException e2) {
             Log.e(LOG_TAG, "Something interrupted our operations...", e2);
             return null;
         } finally {
             this.mCommands.clear();
         }
+    }
+
+    static String newRootCompletionMarker() {
+        return ROOT_COMPLETION_MARKER_PREFIX + Long.toHexString(System.nanoTime()) + "_"
+                + Long.toHexString(ROOT_COMPLETION_SEQUENCE.incrementAndGet()) + "__";
+    }
+
+    static String readUntilCompletionMarker(BufferedReader output, String completionMarker)
+            throws IOException {
+        StringBuilder response = new StringBuilder();
+        boolean hasLine = false;
+        String line;
+        while ((line = output.readLine()) != null) {
+            if (line.equals(completionMarker)) {
+                return response.toString().trim();
+            }
+            if (Thread.currentThread().isInterrupted()) {
+                return null;
+            }
+            int separatorLength = hasLine ? 1 : 0;
+            int remaining = MAX_RESULT_LEN - response.length() - separatorLength;
+            if (remaining > 0) {
+                if (hasLine) {
+                    response.append('\n');
+                }
+                response.append(line, 0, Math.min(line.length(), remaining));
+            }
+            hasLine = true;
+        }
+        return null;
     }
 
     /**
@@ -600,8 +616,12 @@ public final class shellHelper {
             addCommand("[ -f " + escapeShellArg(path) + " ] && cat "
                     + escapeShellArg(path));
             String output = getRootResult();
-            return output == null || output.length() == 0 ? NO_DATA_FOUND : output;
+            return unavailableIfEmpty(output);
         }
+    }
+
+    static String unavailableIfEmpty(String output) {
+        return output == null || output.length() == 0 ? NO_DATA_FOUND : output;
     }
 
     /**
@@ -836,12 +856,10 @@ public final class shellHelper {
 
     /**
      * Sends a single command to the root shell and blocks until the shell
-     * produces a result for it (or the read fails/is interrupted), unlike
+     * reaches the helper's completion marker (or the read fails/is interrupted), unlike
      * {@link #setRootInfo(String[])} which only writes the command and
-     * returns immediately. Operations such as {@code dd} produce no output
-     * of their own, so the caller should chain an {@code echo} marker onto
-     * the command to give the blocking read something to return once the
-     * preceding operation has actually finished.
+     * returns immediately. The generated marker also completes commands such
+     * as {@code dd} that produce no output of their own.
      */
     public final synchronized boolean runCommandAndWait(String command) {
         openShell();
