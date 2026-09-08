@@ -191,7 +191,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         holder.cpuTable.setVisibility(showGrid ? View.VISIBLE : View.GONE);
         holder.cpuContent.setText(item.cpuFrequencyContent == null
                 ? "" : item.cpuFrequencyContent);
-        holder.cpuContent.setVisibility(showGrid || item.cpuFrequencyContent == null
+        holder.cpuContent.setVisibility(item.cpuFrequencyContent == null
                 || item.cpuFrequencyContent.length() == 0 ? View.GONE : View.VISIBLE);
         for (int i = 0; i < holder.cpuCells.length; i++) {
             if (showGrid && i < frequencies.size()) {
