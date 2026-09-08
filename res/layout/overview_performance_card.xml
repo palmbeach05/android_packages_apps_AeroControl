@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            style="?attr/aeroCardStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="3dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/cpu_frequency_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/aeroPrimaryTextColor"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/cpu_frequency_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="?attr/aeroSecondaryTextColor"
+                android:textSize="13sp" />
+
+            <TableLayout
+                android:id="@+id/compact_frequency_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:stretchColumns="0,1">
+
+                <TableRow>
+                    <TextView android:id="@+id/compact_freq_cell_0" style="@style/OverviewCompactFrequencyCell" />
+                    <TextView android:id="@+id/compact_freq_cell_1" style="@style/OverviewCompactFrequencyCell" />
+                </TableRow>
+                <TableRow>
+                    <TextView android:id="@+id/compact_freq_cell_2" style="@style/OverviewCompactFrequencyCell" />
+                    <TextView android:id="@+id/compact_freq_cell_3" style="@style/OverviewCompactFrequencyCell" />
+                </TableRow>
+                <TableRow>
+                    <TextView android:id="@+id/compact_freq_cell_4" style="@style/OverviewCompactFrequencyCell" />
+                    <TextView android:id="@+id/compact_freq_cell_5" style="@style/OverviewCompactFrequencyCell" />
+                </TableRow>
+                <TableRow>
+                    <TextView android:id="@+id/compact_freq_cell_6" style="@style/OverviewCompactFrequencyCell" />
+                    <TextView android:id="@+id/compact_freq_cell_7" style="@style/OverviewCompactFrequencyCell" />
+                </TableRow>
+            </TableLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            style="?attr/aeroCardStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/gpu_frequency_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/aeroPrimaryTextColor"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/gpu_frequency_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="?attr/aeroSecondaryTextColor"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
