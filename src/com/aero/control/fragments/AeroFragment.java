@@ -351,6 +351,8 @@ public class AeroFragment extends Fragment {
     private void addTegraI2cDeviceTemperatures(List<RawTemperature> readings,
             String busNumber, String device, String devicePath) {
         String[] files = AeroActivity.shell.getRootAwareTegraI2cDirInfo(devicePath, true);
+        String deviceName = AeroActivity.shell.getDirectTegraI2cInfo(devicePath + "/name");
+        boolean hasDeviceName = !deviceName.equalsIgnoreCase(NO_DATA_FOUND);
         for (String file : files) {
             String filePath = devicePath + "/" + file;
             Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(file);
@@ -368,9 +370,17 @@ public class AeroFragment extends Fragment {
             }
             Log.d(AeroFragment.class.getName(),
                     "Accepted Tegra I2C node path: " + filePath);
+            String inputName = inputMatcher.group(1);
+            String sourceName = "i2c-" + busNumber + " " + device + " " + inputName;
+            if (hasDeviceName) {
+                String channelLabel = AeroActivity.shell.getDirectTegraI2cInfo(
+                        devicePath + "/" + inputName + HWMON_TEMP_LABEL_SUFFIX);
+                sourceName = channelLabel.equalsIgnoreCase(NO_DATA_FOUND)
+                        ? deviceName + " " + inputName
+                        : deviceName + ": " + channelLabel;
+            }
             readings.add(new RawTemperature(R.string.temperature_source_other,
-                    "i2c-" + busNumber + " " + device + " " + inputMatcher.group(1),
-                    temperature));
+                    sourceName, temperature));
         }
     }
 

@@ -38,6 +38,9 @@ public final class shellHelper {
     private static final Pattern TEGRA_I2C_TEMPERATURE_FILE_PATTERN = Pattern.compile(
             "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
                     + "\\1-[0-9a-fA-F]{4}/temp\\d+_input");
+    private static final Pattern TEGRA_I2C_METADATA_FILE_PATTERN = Pattern.compile(
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
+                    + "\\1-[0-9a-fA-F]{4}/(?:name|temp\\d+_label)");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -598,6 +601,36 @@ public final class shellHelper {
                     + escapeShellArg(path));
             String output = getRootResult();
             return output == null || output.length() == 0 ? NO_DATA_FOUND : output;
+        }
+    }
+
+    /**
+     * Reads optional metadata from an allowlisted Tegra I2C device without using
+     * the root shell when direct access is unavailable.
+     *
+     * @param path an allowlisted Tegra I2C name or tempN_label path
+     * @return the trimmed node contents, or "Unavailable" when access is rejected or fails
+     */
+    public final String getDirectTegraI2cInfo(String path) {
+        if (path == null || !TEGRA_I2C_METADATA_FILE_PATTERN.matcher(path).matches()) {
+            return NO_DATA_FOUND;
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                String info = reader.readLine();
+                if (info == null || info.trim().length() == 0) {
+                    return NO_DATA_FOUND;
+                }
+                return info.trim();
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            return NO_DATA_FOUND;
+        } catch (SecurityException e) {
+            return NO_DATA_FOUND;
         }
     }
 
