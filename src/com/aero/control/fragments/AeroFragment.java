@@ -20,6 +20,7 @@ import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -386,6 +387,9 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getHwmonTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
+        if (!new File(HWMON_DIRECTORY).exists()) {
+            return readings;
+        }
         String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
                 HWMON_DIRECTORY, false);
         if (hwmonDevices == null) {
