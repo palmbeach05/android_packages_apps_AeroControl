@@ -386,7 +386,8 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getHwmonTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] hwmonDevices = AeroActivity.shell.getDirInfo(HWMON_DIRECTORY, false);
+        String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
+                HWMON_DIRECTORY, false);
         if (hwmonDevices == null) {
             return readings;
         }
@@ -394,7 +395,8 @@ public class AeroFragment extends Fragment {
             String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
             String deviceName = safeSensorName(
                     AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
-            String[] deviceFiles = AeroActivity.shell.getDirInfo(devicePath, true);
+            String[] deviceFiles = AeroActivity.shell.getRootAwareHwmonDirInfo(
+                    devicePath, true);
             if (deviceFiles == null) {
                 continue;
             }
