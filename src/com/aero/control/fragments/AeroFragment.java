@@ -20,12 +20,14 @@ import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -47,6 +49,16 @@ public class AeroFragment extends Fragment {
     private static final String POWER_SUPPLY_DIRECTORY = "/sys/class/power_supply";
     private static final String POWER_SUPPLY_TYPE_FILE = "type";
     private static final String POWER_SUPPLY_TEMP_FILE = "temp";
+    private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
+    private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
+            Pattern.compile("tegra-i2c\\.(\\d+)");
+    private static final Pattern TEGRA_I2C_BUS_PATTERN = Pattern.compile("i2c-(\\d+)");
+    private static final Pattern TEGRA_I2C_DEVICE_PATTERN =
+            Pattern.compile("(\\d+)-[0-9a-fA-F]{4}");
+    private static final String HWMON_DIRECTORY = "/sys/class/hwmon";
+    private static final String HWMON_NAME_FILE = "name";
+    private static final Pattern HWMON_TEMP_INPUT_PATTERN = Pattern.compile("(temp\\d+)_input");
+    private static final String HWMON_TEMP_LABEL_SUFFIX = "_label";
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
     private String gpu_file;
@@ -102,7 +114,14 @@ public class AeroFragment extends Fragment {
         public void run() {
             while (!this.mInterrupt) {
                 try {
-                    OverviewSnapshot snapshot = AeroFragment.this.collectOverviewData();
+                    OverviewSnapshot snapshot;
+                    try {
+                        snapshot = AeroFragment.this.collectOverviewData();
+                    } catch (RuntimeException e) {
+                        Log.e(AeroFragment.class.getName(),
+                                "Failed to collect overview data", e);
+                        snapshot = AeroFragment.this.createFallbackOverviewSnapshot();
+                    }
                     Message message = AeroFragment.this.mRefreshHandler.obtainMessage(1, snapshot);
                     message.sendToTarget();
                     sleep(3000L);
@@ -257,6 +276,8 @@ public class AeroFragment extends Fragment {
                 }
             }
         }
+        readings.addAll(getTegraI2cTemperatures());
+        readings.addAll(getHwmonTemperatures());
         String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
         if (thermalZones != null) {
             for (String thermalZone : thermalZones) {
@@ -276,6 +297,134 @@ public class AeroFragment extends Fragment {
                     readings.add(new RawTemperature(
                             labelResource, safeSensorName(type, thermalZone), temperature));
                 }
+            }
+        }
+        return readings;
+    }
+
+    private List<RawTemperature> getTegraI2cTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
+        String[] controllers = AeroActivity.shell.getDirInfo(
+                TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        if (controllers == null) {
+            return readings;
+        }
+        for (String controller : controllers) {
+            Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
+            String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
+            if (!controllerMatcher.matches()) {
+                Log.d(AeroFragment.class.getName(),
+                        "Rejected Tegra I2C node path: " + controllerPath);
+                continue;
+            }
+            String busNumber = controllerMatcher.group(1);
+            String[] buses = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+                    controllerPath, false);
+            for (String bus : buses) {
+                Matcher busMatcher = TEGRA_I2C_BUS_PATTERN.matcher(bus);
+                String busPath = controllerPath + "/" + bus;
+                if (!busMatcher.matches() || !busNumber.equals(busMatcher.group(1))) {
+                    Log.d(AeroFragment.class.getName(),
+                            "Rejected Tegra I2C node path: " + busPath);
+                    continue;
+                }
+                String[] devices = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+                        busPath, false);
+                for (String device : devices) {
+                    Matcher deviceMatcher = TEGRA_I2C_DEVICE_PATTERN.matcher(device);
+                    String devicePath = busPath + "/" + device;
+                    if (!deviceMatcher.matches()
+                            || !busNumber.equals(deviceMatcher.group(1))) {
+                        Log.d(AeroFragment.class.getName(),
+                                "Rejected Tegra I2C node path: " + devicePath);
+                        continue;
+                    }
+                    Log.d(AeroFragment.class.getName(),
+                            "Discovered Tegra I2C temperature device: " + devicePath);
+                    addTegraI2cDeviceTemperatures(
+                            readings, busNumber, device, devicePath);
+                }
+            }
+        }
+        return readings;
+    }
+
+    private void addTegraI2cDeviceTemperatures(List<RawTemperature> readings,
+            String busNumber, String device, String devicePath) {
+        String[] files = AeroActivity.shell.getRootAwareTegraI2cDirInfo(devicePath, true);
+        String deviceName = AeroActivity.shell.getDirectTegraI2cInfo(devicePath + "/name");
+        boolean hasDeviceName = !deviceName.equalsIgnoreCase(NO_DATA_FOUND);
+        for (String file : files) {
+            String filePath = devicePath + "/" + file;
+            Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(file);
+            if (!inputMatcher.matches()) {
+                Log.d(AeroFragment.class.getName(),
+                        "Rejected Tegra I2C node path: " + filePath);
+                continue;
+            }
+            String temperature = formatTemperature(
+                    AeroActivity.shell.getRootAwareTegraI2cInfo(filePath), false);
+            if (temperature == null) {
+                Log.d(AeroFragment.class.getName(),
+                        "Rejected Tegra I2C node path: " + filePath);
+                continue;
+            }
+            Log.d(AeroFragment.class.getName(),
+                    "Accepted Tegra I2C node path: " + filePath);
+            String inputName = inputMatcher.group(1);
+            String sourceName = "i2c-" + busNumber + " " + device + " " + inputName;
+            if (hasDeviceName) {
+                String channelLabel = AeroActivity.shell.getDirectTegraI2cInfo(
+                        devicePath + "/" + inputName + HWMON_TEMP_LABEL_SUFFIX);
+                sourceName = channelLabel.equalsIgnoreCase(NO_DATA_FOUND)
+                        ? deviceName + " " + inputName
+                        : deviceName + ": " + channelLabel;
+            }
+            readings.add(new RawTemperature(R.string.temperature_source_other,
+                    sourceName, temperature));
+        }
+    }
+
+    private List<RawTemperature> getHwmonTemperatures() {
+        List<RawTemperature> readings = new ArrayList<>();
+        if (!new File(HWMON_DIRECTORY).exists()) {
+            return readings;
+        }
+        String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
+                HWMON_DIRECTORY, false);
+        if (hwmonDevices == null) {
+            return readings;
+        }
+        for (String hwmonDevice : hwmonDevices) {
+            String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
+            String deviceName = safeSensorName(
+                    AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
+            String[] deviceFiles = AeroActivity.shell.getRootAwareHwmonDirInfo(
+                    devicePath, true);
+            if (deviceFiles == null) {
+                continue;
+            }
+            for (String deviceFile : deviceFiles) {
+                Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(deviceFile);
+                if (!inputMatcher.matches()) {
+                    continue;
+                }
+                String temperature = formatTemperature(
+                        AeroActivity.shell.getInfo(devicePath + deviceFile), false);
+                if (temperature == null) {
+                    continue;
+                }
+                String inputName = inputMatcher.group(1);
+                String label = AeroActivity.shell.getInfo(
+                        devicePath + inputName + HWMON_TEMP_LABEL_SUFFIX);
+                String sourceName = deviceName + " " + inputName;
+                if (label != null
+                        && label.trim().length() > 0
+                        && !label.trim().equalsIgnoreCase(NO_DATA_FOUND)) {
+                    sourceName = deviceName + ": " + label.trim();
+                }
+                readings.add(new RawTemperature(
+                        R.string.temperature_source_other, sourceName, temperature));
             }
         }
         return readings;
@@ -349,9 +498,6 @@ public class AeroFragment extends Fragment {
     }
 
     private OverviewSnapshot collectOverviewData() {
-        if (!this.mExecuted) {
-            setPermissions();
-        }
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.kernel = AeroActivity.shell.getKernel();
         snapshot.governors = new ArrayList<>();
@@ -375,6 +521,20 @@ public class AeroFragment extends Fragment {
         }
         snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
         snapshot.temperatures = getTemperatures();
+        return snapshot;
+    }
+
+    private OverviewSnapshot createFallbackOverviewSnapshot() {
+        OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.kernel = NO_DATA_FOUND;
+        snapshot.governors = new ArrayList<>();
+        snapshot.governorLabels = new ArrayList<>();
+        snapshot.ioScheduler = NO_DATA_FOUND;
+        snapshot.frequencyContent = NO_DATA_FOUND;
+        snapshot.coreFrequencies = null;
+        snapshot.gpuFrequency = NO_DATA_FOUND;
+        snapshot.memory = NO_DATA_FOUND;
+        snapshot.temperatures = new ArrayList<>();
         return snapshot;
     }
 
