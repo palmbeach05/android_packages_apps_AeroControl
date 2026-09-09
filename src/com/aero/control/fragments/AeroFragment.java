@@ -564,11 +564,13 @@ public class AeroFragment extends Fragment {
                         || uptimeSeconds < 0.0d) {
                     return NO_DATA_FOUND;
                 }
-                long totalMinutes = (long) (uptimeSeconds / 60.0d);
-                long days = totalMinutes / (24L * 60L);
-                long hours = (totalMinutes / 60L) % 24L;
-                long minutes = totalMinutes % 60L;
-                return days + "d " + hours + "h " + minutes + "m";
+                long totalSeconds = (long) uptimeSeconds;
+                long days = totalSeconds / (24L * 60L * 60L);
+                long hours = (totalSeconds / (60L * 60L)) % 24L;
+                long minutes = (totalSeconds / 60L) % 60L;
+                long seconds = totalSeconds % 60L;
+                return String.format(Locale.US, "%dd %02d:%02d:%02d",
+                        days, hours, minutes, seconds);
             } finally {
                 reader.close();
             }
