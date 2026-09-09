@@ -65,7 +65,6 @@
     <string name="temperature_source_soc">SoC</string>
     <string name="temperature_source_other">Other (%1$s)</string>
     <string name="temperature_status">Status</string>
-    <string name="temperature_unavailable">Unavailable</string>
     <string name="slider_profile">Profiles</string>
     <string name="slider_statistics">CPU Statistics</string>
     <string name="slider_test_suite_settings">Test Suite</string>

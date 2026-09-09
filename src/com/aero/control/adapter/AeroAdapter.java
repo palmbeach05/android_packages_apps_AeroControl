@@ -79,7 +79,8 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 label.setTypeface(FONT);
                 value.setTypeface(FONT);
                 label.setText(reading.label == null ? "" : reading.label);
-                value.setText(reading.value == null ? "" : reading.value);
+                value.setText(reading.value == null
+                        ? getContext().getString(R.string.unavailable) : reading.value);
                 holder.rows.addView(readingView);
             }
         }
@@ -173,7 +174,8 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 label.setTypeface(FONT);
                 value.setTypeface(FONT);
                 label.setText(reading.label == null ? "" : reading.label);
-                value.setText(reading.value == null ? "" : reading.value);
+                value.setText(reading.value == null
+                        ? getContext().getString(R.string.unavailable) : reading.value);
                 label.setVisibility(View.VISIBLE);
                 value.setVisibility(View.VISIBLE);
                 holder.rows.addView(readingView);
@@ -290,7 +292,8 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         header.setTypeface(FONT);
         content.setTypeface(FONT);
         header.setText(reading.label == null ? "" : reading.label);
-        content.setText(reading.value == null ? "" : reading.value);
+        content.setText(reading.value == null
+                ? getContext().getString(R.string.unavailable) : reading.value);
         if (weighted) {
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
