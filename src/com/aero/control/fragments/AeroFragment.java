@@ -78,11 +78,10 @@ public class AeroFragment extends Fragment {
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
-    private AeroData mDeviceData;
-    private AeroData mKernelData;
+    private AeroData mSystemData;
     private ListView mOverView;
     private AeroData mRAMData;
-    private AeroData mUptimeData;
+    private AeroData.SystemReading mUptimeReading;
     private ShowcaseView mShowCase;
     private ViewGroup root;
     private List<AeroData> mOverviewData = new ArrayList<AeroData>();
@@ -108,9 +107,9 @@ public class AeroFragment extends Fragment {
                 return;
             }
     
-            if (AeroFragment.this.mUptimeData != null
+            if (AeroFragment.this.mUptimeReading != null
                     && AeroFragment.this.mAdapter != null) {
-                AeroFragment.this.mUptimeData.content = AeroFragment.this.getUptime();
+                AeroFragment.this.mUptimeReading.value = AeroFragment.this.getUptime();
                 AeroFragment.this.mAdapter.notifyDataSetChanged();
             }
     
@@ -514,6 +513,9 @@ public class AeroFragment extends Fragment {
 
     private static final class OverviewSnapshot {
         private String device;
+        private String androidVersion;
+        private String apiLevel;
+        private String architecture;
         private String kernel;
         private List<String> governors;
         private List<String> governorLabels;
@@ -528,7 +530,10 @@ public class AeroFragment extends Fragment {
 
     private OverviewSnapshot collectOverviewData() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
-        snapshot.device = getDeviceInformation();
+        snapshot.device = getDeviceModel();
+        snapshot.androidVersion = getAndroidVersion();
+        snapshot.apiLevel = String.valueOf(Build.VERSION.SDK_INT);
+        snapshot.architecture = getApplicationAbi();
         snapshot.kernel = AeroActivity.shell.getKernel();
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
@@ -555,9 +560,17 @@ public class AeroFragment extends Fragment {
         return snapshot;
     }
 
-    private String getDeviceInformation() {
+    private String getDeviceModel() {
         String model = normalizeValue(Build.MODEL);
+        return model == null ? NO_DATA_FOUND : model;
+    }
+
+    private String getAndroidVersion() {
         String release = normalizeValue(Build.VERSION.RELEASE);
+        return release == null ? NO_DATA_FOUND : release;
+    }
+
+    private String getApplicationAbi() {
         String architecture = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0) {
@@ -566,10 +579,7 @@ public class AeroFragment extends Fragment {
         if (architecture == null) {
             architecture = normalizeValue(Build.CPU_ABI);
         }
-        if (model == null || release == null || architecture == null) {
-            return NO_DATA_FOUND;
-        }
-        return model + "\nAndroid " + release + " \u2022 " + architecture;
+        return architecture == null ? NO_DATA_FOUND : architecture;
     }
 
     private String getUptime() {
@@ -607,6 +617,9 @@ public class AeroFragment extends Fragment {
     private OverviewSnapshot createFallbackOverviewSnapshot() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.device = NO_DATA_FOUND;
+        snapshot.androidVersion = NO_DATA_FOUND;
+        snapshot.apiLevel = NO_DATA_FOUND;
+        snapshot.architecture = NO_DATA_FOUND;
         snapshot.kernel = NO_DATA_FOUND;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
@@ -621,23 +634,13 @@ public class AeroFragment extends Fragment {
     }
 
     private void applySnapshot(OverviewSnapshot snapshot) {
-        if (this.mDeviceData == null) {
-            this.mDeviceData = AeroData.standardCard(
-                    getString(R.string.overview_device), snapshot.device);
+        List<AeroData.SystemReading> systemReadings = buildSystemReadings(snapshot);
+        if (this.mSystemData == null) {
+            this.mSystemData = AeroData.systemCard(systemReadings);
         } else {
-            this.mDeviceData.content = snapshot.device;
+            this.mSystemData.systemReadings = systemReadings;
         }
-        if (this.mKernelData == null) {
-            this.mKernelData = AeroData.standardCard(getString(R.string.kernel_version), snapshot.kernel);
-        } else {
-            this.mKernelData.content = snapshot.kernel;
-        }
-        if (this.mUptimeData == null) {
-            this.mUptimeData = AeroData.standardCard(
-                    getString(R.string.overview_uptime), snapshot.uptime);
-        } else {
-            this.mUptimeData.content = snapshot.uptime;
-        }
+        this.mUptimeReading = systemReadings.get(systemReadings.size() - 1);
         List<AeroData.ConfigurationReading> configurations =
                 buildConfigurationReadings(snapshot);
         if (this.mConfigurationData == null) {
@@ -696,9 +699,7 @@ public class AeroFragment extends Fragment {
         }
         this.mOverviewData.clear();
         this.mOverviewData.add(this.mSystemSection);
-        this.mOverviewData.add(this.mDeviceData);
-        this.mOverviewData.add(this.mKernelData);
-        this.mOverviewData.add(this.mUptimeData);
+        this.mOverviewData.add(this.mSystemData);
         this.mOverviewData.add(this.mPerformanceSection);
         this.mOverviewData.add(this.mPerformanceData);
         this.mOverviewData.add(this.mTemperaturesSection);
@@ -707,6 +708,26 @@ public class AeroFragment extends Fragment {
         this.mOverviewData.add(this.mRAMData);
         this.mOverviewData.add(this.mConfigurationSection);
         this.mOverviewData.add(this.mConfigurationData);
+    }
+
+    private List<AeroData.SystemReading> buildSystemReadings(OverviewSnapshot snapshot) {
+        List<AeroData.SystemReading> readings = new ArrayList<>();
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_device), snapshot.device));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_android_version), snapshot.androidVersion));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_api_level), snapshot.apiLevel));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_architecture), snapshot.architecture));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_kernel), snapshot.kernel));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_root_access),
+                getString(R.string.overview_root_granted)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_uptime), snapshot.uptime));
+        return readings;
     }
 
     private List<AeroData.ConfigurationReading> buildConfigurationReadings(

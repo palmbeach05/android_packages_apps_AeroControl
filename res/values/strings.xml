@@ -52,6 +52,12 @@
     <string name="overview_section_configuration">Configuration</string>
     <string name="overview_device">Device</string>
     <string name="overview_uptime">Uptime</string>
+    <string name="overview_android_version">Android Version</string>
+    <string name="overview_api_level">API Level</string>
+    <string name="overview_architecture">Architecture</string>
+    <string name="overview_kernel">Kernel</string>
+    <string name="overview_root_access">Root Access</string>
+    <string name="overview_root_granted">Granted</string>
     <string name="overview_cpu_governor">CPU Governor:</string>
     <string name="temperature_source_cpu">CPU</string>
     <string name="temperature_source_battery">Battery</string>

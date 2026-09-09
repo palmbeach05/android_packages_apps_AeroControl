@@ -34,6 +34,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
     }
     private static class TemperatureHolder { TextView header; LinearLayout rows; }
     private static class ConfigurationHolder { LinearLayout rows; }
+    private static class SystemHolder { LinearLayout rows; }
 
     public AeroAdapter(Context context, int ignoredLayoutResourceId, List<AeroData> data) {
         super(context, 0, data);
@@ -41,7 +42,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    @Override public int getViewTypeCount() { return 6; }
+    @Override public int getViewTypeCount() { return 7; }
     @Override public int getItemViewType(int position) { return data.get(position).itemType; }
     @Override public boolean isEnabled(int position) { return false; }
 
@@ -54,8 +55,35 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             case AeroData.TYPE_TEMPERATURE_CARD: return bindTemperatures(item, convertView, parent);
             case AeroData.TYPE_PERFORMANCE_CARD: return bindPerformance(item, convertView, parent);
             case AeroData.TYPE_CONFIGURATION_CARD: return bindConfiguration(item, convertView, parent);
+            case AeroData.TYPE_SYSTEM_CARD: return bindSystem(item, convertView, parent);
             default: return bindStandard(item, convertView, parent);
         }
+    }
+
+    private View bindSystem(AeroData item, View row, ViewGroup parent) {
+        SystemHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_system_card, parent, false);
+            holder = new SystemHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.system_rows);
+            row.setTag(holder);
+        } else { holder = (SystemHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        if (item.systemReadings != null) {
+            for (AeroData.SystemReading reading : item.systemReadings) {
+                View readingView = inflater.inflate(
+                        R.layout.overview_system_row, holder.rows, false);
+                TextView label = (TextView) readingView.findViewById(R.id.system_label);
+                TextView value = (TextView) readingView.findViewById(R.id.system_value);
+                label.setTypeface(FONT);
+                value.setTypeface(FONT);
+                label.setText(reading.label == null ? "" : reading.label);
+                value.setText(reading.value == null ? "" : reading.value);
+                holder.rows.addView(readingView);
+            }
+        }
+        return row;
     }
 
     private View bindSection(AeroData item, View row, ViewGroup parent) {
