@@ -100,7 +100,24 @@ public class AeroFragment extends Fragment {
             }
         }
     };
-
+    
+    private final Runnable mUptimeRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!AeroFragment.this.mVisible) {
+                return;
+            }
+    
+            if (AeroFragment.this.mUptimeData != null
+                    && AeroFragment.this.mAdapter != null) {
+                AeroFragment.this.mUptimeData.content = AeroFragment.this.getUptime();
+                AeroFragment.this.mAdapter.notifyDataSetChanged();
+            }
+    
+            AeroFragment.this.mRefreshHandler.postDelayed(this, 1000L);
+        }
+    };
+    
     private class RefreshThread extends Thread {
         private volatile boolean mInterrupt;
 
@@ -140,21 +157,25 @@ public class AeroFragment extends Fragment {
 
     @Override // android.app.Fragment
     public void onPause() {
-        super.onPause();
-        this.mVisible = false;
-    }
+    this.mVisible = false;
+    this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
+    super.onPause();
+}
 
     @Override // android.app.Fragment
     public void onResume() {
-        super.onResume();
-        this.mVisible = true;
-    }
+    super.onResume();
+    this.mVisible = true;
+    this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
+    this.mRefreshHandler.post(this.mUptimeRefreshRunnable);
+}
 
     @Override // android.app.Fragment
     public void onDestroyView() {
         super.onDestroyView();
         this.mRefreshThread.cancel();
         this.mRefreshHandler.removeMessages(1);
+        this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
         this.mAdapter = null;
         this.mOverView = null;
         this.root = null;
