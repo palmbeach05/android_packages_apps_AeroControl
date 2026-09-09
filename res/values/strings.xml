@@ -50,6 +50,8 @@
     <string name="overview_section_temperatures">Temperatures</string>
     <string name="overview_section_memory">Memory</string>
     <string name="overview_section_configuration">Configuration</string>
+    <string name="overview_device">Device</string>
+    <string name="overview_uptime">Uptime</string>
     <string name="overview_cpu_governor">CPU Governor:</string>
     <string name="temperature_source_cpu">CPU</string>
     <string name="temperature_source_battery">Battery</string>

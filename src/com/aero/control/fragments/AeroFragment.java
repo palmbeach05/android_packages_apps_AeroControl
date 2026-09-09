@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.Fragment;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,8 +21,10 @@ import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ public class AeroFragment extends Fragment {
     private static final String FILENAME = "firstrun";
     private static final int MAX_GRID_CORES = 8;
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final String UPTIME_FILE = "/proc/uptime";
     private static final String SCALE_CPU_UTIL = "/cpufreq/cpu_utilization";
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";
@@ -74,9 +78,11 @@ public class AeroFragment extends Fragment {
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
+    private AeroData mDeviceData;
     private AeroData mKernelData;
     private ListView mOverView;
     private AeroData mRAMData;
+    private AeroData mUptimeData;
     private ShowcaseView mShowCase;
     private ViewGroup root;
     private List<AeroData> mOverviewData = new ArrayList<AeroData>();
@@ -486,6 +492,7 @@ public class AeroFragment extends Fragment {
     }
 
     private static final class OverviewSnapshot {
+        private String device;
         private String kernel;
         private List<String> governors;
         private List<String> governorLabels;
@@ -495,10 +502,12 @@ public class AeroFragment extends Fragment {
         private String gpuFrequency;
         private String memory;
         private List<RawTemperature> temperatures;
+        private String uptime;
     }
 
     private OverviewSnapshot collectOverviewData() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.device = getDeviceInformation();
         snapshot.kernel = AeroActivity.shell.getKernel();
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
@@ -521,11 +530,60 @@ public class AeroFragment extends Fragment {
         }
         snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
         snapshot.temperatures = getTemperatures();
+        snapshot.uptime = getUptime();
         return snapshot;
+    }
+
+    private String getDeviceInformation() {
+        String model = normalizeValue(Build.MODEL);
+        String release = normalizeValue(Build.VERSION.RELEASE);
+        String architecture = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0) {
+            architecture = normalizeValue(Build.SUPPORTED_ABIS[0]);
+        }
+        if (architecture == null) {
+            architecture = normalizeValue(Build.CPU_ABI);
+        }
+        if (model == null || release == null || architecture == null) {
+            return NO_DATA_FOUND;
+        }
+        return model + "\nAndroid " + release + " \u2022 " + architecture;
+    }
+
+    private String getUptime() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(UPTIME_FILE), 8192);
+            try {
+                String line = reader.readLine();
+                if (line == null) return NO_DATA_FOUND;
+                String[] values = line.trim().split("\\s+");
+                if (values.length == 0 || values[0].length() == 0) return NO_DATA_FOUND;
+                double uptimeSeconds = Double.parseDouble(values[0]);
+                if (Double.isNaN(uptimeSeconds) || Double.isInfinite(uptimeSeconds)
+                        || uptimeSeconds < 0.0d) {
+                    return NO_DATA_FOUND;
+                }
+                long totalMinutes = (long) (uptimeSeconds / 60.0d);
+                long days = totalMinutes / (24L * 60L);
+                long hours = (totalMinutes / 60L) % 24L;
+                long minutes = totalMinutes % 60L;
+                return days + "d " + hours + "h " + minutes + "m";
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            return NO_DATA_FOUND;
+        } catch (NumberFormatException e) {
+            return NO_DATA_FOUND;
+        } catch (SecurityException e) {
+            return NO_DATA_FOUND;
+        }
     }
 
     private OverviewSnapshot createFallbackOverviewSnapshot() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.device = NO_DATA_FOUND;
         snapshot.kernel = NO_DATA_FOUND;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
@@ -535,14 +593,27 @@ public class AeroFragment extends Fragment {
         snapshot.gpuFrequency = NO_DATA_FOUND;
         snapshot.memory = NO_DATA_FOUND;
         snapshot.temperatures = new ArrayList<>();
+        snapshot.uptime = NO_DATA_FOUND;
         return snapshot;
     }
 
     private void applySnapshot(OverviewSnapshot snapshot) {
+        if (this.mDeviceData == null) {
+            this.mDeviceData = AeroData.standardCard(
+                    getString(R.string.overview_device), snapshot.device);
+        } else {
+            this.mDeviceData.content = snapshot.device;
+        }
         if (this.mKernelData == null) {
             this.mKernelData = AeroData.standardCard(getString(R.string.kernel_version), snapshot.kernel);
         } else {
             this.mKernelData.content = snapshot.kernel;
+        }
+        if (this.mUptimeData == null) {
+            this.mUptimeData = AeroData.standardCard(
+                    getString(R.string.overview_uptime), snapshot.uptime);
+        } else {
+            this.mUptimeData.content = snapshot.uptime;
         }
         List<AeroData.ConfigurationReading> configurations =
                 buildConfigurationReadings(snapshot);
@@ -602,7 +673,9 @@ public class AeroFragment extends Fragment {
         }
         this.mOverviewData.clear();
         this.mOverviewData.add(this.mSystemSection);
+        this.mOverviewData.add(this.mDeviceData);
         this.mOverviewData.add(this.mKernelData);
+        this.mOverviewData.add(this.mUptimeData);
         this.mOverviewData.add(this.mPerformanceSection);
         this.mOverviewData.add(this.mPerformanceData);
         this.mOverviewData.add(this.mTemperaturesSection);
