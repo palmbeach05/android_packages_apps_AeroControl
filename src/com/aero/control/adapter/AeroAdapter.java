@@ -32,7 +32,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView gpuHeader;
         TextView gpuValue;
     }
-    private static class TemperatureHolder { TextView header; LinearLayout rows; }
+    private static class TemperatureHolder { LinearLayout rows; }
     private static class ConfigurationHolder { LinearLayout rows; }
     private static class SystemHolder { LinearLayout rows; }
 
@@ -161,13 +161,9 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         if (row == null) {
             row = inflater.inflate(R.layout.overview_temperature_card, parent, false);
             holder = new TemperatureHolder();
-            holder.header = (TextView) row.findViewById(R.id.header);
             holder.rows = (LinearLayout) row.findViewById(R.id.temperature_rows);
-            holder.header.setTypeface(FONT);
             row.setTag(holder);
         } else { holder = (TemperatureHolder) row.getTag(); }
-        holder.header.setText(item.name == null ? "" : item.name);
-        holder.header.setVisibility(View.VISIBLE);
         holder.rows.removeAllViews();
         if (item.temperatures != null) {
             for (AeroData.TemperatureReading reading : item.temperatures) {
