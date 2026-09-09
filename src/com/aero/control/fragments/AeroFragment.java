@@ -19,6 +19,7 @@ import com.aero.control.adapter.AeroAdapter;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.rootHelper;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.BufferedReader;
@@ -78,6 +79,7 @@ public class AeroFragment extends Fragment {
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
+    private final rootHelper mRootHelper = new rootHelper();
     private AeroData mSystemData;
     private ListView mOverView;
     private AeroData mRAMData;
@@ -88,6 +90,8 @@ public class AeroFragment extends Fragment {
     private int mActionBarHeight = 0;
     private boolean mVisible = true;
     private boolean mExecuted = false;
+    private boolean mRootAccessChecked = false;
+    private boolean mRootAccess = false;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
@@ -517,6 +521,7 @@ public class AeroFragment extends Fragment {
         private String apiLevel;
         private String architecture;
         private String kernel;
+        private boolean rootAccess;
         private List<String> governors;
         private List<String> governorLabels;
         private String ioScheduler;
@@ -535,6 +540,11 @@ public class AeroFragment extends Fragment {
         snapshot.apiLevel = String.valueOf(Build.VERSION.SDK_INT);
         snapshot.architecture = getApplicationAbi();
         snapshot.kernel = AeroActivity.shell.getKernel();
+        if (!this.mRootAccessChecked) {
+            this.mRootAccess = this.mRootHelper.isDeviceRooted();
+            this.mRootAccessChecked = true;
+        }
+        snapshot.rootAccess = this.mRootAccess;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
         List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
@@ -621,6 +631,7 @@ public class AeroFragment extends Fragment {
         snapshot.apiLevel = NO_DATA_FOUND;
         snapshot.architecture = NO_DATA_FOUND;
         snapshot.kernel = NO_DATA_FOUND;
+        snapshot.rootAccess = false;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
         snapshot.ioScheduler = NO_DATA_FOUND;
@@ -724,7 +735,8 @@ public class AeroFragment extends Fragment {
                 getString(R.string.overview_kernel), snapshot.kernel));
         readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_root_access),
-                getString(R.string.overview_root_granted)));
+                getString(snapshot.rootAccess ? R.string.overview_root_granted
+                        : R.string.unavailable)));
         readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_uptime), snapshot.uptime));
         return readings;
