@@ -663,12 +663,12 @@ public class AeroFragment extends Fragment {
         if (this.mPerformanceData == null) {
             this.mPerformanceData = AeroData.performanceCard(
                     getString(R.string.current_cpu_speed),
-                    getOverviewDisplayValue(snapshot.frequencyContent),
+                    getCpuFrequencyDisplayValue(snapshot),
                     snapshot.coreFrequencies, getString(R.string.current_gpu_speed),
                     getOverviewDisplayValue(snapshot.gpuFrequency));
         } else {
             this.mPerformanceData.cpuFrequencyContent =
-                    getOverviewDisplayValue(snapshot.frequencyContent);
+                    getCpuFrequencyDisplayValue(snapshot);
             this.mPerformanceData.coreFrequencies = snapshot.coreFrequencies;
             this.mPerformanceData.gpuFrequencyValue =
                     getOverviewDisplayValue(snapshot.gpuFrequency);
@@ -704,6 +704,12 @@ public class AeroFragment extends Fragment {
         } else {
             this.mAdapter.notifyDataSetChanged();
         }
+    }
+
+    private String getCpuFrequencyDisplayValue(OverviewSnapshot snapshot) {
+        return snapshot.coreFrequencies != null && !snapshot.coreFrequencies.isEmpty()
+                ? ""
+                : getOverviewDisplayValue(snapshot.frequencyContent);
     }
 
     private void rebuildOrderedOverview() {
