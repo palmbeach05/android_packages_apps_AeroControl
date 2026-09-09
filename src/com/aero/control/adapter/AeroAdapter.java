@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import com.aero.control.R;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -219,16 +220,29 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         holder.rows.removeAllViews();
         List<AeroData.ConfigurationReading> readings = item.configurations == null
                 ? Collections.<AeroData.ConfigurationReading>emptyList() : item.configurations;
-        int governorCount = Math.max(0, readings.size() - 1);
-        if (governorCount == 1) {
-            addConfigurationPair(holder.rows, readings.get(0), readings.get(1));
-        } else if (governorCount == 2) {
-            addConfigurationPair(holder.rows, readings.get(0), readings.get(1));
-            addConfigurationCard(holder.rows, readings.get(2), false, false);
+        List<AeroData.ConfigurationReading> governors = new ArrayList<>();
+        List<AeroData.ConfigurationReading> otherReadings = new ArrayList<>();
+        for (AeroData.ConfigurationReading reading : readings) {
+            if (reading.kind == AeroData.ConfigurationReading.Kind.GOVERNOR) {
+                governors.add(reading);
+            } else {
+                otherReadings.add(reading);
+            }
+        }
+
+        int firstOtherReading = 0;
+        if (governors.size() == 1 && !otherReadings.isEmpty()) {
+            addConfigurationPair(holder.rows, governors.get(0), otherReadings.get(0));
+            firstOtherReading = 1;
+        } else if (governors.size() == 2) {
+            addConfigurationPair(holder.rows, governors.get(0), governors.get(1));
         } else {
-            for (AeroData.ConfigurationReading reading : readings) {
+            for (AeroData.ConfigurationReading reading : governors) {
                 addConfigurationCard(holder.rows, reading, false, false);
             }
+        }
+        for (int i = firstOtherReading; i < otherReadings.size(); i++) {
+            addConfigurationCard(holder.rows, otherReadings.get(i), false, false);
         }
         return row;
     }

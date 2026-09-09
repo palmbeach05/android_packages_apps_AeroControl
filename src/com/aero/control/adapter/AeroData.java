@@ -47,10 +47,17 @@ public class AeroData {
     }
 
     public static final class ConfigurationReading {
+        public enum Kind {
+            GOVERNOR,
+            IO_SCHEDULER
+        }
+
+        public final Kind kind;
         public final String label;
         public final String value;
 
-        public ConfigurationReading(String label, String value) {
+        public ConfigurationReading(Kind kind, String label, String value) {
+            this.kind = kind;
             this.label = label;
             this.value = value;
         }

@@ -634,10 +634,13 @@ public class AeroFragment extends Fragment {
             String label = showClusterLabels && entry.getValue() != null
                     ? getString(R.string.current_governor_cluster, entry.getValue())
                     : getString(R.string.overview_cpu_governor);
-            readings.add(new AeroData.ConfigurationReading(label, entry.getKey()));
+            readings.add(new AeroData.ConfigurationReading(
+                    AeroData.ConfigurationReading.Kind.GOVERNOR,
+                    label, entry.getKey()));
         }
         String scheduler = normalizeValue(snapshot.ioScheduler);
         readings.add(new AeroData.ConfigurationReading(
+                AeroData.ConfigurationReading.Kind.IO_SCHEDULER,
                 getString(R.string.current_io_governor),
                 scheduler == null ? NO_DATA_FOUND : scheduler));
         return readings;
