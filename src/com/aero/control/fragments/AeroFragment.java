@@ -19,7 +19,6 @@ import com.aero.control.adapter.AeroAdapter;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
-import com.aero.control.helpers.rootHelper;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.BufferedReader;
@@ -79,7 +78,6 @@ public class AeroFragment extends Fragment {
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
-    private final rootHelper mRootHelper = new rootHelper();
     private AeroData mSystemData;
     private ListView mOverView;
     private AeroData mRAMData;
@@ -90,8 +88,6 @@ public class AeroFragment extends Fragment {
     private int mActionBarHeight = 0;
     private boolean mVisible = true;
     private boolean mExecuted = false;
-    private boolean mRootAccessChecked = false;
-    private boolean mRootAccess = false;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
@@ -519,10 +515,10 @@ public class AeroFragment extends Fragment {
     private static final class OverviewSnapshot {
         private String device;
         private String androidVersion;
+        private String securityUpdate;
         private String apiLevel;
         private String architecture;
         private String kernel;
-        private boolean rootAccess;
         private List<String> governors;
         private List<String> governorLabels;
         private String ioScheduler;
@@ -538,14 +534,10 @@ public class AeroFragment extends Fragment {
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.device = getDeviceModel();
         snapshot.androidVersion = getAndroidVersion();
+        snapshot.securityUpdate = getAndroidSecurityUpdate();
         snapshot.apiLevel = String.valueOf(Build.VERSION.SDK_INT);
         snapshot.architecture = getApplicationAbi();
         snapshot.kernel = AeroActivity.shell.getKernel();
-        if (!this.mRootAccessChecked) {
-            this.mRootAccess = this.mRootHelper.isDeviceRooted();
-            this.mRootAccessChecked = true;
-        }
-        snapshot.rootAccess = this.mRootAccess;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
         List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
@@ -579,6 +571,19 @@ public class AeroFragment extends Fragment {
     private String getAndroidVersion() {
         String release = normalizeValue(Build.VERSION.RELEASE);
         return release == null ? NO_DATA_FOUND : release;
+    }
+
+    private String getAndroidSecurityUpdate() {
+        try {
+            Object securityPatch = Build.VERSION.class.getField("SECURITY_PATCH").get(null);
+            return securityPatch instanceof String ? normalizeValue((String) securityPatch) : null;
+        } catch (NoSuchFieldException e) {
+            return null;
+        } catch (IllegalAccessException e) {
+            return null;
+        } catch (SecurityException e) {
+            return null;
+        }
     }
 
     private String getApplicationAbi() {
@@ -629,10 +634,10 @@ public class AeroFragment extends Fragment {
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.device = NO_DATA_FOUND;
         snapshot.androidVersion = NO_DATA_FOUND;
+        snapshot.securityUpdate = null;
         snapshot.apiLevel = NO_DATA_FOUND;
         snapshot.architecture = NO_DATA_FOUND;
         snapshot.kernel = NO_DATA_FOUND;
-        snapshot.rootAccess = false;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
         snapshot.ioScheduler = NO_DATA_FOUND;
@@ -741,16 +746,15 @@ public class AeroFragment extends Fragment {
                 getString(R.string.overview_android_version),
                 getOverviewDisplayValue(snapshot.androidVersion)));
         readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_android_security_update),
+                getOverviewDisplayValue(snapshot.securityUpdate)));
+        readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_api_level), getOverviewDisplayValue(snapshot.apiLevel)));
         readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_architecture),
                 getOverviewDisplayValue(snapshot.architecture)));
         readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_kernel), getOverviewDisplayValue(snapshot.kernel)));
-        readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_root_access),
-                getString(snapshot.rootAccess ? R.string.overview_root_granted
-                        : R.string.unavailable)));
         readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_uptime), getOverviewDisplayValue(snapshot.uptime)));
         return readings;
