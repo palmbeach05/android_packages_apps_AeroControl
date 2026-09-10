@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.Fragment;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,8 +21,10 @@ import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ public class AeroFragment extends Fragment {
     private static final String FILENAME = "firstrun";
     private static final int MAX_GRID_CORES = 8;
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final String UPTIME_FILE = "/proc/uptime";
     private static final String SCALE_CPU_UTIL = "/cpufreq/cpu_utilization";
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";
@@ -74,9 +78,10 @@ public class AeroFragment extends Fragment {
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
-    private AeroData mKernelData;
+    private AeroData mSystemData;
     private ListView mOverView;
     private AeroData mRAMData;
+    private AeroData.SystemReading mUptimeReading;
     private ShowcaseView mShowCase;
     private ViewGroup root;
     private List<AeroData> mOverviewData = new ArrayList<AeroData>();
@@ -94,7 +99,25 @@ public class AeroFragment extends Fragment {
             }
         }
     };
-
+    
+    private final Runnable mUptimeRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!AeroFragment.this.mVisible) {
+                return;
+            }
+    
+            if (AeroFragment.this.mUptimeReading != null
+                    && AeroFragment.this.mAdapter != null) {
+                AeroFragment.this.mUptimeReading.value =
+                        AeroFragment.this.getOverviewDisplayValue(AeroFragment.this.getUptime());
+                AeroFragment.this.mAdapter.notifyDataSetChanged();
+            }
+    
+            AeroFragment.this.mRefreshHandler.postDelayed(this, 1000L);
+        }
+    };
+    
     private class RefreshThread extends Thread {
         private volatile boolean mInterrupt;
 
@@ -134,21 +157,25 @@ public class AeroFragment extends Fragment {
 
     @Override // android.app.Fragment
     public void onPause() {
-        super.onPause();
-        this.mVisible = false;
-    }
+    this.mVisible = false;
+    this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
+    super.onPause();
+}
 
     @Override // android.app.Fragment
     public void onResume() {
-        super.onResume();
-        this.mVisible = true;
-    }
+    super.onResume();
+    this.mVisible = true;
+    this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
+    this.mRefreshHandler.post(this.mUptimeRefreshRunnable);
+}
 
     @Override // android.app.Fragment
     public void onDestroyView() {
         super.onDestroyView();
         this.mRefreshThread.cancel();
         this.mRefreshHandler.removeMessages(1);
+        this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
         this.mAdapter = null;
         this.mOverView = null;
         this.root = null;
@@ -486,6 +513,11 @@ public class AeroFragment extends Fragment {
     }
 
     private static final class OverviewSnapshot {
+        private String device;
+        private String androidVersion;
+        private String securityUpdate;
+        private String apiLevel;
+        private String architecture;
         private String kernel;
         private List<String> governors;
         private List<String> governorLabels;
@@ -495,10 +527,16 @@ public class AeroFragment extends Fragment {
         private String gpuFrequency;
         private String memory;
         private List<RawTemperature> temperatures;
+        private String uptime;
     }
 
     private OverviewSnapshot collectOverviewData() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.device = getDeviceModel();
+        snapshot.androidVersion = getAndroidVersion();
+        snapshot.securityUpdate = getAndroidSecurityUpdate();
+        snapshot.apiLevel = String.valueOf(Build.VERSION.SDK_INT);
+        snapshot.architecture = getApplicationAbi();
         snapshot.kernel = AeroActivity.shell.getKernel();
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
@@ -521,11 +559,84 @@ public class AeroFragment extends Fragment {
         }
         snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
         snapshot.temperatures = getTemperatures();
+        snapshot.uptime = getUptime();
         return snapshot;
+    }
+
+    private String getDeviceModel() {
+        String model = normalizeValue(Build.MODEL);
+        return model == null ? NO_DATA_FOUND : model;
+    }
+
+    private String getAndroidVersion() {
+        String release = normalizeValue(Build.VERSION.RELEASE);
+        return release == null ? NO_DATA_FOUND : release;
+    }
+
+    private String getAndroidSecurityUpdate() {
+        try {
+            Object securityPatch = Build.VERSION.class.getField("SECURITY_PATCH").get(null);
+            return securityPatch instanceof String ? normalizeValue((String) securityPatch) : null;
+        } catch (NoSuchFieldException e) {
+            return null;
+        } catch (IllegalAccessException e) {
+            return null;
+        } catch (SecurityException e) {
+            return null;
+        }
+    }
+
+    private String getApplicationAbi() {
+        String architecture = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0) {
+            architecture = normalizeValue(Build.SUPPORTED_ABIS[0]);
+        }
+        if (architecture == null) {
+            architecture = normalizeValue(Build.CPU_ABI);
+        }
+        return architecture == null ? NO_DATA_FOUND : architecture;
+    }
+
+    private String getUptime() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(UPTIME_FILE), 8192);
+            try {
+                String line = reader.readLine();
+                if (line == null) return NO_DATA_FOUND;
+                String[] values = line.trim().split("\\s+");
+                if (values.length == 0 || values[0].length() == 0) return NO_DATA_FOUND;
+                double uptimeSeconds = Double.parseDouble(values[0]);
+                if (Double.isNaN(uptimeSeconds) || Double.isInfinite(uptimeSeconds)
+                        || uptimeSeconds < 0.0d) {
+                    return NO_DATA_FOUND;
+                }
+                long totalSeconds = (long) uptimeSeconds;
+                long days = totalSeconds / (24L * 60L * 60L);
+                long hours = (totalSeconds / (60L * 60L)) % 24L;
+                long minutes = (totalSeconds / 60L) % 60L;
+                long seconds = totalSeconds % 60L;
+                return String.format(Locale.US, "%dd %02d:%02d:%02d",
+                        days, hours, minutes, seconds);
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            return NO_DATA_FOUND;
+        } catch (NumberFormatException e) {
+            return NO_DATA_FOUND;
+        } catch (SecurityException e) {
+            return NO_DATA_FOUND;
+        }
     }
 
     private OverviewSnapshot createFallbackOverviewSnapshot() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
+        snapshot.device = NO_DATA_FOUND;
+        snapshot.androidVersion = NO_DATA_FOUND;
+        snapshot.securityUpdate = null;
+        snapshot.apiLevel = NO_DATA_FOUND;
+        snapshot.architecture = NO_DATA_FOUND;
         snapshot.kernel = NO_DATA_FOUND;
         snapshot.governors = new ArrayList<>();
         snapshot.governorLabels = new ArrayList<>();
@@ -535,15 +646,18 @@ public class AeroFragment extends Fragment {
         snapshot.gpuFrequency = NO_DATA_FOUND;
         snapshot.memory = NO_DATA_FOUND;
         snapshot.temperatures = new ArrayList<>();
+        snapshot.uptime = NO_DATA_FOUND;
         return snapshot;
     }
 
     private void applySnapshot(OverviewSnapshot snapshot) {
-        if (this.mKernelData == null) {
-            this.mKernelData = AeroData.standardCard(getString(R.string.kernel_version), snapshot.kernel);
+        List<AeroData.SystemReading> systemReadings = buildSystemReadings(snapshot);
+        if (this.mSystemData == null) {
+            this.mSystemData = AeroData.systemCard(systemReadings);
         } else {
-            this.mKernelData.content = snapshot.kernel;
+            this.mSystemData.systemReadings = systemReadings;
         }
+        this.mUptimeReading = systemReadings.get(systemReadings.size() - 1);
         List<AeroData.ConfigurationReading> configurations =
                 buildConfigurationReadings(snapshot);
         if (this.mConfigurationData == null) {
@@ -553,28 +667,33 @@ public class AeroFragment extends Fragment {
         }
         if (this.mPerformanceData == null) {
             this.mPerformanceData = AeroData.performanceCard(
-                    getString(R.string.current_cpu_speed), snapshot.frequencyContent,
+                    getString(R.string.current_cpu_speed),
+                    getCpuFrequencyDisplayValue(snapshot),
                     snapshot.coreFrequencies, getString(R.string.current_gpu_speed),
-                    snapshot.gpuFrequency);
+                    getOverviewDisplayValue(snapshot.gpuFrequency));
         } else {
-            this.mPerformanceData.cpuFrequencyContent = snapshot.frequencyContent;
+            this.mPerformanceData.cpuFrequencyContent =
+                    getCpuFrequencyDisplayValue(snapshot);
             this.mPerformanceData.coreFrequencies = snapshot.coreFrequencies;
-            this.mPerformanceData.gpuFrequencyValue = snapshot.gpuFrequency;
+            this.mPerformanceData.gpuFrequencyValue =
+                    getOverviewDisplayValue(snapshot.gpuFrequency);
         }
         if (this.mRAMData == null) {
-            this.mRAMData = AeroData.standardCard(getString(R.string.available_memory), snapshot.memory);
+            this.mRAMData = AeroData.standardCard(getString(R.string.available_memory),
+                    getOverviewDisplayValue(snapshot.memory));
         } else {
-            this.mRAMData.content = snapshot.memory;
+            this.mRAMData.content = getOverviewDisplayValue(snapshot.memory);
         }
         List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
         for (RawTemperature reading : snapshot.temperatures) {
             String label = reading.labelResource == R.string.temperature_source_other
                     ? getString(reading.labelResource, reading.source) : getString(reading.labelResource);
-            temperatures.add(new AeroData.TemperatureReading(label, reading.value));
+            temperatures.add(new AeroData.TemperatureReading(
+                    label, getOverviewDisplayValue(reading.value)));
         }
         if (temperatures.isEmpty()) {
             temperatures.add(new AeroData.TemperatureReading(
-                    getString(R.string.temperature_status), getString(R.string.temperature_unavailable)));
+                    getString(R.string.temperature_status), getString(R.string.unavailable)));
         }
         if (this.mTemperatureData == null) {
             this.mTemperatureData = AeroData.temperatureCard(
@@ -592,6 +711,12 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    private String getCpuFrequencyDisplayValue(OverviewSnapshot snapshot) {
+        return snapshot.coreFrequencies != null && !snapshot.coreFrequencies.isEmpty()
+                ? ""
+                : getOverviewDisplayValue(snapshot.frequencyContent);
+    }
+
     private void rebuildOrderedOverview() {
         if (this.mSystemSection == null) {
             this.mSystemSection = AeroData.section(getString(R.string.overview_section_system));
@@ -602,7 +727,7 @@ public class AeroFragment extends Fragment {
         }
         this.mOverviewData.clear();
         this.mOverviewData.add(this.mSystemSection);
-        this.mOverviewData.add(this.mKernelData);
+        this.mOverviewData.add(this.mSystemData);
         this.mOverviewData.add(this.mPerformanceSection);
         this.mOverviewData.add(this.mPerformanceData);
         this.mOverviewData.add(this.mTemperaturesSection);
@@ -611,6 +736,28 @@ public class AeroFragment extends Fragment {
         this.mOverviewData.add(this.mRAMData);
         this.mOverviewData.add(this.mConfigurationSection);
         this.mOverviewData.add(this.mConfigurationData);
+    }
+
+    private List<AeroData.SystemReading> buildSystemReadings(OverviewSnapshot snapshot) {
+        List<AeroData.SystemReading> readings = new ArrayList<>();
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_device), getOverviewDisplayValue(snapshot.device)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_android_version),
+                getOverviewDisplayValue(snapshot.androidVersion)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_android_security_update),
+                getOverviewDisplayValue(snapshot.securityUpdate)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_api_level), getOverviewDisplayValue(snapshot.apiLevel)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_architecture),
+                getOverviewDisplayValue(snapshot.architecture)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_kernel), getOverviewDisplayValue(snapshot.kernel)));
+        readings.add(new AeroData.SystemReading(
+                getString(R.string.overview_uptime), getOverviewDisplayValue(snapshot.uptime)));
+        return readings;
     }
 
     private List<AeroData.ConfigurationReading> buildConfigurationReadings(
@@ -636,14 +783,19 @@ public class AeroFragment extends Fragment {
                     : getString(R.string.overview_cpu_governor);
             readings.add(new AeroData.ConfigurationReading(
                     AeroData.ConfigurationReading.Kind.GOVERNOR,
-                    label, entry.getKey()));
+                    label, getOverviewDisplayValue(entry.getKey())));
         }
         String scheduler = normalizeValue(snapshot.ioScheduler);
         readings.add(new AeroData.ConfigurationReading(
                 AeroData.ConfigurationReading.Kind.IO_SCHEDULER,
                 getString(R.string.current_io_governor),
-                scheduler == null ? NO_DATA_FOUND : scheduler));
+                getOverviewDisplayValue(scheduler)));
         return readings;
+    }
+
+    private String getOverviewDisplayValue(String value) {
+        String normalized = normalizeValue(value);
+        return normalized == null ? getString(R.string.unavailable) : normalized;
     }
 
     private String normalizeValue(String value) {

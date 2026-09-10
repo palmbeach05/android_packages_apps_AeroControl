@@ -15,6 +15,7 @@ public class AeroData {
     public static final int TYPE_TEMPERATURE_CARD = 3;
     public static final int TYPE_PERFORMANCE_CARD = 4;
     public static final int TYPE_CONFIGURATION_CARD = 5;
+    public static final int TYPE_SYSTEM_CARD = 6;
 
     public String content;
     public int file;
@@ -35,6 +36,17 @@ public class AeroData {
     public String gpuFrequencyValue;
     public List<TemperatureReading> temperatures;
     public List<ConfigurationReading> configurations;
+    public List<SystemReading> systemReadings;
+
+    public static final class SystemReading {
+        public String label;
+        public String value;
+
+        public SystemReading(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
 
     public static final class TemperatureReading {
         public final String label;
@@ -103,6 +115,13 @@ public class AeroData {
         AeroData data = new AeroData(null, null, null);
         data.itemType = TYPE_CONFIGURATION_CARD;
         data.configurations = configurations;
+        return data;
+    }
+
+    public static AeroData systemCard(List<SystemReading> systemReadings) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_SYSTEM_CARD;
+        data.systemReadings = systemReadings;
         return data;
     }
 
