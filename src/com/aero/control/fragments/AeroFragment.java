@@ -113,7 +113,8 @@ public class AeroFragment extends Fragment {
     
             if (AeroFragment.this.mUptimeReading != null
                     && AeroFragment.this.mAdapter != null) {
-                AeroFragment.this.mUptimeReading.value = AeroFragment.this.getUptime();
+                AeroFragment.this.mUptimeReading.value =
+                        AeroFragment.this.getOverviewDisplayValue(AeroFragment.this.getUptime());
                 AeroFragment.this.mAdapter.notifyDataSetChanged();
             }
     
@@ -661,28 +662,33 @@ public class AeroFragment extends Fragment {
         }
         if (this.mPerformanceData == null) {
             this.mPerformanceData = AeroData.performanceCard(
-                    getString(R.string.current_cpu_speed), snapshot.frequencyContent,
+                    getString(R.string.current_cpu_speed),
+                    getCpuFrequencyDisplayValue(snapshot),
                     snapshot.coreFrequencies, getString(R.string.current_gpu_speed),
-                    snapshot.gpuFrequency);
+                    getOverviewDisplayValue(snapshot.gpuFrequency));
         } else {
-            this.mPerformanceData.cpuFrequencyContent = snapshot.frequencyContent;
+            this.mPerformanceData.cpuFrequencyContent =
+                    getCpuFrequencyDisplayValue(snapshot);
             this.mPerformanceData.coreFrequencies = snapshot.coreFrequencies;
-            this.mPerformanceData.gpuFrequencyValue = snapshot.gpuFrequency;
+            this.mPerformanceData.gpuFrequencyValue =
+                    getOverviewDisplayValue(snapshot.gpuFrequency);
         }
         if (this.mRAMData == null) {
-            this.mRAMData = AeroData.standardCard(getString(R.string.available_memory), snapshot.memory);
+            this.mRAMData = AeroData.standardCard(getString(R.string.available_memory),
+                    getOverviewDisplayValue(snapshot.memory));
         } else {
-            this.mRAMData.content = snapshot.memory;
+            this.mRAMData.content = getOverviewDisplayValue(snapshot.memory);
         }
         List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
         for (RawTemperature reading : snapshot.temperatures) {
             String label = reading.labelResource == R.string.temperature_source_other
                     ? getString(reading.labelResource, reading.source) : getString(reading.labelResource);
-            temperatures.add(new AeroData.TemperatureReading(label, reading.value));
+            temperatures.add(new AeroData.TemperatureReading(
+                    label, getOverviewDisplayValue(reading.value)));
         }
         if (temperatures.isEmpty()) {
             temperatures.add(new AeroData.TemperatureReading(
-                    getString(R.string.temperature_status), getString(R.string.temperature_unavailable)));
+                    getString(R.string.temperature_status), getString(R.string.unavailable)));
         }
         if (this.mTemperatureData == null) {
             this.mTemperatureData = AeroData.temperatureCard(
@@ -698,6 +704,12 @@ public class AeroFragment extends Fragment {
         } else {
             this.mAdapter.notifyDataSetChanged();
         }
+    }
+
+    private String getCpuFrequencyDisplayValue(OverviewSnapshot snapshot) {
+        return snapshot.coreFrequencies != null && !snapshot.coreFrequencies.isEmpty()
+                ? ""
+                : getOverviewDisplayValue(snapshot.frequencyContent);
     }
 
     private void rebuildOrderedOverview() {
@@ -724,21 +736,23 @@ public class AeroFragment extends Fragment {
     private List<AeroData.SystemReading> buildSystemReadings(OverviewSnapshot snapshot) {
         List<AeroData.SystemReading> readings = new ArrayList<>();
         readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_device), snapshot.device));
+                getString(R.string.overview_device), getOverviewDisplayValue(snapshot.device)));
         readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_android_version), snapshot.androidVersion));
+                getString(R.string.overview_android_version),
+                getOverviewDisplayValue(snapshot.androidVersion)));
         readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_api_level), snapshot.apiLevel));
+                getString(R.string.overview_api_level), getOverviewDisplayValue(snapshot.apiLevel)));
         readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_architecture), snapshot.architecture));
+                getString(R.string.overview_architecture),
+                getOverviewDisplayValue(snapshot.architecture)));
         readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_kernel), snapshot.kernel));
+                getString(R.string.overview_kernel), getOverviewDisplayValue(snapshot.kernel)));
         readings.add(new AeroData.SystemReading(
                 getString(R.string.overview_root_access),
                 getString(snapshot.rootAccess ? R.string.overview_root_granted
                         : R.string.unavailable)));
         readings.add(new AeroData.SystemReading(
-                getString(R.string.overview_uptime), snapshot.uptime));
+                getString(R.string.overview_uptime), getOverviewDisplayValue(snapshot.uptime)));
         return readings;
     }
 
@@ -765,14 +779,19 @@ public class AeroFragment extends Fragment {
                     : getString(R.string.overview_cpu_governor);
             readings.add(new AeroData.ConfigurationReading(
                     AeroData.ConfigurationReading.Kind.GOVERNOR,
-                    label, entry.getKey()));
+                    label, getOverviewDisplayValue(entry.getKey())));
         }
         String scheduler = normalizeValue(snapshot.ioScheduler);
         readings.add(new AeroData.ConfigurationReading(
                 AeroData.ConfigurationReading.Kind.IO_SCHEDULER,
                 getString(R.string.current_io_governor),
-                scheduler == null ? NO_DATA_FOUND : scheduler));
+                getOverviewDisplayValue(scheduler)));
         return readings;
+    }
+
+    private String getOverviewDisplayValue(String value) {
+        String normalized = normalizeValue(value);
+        return normalized == null ? getString(R.string.unavailable) : normalized;
     }
 
     private String normalizeValue(String value) {
