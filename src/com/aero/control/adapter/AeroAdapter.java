@@ -46,6 +46,8 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView voltageValue;
         TextView currentLabel;
         TextView currentValue;
+        TextView powerSourceLabel;
+        TextView powerSourceValue;
     }
     private static class ConfigurationHolder { LinearLayout rows; }
     private static class SystemHolder { LinearLayout rows; }
@@ -245,9 +247,12 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             holder.voltageValue = (TextView) row.findViewById(R.id.battery_voltage_value);
             holder.currentLabel = (TextView) row.findViewById(R.id.battery_current_label);
             holder.currentValue = (TextView) row.findViewById(R.id.battery_current_value);
+            holder.powerSourceLabel = (TextView) row.findViewById(R.id.battery_power_source_label);
+            holder.powerSourceValue = (TextView) row.findViewById(R.id.battery_power_source_value);
             TextView[] texts = {holder.levelLabel, holder.levelValue, holder.statusLabel,
                     holder.statusValue, holder.voltageLabel, holder.voltageValue,
-                    holder.currentLabel, holder.currentValue};
+                    holder.currentLabel, holder.currentValue, holder.powerSourceLabel,
+                    holder.powerSourceValue};
             for (TextView text : texts) text.setTypeface(FONT);
             row.setTag(holder);
         } else { holder = (BatteryHolder) row.getTag(); }
@@ -257,8 +262,11 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         holder.statusLabel.setText(R.string.battery_status);
         holder.voltageLabel.setText(R.string.battery_voltage);
         holder.currentLabel.setText(R.string.battery_current);
+        holder.powerSourceLabel.setText(R.string.battery_power_source);
         holder.levelValue.setText(reading == null || reading.level == null ? unavailable : reading.level);
         holder.statusValue.setText(reading == null || reading.status == null ? unavailable : reading.status);
+        holder.powerSourceValue.setText(reading == null || reading.powerSource == null
+                ? unavailable : reading.powerSource);
         boolean hasVoltage = reading != null && reading.voltage != null;
         boolean hasCurrent = reading != null && reading.current != null;
         holder.electricalRow.setVisibility(hasVoltage || hasCurrent ? View.VISIBLE : View.GONE);
