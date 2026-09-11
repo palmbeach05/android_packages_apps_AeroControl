@@ -13,5 +13,5 @@ The standalone Gradle build requires:
 Install the required SDK packages and accept the licenses:
 
 sh
-sdkmanager "platform-tools" "platforms;android-22" "build-tools;26.0.2"
+sdkmanager "platform-tools" "platforms;android-23" "build-tools;26.0.2"
 yes | sdkmanager --licenses

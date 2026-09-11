@@ -16,7 +16,7 @@ unaffected by this and continues to work as before.
 Install the SDK components with the SDK manager, e.g.:
 
 ```sh
-sdkmanager "platforms;android-22" "build-tools;26.0.2"
+sdkmanager "platforms;android-23" "build-tools;26.0.2"
 ```
 
 The Gradle wrapper (`./gradlew`) downloads the pinned Gradle/Android Gradle
