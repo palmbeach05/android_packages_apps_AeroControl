@@ -16,6 +16,7 @@ public class AeroData {
     public static final int TYPE_PERFORMANCE_CARD = 4;
     public static final int TYPE_CONFIGURATION_CARD = 5;
     public static final int TYPE_SYSTEM_CARD = 6;
+    public static final int TYPE_BATTERY_CARD = 7;
 
     public String content;
     public int file;
@@ -37,6 +38,21 @@ public class AeroData {
     public List<TemperatureReading> temperatures;
     public List<ConfigurationReading> configurations;
     public List<SystemReading> systemReadings;
+    public BatteryReading batteryReading;
+
+    public static final class BatteryReading {
+        public final String level;
+        public final String status;
+        public final String voltage;
+        public final String current;
+
+        public BatteryReading(String level, String status, String voltage, String current) {
+            this.level = level;
+            this.status = status;
+            this.voltage = voltage;
+            this.current = current;
+        }
+    }
 
     public static final class SystemReading {
         public String label;
@@ -95,6 +111,13 @@ public class AeroData {
         AeroData data = new AeroData(name, null, null);
         data.itemType = TYPE_TEMPERATURE_CARD;
         data.temperatures = temperatures;
+        return data;
+    }
+
+    public static AeroData batteryCard(BatteryReading batteryReading) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_BATTERY_CARD;
+        data.batteryReading = batteryReading;
         return data;
     }
 

@@ -17,6 +17,7 @@ import java.util.List;
 /** Adapter for the typed cards and section headers in the Overview list. */
 public class AeroAdapter extends ArrayAdapter<AeroData> {
     private static final int MAX_GRID_CORES = 8;
+    private static final int MAX_SHORT_TEMPERATURE_LABEL_LENGTH = 16;
     private static final Typeface FONT = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
     private final LayoutInflater inflater;
     private final List<AeroData> data;
@@ -33,6 +34,19 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView gpuValue;
     }
     private static class TemperatureHolder { LinearLayout rows; }
+    private static class BatteryHolder {
+        LinearLayout electricalRow;
+        LinearLayout voltageColumn;
+        LinearLayout currentColumn;
+        TextView levelLabel;
+        TextView levelValue;
+        TextView statusLabel;
+        TextView statusValue;
+        TextView voltageLabel;
+        TextView voltageValue;
+        TextView currentLabel;
+        TextView currentValue;
+    }
     private static class ConfigurationHolder { LinearLayout rows; }
     private static class SystemHolder { LinearLayout rows; }
 
@@ -42,7 +56,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    @Override public int getViewTypeCount() { return 7; }
+    @Override public int getViewTypeCount() { return 8; }
     @Override public int getItemViewType(int position) { return data.get(position).itemType; }
     @Override public boolean isEnabled(int position) { return false; }
 
@@ -56,6 +70,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             case AeroData.TYPE_PERFORMANCE_CARD: return bindPerformance(item, convertView, parent);
             case AeroData.TYPE_CONFIGURATION_CARD: return bindConfiguration(item, convertView, parent);
             case AeroData.TYPE_SYSTEM_CARD: return bindSystem(item, convertView, parent);
+            case AeroData.TYPE_BATTERY_CARD: return bindBattery(item, convertView, parent);
             default: return bindStandard(item, convertView, parent);
         }
     }
@@ -167,20 +182,90 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         } else { holder = (TemperatureHolder) row.getTag(); }
         holder.rows.removeAllViews();
         if (item.temperatures != null) {
-            for (AeroData.TemperatureReading reading : item.temperatures) {
-                View readingView = inflater.inflate(R.layout.overview_temperature_row, holder.rows, false);
-                TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
-                TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
-                label.setTypeface(FONT);
-                value.setTypeface(FONT);
-                label.setText(reading.label == null ? "" : reading.label);
-                value.setText(reading.value == null
-                        ? getContext().getString(R.string.unavailable) : reading.value);
-                label.setVisibility(View.VISIBLE);
-                value.setVisibility(View.VISIBLE);
-                holder.rows.addView(readingView);
+            for (int i = 0; i < item.temperatures.size(); i++) {
+                AeroData.TemperatureReading reading = item.temperatures.get(i);
+                boolean pair = isShortTemperatureLabel(reading.label)
+                        && i + 1 < item.temperatures.size()
+                        && isShortTemperatureLabel(item.temperatures.get(i + 1).label);
+                if (pair) {
+                    LinearLayout pairRow = new LinearLayout(getContext());
+                    pairRow.setOrientation(LinearLayout.HORIZONTAL);
+                    pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                    addTemperatureReading(pairRow, reading, true, true);
+                    addTemperatureReading(pairRow, item.temperatures.get(++i), true, false);
+                    holder.rows.addView(pairRow);
+                } else {
+                    addTemperatureReading(holder.rows, reading, false, false);
+                }
             }
         }
+        return row;
+    }
+
+    private boolean isShortTemperatureLabel(String label) {
+        return label != null && label.length() <= MAX_SHORT_TEMPERATURE_LABEL_LENGTH;
+    }
+
+    private void addTemperatureReading(LinearLayout parent,
+            AeroData.TemperatureReading reading, boolean weighted, boolean leftColumn) {
+        View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
+        TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
+        TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
+        label.setTypeface(FONT);
+        value.setTypeface(FONT);
+        label.setText(reading.label == null ? "" : reading.label);
+        value.setText(reading.value == null
+                ? getContext().getString(R.string.unavailable) : reading.value);
+        if (weighted) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+            int spacing = dpToPixels(4);
+            if (leftColumn) params.rightMargin = spacing;
+            else params.leftMargin = spacing;
+            readingView.setLayoutParams(params);
+        }
+        parent.addView(readingView);
+    }
+
+    private View bindBattery(AeroData item, View row, ViewGroup parent) {
+        BatteryHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_battery_card, parent, false);
+            holder = new BatteryHolder();
+            holder.electricalRow = (LinearLayout) row.findViewById(R.id.battery_electrical_row);
+            holder.voltageColumn = (LinearLayout) row.findViewById(R.id.battery_voltage_column);
+            holder.currentColumn = (LinearLayout) row.findViewById(R.id.battery_current_column);
+            holder.levelLabel = (TextView) row.findViewById(R.id.battery_level_label);
+            holder.levelValue = (TextView) row.findViewById(R.id.battery_level_value);
+            holder.statusLabel = (TextView) row.findViewById(R.id.battery_status_label);
+            holder.statusValue = (TextView) row.findViewById(R.id.battery_status_value);
+            holder.voltageLabel = (TextView) row.findViewById(R.id.battery_voltage_label);
+            holder.voltageValue = (TextView) row.findViewById(R.id.battery_voltage_value);
+            holder.currentLabel = (TextView) row.findViewById(R.id.battery_current_label);
+            holder.currentValue = (TextView) row.findViewById(R.id.battery_current_value);
+            TextView[] texts = {holder.levelLabel, holder.levelValue, holder.statusLabel,
+                    holder.statusValue, holder.voltageLabel, holder.voltageValue,
+                    holder.currentLabel, holder.currentValue};
+            for (TextView text : texts) text.setTypeface(FONT);
+            row.setTag(holder);
+        } else { holder = (BatteryHolder) row.getTag(); }
+        AeroData.BatteryReading reading = item.batteryReading;
+        String unavailable = getContext().getString(R.string.unavailable);
+        holder.levelLabel.setText(R.string.battery_level);
+        holder.statusLabel.setText(R.string.battery_status);
+        holder.voltageLabel.setText(R.string.battery_voltage);
+        holder.currentLabel.setText(R.string.battery_current);
+        holder.levelValue.setText(reading == null || reading.level == null ? unavailable : reading.level);
+        holder.statusValue.setText(reading == null || reading.status == null ? unavailable : reading.status);
+        boolean hasVoltage = reading != null && reading.voltage != null;
+        boolean hasCurrent = reading != null && reading.current != null;
+        holder.electricalRow.setVisibility(hasVoltage || hasCurrent ? View.VISIBLE : View.GONE);
+        holder.voltageColumn.setVisibility(hasVoltage ? View.VISIBLE : View.GONE);
+        holder.currentColumn.setVisibility(hasCurrent ? View.VISIBLE : View.GONE);
+        holder.voltageValue.setText(hasVoltage ? reading.voltage : "");
+        holder.currentValue.setText(hasCurrent ? reading.current : "");
         return row;
     }
 

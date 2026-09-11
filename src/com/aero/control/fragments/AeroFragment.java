@@ -56,6 +56,11 @@ public class AeroFragment extends Fragment {
     private static final String POWER_SUPPLY_DIRECTORY = "/sys/class/power_supply";
     private static final String POWER_SUPPLY_TYPE_FILE = "type";
     private static final String POWER_SUPPLY_TEMP_FILE = "temp";
+    private static final String POWER_SUPPLY_CAPACITY_FILE = "capacity";
+    private static final String POWER_SUPPLY_STATUS_FILE = "status";
+    private static final String POWER_SUPPLY_VOLTAGE_FILE = "voltage_now";
+    private static final String POWER_SUPPLY_CURRENT_FILE = "current_now";
+    private static final String POWER_SUPPLY_CURRENT_AVG_FILE = "current_avg";
     private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
     private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
             Pattern.compile("tegra-i2c\\.(\\d+)");
@@ -72,9 +77,11 @@ public class AeroFragment extends Fragment {
     private AeroAdapter mAdapter;
     private AeroData mPerformanceData;
     private AeroData mTemperatureData;
+    private AeroData mBatteryData;
     private AeroData mSystemSection;
     private AeroData mPerformanceSection;
     private AeroData mTemperaturesSection;
+    private AeroData mBatterySection;
     private AeroData mMemorySection;
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
@@ -513,6 +520,82 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    private static final class RawBattery {
+        private final String level;
+        private final String status;
+        private final String voltage;
+        private final String current;
+
+        private RawBattery(String level, String status, String voltage, String current) {
+            this.level = level;
+            this.status = status;
+            this.voltage = voltage;
+            this.current = current;
+        }
+    }
+
+    private RawBattery getBattery() {
+        String[] powerSupplies = AeroActivity.shell.getDirInfo(POWER_SUPPLY_DIRECTORY, false);
+        if (powerSupplies == null) {
+            return new RawBattery(null, null, null, null);
+        }
+        for (String powerSupply : powerSupplies) {
+            String supplyPath = POWER_SUPPLY_DIRECTORY + "/" + powerSupply + "/";
+            String type = normalizeValue(
+                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_TYPE_FILE));
+            if (type == null || !type.equalsIgnoreCase("Battery")) {
+                continue;
+            }
+            String level = formatBatteryLevel(
+                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_CAPACITY_FILE));
+            String status = normalizeValue(
+                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_STATUS_FILE));
+            String voltage = formatElectricalValue(
+                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_VOLTAGE_FILE),
+                    100000000L, 1000000L, " V", false);
+            String current = formatElectricalValue(
+                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_CURRENT_FILE),
+                    100000000L, 1000L, " mA", true);
+            if (current == null) {
+                current = formatElectricalValue(
+                        AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_CURRENT_AVG_FILE),
+                        100000000L, 1000L, " mA", true);
+            }
+            return new RawBattery(level, status, voltage, current);
+        }
+        return new RawBattery(null, null, null, null);
+    }
+
+    private String formatBatteryLevel(String rawLevel) {
+        String normalized = normalizeValue(rawLevel);
+        if (normalized == null) return null;
+        try {
+            int level = Integer.parseInt(normalized);
+            return level >= 0 && level <= 100 ? level + "%" : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String formatElectricalValue(String rawValue, long maximumAbsoluteValue,
+            long divisor, String unit, boolean allowNegative) {
+        String normalized = normalizeValue(rawValue);
+        if (normalized == null) return null;
+        try {
+            long value = Long.parseLong(normalized);
+            if ((!allowNegative && value <= 0L)
+                    || value > maximumAbsoluteValue
+                    || value < -maximumAbsoluteValue) {
+                return null;
+            }
+            return BigDecimal.valueOf(value)
+                    .divide(BigDecimal.valueOf(divisor))
+                    .stripTrailingZeros().toPlainString() + unit;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     private static final class OverviewSnapshot {
         private String device;
         private String androidVersion;
@@ -528,6 +611,7 @@ public class AeroFragment extends Fragment {
         private String gpuFrequency;
         private String memory;
         private List<RawTemperature> temperatures;
+        private RawBattery battery;
         private String uptime;
     }
 
@@ -560,6 +644,7 @@ public class AeroFragment extends Fragment {
         }
         snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
         snapshot.temperatures = getTemperatures();
+        snapshot.battery = getBattery();
         snapshot.uptime = getUptime();
         return snapshot;
     }
@@ -647,6 +732,7 @@ public class AeroFragment extends Fragment {
         snapshot.gpuFrequency = NO_DATA_FOUND;
         snapshot.memory = NO_DATA_FOUND;
         snapshot.temperatures = new ArrayList<>();
+        snapshot.battery = new RawBattery(null, null, null, null);
         snapshot.uptime = NO_DATA_FOUND;
         return snapshot;
     }
@@ -705,6 +791,16 @@ public class AeroFragment extends Fragment {
         } else {
             this.mTemperatureData.temperatures = temperatures;
         }
+        AeroData.BatteryReading battery = new AeroData.BatteryReading(
+                getOverviewDisplayValue(snapshot.battery == null ? null : snapshot.battery.level),
+                getOverviewDisplayValue(snapshot.battery == null ? null : snapshot.battery.status),
+                snapshot.battery == null ? null : snapshot.battery.voltage,
+                snapshot.battery == null ? null : snapshot.battery.current);
+        if (this.mBatteryData == null) {
+            this.mBatteryData = AeroData.batteryCard(battery);
+        } else {
+            this.mBatteryData.batteryReading = battery;
+        }
 
         rebuildOrderedOverview();
         if (this.mAdapter == null) {
@@ -726,6 +822,7 @@ public class AeroFragment extends Fragment {
             this.mSystemSection = AeroData.section(getString(R.string.overview_section_system));
             this.mPerformanceSection = AeroData.section(getString(R.string.overview_section_performance));
             this.mTemperaturesSection = AeroData.section(getString(R.string.overview_section_temperatures));
+            this.mBatterySection = AeroData.section(getString(R.string.overview_section_battery));
             this.mMemorySection = AeroData.section(getString(R.string.overview_section_memory));
             this.mConfigurationSection = AeroData.section(getString(R.string.overview_section_configuration));
         }
@@ -736,6 +833,8 @@ public class AeroFragment extends Fragment {
         this.mOverviewData.add(this.mPerformanceData);
         this.mOverviewData.add(this.mTemperaturesSection);
         this.mOverviewData.add(this.mTemperatureData);
+        this.mOverviewData.add(this.mBatterySection);
+        this.mOverviewData.add(this.mBatteryData);
         this.mOverviewData.add(this.mMemorySection);
         this.mOverviewData.add(this.mRAMData);
         this.mOverviewData.add(this.mConfigurationSection);
