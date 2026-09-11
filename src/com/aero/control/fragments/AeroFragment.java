@@ -50,6 +50,7 @@ public class AeroFragment extends Fragment {
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";
     private static final String THERMAL_ZONE_DIRECTORY = "/sys/devices/virtual/thermal";
     private static final Pattern THERMAL_ZONE_NAME_PATTERN = Pattern.compile("thermal_zone\\d+");
+    private static final Pattern THERMAL_ZONE_INDEX_PATTERN = Pattern.compile("thermal_zone(\\d+)");
     private static final String THERMAL_ZONE_TYPE_FILE = "type";
     private static final String THERMAL_ZONE_TEMP_FILE = "temp";
     private static final String POWER_SUPPLY_DIRECTORY = "/sys/class/power_supply";
@@ -685,9 +686,12 @@ public class AeroFragment extends Fragment {
             this.mRAMData.content = getOverviewDisplayValue(snapshot.memory);
         }
         List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
-        for (RawTemperature reading : snapshot.temperatures) {
+        for (int i = 0; i < snapshot.temperatures.size(); i++) {
+            RawTemperature reading = snapshot.temperatures.get(i);
             String label = reading.labelResource == R.string.temperature_source_other
-                    ? getString(reading.labelResource, reading.source) : getString(reading.labelResource);
+                    ? getString(reading.labelResource,
+                            getUnknownTemperatureLabel(reading.source, i))
+                    : getString(reading.labelResource);
             temperatures.add(new AeroData.TemperatureReading(
                     label, getOverviewDisplayValue(reading.value)));
         }
@@ -796,6 +800,19 @@ public class AeroFragment extends Fragment {
     private String getOverviewDisplayValue(String value) {
         String normalized = normalizeValue(value);
         return normalized == null ? getString(R.string.unavailable) : normalized;
+    }
+
+    private String getUnknownTemperatureLabel(String source, int fallbackIndex) {
+        String normalized = normalizeValue(source);
+        if (normalized != null) {
+            Matcher thermalZoneMatcher = THERMAL_ZONE_INDEX_PATTERN.matcher(normalized);
+            if (thermalZoneMatcher.matches()) {
+                return getString(R.string.temperature_source_fallback,
+                        Integer.valueOf(thermalZoneMatcher.group(1)));
+            }
+            return normalized;
+        }
+        return getString(R.string.temperature_source_fallback, fallbackIndex);
     }
 
     private String normalizeValue(String value) {
