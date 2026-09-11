@@ -173,6 +173,15 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Binds temperature readings into a two-column card, adding a spacer for an odd final
+     * reading.
+     *
+     * @param item the temperature card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound temperature card view
+     */
     private View bindTemperatures(AeroData item, View row, ViewGroup parent) {
         TemperatureHolder holder;
         if (row == null) {
