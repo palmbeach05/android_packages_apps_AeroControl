@@ -17,7 +17,6 @@ import java.util.List;
 /** Adapter for the typed cards and section headers in the Overview list. */
 public class AeroAdapter extends ArrayAdapter<AeroData> {
     private static final int MAX_GRID_CORES = 8;
-    private static final int MAX_SHORT_TEMPERATURE_LABEL_LENGTH = 16;
     private static final Typeface FONT = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
     private final LayoutInflater inflater;
     private final List<AeroData> data;
@@ -174,6 +173,15 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Binds temperature readings into a two-column card, adding a spacer for an odd final
+     * reading.
+     *
+     * @param item the temperature card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound temperature card view
+     */
     private View bindTemperatures(AeroData item, View row, ViewGroup parent) {
         TemperatureHolder holder;
         if (row == null) {
@@ -184,33 +192,23 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         } else { holder = (TemperatureHolder) row.getTag(); }
         holder.rows.removeAllViews();
         if (item.temperatures != null) {
-            for (int i = 0; i < item.temperatures.size(); i++) {
-                AeroData.TemperatureReading reading = item.temperatures.get(i);
-                if (isShortTemperatureLabel(reading.label)) {
-                    LinearLayout pairRow = new LinearLayout(getContext());
-                    pairRow.setOrientation(LinearLayout.HORIZONTAL);
-                    pairRow.setLayoutParams(new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
-                    addTemperatureReading(pairRow, reading, true, true);
-                    if (i + 1 < item.temperatures.size()
-                            && isShortTemperatureLabel(item.temperatures.get(i + 1).label)) {
-                        addTemperatureReading(
-                                pairRow, item.temperatures.get(++i), true, false);
-                    } else {
-                        addTemperatureSpacer(pairRow);
-                    }
-                    holder.rows.addView(pairRow);
+            for (int i = 0; i < item.temperatures.size(); i += 2) {
+                LinearLayout pairRow = new LinearLayout(getContext());
+                pairRow.setOrientation(LinearLayout.HORIZONTAL);
+                pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+                addTemperatureReading(pairRow, item.temperatures.get(i), true, true);
+                if (i + 1 < item.temperatures.size()) {
+                    addTemperatureReading(
+                            pairRow, item.temperatures.get(i + 1), true, false);
                 } else {
-                    addTemperatureReading(holder.rows, reading, false, false);
+                    addTemperatureSpacer(pairRow);
                 }
+                holder.rows.addView(pairRow);
             }
         }
         return row;
-    }
-
-    private boolean isShortTemperatureLabel(String label) {
-        return label != null && label.length() <= MAX_SHORT_TEMPERATURE_LABEL_LENGTH;
     }
 
     private void addTemperatureReading(LinearLayout parent,
