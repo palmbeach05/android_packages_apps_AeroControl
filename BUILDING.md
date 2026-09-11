@@ -6,7 +6,7 @@ The standalone Gradle build requires:
 
 - Java 8. The checked-in build uses Gradle 4.1 and Android Gradle Plugin 3.0.1.
 - Android SDK command-line tools.
-- Android SDK Platform 22.
+- Android SDK Platform 23.
 - Android SDK Build-Tools 26.0.2.
 - Accepted Android SDK licenses.
 
