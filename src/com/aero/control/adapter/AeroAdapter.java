@@ -35,7 +35,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
     }
     private static class TemperatureHolder { LinearLayout rows; }
     private static class BatteryHolder {
-        LinearLayout electricalRow;
+        LinearLayout electricalColumn;
         LinearLayout voltageColumn;
         LinearLayout currentColumn;
         TextView levelLabel;
@@ -186,17 +186,20 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         if (item.temperatures != null) {
             for (int i = 0; i < item.temperatures.size(); i++) {
                 AeroData.TemperatureReading reading = item.temperatures.get(i);
-                boolean pair = isShortTemperatureLabel(reading.label)
-                        && i + 1 < item.temperatures.size()
-                        && isShortTemperatureLabel(item.temperatures.get(i + 1).label);
-                if (pair) {
+                if (isShortTemperatureLabel(reading.label)) {
                     LinearLayout pairRow = new LinearLayout(getContext());
                     pairRow.setOrientation(LinearLayout.HORIZONTAL);
                     pairRow.setLayoutParams(new LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT));
                     addTemperatureReading(pairRow, reading, true, true);
-                    addTemperatureReading(pairRow, item.temperatures.get(++i), true, false);
+                    if (i + 1 < item.temperatures.size()
+                            && isShortTemperatureLabel(item.temperatures.get(i + 1).label)) {
+                        addTemperatureReading(
+                                pairRow, item.temperatures.get(++i), true, false);
+                    } else {
+                        addTemperatureSpacer(pairRow);
+                    }
                     holder.rows.addView(pairRow);
                 } else {
                     addTemperatureReading(holder.rows, reading, false, false);
@@ -231,12 +234,22 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         parent.addView(readingView);
     }
 
+    private void addTemperatureSpacer(LinearLayout parent) {
+        View spacer = new View(getContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        params.leftMargin = dpToPixels(4);
+        spacer.setLayoutParams(params);
+        parent.addView(spacer);
+    }
+
     private View bindBattery(AeroData item, View row, ViewGroup parent) {
         BatteryHolder holder;
         if (row == null) {
             row = inflater.inflate(R.layout.overview_battery_card, parent, false);
             holder = new BatteryHolder();
-            holder.electricalRow = (LinearLayout) row.findViewById(R.id.battery_electrical_row);
+            holder.electricalColumn =
+                    (LinearLayout) row.findViewById(R.id.battery_electrical_column);
             holder.voltageColumn = (LinearLayout) row.findViewById(R.id.battery_voltage_column);
             holder.currentColumn = (LinearLayout) row.findViewById(R.id.battery_current_column);
             holder.levelLabel = (TextView) row.findViewById(R.id.battery_level_label);
@@ -269,7 +282,8 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 ? unavailable : reading.powerSource);
         boolean hasVoltage = reading != null && reading.voltage != null;
         boolean hasCurrent = reading != null && reading.current != null;
-        holder.electricalRow.setVisibility(hasVoltage || hasCurrent ? View.VISIBLE : View.GONE);
+        holder.electricalColumn.setVisibility(
+                hasVoltage || hasCurrent ? View.VISIBLE : View.INVISIBLE);
         holder.voltageColumn.setVisibility(hasVoltage ? View.VISIBLE : View.GONE);
         holder.currentColumn.setVisibility(hasCurrent ? View.VISIBLE : View.GONE);
         holder.voltageValue.setText(hasVoltage ? reading.voltage : "");
