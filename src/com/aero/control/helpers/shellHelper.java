@@ -27,6 +27,25 @@ public final class shellHelper {
     private static final int BUFF_LEN = 8192;
     private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final Pattern HWMON_DIRECTORY_PATTERN =
+            Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
+    private static final Pattern TEGRA_I2C_DIRECTORY_PATTERN = Pattern.compile(
+            "/sys/devices/platform(?:/tegra-i2c\\.(\\d+)"
+                    + "(?:/i2c-\\1(?:/\\1-[0-9a-fA-F]{4})?)?)?");
+    private static final Pattern TEGRA_I2C_DEVICE_DIRECTORY_PATTERN = Pattern.compile(
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
+                    + "\\1-[0-9a-fA-F]{4}");
+    private static final Pattern TEGRA_I2C_TEMPERATURE_FILE_PATTERN = Pattern.compile(
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
+                    + "\\1-[0-9a-fA-F]{4}/temp\\d+_input");
+    private static final Pattern TEGRA_I2C_METADATA_FILE_PATTERN = Pattern.compile(
+            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
+                    + "\\1-[0-9a-fA-F]{4}/(?:name|temp\\d+_label)");
+    private static final Pattern KERNEL_VERSION_PREFIX_PATTERN =
+            Pattern.compile("^Linux\\s+version\\s+(\\S+)\\s+");
+    private static final Pattern KERNEL_BUILD_PATTERN = Pattern.compile("^(#\\S+)(?:\\s+(.*))?$");
+    private static final Pattern KERNEL_DATE_START_PATTERN = Pattern.compile(
+            "(?:^|\\s)(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\\s+");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -307,17 +326,7 @@ public final class shellHelper {
             try {
                 String procVersionStr = reader.readLine();
                 reader.close();
-                Pattern p = Pattern.compile("\\w+\\s+\\w+\\s+([^\\s]+)\\s+\\(([^\\s@]+(?:@[^\\s.]+)?)[^)]*\\)\\s+\\((?:[^(]*\\([^)]*\\))?[^)]*\\)\\s+([^\\s]+)\\s+(?:PREEMPT\\s+)?(.+)");
-                Matcher m = p.matcher(procVersionStr);
-                if (!m.matches()) {
-                    Log.e(LOG_TAG, "Regex did not match on /proc/version: " + procVersionStr);
-                    return NO_DATA_FOUND;
-                }
-                if (m.groupCount() < 4) {
-                    Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount() + " groups");
-                    return NO_DATA_FOUND;
-                }
-                return m.group(1) + "\n" + m.group(2) + " " + m.group(3) + "\n" + m.group(4);
+                return formatKernelVersion(procVersionStr);
             } catch (Throwable th) {
                 reader.close();
                 throw th;
@@ -326,6 +335,66 @@ public final class shellHelper {
             Log.e(LOG_TAG, "IO Exception when getting kernel version for Device Info screen", e);
             return NO_DATA_FOUND;
         }
+    }
+
+    /**
+     * Formats /proc/version while retaining the raw value if its structure is unfamiliar.
+     */
+    static String formatKernelVersion(String procVersion) {
+        if (procVersion == null || procVersion.trim().length() == 0) {
+            return NO_DATA_FOUND;
+        }
+        String raw = procVersion.trim();
+        Matcher prefix = KERNEL_VERSION_PREFIX_PATTERN.matcher(raw);
+        if (!prefix.find()) return raw;
+
+        String release = prefix.group(1);
+        int builderStart = skipWhitespace(raw, prefix.end());
+        int builderEnd = findClosingParenthesis(raw, builderStart);
+        if (builderEnd < 0) return raw;
+        String builderDetails = raw.substring(builderStart + 1, builderEnd).trim();
+        if (builderDetails.length() == 0) return raw;
+        String builder = builderDetails.split("\\s+", 2)[0];
+
+        int compilerStart = skipWhitespace(raw, builderEnd + 1);
+        int compilerEnd = findClosingParenthesis(raw, compilerStart);
+        if (compilerEnd < 0) return raw;
+        String buildMetadata = raw.substring(compilerEnd + 1).trim();
+        Matcher build = KERNEL_BUILD_PATTERN.matcher(buildMetadata);
+        if (!build.matches()) return raw;
+
+        StringBuilder formatted = new StringBuilder(release)
+                .append('\n').append(builder).append(' ').append(build.group(1));
+        String flagsAndDate = build.group(2);
+        if (flagsAndDate == null || flagsAndDate.length() == 0) return formatted.toString();
+
+        Matcher dateStart = KERNEL_DATE_START_PATTERN.matcher(flagsAndDate);
+        if (!dateStart.find()) {
+            return formatted.append('\n').append(flagsAndDate).toString();
+        }
+        String flags = flagsAndDate.substring(0, dateStart.start()).trim();
+        String date = flagsAndDate.substring(dateStart.start()).trim();
+        if (flags.length() > 0) formatted.append('\n').append(flags);
+        if (date.length() > 0) formatted.append('\n').append(date);
+        return formatted.toString();
+    }
+
+    private static int skipWhitespace(String value, int position) {
+        while (position < value.length() && Character.isWhitespace(value.charAt(position))) {
+            position++;
+        }
+        return position;
+    }
+
+    private static int findClosingParenthesis(String value, int openingPosition) {
+        if (openingPosition >= value.length() || value.charAt(openingPosition) != '(') return -1;
+        int depth = 0;
+        for (int i = openingPosition; i < value.length(); i++) {
+            char character = value.charAt(i);
+            if (character == '(') depth++;
+            else if (character == ')' && --depth == 0) return i;
+        }
+        return -1;
     }
 
     /**
@@ -453,6 +522,171 @@ public final class shellHelper {
                 return new File(file2, s2).isDirectory();
             }
         });
+    }
+
+    /**
+     * Lists entries in the fixed hwmon sysfs hierarchy, falling back to the shared root
+     * shell when the app cannot enumerate the directory directly.
+     *
+     * @param path /sys/class/hwmon or one of its hwmonN directories
+     * @param files if true, list files; if false, list directories
+     * @return sorted entry names, or an empty array when the directory cannot be listed
+     */
+    public final String[] getRootAwareHwmonDirInfo(String path, boolean files) {
+        if (path == null || !HWMON_DIRECTORY_PATTERN.matcher(path).matches()) {
+            return new String[0];
+        }
+
+        File directory = new File(path);
+        File[] entries = directory.listFiles();
+        if (entries != null) {
+            List<String> results = new ArrayList<>();
+            for (File entry : entries) {
+                if ((files && entry.isFile()) || (!files && entry.isDirectory())) {
+                    results.add(entry.getName());
+                }
+            }
+            Collections.sort(results);
+            return results.toArray(new String[0]);
+        }
+
+        String test = files ? "-f" : "-d";
+        String command = "for entry in " + escapeShellArg(path) +
+                "/*; do [ " + test + " \"$entry\" ] && printf '%s\\n' \"${entry##*/}\"; done";
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return new String[0];
+            }
+            addCommand(command);
+            String output = getRootResult();
+            if (output == null || output.length() == 0) {
+                return new String[0];
+            }
+            String[] results = output.split("\\r?\\n");
+            Arrays.sort(results);
+            return results;
+        }
+    }
+
+    /**
+     * Lists entries in the allowlisted Tegra I2C temperature hierarchy, using the
+     * shared root shell only when direct directory enumeration is unavailable.
+     *
+     * @param path an allowlisted Tegra I2C hierarchy directory
+     * @param files if true, list files; if false, list directories
+     * @return sorted child names, or an empty array when access is rejected or fails
+     */
+    public final String[] getRootAwareTegraI2cDirInfo(String path, boolean files) {
+        if (path == null
+                || !TEGRA_I2C_DIRECTORY_PATTERN.matcher(path).matches()
+                || (files && !TEGRA_I2C_DEVICE_DIRECTORY_PATTERN.matcher(path).matches())) {
+            return new String[0];
+        }
+
+        File[] entries = null;
+        try {
+            entries = new File(path).listFiles();
+        } catch (SecurityException e) {
+            // Fall through to the shared root shell.
+        }
+        if (entries != null) {
+            List<String> results = new ArrayList<>();
+            for (File entry : entries) {
+                if ((files && entry.isFile()) || (!files && entry.isDirectory())) {
+                    results.add(entry.getName());
+                }
+            }
+            Collections.sort(results);
+            return results.toArray(new String[0]);
+        }
+
+        String test = files ? "-f" : "-d";
+        String command = "for entry in " + escapeShellArg(path)
+                + "/*; do [ " + test + " \"$entry\" ]"
+                + " && printf '%s\\n' \"${entry##*/}\"; done";
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return new String[0];
+            }
+            addCommand(command);
+            String output = getRootResult();
+            if (output == null || output.length() == 0) {
+                return new String[0];
+            }
+            String[] results = output.split("\\r?\\n");
+            Arrays.sort(results);
+            return results;
+        }
+    }
+
+    /**
+     * Reads an allowlisted Tegra I2C tempN_input node, using the shared root shell only
+     * when a direct read fails.
+     *
+     * @param path an allowlisted Tegra I2C tempN_input path
+     * @return the node contents, or "Unavailable" when access is rejected or fails
+     */
+    public final String getRootAwareTegraI2cInfo(String path) {
+        if (path == null || !TEGRA_I2C_TEMPERATURE_FILE_PATTERN.matcher(path).matches()) {
+            return NO_DATA_FOUND;
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                String info = reader.readLine();
+                return info == null ? NO_DATA_FOUND : info;
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            // Fall through to the shared root shell.
+        } catch (SecurityException e) {
+            // Fall through to the shared root shell.
+        }
+
+        synchronized (this) {
+            openShell();
+            if (!mShellLoaded) {
+                return NO_DATA_FOUND;
+            }
+            addCommand("[ -f " + escapeShellArg(path) + " ] && cat "
+                    + escapeShellArg(path));
+            String output = getRootResult();
+            return output == null || output.length() == 0 ? NO_DATA_FOUND : output;
+        }
+    }
+
+    /**
+     * Reads optional metadata from an allowlisted Tegra I2C device without using
+     * the root shell when direct access is unavailable.
+     *
+     * @param path an allowlisted Tegra I2C name or tempN_label path
+     * @return the trimmed node contents, or "Unavailable" when access is rejected or fails
+     */
+    public final String getDirectTegraI2cInfo(String path) {
+        if (path == null || !TEGRA_I2C_METADATA_FILE_PATTERN.matcher(path).matches()) {
+            return NO_DATA_FOUND;
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                String info = reader.readLine();
+                if (info == null || info.trim().length() == 0) {
+                    return NO_DATA_FOUND;
+                }
+                return info.trim();
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            return NO_DATA_FOUND;
+        } catch (SecurityException e) {
+            return NO_DATA_FOUND;
+        }
     }
 
     /**

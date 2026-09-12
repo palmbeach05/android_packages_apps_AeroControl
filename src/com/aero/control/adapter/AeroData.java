@@ -9,18 +9,147 @@ import java.util.List;
  * and multi-core CPU frequency grids.
  */
 public class AeroData {
+    public static final int TYPE_SECTION_HEADER = 0;
+    public static final int TYPE_STANDARD_CARD = 1;
+    public static final int TYPE_CPU_FREQUENCY_CARD = 2;
+    public static final int TYPE_TEMPERATURE_CARD = 3;
+    public static final int TYPE_PERFORMANCE_CARD = 4;
+    public static final int TYPE_CONFIGURATION_CARD = 5;
+    public static final int TYPE_SYSTEM_CARD = 6;
+    public static final int TYPE_BATTERY_CARD = 7;
+
     public String content;
     public int file;
     public Drawable image;
     public boolean isChecked = false;
     public String name;
     public String right_name;
+    public int itemType = TYPE_STANDARD_CARD;
     /**
      * Per-core frequency strings for the Overview frequency grid. A non-null
      * list of size 1-8 signals grid rendering in AeroAdapter; null or a list
      * larger than 8 entries falls back to plain content rendering.
      */
     public List<String> coreFrequencies;
+    public String cpuFrequencyTitle;
+    public String cpuFrequencyContent;
+    public String gpuFrequencyTitle;
+    public String gpuFrequencyValue;
+    public List<TemperatureReading> temperatures;
+    public List<ConfigurationReading> configurations;
+    public List<SystemReading> systemReadings;
+    public BatteryReading batteryReading;
+
+    public static final class BatteryReading {
+        public final String level;
+        public final String status;
+        public final String voltage;
+        public final String current;
+        public final String powerSource;
+
+        public BatteryReading(String level, String status, String voltage, String current,
+                String powerSource) {
+            this.level = level;
+            this.status = status;
+            this.voltage = voltage;
+            this.current = current;
+            this.powerSource = powerSource;
+        }
+    }
+
+    public static final class SystemReading {
+        public String label;
+        public String value;
+
+        public SystemReading(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    public static final class TemperatureReading {
+        public final String label;
+        public final String value;
+
+        public TemperatureReading(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    public static final class ConfigurationReading {
+        public enum Kind {
+            GOVERNOR,
+            IO_SCHEDULER
+        }
+
+        public final Kind kind;
+        public final String label;
+        public final String value;
+
+        public ConfigurationReading(Kind kind, String label, String value) {
+            this.kind = kind;
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    public static AeroData section(String name) {
+        AeroData data = new AeroData(name, null, null);
+        data.itemType = TYPE_SECTION_HEADER;
+        return data;
+    }
+
+    public static AeroData standardCard(String name, String content) {
+        return new AeroData(name, content, null);
+    }
+
+    public static AeroData cpuFrequencyCard(String name, String content) {
+        AeroData data = new AeroData(name, content, null);
+        data.itemType = TYPE_CPU_FREQUENCY_CARD;
+        return data;
+    }
+
+    public static AeroData temperatureCard(String name, List<TemperatureReading> temperatures) {
+        AeroData data = new AeroData(name, null, null);
+        data.itemType = TYPE_TEMPERATURE_CARD;
+        data.temperatures = temperatures;
+        return data;
+    }
+
+    public static AeroData batteryCard(BatteryReading batteryReading) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_BATTERY_CARD;
+        data.batteryReading = batteryReading;
+        return data;
+    }
+
+    public static AeroData performanceCard(String cpuFrequencyTitle,
+            String cpuFrequencyContent, List<String> coreFrequencies,
+            String gpuFrequencyTitle, String gpuFrequencyValue) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_PERFORMANCE_CARD;
+        data.cpuFrequencyTitle = cpuFrequencyTitle;
+        data.cpuFrequencyContent = cpuFrequencyContent;
+        data.coreFrequencies = coreFrequencies;
+        data.gpuFrequencyTitle = gpuFrequencyTitle;
+        data.gpuFrequencyValue = gpuFrequencyValue;
+        return data;
+    }
+
+    public static AeroData configurationCard(List<ConfigurationReading> configurations) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_CONFIGURATION_CARD;
+        data.configurations = configurations;
+        return data;
+    }
+
+    public static AeroData systemCard(List<SystemReading> systemReadings) {
+        AeroData data = new AeroData(null, null, null);
+        data.itemType = TYPE_SYSTEM_CARD;
+        data.systemReadings = systemReadings;
+        return data;
+    }
 
     /**
      * Creates a data item with a name, content, and optional right-aligned name.

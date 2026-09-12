@@ -20,7 +20,6 @@ public final class FilePath {
     public static final String CPU_MAX_FREQ = "/cpufreq/scaling_max_freq";
     public static final String CPU_MAX_RATE = "/proc/overclock/max_rate";
     public static final String CPU_MIN_FREQ = "/cpufreq/scaling_min_freq";
-    public static final String CPU_TEMP_FILE = "/sys/devices/virtual/thermal/thermal_zone1/temp";
     public static final String CPU_TIME_IN_STATE_SUFFIX = "/cpufreq/stats/time_in_state";
     public static final String CPU_VSEL = "/proc/overclock/mpu_opps";
     public static final String CPU_VSEL_MAX = "/proc/overclock/max_vsel";
