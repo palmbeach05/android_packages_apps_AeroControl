@@ -10,13 +10,13 @@ unaffected by this and continues to work as before.
 ## Requirements
 
 - JDK 8
-- Android SDK Platform 22 (`compileSdkVersion 22`)
+- Android SDK Platform 23 (`compileSdkVersion 23`)
 - Android SDK Build-Tools 26.0.2
 
 Install the SDK components with the SDK manager, e.g.:
 
 ```sh
-sdkmanager "platforms;android-22" "build-tools;26.0.2"
+sdkmanager "platforms;android-23" "build-tools;26.0.2"
 ```
 
 The Gradle wrapper (`./gradlew`) downloads the pinned Gradle/Android Gradle
