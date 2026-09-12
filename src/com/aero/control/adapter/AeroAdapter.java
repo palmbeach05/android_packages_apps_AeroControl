@@ -34,7 +34,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
     }
     private static class TemperatureHolder { LinearLayout rows; }
     private static class BatteryHolder {
-        LinearLayout electricalColumn;
+        LinearLayout electricalRow;
         LinearLayout voltageColumn;
         LinearLayout currentColumn;
         TextView levelLabel;
@@ -246,8 +246,8 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         if (row == null) {
             row = inflater.inflate(R.layout.overview_battery_card, parent, false);
             holder = new BatteryHolder();
-            holder.electricalColumn =
-                    (LinearLayout) row.findViewById(R.id.battery_electrical_column);
+            holder.electricalRow =
+                    (LinearLayout) row.findViewById(R.id.battery_electrical_row);
             holder.voltageColumn = (LinearLayout) row.findViewById(R.id.battery_voltage_column);
             holder.currentColumn = (LinearLayout) row.findViewById(R.id.battery_current_column);
             holder.levelLabel = (TextView) row.findViewById(R.id.battery_level_label);
@@ -280,8 +280,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 ? unavailable : reading.powerSource);
         boolean hasVoltage = reading != null && reading.voltage != null;
         boolean hasCurrent = reading != null && reading.current != null;
-        holder.electricalColumn.setVisibility(
-                hasVoltage || hasCurrent ? View.VISIBLE : View.INVISIBLE);
+        holder.electricalRow.setVisibility(hasVoltage || hasCurrent ? View.VISIBLE : View.GONE);
         holder.voltageColumn.setVisibility(hasVoltage ? View.VISIBLE : View.GONE);
         holder.currentColumn.setVisibility(hasCurrent ? View.VISIBLE : View.GONE);
         holder.voltageValue.setText(hasVoltage ? reading.voltage : "");
