@@ -33,6 +33,24 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView gpuValue;
     }
     private static class TemperatureHolder { LinearLayout rows; }
+    /** Holds the container populated with battery reading rows. */
+    private static class BatteryHolder { LinearLayout rows; }
+    /** A formatted battery value paired with the resource for its display label. */
+    private static class BatteryDisplayReading {
+        final int labelResourceId;
+        final String value;
+
+        /**
+         * Creates a battery reading ready to be rendered in the overview card.
+         *
+         * @param labelResourceId the string resource used for the reading label
+         * @param value the formatted reading value
+         */
+        BatteryDisplayReading(int labelResourceId, String value) {
+            this.labelResourceId = labelResourceId;
+            this.value = value;
+        }
+    }
     private static class ConfigurationHolder { LinearLayout rows; }
     private static class SystemHolder { LinearLayout rows; }
 
@@ -42,7 +60,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         this.data = data;
     }
 
-    @Override public int getViewTypeCount() { return 7; }
+    @Override public int getViewTypeCount() { return 8; }
     @Override public int getItemViewType(int position) { return data.get(position).itemType; }
     @Override public boolean isEnabled(int position) { return false; }
 
@@ -56,6 +74,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
             case AeroData.TYPE_PERFORMANCE_CARD: return bindPerformance(item, convertView, parent);
             case AeroData.TYPE_CONFIGURATION_CARD: return bindConfiguration(item, convertView, parent);
             case AeroData.TYPE_SYSTEM_CARD: return bindSystem(item, convertView, parent);
+            case AeroData.TYPE_BATTERY_CARD: return bindBattery(item, convertView, parent);
             default: return bindStandard(item, convertView, parent);
         }
     }
@@ -157,6 +176,15 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Binds temperature readings into a two-column card, adding a spacer for an odd final
+     * reading.
+     *
+     * @param item the temperature card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound temperature card view
+     */
     private View bindTemperatures(AeroData item, View row, ViewGroup parent) {
         TemperatureHolder holder;
         if (row == null) {
@@ -167,21 +195,148 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         } else { holder = (TemperatureHolder) row.getTag(); }
         holder.rows.removeAllViews();
         if (item.temperatures != null) {
-            for (AeroData.TemperatureReading reading : item.temperatures) {
-                View readingView = inflater.inflate(R.layout.overview_temperature_row, holder.rows, false);
-                TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
-                TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
-                label.setTypeface(FONT);
-                value.setTypeface(FONT);
-                label.setText(reading.label == null ? "" : reading.label);
-                value.setText(reading.value == null
-                        ? getContext().getString(R.string.unavailable) : reading.value);
-                label.setVisibility(View.VISIBLE);
-                value.setVisibility(View.VISIBLE);
-                holder.rows.addView(readingView);
+            for (int i = 0; i < item.temperatures.size(); i += 2) {
+                LinearLayout pairRow = new LinearLayout(getContext());
+                pairRow.setOrientation(LinearLayout.HORIZONTAL);
+                pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+                addTemperatureReading(pairRow, item.temperatures.get(i), true, true);
+                if (i + 1 < item.temperatures.size()) {
+                    addTemperatureReading(
+                            pairRow, item.temperatures.get(i + 1), true, false);
+                } else {
+                    addReadingSpacer(pairRow);
+                }
+                holder.rows.addView(pairRow);
             }
         }
         return row;
+    }
+
+    /**
+     * Adds a formatted temperature reading to a row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the temperature label and value to display
+     * @param weighted whether the reading should occupy one weighted column
+     * @param leftColumn whether the reading is in the left column
+     */
+    private void addTemperatureReading(LinearLayout parent,
+            AeroData.TemperatureReading reading, boolean weighted, boolean leftColumn) {
+        View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
+        TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
+        TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
+        label.setTypeface(FONT);
+        value.setTypeface(FONT);
+        label.setText(reading.label == null ? "" : reading.label);
+        value.setText(reading.value == null
+                ? getContext().getString(R.string.unavailable) : reading.value);
+        if (weighted) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+            int spacing = dpToPixels(4);
+            if (leftColumn) params.rightMargin = spacing;
+            else params.leftMargin = spacing;
+            readingView.setLayoutParams(params);
+        }
+        parent.addView(readingView);
+    }
+
+    /**
+     * Adds an empty weighted column to keep an odd final reading left-aligned.
+     *
+     * @param parent the row that receives the spacer
+     */
+    private void addReadingSpacer(LinearLayout parent) {
+        View spacer = new View(getContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        params.leftMargin = dpToPixels(4);
+        spacer.setLayoutParams(params);
+        parent.addView(spacer);
+    }
+
+    /**
+     * Binds available battery readings into a compact two-column card.
+     *
+     * @param item the battery card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound battery card view
+     */
+    private View bindBattery(AeroData item, View row, ViewGroup parent) {
+        BatteryHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_battery_card, parent, false);
+            holder = new BatteryHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.battery_rows);
+            row.setTag(holder);
+        } else { holder = (BatteryHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        AeroData.BatteryReading reading = item.batteryReading;
+        List<BatteryDisplayReading> readings = new ArrayList<>();
+        if (reading != null) {
+            addBatteryDisplayReading(readings, R.string.battery_level, reading.level);
+            addBatteryDisplayReading(readings, R.string.battery_status, reading.status);
+            addBatteryDisplayReading(
+                    readings, R.string.battery_power_source, reading.powerSource);
+            addBatteryDisplayReading(readings, R.string.battery_voltage, reading.voltage);
+            addBatteryDisplayReading(readings, R.string.battery_current, reading.current);
+        }
+        for (int i = 0; i < readings.size(); i += 2) {
+            LinearLayout pairRow = new LinearLayout(getContext());
+            pairRow.setOrientation(LinearLayout.HORIZONTAL);
+            pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            addBatteryReading(pairRow, readings.get(i), true);
+            if (i + 1 < readings.size()) {
+                addBatteryReading(pairRow, readings.get(i + 1), false);
+            } else {
+                addReadingSpacer(pairRow);
+            }
+            holder.rows.addView(pairRow);
+        }
+        return row;
+    }
+
+    /**
+     * Adds a battery reading to the display list when its value is available.
+     *
+     * @param readings the display list being assembled
+     * @param labelResourceId the string resource used for the reading label
+     * @param value the formatted reading value, or null when unavailable
+     */
+    private void addBatteryDisplayReading(
+            List<BatteryDisplayReading> readings, int labelResourceId, String value) {
+        if (value != null) readings.add(new BatteryDisplayReading(labelResourceId, value));
+    }
+
+    /**
+     * Inflates and adds one battery reading to a two-column row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the battery label resource and value to display
+     * @param leftColumn whether the reading is in the left column
+     */
+    private void addBatteryReading(
+            LinearLayout parent, BatteryDisplayReading reading, boolean leftColumn) {
+        View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
+        TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
+        TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
+        label.setTypeface(FONT);
+        value.setTypeface(FONT);
+        label.setText(reading.labelResourceId);
+        value.setText(reading.value);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        int spacing = dpToPixels(4);
+        if (leftColumn) params.rightMargin = spacing;
+        else params.leftMargin = spacing;
+        readingView.setLayoutParams(params);
+        parent.addView(readingView);
     }
 
     private View bindPerformance(AeroData item, View row, ViewGroup parent) {
@@ -234,6 +389,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Binds governor and I/O scheduler readings to the configuration card.
+     *
+     * @param item the overview item containing configuration readings
+     * @param row the recycled row, or null when a row must be inflated
+     * @param parent the parent used to inflate a new row
+     * @return the populated configuration row
+     */
     private View bindConfiguration(AeroData item, View row, ViewGroup parent) {
         ConfigurationHolder holder;
         if (row == null) {
@@ -248,18 +411,20 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 ? Collections.<AeroData.ConfigurationReading>emptyList() : item.configurations;
         List<AeroData.ConfigurationReading> governors = new ArrayList<>();
         List<AeroData.ConfigurationReading> otherReadings = new ArrayList<>();
+        AeroData.ConfigurationReading scheduler = null;
         for (AeroData.ConfigurationReading reading : readings) {
             if (reading.kind == AeroData.ConfigurationReading.Kind.GOVERNOR) {
                 governors.add(reading);
+            } else if (reading.kind == AeroData.ConfigurationReading.Kind.IO_SCHEDULER
+                    && scheduler == null) {
+                scheduler = reading;
             } else {
                 otherReadings.add(reading);
             }
         }
 
-        int firstOtherReading = 0;
-        if (governors.size() == 1 && !otherReadings.isEmpty()) {
-            addConfigurationPair(holder.rows, governors.get(0), otherReadings.get(0));
-            firstOtherReading = 1;
+        if (governors.size() == 1 && scheduler != null) {
+            addConfigurationPair(holder.rows, governors.get(0), scheduler);
         } else if (governors.size() == 2) {
             addConfigurationPair(holder.rows, governors.get(0), governors.get(1));
         } else {
@@ -267,8 +432,11 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 addConfigurationCard(holder.rows, reading, false, false);
             }
         }
-        for (int i = firstOtherReading; i < otherReadings.size(); i++) {
-            addConfigurationCard(holder.rows, otherReadings.get(i), false, false);
+        if (scheduler != null && governors.size() != 1) {
+            addConfigurationCard(holder.rows, scheduler, false, false);
+        }
+        for (AeroData.ConfigurationReading reading : otherReadings) {
+            addConfigurationCard(holder.rows, reading, false, false);
         }
         return row;
     }
