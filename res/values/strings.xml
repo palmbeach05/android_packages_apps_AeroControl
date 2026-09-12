@@ -70,6 +70,10 @@
     <string name="battery_status">Status</string>
     <string name="battery_voltage">Voltage</string>
     <string name="battery_current">Current</string>
+    <string name="battery_power_source">Power source</string>
+    <string name="battery_power_source_battery">Battery</string>
+    <string name="battery_power_source_usb">USB port</string>
+    <string name="battery_power_source_ac">AC charger</string>
     <string name="slider_profile">Profiles</string>
     <string name="slider_statistics">CPU Statistics</string>
     <string name="slider_test_suite_settings">Test Suite</string>
@@ -86,6 +90,7 @@
     <string name="available_memory">Total Memory:</string>
     <string name="current_cpu_speed">CPU Frequency:</string>
     <string name="current_governor">Governor:</string>
+    <string name="current_governor_index">Governor %1$d:</string>
     <string name="current_governor_cluster">Governor (CPU %1$s):</string>
     <string name="current_gpu_speed">GPU Frequency:</string>
     <string name="current_io_governor">I/O-Scheduler:</string>

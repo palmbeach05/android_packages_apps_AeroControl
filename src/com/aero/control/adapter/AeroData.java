@@ -45,12 +45,15 @@ public class AeroData {
         public final String status;
         public final String voltage;
         public final String current;
+        public final String powerSource;
 
-        public BatteryReading(String level, String status, String voltage, String current) {
+        public BatteryReading(String level, String status, String voltage, String current,
+                String powerSource) {
             this.level = level;
             this.status = status;
             this.voltage = voltage;
             this.current = current;
+            this.powerSource = powerSource;
         }
     }
 
