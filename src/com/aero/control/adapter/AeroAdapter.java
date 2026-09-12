@@ -389,6 +389,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Binds governor and I/O scheduler readings to the configuration card.
+     *
+     * @param item the overview item containing configuration readings
+     * @param row the recycled row, or null when a row must be inflated
+     * @param parent the parent used to inflate a new row
+     * @return the populated configuration row
+     */
     private View bindConfiguration(AeroData item, View row, ViewGroup parent) {
         ConfigurationHolder holder;
         if (row == null) {

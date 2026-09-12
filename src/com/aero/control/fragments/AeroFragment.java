@@ -647,6 +647,11 @@ public class AeroFragment extends Fragment {
         private String uptime;
     }
 
+    /**
+     * Collects the current system values used to populate the overview screen.
+     *
+     * @return a snapshot of the available system readings
+     */
     private OverviewSnapshot collectOverviewData() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.device = getDeviceModel();
@@ -746,6 +751,11 @@ public class AeroFragment extends Fragment {
         }
     }
 
+    /**
+     * Creates an overview snapshot populated with unavailable fallback values.
+     *
+     * @return a snapshot safe to render when system readings cannot be collected
+     */
     private OverviewSnapshot createFallbackOverviewSnapshot() {
         OverviewSnapshot snapshot = new OverviewSnapshot();
         snapshot.device = NO_DATA_FOUND;
@@ -893,6 +903,12 @@ public class AeroFragment extends Fragment {
         return readings;
     }
 
+    /**
+     * Builds display readings for each CPU cluster governor and the I/O scheduler.
+     *
+     * @param snapshot the collected overview values
+     * @return ordered configuration readings for the overview card
+     */
     private List<AeroData.ConfigurationReading> buildConfigurationReadings(
             OverviewSnapshot snapshot) {
         List<AeroData.ConfigurationReading> readings = new ArrayList<>();
