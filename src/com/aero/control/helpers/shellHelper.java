@@ -41,6 +41,11 @@ public final class shellHelper {
     private static final Pattern TEGRA_I2C_METADATA_FILE_PATTERN = Pattern.compile(
             "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
                     + "\\1-[0-9a-fA-F]{4}/(?:name|temp\\d+_label)");
+    private static final Pattern KERNEL_VERSION_PREFIX_PATTERN =
+            Pattern.compile("^Linux\\s+version\\s+(\\S+)\\s+");
+    private static final Pattern KERNEL_BUILD_PATTERN = Pattern.compile("^(#\\S+)(?:\\s+(.*))?$");
+    private static final Pattern KERNEL_DATE_START_PATTERN = Pattern.compile(
+            "(?:^|\\s)(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\\s+");
     private static shellHelper mShellHelper;
     private List<String> mCommands = new ArrayList<>();
     private static final String LOG_TAG = shellHelper.class.getName();
@@ -321,17 +326,7 @@ public final class shellHelper {
             try {
                 String procVersionStr = reader.readLine();
                 reader.close();
-                Pattern p = Pattern.compile("\\w+\\s+\\w+\\s+([^\\s]+)\\s+\\(([^\\s@]+(?:@[^\\s.]+)?)[^)]*\\)\\s+\\((?:[^(]*\\([^)]*\\))?[^)]*\\)\\s+([^\\s]+)\\s+(?:PREEMPT\\s+)?(.+)");
-                Matcher m = p.matcher(procVersionStr);
-                if (!m.matches()) {
-                    Log.e(LOG_TAG, "Regex did not match on /proc/version: " + procVersionStr);
-                    return NO_DATA_FOUND;
-                }
-                if (m.groupCount() < 4) {
-                    Log.e(LOG_TAG, "Regex match on /proc/version only returned " + m.groupCount() + " groups");
-                    return NO_DATA_FOUND;
-                }
-                return m.group(1) + "\n" + m.group(2) + " " + m.group(3) + "\n" + m.group(4);
+                return formatKernelVersion(procVersionStr);
             } catch (Throwable th) {
                 reader.close();
                 throw th;
@@ -340,6 +335,66 @@ public final class shellHelper {
             Log.e(LOG_TAG, "IO Exception when getting kernel version for Device Info screen", e);
             return NO_DATA_FOUND;
         }
+    }
+
+    /**
+     * Formats /proc/version while retaining the raw value if its structure is unfamiliar.
+     */
+    static String formatKernelVersion(String procVersion) {
+        if (procVersion == null || procVersion.trim().length() == 0) {
+            return NO_DATA_FOUND;
+        }
+        String raw = procVersion.trim();
+        Matcher prefix = KERNEL_VERSION_PREFIX_PATTERN.matcher(raw);
+        if (!prefix.find()) return raw;
+
+        String release = prefix.group(1);
+        int builderStart = skipWhitespace(raw, prefix.end());
+        int builderEnd = findClosingParenthesis(raw, builderStart);
+        if (builderEnd < 0) return raw;
+        String builderDetails = raw.substring(builderStart + 1, builderEnd).trim();
+        if (builderDetails.length() == 0) return raw;
+        String builder = builderDetails.split("\\s+", 2)[0];
+
+        int compilerStart = skipWhitespace(raw, builderEnd + 1);
+        int compilerEnd = findClosingParenthesis(raw, compilerStart);
+        if (compilerEnd < 0) return raw;
+        String buildMetadata = raw.substring(compilerEnd + 1).trim();
+        Matcher build = KERNEL_BUILD_PATTERN.matcher(buildMetadata);
+        if (!build.matches()) return raw;
+
+        StringBuilder formatted = new StringBuilder(release)
+                .append('\n').append(builder).append(' ').append(build.group(1));
+        String flagsAndDate = build.group(2);
+        if (flagsAndDate == null || flagsAndDate.length() == 0) return formatted.toString();
+
+        Matcher dateStart = KERNEL_DATE_START_PATTERN.matcher(flagsAndDate);
+        if (!dateStart.find()) {
+            return formatted.append('\n').append(flagsAndDate).toString();
+        }
+        String flags = flagsAndDate.substring(0, dateStart.start()).trim();
+        String date = flagsAndDate.substring(dateStart.start()).trim();
+        if (flags.length() > 0) formatted.append('\n').append(flags);
+        if (date.length() > 0) formatted.append('\n').append(date);
+        return formatted.toString();
+    }
+
+    private static int skipWhitespace(String value, int position) {
+        while (position < value.length() && Character.isWhitespace(value.charAt(position))) {
+            position++;
+        }
+        return position;
+    }
+
+    private static int findClosingParenthesis(String value, int openingPosition) {
+        if (openingPosition >= value.length() || value.charAt(openingPosition) != '(') return -1;
+        int depth = 0;
+        for (int i = openingPosition; i < value.length(); i++) {
+            char character = value.charAt(i);
+            if (character == '(') depth++;
+            else if (character == ')' && --depth == 0) return i;
+        }
+        return -1;
     }
 
     /**
