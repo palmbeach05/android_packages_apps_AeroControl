@@ -11,40 +11,9 @@
         android:orientation="vertical"
         android:padding="8dp">
         <LinearLayout
+            android:id="@+id/battery_rows"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                <TextView android:id="@+id/battery_level_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/aeroSecondaryTextColor" android:textSize="14sp" />
-                <TextView android:id="@+id/battery_level_value" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="?attr/aeroPrimaryTextColor" android:textSize="14sp" />
-            </LinearLayout>
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginLeft="8dp" android:layout_weight="1" android:orientation="vertical">
-                <TextView android:id="@+id/battery_status_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/aeroSecondaryTextColor" android:textSize="14sp" />
-                <TextView android:id="@+id/battery_status_value" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="?attr/aeroPrimaryTextColor" android:textSize="14sp" />
-            </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical">
-            <TextView android:id="@+id/battery_power_source_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/aeroSecondaryTextColor" android:textSize="14sp" />
-            <TextView android:id="@+id/battery_power_source_value" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="?attr/aeroPrimaryTextColor" android:textSize="14sp" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/battery_electrical_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-            <LinearLayout android:id="@+id/battery_voltage_column" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                <TextView android:id="@+id/battery_voltage_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/aeroSecondaryTextColor" android:textSize="14sp" />
-                <TextView android:id="@+id/battery_voltage_value" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="?attr/aeroPrimaryTextColor" android:textSize="14sp" />
-            </LinearLayout>
-            <LinearLayout android:id="@+id/battery_current_column" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginLeft="8dp" android:layout_weight="1" android:orientation="vertical">
-                <TextView android:id="@+id/battery_current_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="?attr/aeroSecondaryTextColor" android:textSize="14sp" />
-                <TextView android:id="@+id/battery_current_value" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="?attr/aeroPrimaryTextColor" android:textSize="14sp" />
-            </LinearLayout>
-        </LinearLayout>
+            android:orientation="vertical" />
     </LinearLayout>
 </FrameLayout>
