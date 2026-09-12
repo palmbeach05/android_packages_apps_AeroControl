@@ -389,6 +389,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Binds governor and I/O scheduler readings to the configuration card.
+     *
+     * @param item the overview item containing configuration readings
+     * @param row the recycled row, or null when a row must be inflated
+     * @param parent the parent used to inflate a new row
+     * @return the populated configuration row
+     */
     private View bindConfiguration(AeroData item, View row, ViewGroup parent) {
         ConfigurationHolder holder;
         if (row == null) {
@@ -403,18 +411,20 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 ? Collections.<AeroData.ConfigurationReading>emptyList() : item.configurations;
         List<AeroData.ConfigurationReading> governors = new ArrayList<>();
         List<AeroData.ConfigurationReading> otherReadings = new ArrayList<>();
+        AeroData.ConfigurationReading scheduler = null;
         for (AeroData.ConfigurationReading reading : readings) {
             if (reading.kind == AeroData.ConfigurationReading.Kind.GOVERNOR) {
                 governors.add(reading);
+            } else if (reading.kind == AeroData.ConfigurationReading.Kind.IO_SCHEDULER
+                    && scheduler == null) {
+                scheduler = reading;
             } else {
                 otherReadings.add(reading);
             }
         }
 
-        int firstOtherReading = 0;
-        if (governors.size() == 1 && !otherReadings.isEmpty()) {
-            addConfigurationPair(holder.rows, governors.get(0), otherReadings.get(0));
-            firstOtherReading = 1;
+        if (governors.size() == 1 && scheduler != null) {
+            addConfigurationPair(holder.rows, governors.get(0), scheduler);
         } else if (governors.size() == 2) {
             addConfigurationPair(holder.rows, governors.get(0), governors.get(1));
         } else {
@@ -422,8 +432,11 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                 addConfigurationCard(holder.rows, reading, false, false);
             }
         }
-        for (int i = firstOtherReading; i < otherReadings.size(); i++) {
-            addConfigurationCard(holder.rows, otherReadings.get(i), false, false);
+        if (scheduler != null && governors.size() != 1) {
+            addConfigurationCard(holder.rows, scheduler, false, false);
+        }
+        for (AeroData.ConfigurationReading reading : otherReadings) {
+            addConfigurationCard(holder.rows, reading, false, false);
         }
         return row;
     }
