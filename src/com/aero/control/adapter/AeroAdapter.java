@@ -2,141 +2,478 @@ package com.aero.control.adapter;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import com.aero.control.R;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-/**
- * Adapter for displaying system information in the Overview and other fragments.
- * Supports both standard text rows (header, content, optional right-aligned text)
- * and multi-core CPU frequency grid rows when AeroData contains a coreFrequencies list.
- */
+/** Adapter for the typed cards and section headers in the Overview list. */
 public class AeroAdapter extends ArrayAdapter<AeroData> {
-    private static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private static final int MAX_GRID_CORES = 8;
-    private Context context;
-    private List<AeroData> data;
-    private int layoutResourceId;
+    private static final Typeface FONT = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+    private final LayoutInflater inflater;
+    private final List<AeroData> data;
 
-    /**
-     * View holder for recycling list item views.
-     */
-    public static class Holder {
-        TextView content;
-        TextView header;
-        TextView right_header;
-        TableLayout freqTable;
-        TextView[] freqCells;
+    private static class SectionHolder { TextView header; }
+    private static class StandardHolder { TextView header; TextView content; }
+    private static class FrequencyHolder { TextView header; TextView content; TableLayout table; TextView[] cells; }
+    private static class PerformanceHolder {
+        TextView cpuHeader;
+        TextView cpuContent;
+        TableLayout cpuTable;
+        TextView[] cpuCells;
+        TextView gpuHeader;
+        TextView gpuValue;
     }
+    private static class TemperatureHolder { LinearLayout rows; }
+    /** Holds the container populated with battery reading rows. */
+    private static class BatteryHolder { LinearLayout rows; }
+    /** A formatted battery value paired with the resource for its display label. */
+    private static class BatteryDisplayReading {
+        final int labelResourceId;
+        final String value;
 
-    /**
-     * Creates an AeroAdapter.
-     *
-     * @param context the context
-     * @param layoutResourceId the row layout resource
-     * @param data the list of AeroData items to display
-     */
-    public AeroAdapter(Context context, int layoutResourceId, List<AeroData> data) {
-        super(context, layoutResourceId, data);
-        this.layoutResourceId = layoutResourceId;
-        this.context = context;
+        /**
+         * Creates a battery reading ready to be rendered in the overview card.
+         *
+         * @param labelResourceId the string resource used for the reading label
+         * @param value the formatted reading value
+         */
+        BatteryDisplayReading(int labelResourceId, String value) {
+            this.labelResourceId = labelResourceId;
+            this.value = value;
+        }
+    }
+    private static class ConfigurationHolder { LinearLayout rows; }
+    private static class SystemHolder { LinearLayout rows; }
+
+    public AeroAdapter(Context context, int ignoredLayoutResourceId, List<AeroData> data) {
+        super(context, 0, data);
+        this.inflater = LayoutInflater.from(context);
         this.data = data;
     }
 
-    /**
-     * Clears all items from the adapter and the underlying data list.
-     */
-    @Override // android.widget.ArrayAdapter
-    public void clear() {
-        super.clear();
-        this.data.clear();
-        notifyDataSetChanged();
-    }
+    @Override public int getViewTypeCount() { return 8; }
+    @Override public int getItemViewType(int position) { return data.get(position).itemType; }
+    @Override public boolean isEnabled(int position) { return false; }
 
-    /**
-     * Notifies observers that the underlying data has changed.
-     */
-    @Override // android.widget.ArrayAdapter, android.widget.BaseAdapter
-    public void notifyDataSetChanged() {
-        super.notifyDataSetChanged();
-    }
-
-    /**
-     * Returns the view for displaying a data row at the specified position, with support
-     * for both standard text rows and multi-core CPU frequency grids.
-     *
-     * @param position the position of the item
-     * @param convertView the recycled view to reuse if available
-     * @param parent the parent view group
-     * @return the configured view for the row
-     */
-    @Override // android.widget.ArrayAdapter, android.widget.Adapter
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Holder holder;
-        View row = convertView;
-        if (row == null) {
-            LayoutInflater inflater = (LayoutInflater) this.context.getSystemService("layout_inflater");
-            row = inflater.inflate(this.layoutResourceId, (ViewGroup) null);
-            holder = new Holder();
-            holder.header = (TextView) row.findViewById(R.id.header);
-            holder.right_header = (TextView) row.findViewById(R.id.right_header);
-            holder.content = (TextView) row.findViewById(R.id.content);
-            holder.freqTable = (TableLayout) row.findViewById(R.id.freq_table);
-            holder.header.setTypeface(font);
-            holder.right_header.setTypeface(font);
-            holder.content.setTypeface(font);
-            int[] cellIds = {R.id.freq_cell_0, R.id.freq_cell_1, R.id.freq_cell_2, R.id.freq_cell_3, R.id.freq_cell_4, R.id.freq_cell_5, R.id.freq_cell_6, R.id.freq_cell_7};
-            holder.freqCells = new TextView[cellIds.length];
-            for (int i = 0; i < cellIds.length; i++) {
-                holder.freqCells[i] = (TextView) row.findViewById(cellIds[i]);
-                holder.freqCells[i].setTypeface(font);
-                holder.freqCells[i].setTypeface(Typeface.MONOSPACE);
-            }
-            row.setTag(holder);
-        } else {
-            holder = (Holder) row.getTag();
+        AeroData item = data.get(position);
+        switch (item.itemType) {
+            case AeroData.TYPE_SECTION_HEADER: return bindSection(item, convertView, parent);
+            case AeroData.TYPE_CPU_FREQUENCY_CARD: return bindFrequency(item, convertView, parent);
+            case AeroData.TYPE_TEMPERATURE_CARD: return bindTemperatures(item, convertView, parent);
+            case AeroData.TYPE_PERFORMANCE_CARD: return bindPerformance(item, convertView, parent);
+            case AeroData.TYPE_CONFIGURATION_CARD: return bindConfiguration(item, convertView, parent);
+            case AeroData.TYPE_SYSTEM_CARD: return bindSystem(item, convertView, parent);
+            case AeroData.TYPE_BATTERY_CARD: return bindBattery(item, convertView, parent);
+            default: return bindStandard(item, convertView, parent);
         }
-        AeroData overview = this.data.get(position);
-        if (this.data != null) {
-            if (!overview.name.equals("A")) {
-                holder.header.setText(overview.name);
+    }
+
+    private View bindSystem(AeroData item, View row, ViewGroup parent) {
+        SystemHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_system_card, parent, false);
+            holder = new SystemHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.system_rows);
+            row.setTag(holder);
+        } else { holder = (SystemHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        if (item.systemReadings != null) {
+            for (AeroData.SystemReading reading : item.systemReadings) {
+                View readingView = inflater.inflate(
+                        R.layout.overview_system_row, holder.rows, false);
+                TextView label = (TextView) readingView.findViewById(R.id.system_label);
+                TextView value = (TextView) readingView.findViewById(R.id.system_value);
+                label.setTypeface(FONT);
+                value.setTypeface(FONT);
+                label.setText(reading.label == null ? "" : reading.label);
+                value.setText(reading.value == null
+                        ? getContext().getString(R.string.unavailable) : reading.value);
+                holder.rows.addView(readingView);
             }
-            if (overview.right_name != null) {
-                holder.right_header.setText(overview.right_name);
-            }
-            List<String> coreFrequencies = overview.coreFrequencies;
-            if (coreFrequencies != null && coreFrequencies.size() >= 1 && coreFrequencies.size() <= MAX_GRID_CORES) {
-                holder.freqTable.setVisibility(View.VISIBLE);
-                for (int i = 0; i < holder.freqCells.length; i++) {
-                    if (i < coreFrequencies.size()) {
-                        holder.freqCells[i].setText(coreFrequencies.get(i));
-                        holder.freqCells[i].setVisibility(View.VISIBLE);
-                    } else {
-                        holder.freqCells[i].setVisibility(View.GONE);
-                    }
-                }
-                if (overview.content == null || overview.content.length() == 0) {
-                    holder.content.setVisibility(View.GONE);
-                } else {
-                    holder.content.setVisibility(View.VISIBLE);
-                    holder.content.setText(overview.content);
-                }
-            } else {
-                holder.freqTable.setVisibility(View.GONE);
-                holder.content.setVisibility(View.VISIBLE);
-                if (overview.content != null && !overview.content.equals("A")) {
-                    holder.content.setText(overview.content);
-                }
-            }
-        } else {
-            Log.e("Aero", "No Data found for adapter.");
         }
         return row;
+    }
+
+    private View bindSection(AeroData item, View row, ViewGroup parent) {
+        SectionHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_section_header, parent, false);
+            holder = new SectionHolder();
+            holder.header = (TextView) row.findViewById(R.id.section_header);
+            holder.header.setTypeface(FONT);
+            row.setTag(holder);
+        } else { holder = (SectionHolder) row.getTag(); }
+        holder.header.setText(item.name == null ? "" : item.name);
+        holder.header.setVisibility(View.VISIBLE);
+        return row;
+    }
+
+    private View bindStandard(AeroData item, View row, ViewGroup parent) {
+        StandardHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_standard_card, parent, false);
+            holder = new StandardHolder();
+            holder.header = (TextView) row.findViewById(R.id.header);
+            holder.content = (TextView) row.findViewById(R.id.content);
+            holder.header.setTypeface(FONT);
+            holder.content.setTypeface(FONT);
+            row.setTag(holder);
+        } else { holder = (StandardHolder) row.getTag(); }
+        holder.header.setText(item.name == null ? "" : item.name);
+        holder.content.setText(item.content == null ? "" : item.content);
+        holder.header.setVisibility(View.VISIBLE);
+        holder.content.setVisibility(View.VISIBLE);
+        return row;
+    }
+
+    private View bindFrequency(AeroData item, View row, ViewGroup parent) {
+        FrequencyHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_cpu_frequency_card, parent, false);
+            holder = new FrequencyHolder();
+            holder.header = (TextView) row.findViewById(R.id.header);
+            holder.content = (TextView) row.findViewById(R.id.content);
+            holder.table = (TableLayout) row.findViewById(R.id.freq_table);
+            int[] ids = {R.id.freq_cell_0, R.id.freq_cell_1, R.id.freq_cell_2, R.id.freq_cell_3,
+                    R.id.freq_cell_4, R.id.freq_cell_5, R.id.freq_cell_6, R.id.freq_cell_7};
+            holder.cells = new TextView[ids.length];
+            holder.header.setTypeface(FONT);
+            holder.content.setTypeface(FONT);
+            for (int i = 0; i < ids.length; i++) {
+                holder.cells[i] = (TextView) row.findViewById(ids[i]);
+                holder.cells[i].setTypeface(Typeface.MONOSPACE);
+            }
+            row.setTag(holder);
+        } else { holder = (FrequencyHolder) row.getTag(); }
+        holder.header.setText(item.name == null ? "" : item.name);
+        holder.header.setVisibility(View.VISIBLE);
+        holder.content.setText(item.content == null ? "" : item.content);
+        holder.content.setVisibility(item.content == null || item.content.length() == 0 ? View.GONE : View.VISIBLE);
+        List<String> frequencies = item.coreFrequencies == null ? Collections.<String>emptyList() : item.coreFrequencies;
+        boolean showGrid = frequencies.size() > 0 && frequencies.size() <= MAX_GRID_CORES;
+        holder.table.setVisibility(showGrid ? View.VISIBLE : View.GONE);
+        for (int i = 0; i < holder.cells.length; i++) {
+            if (showGrid && i < frequencies.size()) {
+                holder.cells[i].setText(frequencies.get(i));
+                holder.cells[i].setVisibility(View.VISIBLE);
+            } else {
+                holder.cells[i].setText("");
+                holder.cells[i].setVisibility(View.GONE);
+            }
+        }
+        return row;
+    }
+
+    /**
+     * Binds temperature readings into a two-column card, adding a spacer for an odd final
+     * reading.
+     *
+     * @param item the temperature card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound temperature card view
+     */
+    private View bindTemperatures(AeroData item, View row, ViewGroup parent) {
+        TemperatureHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_temperature_card, parent, false);
+            holder = new TemperatureHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.temperature_rows);
+            row.setTag(holder);
+        } else { holder = (TemperatureHolder) row.getTag(); }
+        holder.rows.removeAllViews();
+        if (item.temperatures != null) {
+            for (int i = 0; i < item.temperatures.size(); i += 2) {
+                LinearLayout pairRow = new LinearLayout(getContext());
+                pairRow.setOrientation(LinearLayout.HORIZONTAL);
+                pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+                addTemperatureReading(pairRow, item.temperatures.get(i), true, true);
+                if (i + 1 < item.temperatures.size()) {
+                    addTemperatureReading(
+                            pairRow, item.temperatures.get(i + 1), true, false);
+                } else {
+                    addReadingSpacer(pairRow);
+                }
+                holder.rows.addView(pairRow);
+            }
+        }
+        return row;
+    }
+
+    /**
+     * Adds a formatted temperature reading to a row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the temperature label and value to display
+     * @param weighted whether the reading should occupy one weighted column
+     * @param leftColumn whether the reading is in the left column
+     */
+    private void addTemperatureReading(LinearLayout parent,
+            AeroData.TemperatureReading reading, boolean weighted, boolean leftColumn) {
+        View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
+        TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
+        TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
+        label.setTypeface(FONT);
+        value.setTypeface(FONT);
+        label.setText(reading.label == null ? "" : reading.label);
+        value.setText(reading.value == null
+                ? getContext().getString(R.string.unavailable) : reading.value);
+        if (weighted) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+            int spacing = dpToPixels(4);
+            if (leftColumn) params.rightMargin = spacing;
+            else params.leftMargin = spacing;
+            readingView.setLayoutParams(params);
+        }
+        parent.addView(readingView);
+    }
+
+    /**
+     * Adds an empty weighted column to keep an odd final reading left-aligned.
+     *
+     * @param parent the row that receives the spacer
+     */
+    private void addReadingSpacer(LinearLayout parent) {
+        View spacer = new View(getContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        params.leftMargin = dpToPixels(4);
+        spacer.setLayoutParams(params);
+        parent.addView(spacer);
+    }
+
+    /**
+     * Binds available battery readings into a compact two-column card.
+     *
+     * @param item the battery card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound battery card view
+     */
+    private View bindBattery(AeroData item, View row, ViewGroup parent) {
+        BatteryHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_battery_card, parent, false);
+            holder = new BatteryHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.battery_rows);
+            row.setTag(holder);
+        } else { holder = (BatteryHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        AeroData.BatteryReading reading = item.batteryReading;
+        List<BatteryDisplayReading> readings = new ArrayList<>();
+        if (reading != null) {
+            addBatteryDisplayReading(readings, R.string.battery_level, reading.level);
+            addBatteryDisplayReading(readings, R.string.battery_status, reading.status);
+            addBatteryDisplayReading(
+                    readings, R.string.battery_power_source, reading.powerSource);
+            addBatteryDisplayReading(readings, R.string.battery_voltage, reading.voltage);
+            addBatteryDisplayReading(readings, R.string.battery_current, reading.current);
+        }
+        for (int i = 0; i < readings.size(); i += 2) {
+            LinearLayout pairRow = new LinearLayout(getContext());
+            pairRow.setOrientation(LinearLayout.HORIZONTAL);
+            pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            addBatteryReading(pairRow, readings.get(i), true);
+            if (i + 1 < readings.size()) {
+                addBatteryReading(pairRow, readings.get(i + 1), false);
+            } else {
+                addReadingSpacer(pairRow);
+            }
+            holder.rows.addView(pairRow);
+        }
+        return row;
+    }
+
+    /**
+     * Adds a battery reading to the display list when its value is available.
+     *
+     * @param readings the display list being assembled
+     * @param labelResourceId the string resource used for the reading label
+     * @param value the formatted reading value, or null when unavailable
+     */
+    private void addBatteryDisplayReading(
+            List<BatteryDisplayReading> readings, int labelResourceId, String value) {
+        if (value != null) readings.add(new BatteryDisplayReading(labelResourceId, value));
+    }
+
+    /**
+     * Inflates and adds one battery reading to a two-column row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the battery label resource and value to display
+     * @param leftColumn whether the reading is in the left column
+     */
+    private void addBatteryReading(
+            LinearLayout parent, BatteryDisplayReading reading, boolean leftColumn) {
+        View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
+        TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
+        TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
+        label.setTypeface(FONT);
+        value.setTypeface(FONT);
+        label.setText(reading.labelResourceId);
+        value.setText(reading.value);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        int spacing = dpToPixels(4);
+        if (leftColumn) params.rightMargin = spacing;
+        else params.leftMargin = spacing;
+        readingView.setLayoutParams(params);
+        parent.addView(readingView);
+    }
+
+    private View bindPerformance(AeroData item, View row, ViewGroup parent) {
+        PerformanceHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_performance_card, parent, false);
+            holder = new PerformanceHolder();
+            holder.cpuHeader = (TextView) row.findViewById(R.id.cpu_frequency_header);
+            holder.cpuContent = (TextView) row.findViewById(R.id.cpu_frequency_content);
+            holder.cpuTable = (TableLayout) row.findViewById(R.id.compact_frequency_table);
+            holder.gpuHeader = (TextView) row.findViewById(R.id.gpu_frequency_header);
+            holder.gpuValue = (TextView) row.findViewById(R.id.gpu_frequency_value);
+            int[] ids = {R.id.compact_freq_cell_0, R.id.compact_freq_cell_1,
+                    R.id.compact_freq_cell_2, R.id.compact_freq_cell_3,
+                    R.id.compact_freq_cell_4, R.id.compact_freq_cell_5,
+                    R.id.compact_freq_cell_6, R.id.compact_freq_cell_7};
+            holder.cpuCells = new TextView[ids.length];
+            holder.cpuHeader.setTypeface(FONT);
+            holder.cpuContent.setTypeface(FONT);
+            holder.gpuHeader.setTypeface(FONT);
+            holder.gpuValue.setTypeface(FONT);
+            for (int i = 0; i < ids.length; i++) {
+                holder.cpuCells[i] = (TextView) row.findViewById(ids[i]);
+                holder.cpuCells[i].setTypeface(Typeface.MONOSPACE);
+            }
+            row.setTag(holder);
+        } else { holder = (PerformanceHolder) row.getTag(); }
+
+        holder.cpuHeader.setText(item.cpuFrequencyTitle == null ? "" : item.cpuFrequencyTitle);
+        holder.gpuHeader.setText(item.gpuFrequencyTitle == null ? "" : item.gpuFrequencyTitle);
+        holder.gpuValue.setText(item.gpuFrequencyValue == null ? "" : item.gpuFrequencyValue);
+
+        List<String> frequencies = item.coreFrequencies == null
+                ? Collections.<String>emptyList() : item.coreFrequencies;
+        boolean showGrid = frequencies.size() > 0 && frequencies.size() <= MAX_GRID_CORES;
+        holder.cpuTable.setVisibility(showGrid ? View.VISIBLE : View.GONE);
+        holder.cpuContent.setText(item.cpuFrequencyContent == null
+                ? "" : item.cpuFrequencyContent);
+        holder.cpuContent.setVisibility(item.cpuFrequencyContent == null
+                || item.cpuFrequencyContent.length() == 0 ? View.GONE : View.VISIBLE);
+        for (int i = 0; i < holder.cpuCells.length; i++) {
+            if (showGrid && i < frequencies.size()) {
+                holder.cpuCells[i].setText(frequencies.get(i));
+                holder.cpuCells[i].setVisibility(View.VISIBLE);
+            } else {
+                holder.cpuCells[i].setText("");
+                holder.cpuCells[i].setVisibility(View.GONE);
+            }
+        }
+        return row;
+    }
+
+    /**
+     * Binds governor and I/O scheduler readings to the configuration card.
+     *
+     * @param item the overview item containing configuration readings
+     * @param row the recycled row, or null when a row must be inflated
+     * @param parent the parent used to inflate a new row
+     * @return the populated configuration row
+     */
+    private View bindConfiguration(AeroData item, View row, ViewGroup parent) {
+        ConfigurationHolder holder;
+        if (row == null) {
+            row = inflater.inflate(R.layout.overview_configuration_card, parent, false);
+            holder = new ConfigurationHolder();
+            holder.rows = (LinearLayout) row.findViewById(R.id.configuration_rows);
+            row.setTag(holder);
+        } else { holder = (ConfigurationHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
+        List<AeroData.ConfigurationReading> readings = item.configurations == null
+                ? Collections.<AeroData.ConfigurationReading>emptyList() : item.configurations;
+        List<AeroData.ConfigurationReading> governors = new ArrayList<>();
+        List<AeroData.ConfigurationReading> otherReadings = new ArrayList<>();
+        AeroData.ConfigurationReading scheduler = null;
+        for (AeroData.ConfigurationReading reading : readings) {
+            if (reading.kind == AeroData.ConfigurationReading.Kind.GOVERNOR) {
+                governors.add(reading);
+            } else if (reading.kind == AeroData.ConfigurationReading.Kind.IO_SCHEDULER
+                    && scheduler == null) {
+                scheduler = reading;
+            } else {
+                otherReadings.add(reading);
+            }
+        }
+
+        if (governors.size() == 1 && scheduler != null) {
+            addConfigurationPair(holder.rows, governors.get(0), scheduler);
+        } else if (governors.size() == 2) {
+            addConfigurationPair(holder.rows, governors.get(0), governors.get(1));
+        } else {
+            for (AeroData.ConfigurationReading reading : governors) {
+                addConfigurationCard(holder.rows, reading, false, false);
+            }
+        }
+        if (scheduler != null && governors.size() != 1) {
+            addConfigurationCard(holder.rows, scheduler, false, false);
+        }
+        for (AeroData.ConfigurationReading reading : otherReadings) {
+            addConfigurationCard(holder.rows, reading, false, false);
+        }
+        return row;
+    }
+
+    private void addConfigurationPair(LinearLayout rows,
+            AeroData.ConfigurationReading left, AeroData.ConfigurationReading right) {
+        LinearLayout pair = new LinearLayout(getContext());
+        pair.setOrientation(LinearLayout.HORIZONTAL);
+        pair.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        addConfigurationCard(pair, left, true, true);
+        addConfigurationCard(pair, right, true, false);
+        rows.addView(pair);
+    }
+
+    private void addConfigurationCard(LinearLayout parent,
+            AeroData.ConfigurationReading reading, boolean weighted, boolean leftCard) {
+        View card = inflater.inflate(R.layout.overview_standard_card, parent, false);
+        TextView header = (TextView) card.findViewById(R.id.header);
+        TextView content = (TextView) card.findViewById(R.id.content);
+        header.setTypeface(FONT);
+        content.setTypeface(FONT);
+        header.setText(reading.label == null ? "" : reading.label);
+        content.setText(reading.value == null
+                ? getContext().getString(R.string.unavailable) : reading.value);
+        if (weighted) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+            int spacing = dpToPixels(2);
+            if (leftCard) params.rightMargin = spacing;
+            else params.leftMargin = spacing;
+            card.setLayoutParams(params);
+        }
+        parent.addView(card);
+    }
+
+    private int dpToPixels(int dp) {
+        return Math.round(dp * getContext().getResources().getDisplayMetrics().density);
     }
 }
