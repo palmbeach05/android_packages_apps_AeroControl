@@ -33,19 +33,23 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView gpuValue;
     }
     private static class TemperatureHolder { LinearLayout rows; }
-    private static class BatteryHolder {
-        LinearLayout voltageColumn;
-        LinearLayout currentColumn;
-        TextView levelLabel;
-        TextView levelValue;
-        TextView statusLabel;
-        TextView statusValue;
-        TextView voltageLabel;
-        TextView voltageValue;
-        TextView currentLabel;
-        TextView currentValue;
-        TextView powerSourceLabel;
-        TextView powerSourceValue;
+    /** Holds the container populated with battery reading rows. */
+    private static class BatteryHolder { LinearLayout rows; }
+    /** A formatted battery value paired with the resource for its display label. */
+    private static class BatteryDisplayReading {
+        final int labelResourceId;
+        final String value;
+
+        /**
+         * Creates a battery reading ready to be rendered in the overview card.
+         *
+         * @param labelResourceId the string resource used for the reading label
+         * @param value the formatted reading value
+         */
+        BatteryDisplayReading(int labelResourceId, String value) {
+            this.labelResourceId = labelResourceId;
+            this.value = value;
+        }
     }
     private static class ConfigurationHolder { LinearLayout rows; }
     private static class SystemHolder { LinearLayout rows; }
@@ -202,7 +206,7 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
                     addTemperatureReading(
                             pairRow, item.temperatures.get(i + 1), true, false);
                 } else {
-                    addTemperatureSpacer(pairRow);
+                    addReadingSpacer(pairRow);
                 }
                 holder.rows.addView(pairRow);
             }
@@ -210,6 +214,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Adds a formatted temperature reading to a row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the temperature label and value to display
+     * @param weighted whether the reading should occupy one weighted column
+     * @param leftColumn whether the reading is in the left column
+     */
     private void addTemperatureReading(LinearLayout parent,
             AeroData.TemperatureReading reading, boolean weighted, boolean leftColumn) {
         View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
@@ -231,7 +243,12 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         parent.addView(readingView);
     }
 
-    private void addTemperatureSpacer(LinearLayout parent) {
+    /**
+     * Adds an empty weighted column to keep an odd final reading left-aligned.
+     *
+     * @param parent the row that receives the spacer
+     */
+    private void addReadingSpacer(LinearLayout parent) {
         View spacer = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
@@ -240,48 +257,86 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         parent.addView(spacer);
     }
 
+    /**
+     * Binds available battery readings into a compact two-column card.
+     *
+     * @param item the battery card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound battery card view
+     */
     private View bindBattery(AeroData item, View row, ViewGroup parent) {
         BatteryHolder holder;
         if (row == null) {
             row = inflater.inflate(R.layout.overview_battery_card, parent, false);
             holder = new BatteryHolder();
-            holder.voltageColumn = (LinearLayout) row.findViewById(R.id.battery_voltage_column);
-            holder.currentColumn = (LinearLayout) row.findViewById(R.id.battery_current_column);
-            holder.levelLabel = (TextView) row.findViewById(R.id.battery_level_label);
-            holder.levelValue = (TextView) row.findViewById(R.id.battery_level_value);
-            holder.statusLabel = (TextView) row.findViewById(R.id.battery_status_label);
-            holder.statusValue = (TextView) row.findViewById(R.id.battery_status_value);
-            holder.voltageLabel = (TextView) row.findViewById(R.id.battery_voltage_label);
-            holder.voltageValue = (TextView) row.findViewById(R.id.battery_voltage_value);
-            holder.currentLabel = (TextView) row.findViewById(R.id.battery_current_label);
-            holder.currentValue = (TextView) row.findViewById(R.id.battery_current_value);
-            holder.powerSourceLabel = (TextView) row.findViewById(R.id.battery_power_source_label);
-            holder.powerSourceValue = (TextView) row.findViewById(R.id.battery_power_source_value);
-            TextView[] texts = {holder.levelLabel, holder.levelValue, holder.statusLabel,
-                    holder.statusValue, holder.voltageLabel, holder.voltageValue,
-                    holder.currentLabel, holder.currentValue, holder.powerSourceLabel,
-                    holder.powerSourceValue};
-            for (TextView text : texts) text.setTypeface(FONT);
+            holder.rows = (LinearLayout) row.findViewById(R.id.battery_rows);
             row.setTag(holder);
         } else { holder = (BatteryHolder) row.getTag(); }
+
+        holder.rows.removeAllViews();
         AeroData.BatteryReading reading = item.batteryReading;
-        String unavailable = getContext().getString(R.string.unavailable);
-        holder.levelLabel.setText(R.string.battery_level);
-        holder.statusLabel.setText(R.string.battery_status);
-        holder.voltageLabel.setText(R.string.battery_voltage);
-        holder.currentLabel.setText(R.string.battery_current);
-        holder.powerSourceLabel.setText(R.string.battery_power_source);
-        holder.levelValue.setText(reading == null || reading.level == null ? unavailable : reading.level);
-        holder.statusValue.setText(reading == null || reading.status == null ? unavailable : reading.status);
-        holder.powerSourceValue.setText(reading == null || reading.powerSource == null
-                ? unavailable : reading.powerSource);
-        boolean hasVoltage = reading != null && reading.voltage != null;
-        boolean hasCurrent = reading != null && reading.current != null;
-        holder.voltageValue.setText(hasVoltage ? reading.voltage : "");
-        holder.currentValue.setText(hasCurrent ? reading.current : "");
-        holder.voltageColumn.setVisibility(hasVoltage ? View.VISIBLE : View.INVISIBLE);
-        holder.currentColumn.setVisibility(hasCurrent ? View.VISIBLE : View.INVISIBLE);
+        List<BatteryDisplayReading> readings = new ArrayList<>();
+        if (reading != null) {
+            addBatteryDisplayReading(readings, R.string.battery_level, reading.level);
+            addBatteryDisplayReading(readings, R.string.battery_status, reading.status);
+            addBatteryDisplayReading(
+                    readings, R.string.battery_power_source, reading.powerSource);
+            addBatteryDisplayReading(readings, R.string.battery_voltage, reading.voltage);
+            addBatteryDisplayReading(readings, R.string.battery_current, reading.current);
+        }
+        for (int i = 0; i < readings.size(); i += 2) {
+            LinearLayout pairRow = new LinearLayout(getContext());
+            pairRow.setOrientation(LinearLayout.HORIZONTAL);
+            pairRow.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            addBatteryReading(pairRow, readings.get(i), true);
+            if (i + 1 < readings.size()) {
+                addBatteryReading(pairRow, readings.get(i + 1), false);
+            } else {
+                addReadingSpacer(pairRow);
+            }
+            holder.rows.addView(pairRow);
+        }
         return row;
+    }
+
+    /**
+     * Adds a battery reading to the display list when its value is available.
+     *
+     * @param readings the display list being assembled
+     * @param labelResourceId the string resource used for the reading label
+     * @param value the formatted reading value, or null when unavailable
+     */
+    private void addBatteryDisplayReading(
+            List<BatteryDisplayReading> readings, int labelResourceId, String value) {
+        if (value != null) readings.add(new BatteryDisplayReading(labelResourceId, value));
+    }
+
+    /**
+     * Inflates and adds one battery reading to a two-column row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the battery label resource and value to display
+     * @param leftColumn whether the reading is in the left column
+     */
+    private void addBatteryReading(
+            LinearLayout parent, BatteryDisplayReading reading, boolean leftColumn) {
+        View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
+        TextView label = (TextView) readingView.findViewById(R.id.temperature_label);
+        TextView value = (TextView) readingView.findViewById(R.id.temperature_value);
+        label.setTypeface(FONT);
+        value.setTypeface(FONT);
+        label.setText(reading.labelResourceId);
+        value.setText(reading.value);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        int spacing = dpToPixels(4);
+        if (leftColumn) params.rightMargin = spacing;
+        else params.leftMargin = spacing;
+        readingView.setLayoutParams(params);
+        parent.addView(readingView);
     }
 
     private View bindPerformance(AeroData item, View row, ViewGroup parent) {
