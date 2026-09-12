@@ -28,10 +28,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -639,7 +637,6 @@ public class AeroFragment extends Fragment {
         private String architecture;
         private String kernel;
         private List<String> governors;
-        private List<String> governorLabels;
         private String ioScheduler;
         private String frequencyContent;
         private List<String> coreFrequencies;
@@ -659,12 +656,10 @@ public class AeroFragment extends Fragment {
         snapshot.architecture = getApplicationAbi();
         snapshot.kernel = AeroActivity.shell.getKernel();
         snapshot.governors = new ArrayList<>();
-        snapshot.governorLabels = new ArrayList<>();
         List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
         for (CpuClusterHelper.Cluster cluster : clusters) {
             snapshot.governors.add(AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH
                     + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
-            snapshot.governorLabels.add(cluster.getMemberRangeLabel());
         }
         snapshot.ioScheduler = AeroActivity.shell.getInfoString(
                 AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE));
@@ -760,7 +755,6 @@ public class AeroFragment extends Fragment {
         snapshot.architecture = NO_DATA_FOUND;
         snapshot.kernel = NO_DATA_FOUND;
         snapshot.governors = new ArrayList<>();
-        snapshot.governorLabels = new ArrayList<>();
         snapshot.ioScheduler = NO_DATA_FOUND;
         snapshot.frequencyContent = NO_DATA_FOUND;
         snapshot.coreFrequencies = null;
@@ -901,28 +895,18 @@ public class AeroFragment extends Fragment {
 
     private List<AeroData.ConfigurationReading> buildConfigurationReadings(
             OverviewSnapshot snapshot) {
-        Map<String, String> distinctGovernors = new LinkedHashMap<>();
-        for (int i = 0; i < snapshot.governors.size(); i++) {
-            String governor = normalizeValue(snapshot.governors.get(i));
-            if (governor != null && !distinctGovernors.containsKey(governor)) {
-                String label = i < snapshot.governorLabels.size()
-                        ? snapshot.governorLabels.get(i) : null;
-                distinctGovernors.put(governor, label);
-            }
-        }
-        if (distinctGovernors.isEmpty()) {
-            distinctGovernors.put(NO_DATA_FOUND, null);
-        }
-
         List<AeroData.ConfigurationReading> readings = new ArrayList<>();
-        boolean showClusterLabels = distinctGovernors.size() > 1;
-        for (Map.Entry<String, String> entry : distinctGovernors.entrySet()) {
-            String label = showClusterLabels && entry.getValue() != null
-                    ? getString(R.string.current_governor_cluster, entry.getValue())
-                    : getString(R.string.overview_cpu_governor);
+        List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
+        boolean showClusterLabels = clusters.size() > 1;
+        for (int i = 0; i < clusters.size(); i++) {
+            String governor = i < snapshot.governors.size()
+                    ? snapshot.governors.get(i) : null;
+            String label = showClusterLabels
+                    ? getString(R.string.current_governor_index, i)
+                    : getString(R.string.current_governor);
             readings.add(new AeroData.ConfigurationReading(
                     AeroData.ConfigurationReading.Kind.GOVERNOR,
-                    label, getOverviewDisplayValue(entry.getKey())));
+                    label, getOverviewDisplayValue(governor)));
         }
         String scheduler = normalizeValue(snapshot.ioScheduler);
         readings.add(new AeroData.ConfigurationReading(
