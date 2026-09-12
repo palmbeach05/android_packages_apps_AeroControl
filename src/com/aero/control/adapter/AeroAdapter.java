@@ -33,11 +33,19 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         TextView gpuValue;
     }
     private static class TemperatureHolder { LinearLayout rows; }
+    /** Holds the container populated with battery reading rows. */
     private static class BatteryHolder { LinearLayout rows; }
+    /** A formatted battery value paired with the resource for its display label. */
     private static class BatteryDisplayReading {
         final int labelResourceId;
         final String value;
 
+        /**
+         * Creates a battery reading ready to be rendered in the overview card.
+         *
+         * @param labelResourceId the string resource used for the reading label
+         * @param value the formatted reading value
+         */
         BatteryDisplayReading(int labelResourceId, String value) {
             this.labelResourceId = labelResourceId;
             this.value = value;
@@ -206,6 +214,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Adds a formatted temperature reading to a row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the temperature label and value to display
+     * @param weighted whether the reading should occupy one weighted column
+     * @param leftColumn whether the reading is in the left column
+     */
     private void addTemperatureReading(LinearLayout parent,
             AeroData.TemperatureReading reading, boolean weighted, boolean leftColumn) {
         View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
@@ -227,6 +243,11 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         parent.addView(readingView);
     }
 
+    /**
+     * Adds an empty weighted column to keep an odd final reading left-aligned.
+     *
+     * @param parent the row that receives the spacer
+     */
     private void addReadingSpacer(LinearLayout parent) {
         View spacer = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -236,6 +257,14 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         parent.addView(spacer);
     }
 
+    /**
+     * Binds available battery readings into a compact two-column card.
+     *
+     * @param item the battery card data to display
+     * @param row the recycled card view, or null when a new view must be inflated
+     * @param parent the parent used to inflate a new card view
+     * @return the bound battery card view
+     */
     private View bindBattery(AeroData item, View row, ViewGroup parent) {
         BatteryHolder holder;
         if (row == null) {
@@ -273,11 +302,25 @@ public class AeroAdapter extends ArrayAdapter<AeroData> {
         return row;
     }
 
+    /**
+     * Adds a battery reading to the display list when its value is available.
+     *
+     * @param readings the display list being assembled
+     * @param labelResourceId the string resource used for the reading label
+     * @param value the formatted reading value, or null when unavailable
+     */
     private void addBatteryDisplayReading(
             List<BatteryDisplayReading> readings, int labelResourceId, String value) {
         if (value != null) readings.add(new BatteryDisplayReading(labelResourceId, value));
     }
 
+    /**
+     * Inflates and adds one battery reading to a two-column row.
+     *
+     * @param parent the row that receives the reading view
+     * @param reading the battery label resource and value to display
+     * @param leftColumn whether the reading is in the left column
+     */
     private void addBatteryReading(
             LinearLayout parent, BatteryDisplayReading reading, boolean leftColumn) {
         View readingView = inflater.inflate(R.layout.overview_temperature_row, parent, false);
