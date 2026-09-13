@@ -1,59 +1,38 @@
 package com.aero.control.helpers;
 
-import android.os.SystemClock;
 import android.util.Log;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Shell command execution helper that provides a persistent root shell session
- * for reading system files, executing commands, and managing kernel tunables.
- * Maintains a single su process to avoid repeated privilege escalation overhead.
+ * Thin, singleton facade over a persistent root shell session. Owns the
+ * shared {@link RootShellSession} (the {@code su} process, its command
+ * queue, and read/write plumbing) and the small work-queue API built on top
+ * of it, and forwards every other concern to a dedicated class:
+ * <ul>
+ *   <li>{@link SysfsReader} — generic file reads/writes with root fallback</li>
+ *   <li>{@link FrequencyFormat} — kHz/Hz -&gt; "N MHz" formatting</li>
+ *   <li>{@link KernelVersionParser} — {@code /proc/version} parsing</li>
+ *   <li>{@link HwmonInfo} / {@link TegraI2cInfo} — device-specific sysfs
+ *       enumeration allowlists</li>
+ *   <li>{@link OverclockLegacy} — legacy, device-family-specific overclock
+ *       address patching</li>
+ * </ul>
+ * Existing callers keep using {@code shellHelper.instance()} and its public
+ * methods unchanged; only the internals are split by responsibility.
  */
 public final class shellHelper {
-    private static final int BUFF_LEN = 8192;
-    private static final int MAX_RESULT_LEN = 65536;
     private static final String NO_DATA_FOUND = "Unavailable";
-    private static final Pattern HWMON_DIRECTORY_PATTERN =
-            Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
-    private static final Pattern TEGRA_I2C_DIRECTORY_PATTERN = Pattern.compile(
-            "/sys/devices/platform(?:/tegra-i2c\\.(\\d+)"
-                    + "(?:/i2c-\\1(?:/\\1-[0-9a-fA-F]{4})?)?)?");
-    private static final Pattern TEGRA_I2C_DEVICE_DIRECTORY_PATTERN = Pattern.compile(
-            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
-                    + "\\1-[0-9a-fA-F]{4}");
-    private static final Pattern TEGRA_I2C_TEMPERATURE_FILE_PATTERN = Pattern.compile(
-            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
-                    + "\\1-[0-9a-fA-F]{4}/temp\\d+_input");
-    private static final Pattern TEGRA_I2C_METADATA_FILE_PATTERN = Pattern.compile(
-            "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
-                    + "\\1-[0-9a-fA-F]{4}/(?:name|temp\\d+_label)");
-    private static final Pattern KERNEL_VERSION_PREFIX_PATTERN =
-            Pattern.compile("^Linux\\s+version\\s+(\\S+)\\s+");
-    private static final Pattern KERNEL_BUILD_PATTERN = Pattern.compile("^(#\\S+)(?:\\s+(.*))?$");
-    private static final Pattern KERNEL_DATE_START_PATTERN = Pattern.compile(
-            "(?:^|\\s)(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\\s+");
     private static shellHelper mShellHelper;
-    private List<String> mCommands = new ArrayList<>();
-    private static final String LOG_TAG = shellHelper.class.getName();
-    private ShellWorkqueue shWork = new ShellWorkqueue();
-    private Process mProcess = null;
-    private DataOutputStream mShellOutput = null;
-    private BufferedReader mOutput = null;
-    private boolean mShellLoaded = false;
+
+    private final RootShellSession session = new RootShellSession();
+    private final SysfsReader sysfsReader = new SysfsReader(session);
+    private final HwmonInfo hwmonInfo = new HwmonInfo(session);
+    private final TegraI2cInfo tegraI2cInfo = new TegraI2cInfo(session);
+    private final OverclockLegacy overclockLegacy = new OverclockLegacy(session);
+    private final ShellWorkqueue shWork = new ShellWorkqueue();
 
     /**
      * Private constructor. Opens the root shell in a background thread.
@@ -93,160 +72,23 @@ public final class shellHelper {
     }
 
     /**
-     * Adds multiple commands to the command queue.
-     *
-     * @param commands the array of command strings to add
-     */
-    private synchronized void addCommands(String[] commands) {
-        for (String cmd : commands) {
-            if (cmd != null) {
-                this.mCommands.add(cmd);
-            }
-        }
-    }
-
-    /**
-     * Adds a single command to the queue.
-     *
-     * @param cmd the command to add
-     */
-    public synchronized void addCommand(String cmd) {
-        this.mCommands.add(cmd);
-    }
-
-    /**
      * Opens a root shell session if not already open.
      */
-    public synchronized void openShell() {
-        if (this.mCommands == null) {
-            this.mCommands = new ArrayList();
-        }
-        try {
-            if (this.mProcess == null) {
-                this.mProcess = Runtime.getRuntime().exec("su");
-            }
-            if (this.mShellOutput == null) {
-                this.mShellOutput = new DataOutputStream(this.mProcess.getOutputStream());
-            }
-            if (this.mOutput == null) {
-                this.mOutput = new BufferedReader(new InputStreamReader(this.mProcess.getInputStream()));
-            }
-            this.mShellLoaded = true;
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "We were not able to create a shell!", e);
-            this.mShellLoaded = false;
-        }
+    public void openShell() {
+        session.openShell();
     }
 
     /**
      * Closes the root shell session and cleans up resources.
      */
-    public synchronized void closeShell() {
-        if (this.mShellOutput != null) {
-            try {
-                this.mShellOutput.close();
-            } catch (IOException e) {
-            }
-            this.mShellOutput = null;
-        }
-        if (this.mOutput != null) {
-            try {
-                this.mOutput.close();
-            } catch (IOException e) {
-            }
-            this.mOutput = null;
-        }
-        if (this.mProcess != null) {
-            this.mProcess.destroy();
-            this.mProcess = null;
-        }
-        this.mShellLoaded = false;
-    }
-
-    /**
-     * Executes all queued commands in the root shell without waiting for output.
-     * Clears the command queue after execution.
-     *
-     * @return true if commands were executed successfully, false if the shell is not loaded
-     */
-    private synchronized boolean runCommands() {
-        openShell();
-        if (this.mShellLoaded) {
-            List<String> commands = Collections.synchronizedList(this.mCommands);
-            try {
-                for (String cmd : commands) {
-                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-                    this.mShellOutput.flush();
-                }
-                try {
-                    this.mShellOutput.flush();
-                } catch (IOException e) {
-                }
-            } catch (IOException e2) {
-                Log.e(LOG_TAG, "Something interrupted our operations...", e2);
-                this.mCommands.clear();
-                return false;
-            }
-            this.mCommands.clear();
-            return true;
-        } else {
-            this.mCommands.clear();
-            return false;
-        }
-    }
-
-    /**
-     * Executes all queued commands and reads the output from the root shell.
-     * Blocks until all output has been read or the read is interrupted. Clears
-     * the command queue after execution.
-     *
-     * @return the command output as a string, or null if reading fails or is interrupted
-     */
-    private synchronized String getRootResult() {
-        int read;
-        List<String> commands = Collections.synchronizedList(this.mCommands);
-        char[] buf = new char[8192];
-        StringBuilder response = new StringBuilder();
-        try {
-            if (this.mShellLoaded) {
-                for (String cmd : commands) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        return null;
-                    }
-                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-                    do {
-                        if (Thread.currentThread().isInterrupted()) {
-                            return null;
-                        }
-                        read = this.mOutput.read(buf);
-                        if (read == -1) {
-                            return null;
-                        }
-                        int remaining = MAX_RESULT_LEN - response.length();
-                        if (remaining > 0) {
-                            response.append(buf, 0, Math.min(read, remaining));
-                        }
-                    } while (read >= 8192);
-                    this.mShellOutput.flush();
-                }
-                try {
-                    this.mShellOutput.flush();
-                } catch (IOException e) {
-                }
-            }
-            return response.toString().trim();
-        } catch (IOException e2) {
-            Log.e(LOG_TAG, "Something interrupted our operations...", e2);
-            return null;
-        } finally {
-            this.mCommands.clear();
-        }
+    public void closeShell() {
+        session.closeShell();
     }
 
     /**
      * Internal work queue for batching shell commands.
      */
-    private class ShellWorkqueue {
+    private static final class ShellWorkqueue {
         private ArrayList<String> mWorkItems;
 
         private ShellWorkqueue() {
@@ -257,7 +99,7 @@ public final class shellHelper {
          *
          * @param work the command string to add
          */
-        public void addToWork(String work) {
+        void addToWork(String work) {
             if (this.mWorkItems == null) {
                 initWork();
             }
@@ -269,8 +111,8 @@ public final class shellHelper {
          *
          * @return array of queued command strings
          */
-        public String[] execWork() {
-            return (String[]) this.mWorkItems.toArray(new String[0]);
+        String[] execWork() {
+            return this.mWorkItems.toArray(new String[0]);
         }
 
         /**
@@ -283,7 +125,7 @@ public final class shellHelper {
         /**
          * Clears all queued work items and releases the list.
          */
-        public void flushWork() {
+        void flushWork() {
             if (this.mWorkItems != null) {
                 this.mWorkItems.clear();
                 this.mWorkItems = null;
@@ -320,81 +162,22 @@ public final class shellHelper {
      *
      * @return formatted kernel version string, or "Unavailable" if parsing fails
      */
-    public final String getKernel() {
+    public String getKernel() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("/proc/version"), 8192);
             try {
                 String procVersionStr = reader.readLine();
                 reader.close();
-                return formatKernelVersion(procVersionStr);
+                return KernelVersionParser.format(procVersionStr);
             } catch (Throwable th) {
                 reader.close();
                 throw th;
             }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "IO Exception when getting kernel version for Device Info screen", e);
+            Log.e(shellHelper.class.getName(),
+                    "IO Exception when getting kernel version for Device Info screen", e);
             return NO_DATA_FOUND;
         }
-    }
-
-    /**
-     * Formats /proc/version while retaining the raw value if its structure is unfamiliar.
-     */
-    static String formatKernelVersion(String procVersion) {
-        if (procVersion == null || procVersion.trim().length() == 0) {
-            return NO_DATA_FOUND;
-        }
-        String raw = procVersion.trim();
-        Matcher prefix = KERNEL_VERSION_PREFIX_PATTERN.matcher(raw);
-        if (!prefix.find()) return raw;
-
-        String release = prefix.group(1);
-        int builderStart = skipWhitespace(raw, prefix.end());
-        int builderEnd = findClosingParenthesis(raw, builderStart);
-        if (builderEnd < 0) return raw;
-        String builderDetails = raw.substring(builderStart + 1, builderEnd).trim();
-        if (builderDetails.length() == 0) return raw;
-        String builder = builderDetails.split("\\s+", 2)[0];
-
-        int compilerStart = skipWhitespace(raw, builderEnd + 1);
-        int compilerEnd = findClosingParenthesis(raw, compilerStart);
-        if (compilerEnd < 0) return raw;
-        String buildMetadata = raw.substring(compilerEnd + 1).trim();
-        Matcher build = KERNEL_BUILD_PATTERN.matcher(buildMetadata);
-        if (!build.matches()) return raw;
-
-        StringBuilder formatted = new StringBuilder(release)
-                .append('\n').append(builder).append(' ').append(build.group(1));
-        String flagsAndDate = build.group(2);
-        if (flagsAndDate == null || flagsAndDate.length() == 0) return formatted.toString();
-
-        Matcher dateStart = KERNEL_DATE_START_PATTERN.matcher(flagsAndDate);
-        if (!dateStart.find()) {
-            return formatted.append('\n').append(flagsAndDate).toString();
-        }
-        String flags = flagsAndDate.substring(0, dateStart.start()).trim();
-        String date = flagsAndDate.substring(dateStart.start()).trim();
-        if (flags.length() > 0) formatted.append('\n').append(flags);
-        if (date.length() > 0) formatted.append('\n').append(date);
-        return formatted.toString();
-    }
-
-    private static int skipWhitespace(String value, int position) {
-        while (position < value.length() && Character.isWhitespace(value.charAt(position))) {
-            position++;
-        }
-        return position;
-    }
-
-    private static int findClosingParenthesis(String value, int openingPosition) {
-        if (openingPosition >= value.length() || value.charAt(openingPosition) != '(') return -1;
-        int depth = 0;
-        for (int i = openingPosition; i < value.length(); i++) {
-            char character = value.charAt(i);
-            if (character == '(') depth++;
-            else if (character == ')' && --depth == 0) return i;
-        }
-        return -1;
     }
 
     /**
@@ -403,40 +186,8 @@ public final class shellHelper {
      * @param s the file path to read
      * @return the first line of the file, or "Unavailable" if the file cannot be read
      */
-    public final String getInfo(String s) {
-        String info = NO_DATA_FOUND;
-        if (s == null || !new File(s).exists()) {
-            return NO_DATA_FOUND;
-        }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
-            try {
-                info = reader.readLine();
-                if (info == null) {
-                    info = NO_DATA_FOUND;
-                }
-                return info;
-            } finally {
-                reader.close();
-            }
-        } catch (IOException e) {
-            synchronized (this) {
-                openShell();
-                addCommand("ls -l " + s);
-                String tmp = getRootResult();
-                if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
-                    addCommand("cat " + s);
-                    String catResult = getRootResult();
-                    if (catResult != null) {
-                        info = catResult;
-                    }
-                }
-                if (info.equals(NO_DATA_FOUND)) {
-                    Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
-                }
-                return info;
-            }
-        }
+    public String getInfo(String s) {
+        return sysfsReader.getInfo(s);
     }
 
     /**
@@ -446,17 +197,8 @@ public final class shellHelper {
      * @param path the file path to read
      * @return the first line of the file
      */
-    public final String getFastInfo(String path) {
-        try {
-            FileInputStream fis = new FileInputStream(path);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-            String tmp = br.readLine();
-            return tmp;
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "IO Exception when trying to get information. Fallback to getInfo()", e);
-            String tmp2 = getInfo(path);
-            return tmp2;
-        }
+    public String getFastInfo(String path) {
+        return sysfsReader.getFastInfo(path);
     }
 
     /**
@@ -466,28 +208,8 @@ public final class shellHelper {
      * @param deepsleep if true, prepends the deep sleep time in centiseconds
      * @return array of lines from the file, or null if reading fails
      */
-    public final String[] getInfo(String s, boolean deepsleep) {
-        ArrayList<String> al = new ArrayList<>();
-        if (deepsleep) {
-            long sleepTime = (SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()) / 10;
-            al.add(Long.toString(sleepTime));
-        }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
-            try {
-                for (String info = reader.readLine(); info != null; info = reader.readLine()) {
-                    al.add(info);
-                }
-                reader.close();
-                return (String[]) al.toArray(new String[0]);
-            } catch (Throwable th) {
-                reader.close();
-                throw th;
-            }
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
-            return null;
-        }
+    public String[] getInfo(String s, boolean deepsleep) {
+        return sysfsReader.getInfo(s, deepsleep);
     }
 
     /**
@@ -497,31 +219,8 @@ public final class shellHelper {
      * @param flag if true, list files; if false, list directories
      * @return array of names, or null if the directory does not exist
      */
-    public final String[] getDirInfo(String s, boolean flag) {
-        if (!new File(s).exists()) {
-            return null;
-        }
-        if (flag) {
-            List<String> results = new ArrayList<>();
-            File[] files = new File(s).listFiles();
-            for (File file : files) {
-                if (file.isFile()) {
-                    results.add(file.getName());
-                }
-            }
-            String[] result = new String[results.size()];
-            for (int i = 0; i < results.size(); i++) {
-                result[i] = results.get(i);
-            }
-            Arrays.sort(result);
-            return result;
-        }
-        return new File(s).list(new FilenameFilter() { // from class: com.aero.control.helpers.shellHelper.2
-            @Override // java.io.FilenameFilter
-            public boolean accept(File file2, String s2) {
-                return new File(file2, s2).isDirectory();
-            }
-        });
+    public String[] getDirInfo(String s, boolean flag) {
+        return sysfsReader.getDirInfo(s, flag);
     }
 
     /**
@@ -532,41 +231,8 @@ public final class shellHelper {
      * @param files if true, list files; if false, list directories
      * @return sorted entry names, or an empty array when the directory cannot be listed
      */
-    public final String[] getRootAwareHwmonDirInfo(String path, boolean files) {
-        if (path == null || !HWMON_DIRECTORY_PATTERN.matcher(path).matches()) {
-            return new String[0];
-        }
-
-        File directory = new File(path);
-        File[] entries = directory.listFiles();
-        if (entries != null) {
-            List<String> results = new ArrayList<>();
-            for (File entry : entries) {
-                if ((files && entry.isFile()) || (!files && entry.isDirectory())) {
-                    results.add(entry.getName());
-                }
-            }
-            Collections.sort(results);
-            return results.toArray(new String[0]);
-        }
-
-        String test = files ? "-f" : "-d";
-        String command = "for entry in " + escapeShellArg(path) +
-                "/*; do [ " + test + " \"$entry\" ] && printf '%s\\n' \"${entry##*/}\"; done";
-        synchronized (this) {
-            openShell();
-            if (!mShellLoaded) {
-                return new String[0];
-            }
-            addCommand(command);
-            String output = getRootResult();
-            if (output == null || output.length() == 0) {
-                return new String[0];
-            }
-            String[] results = output.split("\\r?\\n");
-            Arrays.sort(results);
-            return results;
-        }
+    public String[] getRootAwareHwmonDirInfo(String path, boolean files) {
+        return hwmonInfo.getRootAwareHwmonDirInfo(path, files);
     }
 
     /**
@@ -577,48 +243,8 @@ public final class shellHelper {
      * @param files if true, list files; if false, list directories
      * @return sorted child names, or an empty array when access is rejected or fails
      */
-    public final String[] getRootAwareTegraI2cDirInfo(String path, boolean files) {
-        if (path == null
-                || !TEGRA_I2C_DIRECTORY_PATTERN.matcher(path).matches()
-                || (files && !TEGRA_I2C_DEVICE_DIRECTORY_PATTERN.matcher(path).matches())) {
-            return new String[0];
-        }
-
-        File[] entries = null;
-        try {
-            entries = new File(path).listFiles();
-        } catch (SecurityException e) {
-            // Fall through to the shared root shell.
-        }
-        if (entries != null) {
-            List<String> results = new ArrayList<>();
-            for (File entry : entries) {
-                if ((files && entry.isFile()) || (!files && entry.isDirectory())) {
-                    results.add(entry.getName());
-                }
-            }
-            Collections.sort(results);
-            return results.toArray(new String[0]);
-        }
-
-        String test = files ? "-f" : "-d";
-        String command = "for entry in " + escapeShellArg(path)
-                + "/*; do [ " + test + " \"$entry\" ]"
-                + " && printf '%s\\n' \"${entry##*/}\"; done";
-        synchronized (this) {
-            openShell();
-            if (!mShellLoaded) {
-                return new String[0];
-            }
-            addCommand(command);
-            String output = getRootResult();
-            if (output == null || output.length() == 0) {
-                return new String[0];
-            }
-            String[] results = output.split("\\r?\\n");
-            Arrays.sort(results);
-            return results;
-        }
+    public String[] getRootAwareTegraI2cDirInfo(String path, boolean files) {
+        return tegraI2cInfo.getRootAwareTegraI2cDirInfo(path, files);
     }
 
     /**
@@ -628,35 +254,8 @@ public final class shellHelper {
      * @param path an allowlisted Tegra I2C tempN_input path
      * @return the node contents, or "Unavailable" when access is rejected or fails
      */
-    public final String getRootAwareTegraI2cInfo(String path) {
-        if (path == null || !TEGRA_I2C_TEMPERATURE_FILE_PATTERN.matcher(path).matches()) {
-            return NO_DATA_FOUND;
-        }
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
-            try {
-                String info = reader.readLine();
-                return info == null ? NO_DATA_FOUND : info;
-            } finally {
-                reader.close();
-            }
-        } catch (IOException e) {
-            // Fall through to the shared root shell.
-        } catch (SecurityException e) {
-            // Fall through to the shared root shell.
-        }
-
-        synchronized (this) {
-            openShell();
-            if (!mShellLoaded) {
-                return NO_DATA_FOUND;
-            }
-            addCommand("[ -f " + escapeShellArg(path) + " ] && cat "
-                    + escapeShellArg(path));
-            String output = getRootResult();
-            return output == null || output.length() == 0 ? NO_DATA_FOUND : output;
-        }
+    public String getRootAwareTegraI2cInfo(String path) {
+        return tegraI2cInfo.getRootAwareTegraI2cInfo(path);
     }
 
     /**
@@ -666,58 +265,8 @@ public final class shellHelper {
      * @param path an allowlisted Tegra I2C name or tempN_label path
      * @return the trimmed node contents, or "Unavailable" when access is rejected or fails
      */
-    public final String getDirectTegraI2cInfo(String path) {
-        if (path == null || !TEGRA_I2C_METADATA_FILE_PATTERN.matcher(path).matches()) {
-            return NO_DATA_FOUND;
-        }
-
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
-            try {
-                String info = reader.readLine();
-                if (info == null || info.trim().length() == 0) {
-                    return NO_DATA_FOUND;
-                }
-                return info.trim();
-            } finally {
-                reader.close();
-            }
-        } catch (IOException e) {
-            return NO_DATA_FOUND;
-        } catch (SecurityException e) {
-            return NO_DATA_FOUND;
-        }
-    }
-
-    /**
-     * Parses a string into an array by splitting on spaces, optionally removing brackets
-     * and converting values to MHz format.
-     *
-     * @param s the input string to parse
-     * @param flag if 1, convert values to MHz; otherwise keep raw strings
-     * @param flag_io if 1, remove brackets before splitting; otherwise split as-is
-     * @return the parsed array of strings
-     */
-    private String[] buildArray(String s, int flag, int flag_io) {
-        String[] completeString = new String[0];
-        if (s.charAt(s.length() - 1) == '\n') {
-            s = s.replace(Character.toString('\n'), "");
-        }
-        if (flag_io == 1) {
-            completeString = s.replace("[", "").replace("]", "").split(" ");
-        } else if (flag_io == 0) {
-            completeString = s.split(" ");
-        }
-        String[] output = new String[completeString.length];
-        output[0] = NO_DATA_FOUND;
-        for (int i = 0; i < output.length; i++) {
-            if (flag == 1) {
-                output[i] = toMHz(completeString[i]);
-            } else {
-                output[i] = completeString[i];
-            }
-        }
-        return output;
+    public String getDirectTegraI2cInfo(String path) {
+        return tegraI2cInfo.getDirectTegraI2cInfo(path);
     }
 
     /**
@@ -729,30 +278,8 @@ public final class shellHelper {
      * @param flag_io if 1, remove brackets; otherwise keep raw format
      * @return array of parsed values, or {"Unavailable"} if reading fails
      */
-    public final String[] getInfoArray(String s, int flag, int flag_io) {
-        String[] output = {NO_DATA_FOUND};
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
-            try {
-                output = buildArray(reader.readLine(), flag, flag_io);
-                return output;
-            } finally {
-                reader.close();
-            }
-        } catch (IOException e) {
-            synchronized (this) {
-                openShell();
-                String result = getRootInfo("ls -l", s);
-                if (result != null && result.length() > 10 && !result.substring(0, 10).equals("--w-------")) {
-                    String tmp = getRootInfo("cat", s);
-                    output = buildArray(tmp, flag, flag_io);
-                }
-                if (output[0].equals(NO_DATA_FOUND)) {
-                    Log.e(LOG_TAG, "IO Exception when trying to get information.", e);
-                }
-                return output;
-            }
-        }
+    public String[] getInfoArray(String s, int flag, int flag_io) {
+        return sysfsReader.getInfoArray(s, flag, flag_io);
     }
 
     /**
@@ -761,14 +288,8 @@ public final class shellHelper {
      * @param s the input string
      * @return the substring between brackets, or "Unavailable" if brackets not found
      */
-    public final String getInfoString(String s) {
-        int open = s.indexOf("[");
-        int close = s.lastIndexOf("]");
-        if (open < 0 || close < 0) {
-            return NO_DATA_FOUND;
-        }
-        String finalString = s.substring(open + 1, close);
-        return finalString;
+    public String getInfoString(String s) {
+        return sysfsReader.getInfoString(s);
     }
 
     /**
@@ -777,22 +298,8 @@ public final class shellHelper {
      * @param mhzString the frequency string to convert
      * @return the frequency in MHz with " MHz" suffix, or "Unavailable" if conversion fails
      */
-    public final String toMHz(String mhzString) {
-        String str;
-        if (mhzString.equals(NO_DATA_FOUND) || mhzString.equals("Unavaila")) {
-            return NO_DATA_FOUND;
-        }
-        try {
-            if (mhzString.length() < 8) {
-                str = (Integer.valueOf(mhzString).intValue() / 1000) + " MHz";
-            } else {
-                str = (Integer.valueOf(mhzString).intValue() / 1000000) + " MHz";
-            }
-            return str;
-        } catch (NumberFormatException e) {
-            Log.e(LOG_TAG, "Tried to add something to a non existing string.", e);
-            return NO_DATA_FOUND;
-        }
+    public String toMHz(String mhzString) {
+        return FrequencyFormat.toMHz(mhzString);
     }
 
     /**
@@ -801,26 +308,8 @@ public final class shellHelper {
      * @param s the path to meminfo (typically /proc/meminfo)
      * @return formatted string "free MB / total MB", or "Unavailable" if reading fails
      */
-    public final String getMemory(String s) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
-            String totalMemory = reader.readLine();
-            String totalFreeMemory = reader.readLine();
-            if (totalMemory != null && totalFreeMemory != null) {
-                String[] parts = totalMemory.split("\\s+");
-                if (parts.length == 3) {
-                    totalMemory = (Long.parseLong(parts[1]) / 1024) + " MB";
-                }
-                String[] parts2 = totalFreeMemory.split("\\s+");
-                if (parts2.length == 3) {
-                    totalFreeMemory = (Long.parseLong(parts2[1]) / 1024) + " MB";
-                }
-            }
-            return totalFreeMemory + " / " + totalMemory;
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Yep, i can't read your memory stats :( .", e);
-            return NO_DATA_FOUND;
-        }
+    public String getMemory(String s) {
+        return sysfsReader.getMemory(s);
     }
 
     /**
@@ -832,15 +321,15 @@ public final class shellHelper {
      * @return true when commands are successfully submitted to the root shell, false when
      *         parameters are invalid, the shell is unavailable, or command submission fails
      */
-    public final synchronized boolean setRootInfo(String content, String path) {
+    public boolean setRootInfo(String content, String path) {
         if (content == null || content.isEmpty() || content.trim().isEmpty() || path == null || path.isEmpty() || path.trim().isEmpty()) {
-            Log.e(LOG_TAG, "setRootInfo called with invalid content or path, ignoring.");
+            Log.e(shellHelper.class.getName(), "setRootInfo called with invalid content or path, ignoring.");
             return false;
         }
         String quotedPath = escapeShellArg(path);
         String[] commands = {"chmod 0666 " + quotedPath, "printf %s " + escapeShellArg(content) + " > " + quotedPath};
-        addCommands(commands);
-        return runCommands();
+        session.addCommands(commands);
+        return session.runCommands();
     }
 
     /**
@@ -851,7 +340,7 @@ public final class shellHelper {
      * @return the shell-escaped string
      */
     public static String escapeShellArg(String value) {
-        return "'" + value.replace("'", "'\\''") + "'";
+        return RootShellSession.escapeShellArg(value);
     }
 
     /**
@@ -860,17 +349,17 @@ public final class shellHelper {
      * @param array the array of commands to execute
      * @return true if commands were executed successfully, false otherwise
      */
-    public final synchronized boolean setRootInfo(String[] array) {
-        addCommands(array);
-        return runCommands();
+    public boolean setRootInfo(String[] array) {
+        session.addCommands(array);
+        return session.runCommands();
     }
 
     /**
      * Remounts /system as read-write.
      */
-    public final synchronized void remountSystem() {
-        addCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
-        runCommands();
+    public void remountSystem() {
+        session.addCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
+        session.runCommands();
     }
 
     /**
@@ -880,9 +369,9 @@ public final class shellHelper {
      * @param parameter the parameter to pass to the command
      * @return the command output, or "Unavailable" if the command fails
      */
-    public final synchronized String getRootInfo(String command, String parameter) {
-        addCommand(command + " " + parameter);
-        String ret = getRootResult();
+    public String getRootInfo(String command, String parameter) {
+        session.addCommand(command + " " + parameter);
+        String ret = session.getRootResult();
         if (ret == null) {
             return NO_DATA_FOUND;
         }
@@ -898,13 +387,13 @@ public final class shellHelper {
      * the command to give the blocking read something to return once the
      * preceding operation has actually finished.
      */
-    public final synchronized boolean runCommandAndWait(String command) {
-        openShell();
-        if (!this.mShellLoaded) {
+    public boolean runCommandAndWait(String command) {
+        session.openShell();
+        if (!session.isLoaded()) {
             return false;
         }
-        addCommand(command);
-        return getRootResult() != null;
+        session.addCommand(command);
+        return session.getRootResult() != null;
     }
 
     /**
@@ -912,13 +401,13 @@ public final class shellHelper {
      * produces a result, returning the actual output. Returns null if the
      * shell is not loaded or the command fails.
      */
-    public final synchronized String runCommandAndWaitForOutput(String command) {
-        openShell();
-        if (!this.mShellLoaded) {
+    public String runCommandAndWaitForOutput(String command) {
+        session.openShell();
+        if (!session.isLoaded()) {
             return null;
         }
-        addCommand(command);
-        return getRootResult();
+        session.addCommand(command);
+        return session.getRootResult();
     }
 
     /**
@@ -929,7 +418,7 @@ public final class shellHelper {
      * this runs the check through the shared root shell. Only intended for
      * use with a fixed, application-controlled set of candidate paths.
      */
-    public final synchronized boolean isReadableBlockDevice(String path) {
+    public boolean isReadableBlockDevice(String path) {
         if (path == null) {
             return false;
         }
@@ -945,10 +434,10 @@ public final class shellHelper {
      * @param split the delimiter regex to use for splitting the output
      * @return an array of strings split from the command output
      */
-    public final synchronized String[] getRootArray(String command, String split) {
+    public String[] getRootArray(String command, String split) {
         ArrayList<String> temp = new ArrayList<>();
-        addCommand(command);
-        String ret = getRootResult();
+        session.addCommand(command);
+        String ret = session.getRootResult();
         if (ret == null) {
             ret = NO_DATA_FOUND;
         }
@@ -956,7 +445,7 @@ public final class shellHelper {
         for (String a : arr$) {
             temp.add(a);
         }
-        return (String[]) temp.toArray(new String[0]);
+        return temp.toArray(new String[0]);
     }
 
     /**
@@ -968,56 +457,7 @@ public final class shellHelper {
      * @return the command output, or "Unavailable" if the command fails
      */
     public String getLegacyRootInfo(String command, String parameter) {
-        Process process = null;
-        DataOutputStream os = null;
-        InputStream is = null;
-        try {
-            process = Runtime.getRuntime().exec("su");
-            os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes(command + " " + parameter + "\n");
-            os.flush();
-            is = process.getInputStream();
-            byte[] localBuffer = new byte[BUFF_LEN];
-            String result = "";
-            while (true) {
-                int read = is.read(localBuffer);
-                if (read == -1) {
-                    result = NO_DATA_FOUND;
-                    break;
-                }
-                result = result + new String(localBuffer, 0, read);
-                if (read < BUFF_LEN) {
-                    os.writeBytes("exit\n");
-                    os.flush();
-                    break;
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Do you even root, bro? :/", e);
-            return NO_DATA_FOUND;
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                }
-            }
-            if (process != null) {
-                process.destroy();
-                try {
-                    process.waitFor();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
+        return overclockLegacy.getLegacyRootInfo(command, parameter);
     }
 
     /**
@@ -1026,19 +466,7 @@ public final class shellHelper {
      *
      * @return true if addresses were set successfully, false otherwise
      */
-    public final boolean setOverclockAddress() {
-        if (!new File("/proc/overclock/omap2_clk_init_cpufreq_table_addr").exists() || !new File("/proc/overclock/cpufreq_stats_update_addr").exists()) {
-            return false;
-        }
-        String omap_result = getLegacyRootInfo("busybox egrep \"omap2_clk_init_cpufreq_table$\"", "/proc/kallsyms");
-        String cpufreq_result = getLegacyRootInfo("busybox egrep \"cpufreq_stats_update$\"", "/proc/kallsyms");
-        if (omap_result.length() < 8 || cpufreq_result.length() < 8) {
-            return false;
-        }
-        String omap_address = omap_result.substring(0, 8);
-        String cpufreq_address = cpufreq_result.substring(0, 8);
-        String[] commands = {"echo 0x" + omap_address + " > /proc/overclock/omap2_clk_init_cpufreq_table_addr", "echo 0x" + cpufreq_address + " > /proc/overclock/cpufreq_stats_update_addr"};
-        setRootInfo(commands);
-        return true;
+    public boolean setOverclockAddress() {
+        return overclockLegacy.setOverclockAddress();
     }
 }
