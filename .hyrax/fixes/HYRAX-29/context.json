@@ -1,0 +1,14 @@
+{
+  "affected_projects": [],
+  "audit_job_id": null,
+  "category": "security",
+  "created_at": "2026-09-13T06:51:46.405844+00:00",
+  "file": "src/com/aero/control/helpers/rootHelper.java",
+  "line": 51,
+  "mode": "finding",
+  "project_path": null,
+  "ref": "HYRAX-29",
+  "severity": "medium",
+  "title": "su root-shell spawn (Runtime.exec(\"su\")) has no timeout \u2014 can hang UI/background thread indefinitely if su prompt is not answered",
+  "tool": "harden"
+}
