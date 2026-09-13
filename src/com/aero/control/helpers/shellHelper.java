@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -203,41 +204,60 @@ public final class shellHelper {
      * @return the command output as a string, or null if reading fails or is interrupted
      */
     private synchronized String getRootResult() {
-        int read;
         List<String> commands = Collections.synchronizedList(this.mCommands);
-        char[] buf = new char[8192];
-        StringBuilder response = new StringBuilder();
         try {
-            if (this.mShellLoaded) {
-                for (String cmd : commands) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        return null;
-                    }
-                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-                    do {
+            if (!this.mShellLoaded) {
+                return "";
+            }
+            // The su prompt may be interactive (SuperSU/Magisk grant dialog); if
+            // the user never answers it, mOutput.read() below would otherwise
+            // block this thread forever, which is fatal if called from the main
+            // thread. Run the read loop on a background thread and bound the
+            // wait, closing the wedged shell on timeout so we don't keep handing
+            // out a dead process to subsequent callers.
+            final BufferedReader shellOutput = this.mOutput;
+            final DataOutputStream shellInput = this.mShellOutput;
+            final List<String> cmds = commands;
+            String result = RootShellTimeout.runBounded(new Callable<String>() {
+                @Override // java.util.concurrent.Callable
+                public String call() throws IOException {
+                    char[] buf = new char[8192];
+                    StringBuilder response = new StringBuilder();
+                    for (String cmd : cmds) {
                         if (Thread.currentThread().isInterrupted()) {
                             return null;
                         }
-                        read = this.mOutput.read(buf);
-                        if (read == -1) {
-                            return null;
-                        }
-                        int remaining = MAX_RESULT_LEN - response.length();
-                        if (remaining > 0) {
-                            response.append(buf, 0, Math.min(read, remaining));
-                        }
-                    } while (read >= 8192);
-                    this.mShellOutput.flush();
+                        shellInput.write((cmd + "\n").getBytes("UTF-8"));
+                        int read;
+                        do {
+                            if (Thread.currentThread().isInterrupted()) {
+                                return null;
+                            }
+                            read = shellOutput.read(buf);
+                            if (read == -1) {
+                                return null;
+                            }
+                            int remaining = MAX_RESULT_LEN - response.length();
+                            if (remaining > 0) {
+                                response.append(buf, 0, Math.min(read, remaining));
+                            }
+                        } while (read >= 8192);
+                        shellInput.flush();
+                    }
+                    try {
+                        shellInput.flush();
+                    } catch (IOException e) {
+                    }
+                    return response.toString().trim();
                 }
-                try {
-                    this.mShellOutput.flush();
-                } catch (IOException e) {
-                }
+            }, this.mProcess, null, RootShellTimeout.DEFAULT_TIMEOUT_MS);
+            if (result == null) {
+                // Either a real failure/interrupt, or the bounded wait timed out
+                // and the wedged process was destroyed: force the shell to be
+                // reopened on next use rather than reusing a dead pipe.
+                closeShell();
             }
-            return response.toString().trim();
-        } catch (IOException e2) {
-            Log.e(LOG_TAG, "Something interrupted our operations...", e2);
-            return null;
+            return result;
         } finally {
             this.mCommands.clear();
         }
@@ -973,26 +993,37 @@ public final class shellHelper {
         InputStream is = null;
         try {
             process = Runtime.getRuntime().exec("su");
+            final Process suProcess = process;
             os = new DataOutputStream(process.getOutputStream());
             os.writeBytes(command + " " + parameter + "\n");
             os.flush();
             is = process.getInputStream();
-            byte[] localBuffer = new byte[BUFF_LEN];
-            String result = "";
-            while (true) {
-                int read = is.read(localBuffer);
-                if (read == -1) {
-                    result = NO_DATA_FOUND;
-                    break;
+            final InputStream suInput = is;
+            final DataOutputStream suOutput = os;
+            // Bound the read: an unanswered su prompt would otherwise block
+            // this thread forever. Run it on a background thread and give up
+            // after a fixed timeout, destroying the process to unblock it.
+            return RootShellTimeout.runBounded(new Callable<String>() {
+                @Override // java.util.concurrent.Callable
+                public String call() throws IOException {
+                    byte[] localBuffer = new byte[BUFF_LEN];
+                    String result = "";
+                    while (true) {
+                        int read = suInput.read(localBuffer);
+                        if (read == -1) {
+                            result = NO_DATA_FOUND;
+                            break;
+                        }
+                        result = result + new String(localBuffer, 0, read);
+                        if (read < BUFF_LEN) {
+                            suOutput.writeBytes("exit\n");
+                            suOutput.flush();
+                            break;
+                        }
+                    }
+                    return result;
                 }
-                result = result + new String(localBuffer, 0, read);
-                if (read < BUFF_LEN) {
-                    os.writeBytes("exit\n");
-                    os.flush();
-                    break;
-                }
-            }
-            return result;
+            }, suProcess, NO_DATA_FOUND, RootShellTimeout.DEFAULT_TIMEOUT_MS);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Do you even root, bro? :/", e);
             return NO_DATA_FOUND;
