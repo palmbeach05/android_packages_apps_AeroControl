@@ -29,6 +29,8 @@ public final class shellHelper {
 
     private final RootShellSession session = new RootShellSession();
     private final SysfsReader sysfsReader = new SysfsReader(session);
+    private final SysfsRepository sysfsRepository = new SysfsRepository(session);
+    private final HardwareGateway hardwareGateway = new HardwareGateway(session);
     private final HwmonInfo hwmonInfo = new HwmonInfo(session);
     private final TegraI2cInfo tegraI2cInfo = new TegraI2cInfo(session);
     private final OverclockLegacy overclockLegacy = new OverclockLegacy(session);
@@ -280,6 +282,24 @@ public final class shellHelper {
      */
     public String[] getInfoArray(String s, int flag, int flag_io) {
         return sysfsReader.getInfoArray(s, flag, flag_io);
+    }
+
+    /** Reads a value list using an explicit decoding mode instead of magic flags. */
+    public String[] getInfoArray(String path, ReadMode mode) {
+        if (mode == null) {
+            return new String[] {NO_DATA_FOUND};
+        }
+        return sysfsReader.getInfoArray(path, mode);
+    }
+
+    /** Returns the shared typed sysfs boundary for new hardware controllers. */
+    public SysfsRepository getSysfsRepository() {
+        return sysfsRepository;
+    }
+
+    /** Returns the domain API for new callers that should not issue shell commands directly. */
+    public HardwareGateway getHardwareGateway() {
+        return hardwareGateway;
     }
 
     /**

@@ -30,6 +30,7 @@ import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.ReadMode;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.FileOutputStream;
@@ -158,8 +159,8 @@ public class CPUFragment extends PlaceHolderFragment {
             governor.setTitle(governorTitle);
             governor.setDialogTitle(governorTitle);
             String representativeGovPath = FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CPU_AVAILABLE_GOV_SUFFIX;
-            governor.setEntries(AeroActivity.shell.getInfoArray(representativeGovPath, 0, 0));
-            governor.setEntryValues(AeroActivity.shell.getInfoArray(representativeGovPath, 0, 0));
+            governor.setEntries(AeroActivity.shell.getInfoArray(representativeGovPath, ReadMode.RAW));
+            governor.setEntryValues(AeroActivity.shell.getInfoArray(representativeGovPath, ReadMode.RAW));
             String currentGovernor = AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE);
             governor.setValue(currentGovernor);
             governor.setSummary(currentGovernor);
@@ -297,7 +298,7 @@ public class CPUFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
                 String overclockOutput = AeroActivity.shell.getRootInfo("cat", FilePath.CPU_VSEL);
-                CharSequence[] cpufreq = AeroActivity.shell.getInfoArray(FilePath.CPU_BASE_PATH + 0 + FilePath.CPU_AVAILABLE_FREQ_SUFFIX, 0, 0);
+                CharSequence[] cpufreq = AeroActivity.shell.getInfoArray(FilePath.CPU_BASE_PATH + 0 + FilePath.CPU_AVAILABLE_FREQ_SUFFIX, ReadMode.RAW);
                 AlertDialog.Builder builder = new AlertDialog.Builder(CPUFragment.this.getActivity());
                 LayoutInflater inflater = CPUFragment.this.getActivity().getLayoutInflater();
                 View layout = inflater.inflate(R.layout.cpu_oc_uc, (ViewGroup) null);

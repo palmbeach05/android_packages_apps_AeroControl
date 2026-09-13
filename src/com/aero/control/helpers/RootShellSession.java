@@ -17,15 +17,28 @@ import java.util.List;
  * nothing about sysfs layout, kernel-version parsing, or any
  * device-specific hardware quirks.
  */
-final class RootShellSession {
+public final class RootShellSession {
     private static final int MAX_RESULT_LEN = 65536;
+    private static final long DEFAULT_COMMAND_TIMEOUT_MS = 5000L;
     private static final String LOG_TAG = RootShellSession.class.getName();
 
+    private final long commandTimeoutMs;
     private List<String> mCommands = new ArrayList<>();
     private Process mProcess = null;
     private DataOutputStream mShellOutput = null;
     private BufferedReader mOutput = null;
     private boolean mShellLoaded = false;
+
+    public RootShellSession() {
+        this(DEFAULT_COMMAND_TIMEOUT_MS);
+    }
+
+    public RootShellSession(long commandTimeoutMs) {
+        if (commandTimeoutMs <= 0) {
+            throw new IllegalArgumentException("commandTimeoutMs must be positive");
+        }
+        this.commandTimeoutMs = commandTimeoutMs;
+    }
 
     /**
      * Opens the root shell session if not already open.
@@ -59,7 +72,7 @@ final class RootShellSession {
             try {
                 this.mShellOutput.close();
             } catch (IOException e) {
-                // Nothing useful to do with a failure while tearing down.
+                Log.w(LOG_TAG, "Failed to close root shell input", e);
             }
             this.mShellOutput = null;
         }
@@ -67,7 +80,7 @@ final class RootShellSession {
             try {
                 this.mOutput.close();
             } catch (IOException e) {
-                // Nothing useful to do with a failure while tearing down.
+                Log.w(LOG_TAG, "Failed to close root shell output", e);
             }
             this.mOutput = null;
         }
@@ -145,44 +158,65 @@ final class RootShellSession {
      * @return the command output as a string, or null if reading fails or is interrupted
      */
     synchronized String getRootResult() {
+        final List<String> commands = new ArrayList<>(this.mCommands);
+        this.mCommands.clear();
+        if (!this.mShellLoaded) {
+            return null;
+        }
+
+        final String[] result = new String[1];
+        Thread commandThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                result[0] = executeAndRead(commands);
+            }
+        }, "AeroRootShellCommand");
+        commandThread.start();
+        try {
+            commandThread.join(this.commandTimeoutMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            closeShell();
+            return null;
+        }
+        if (commandThread.isAlive()) {
+            Log.e(LOG_TAG, "Root shell command timed out after " + this.commandTimeoutMs + "ms");
+            closeShell();
+            return null;
+        }
+        return result[0];
+    }
+
+    private String executeAndRead(List<String> commands) {
         int read;
-        List<String> commands = Collections.synchronizedList(this.mCommands);
         char[] buf = new char[8192];
         StringBuilder response = new StringBuilder();
         try {
-            if (this.mShellLoaded) {
-                for (String cmd : commands) {
+            for (String cmd : commands) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+                this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
+                do {
                     if (Thread.currentThread().isInterrupted()) {
                         return null;
                     }
-                    this.mShellOutput.write((cmd + "\n").getBytes("UTF-8"));
-                    do {
-                        if (Thread.currentThread().isInterrupted()) {
-                            return null;
-                        }
-                        read = this.mOutput.read(buf);
-                        if (read == -1) {
-                            return null;
-                        }
-                        int remaining = MAX_RESULT_LEN - response.length();
-                        if (remaining > 0) {
-                            response.append(buf, 0, Math.min(read, remaining));
-                        }
-                    } while (read >= 8192);
-                    this.mShellOutput.flush();
-                }
-                try {
-                    this.mShellOutput.flush();
-                } catch (IOException e) {
-                    // Best-effort flush; the writes above already succeeded.
-                }
+                    read = this.mOutput.read(buf);
+                    if (read == -1) {
+                        return null;
+                    }
+                    int remaining = MAX_RESULT_LEN - response.length();
+                    if (remaining > 0) {
+                        response.append(buf, 0, Math.min(read, remaining));
+                    }
+                } while (read >= 8192);
+                this.mShellOutput.flush();
             }
+            this.mShellOutput.flush();
             return response.toString().trim();
-        } catch (IOException e2) {
-            Log.e(LOG_TAG, "Something interrupted our operations...", e2);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Root shell command failed", e);
             return null;
-        } finally {
-            this.mCommands.clear();
         }
     }
 

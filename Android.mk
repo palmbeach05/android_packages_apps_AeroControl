@@ -1,9 +1,14 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
- 
-LOCAL_SRC_FILES += \
+
+LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
+
+LOCAL_SRC_FILES := $(filter-out \
+    library/HoloGraphLibrary/perAppHelper.java \
+    library/HoloGraphLibrary/PerAppListener.java, \
+    $(sort \
     $(call all-java-files-under, src) \
-    $(call all-java-files-under, library)
+    $(call all-java-files-under, library)))
 
 # The bundled library sources reference their own R classes (e.g.
 # com.getbase.floatingactionbutton.R, com.db.williamchart.R). Since they are
@@ -11,9 +16,6 @@ LOCAL_SRC_FILES += \
 # library modules, their resource directories must be merged in and their
 # packages must be told to aapt via --extra-packages so a matching R.java is
 # generated for each of them.
-LOCAL_RESOURCE_DIR := \
-    $(LOCAL_PATH)/res
-
 LOCAL_AAPT_FLAGS := \
     --extra-packages com.getbase.floatingactionbutton:com.echo.holographlibrary:com.cocosw.undobar:com.db.williamchart:com.github.amlcurran.showcaseview:com.ikimuhendis.ldrawer
 

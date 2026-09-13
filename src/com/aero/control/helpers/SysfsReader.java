@@ -167,19 +167,27 @@ final class SysfsReader {
      * @return the parsed array of strings
      */
     private String[] buildArray(String s, int flag, int flag_io) {
+        return buildArray(s, flag == 1, flag_io == 1);
+    }
+
+    private String[] buildArray(String s, ReadMode mode) {
+        return buildArray(s, mode.convertsToMhz(), mode.stripsBrackets());
+    }
+
+    private String[] buildArray(String s, boolean convertToMhz, boolean stripBrackets) {
         String[] completeString = new String[0];
         if (s.charAt(s.length() - 1) == '\n') {
             s = s.replace(Character.toString('\n'), "");
         }
-        if (flag_io == 1) {
+        if (stripBrackets) {
             completeString = s.replace("[", "").replace("]", "").split(" ");
-        } else if (flag_io == 0) {
+        } else {
             completeString = s.split(" ");
         }
         String[] output = new String[completeString.length];
         output[0] = NO_DATA_FOUND;
         for (int i = 0; i < output.length; i++) {
-            if (flag == 1) {
+            if (convertToMhz) {
                 output[i] = FrequencyFormat.toMHz(completeString[i]);
             } else {
                 output[i] = completeString[i];
@@ -223,6 +231,11 @@ final class SysfsReader {
                 return output;
             }
         }
+    }
+
+    String[] getInfoArray(String s, ReadMode mode) {
+        return getInfoArray(s, mode.convertsToMhz() ? 1 : 0,
+                mode.stripsBrackets() ? 1 : 0);
     }
 
     /**
