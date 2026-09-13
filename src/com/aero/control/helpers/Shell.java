@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Provides an interactive shell session for executing multiple root commands efficiently.
@@ -60,14 +61,27 @@ public class Shell {
     /**
      * Initializes the interactive shell by executing the specified shell command.
      *
+     * <p>{@code Runtime.exec} itself only forks/execs and does not wait on the
+     * su grant prompt, but some su implementations (or a wedged wrapper script)
+     * can stall during process creation/handshake. The spawn + output-stream
+     * setup is therefore bounded so a caller can never be stuck longer than
+     * {@link RootShellTimeout#DEFAULT_TIMEOUT_MS}, consistent with the other
+     * su entry points in this package.
+     *
      * @param su the shell binary to execute (typically "su" for root)
      */
     public synchronized void initInteractive(String su) {
         checkUIThread();
-        try {
-            this.mProcess = Runtime.getRuntime().exec(su);
-            this.mShellOutput = new DataOutputStream(this.mProcess.getOutputStream());
-        } catch (IOException e) {
+        final String suCommand = su;
+        Boolean ok = RootShellTimeout.runBounded(new Callable<Boolean>() {
+            @Override // java.util.concurrent.Callable
+            public Boolean call() throws IOException {
+                Shell.this.mProcess = Runtime.getRuntime().exec(suCommand);
+                Shell.this.mShellOutput = new DataOutputStream(Shell.this.mProcess.getOutputStream());
+                return Boolean.TRUE;
+            }
+        }, this.mProcess, Boolean.FALSE, RootShellTimeout.DEFAULT_TIMEOUT_MS);
+        if (!Boolean.TRUE.equals(ok)) {
             throw new ShellException(ShellException.NO_INTERACTIVE_SHELL);
         }
     }

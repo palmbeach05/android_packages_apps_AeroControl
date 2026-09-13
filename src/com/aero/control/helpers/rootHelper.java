@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 /**
  * Utility class for detecting whether the device has root access by attempting
@@ -49,26 +50,38 @@ public class rootHelper {
         InputStream is = null;
         try {
             process = Runtime.getRuntime().exec("su");
+            final Process suProcess = process;
             os = new DataOutputStream(process.getOutputStream());
             os.writeBytes("id\n");
             os.flush();
             is = process.getInputStream();
-            byte[] localBuffer = new byte[BUFF_LEN];
-            String result = "";
-            while (true) {
-                int read = is.read(localBuffer);
-                if (read == -1) {
-                    result = NO_DATA_FOUND;
-                    break;
+            final InputStream suInput = is;
+            final DataOutputStream suOutput = os;
+            // Bound the read: if the su prompt is never answered, this would
+            // otherwise block the calling thread (possibly the UI thread)
+            // forever. Run it on a background thread and give up after a
+            // fixed timeout, destroying the process to unblock the read.
+            return RootShellTimeout.runBounded(new Callable<String>() {
+                @Override // java.util.concurrent.Callable
+                public String call() throws IOException {
+                    byte[] localBuffer = new byte[BUFF_LEN];
+                    String result = "";
+                    while (true) {
+                        int read = suInput.read(localBuffer);
+                        if (read == -1) {
+                            result = NO_DATA_FOUND;
+                            break;
+                        }
+                        result = result + new String(localBuffer, 0, read);
+                        if (read < BUFF_LEN) {
+                            suOutput.writeBytes("exit\n");
+                            suOutput.flush();
+                            break;
+                        }
+                    }
+                    return result;
                 }
-                result = result + new String(localBuffer, 0, read);
-                if (read < BUFF_LEN) {
-                    os.writeBytes("exit\n");
-                    os.flush();
-                    break;
-                }
-            }
-            return result;
+            }, suProcess, NO_DATA_FOUND, RootShellTimeout.DEFAULT_TIMEOUT_MS);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Do you even root, bro? :/", e);
             return NO_DATA_FOUND;
