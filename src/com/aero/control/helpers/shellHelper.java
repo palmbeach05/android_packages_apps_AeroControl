@@ -322,13 +322,8 @@ public final class shellHelper {
         return FrequencyFormat.toMHz(mhzString);
     }
 
-    /**
-     * Reads /proc/meminfo and returns free/total memory as a formatted string.
-     *
-     * @param s the path to meminfo (typically /proc/meminfo)
-     * @return formatted string "free MB / total MB", or "Unavailable" if reading fails
-     */
-    public String getMemory(String s) {
+    /** Reads /proc/meminfo and returns a validated Overview memory snapshot. */
+    public MemorySnapshot getMemory(String s) {
         return sysfsReader.getMemory(s);
     }
 

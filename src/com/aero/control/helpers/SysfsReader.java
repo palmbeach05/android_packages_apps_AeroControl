@@ -253,31 +253,21 @@ final class SysfsReader {
         return s.substring(open + 1, close);
     }
 
-    /**
-     * Reads /proc/meminfo and returns free/total memory as a formatted string.
-     *
-     * @param s the path to meminfo (typically /proc/meminfo)
-     * @return formatted string "free MB / total MB", or "Unavailable" if reading fails
-     */
-    String getMemory(String s) {
+    /** Reads a named-field memory snapshot from /proc/meminfo. */
+    MemorySnapshot getMemory(String path) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(s), 8192);
-            String totalMemory = reader.readLine();
-            String totalFreeMemory = reader.readLine();
-            if (totalMemory != null && totalFreeMemory != null) {
-                String[] parts = totalMemory.split("\\s+");
-                if (parts.length == 3) {
-                    totalMemory = (Long.parseLong(parts[1]) / 1024) + " MB";
-                }
-                String[] parts2 = totalFreeMemory.split("\\s+");
-                if (parts2.length == 3) {
-                    totalFreeMemory = (Long.parseLong(parts2[1]) / 1024) + " MB";
-                }
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                return MemInfoParser.parse(reader);
+            } finally {
+                reader.close();
             }
-            return totalFreeMemory + " / " + totalMemory;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Yep, i can't read your memory stats :( .", e);
-            return NO_DATA_FOUND;
+            return MemorySnapshot.unavailable();
+        } catch (SecurityException e) {
+            Log.e(LOG_TAG, "Unable to access memory statistics.", e);
+            return MemorySnapshot.unavailable();
         }
     }
 }

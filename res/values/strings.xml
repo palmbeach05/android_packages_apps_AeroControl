@@ -87,7 +87,7 @@
     <!-- ========================================================= -->
     <!-- Overview & Live Hardware Information                      -->
     <!-- ========================================================= -->
-    <string name="available_memory">Total Memory:</string>
+    <string name="available_memory">Memory:</string>
     <string name="current_cpu_speed">CPU Frequency:</string>
     <string name="current_governor">Governor:</string>
     <string name="current_governor_index">Governor %1$d:</string>

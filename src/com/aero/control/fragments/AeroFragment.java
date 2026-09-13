@@ -19,6 +19,7 @@ import com.aero.control.adapter.AeroAdapter;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.MemorySnapshot;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.BufferedReader;
@@ -641,7 +642,7 @@ public class AeroFragment extends Fragment {
         private String frequencyContent;
         private List<String> coreFrequencies;
         private String gpuFrequency;
-        private String memory;
+        private MemorySnapshot memory;
         private List<RawTemperature> temperatures;
         private RawBattery battery;
         private String uptime;
@@ -769,7 +770,7 @@ public class AeroFragment extends Fragment {
         snapshot.frequencyContent = NO_DATA_FOUND;
         snapshot.coreFrequencies = null;
         snapshot.gpuFrequency = NO_DATA_FOUND;
-        snapshot.memory = NO_DATA_FOUND;
+        snapshot.memory = MemorySnapshot.unavailable();
         snapshot.temperatures = new ArrayList<>();
         snapshot.battery = new RawBattery(null, null, null, null, null);
         snapshot.uptime = NO_DATA_FOUND;
@@ -806,9 +807,9 @@ public class AeroFragment extends Fragment {
         }
         if (this.mRAMData == null) {
             this.mRAMData = AeroData.standardCard(getString(R.string.available_memory),
-                    getOverviewDisplayValue(snapshot.memory));
+                    formatMemorySnapshot(snapshot.memory));
         } else {
-            this.mRAMData.content = getOverviewDisplayValue(snapshot.memory);
+            this.mRAMData.content = formatMemorySnapshot(snapshot.memory);
         }
         List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
         for (int i = 0; i < snapshot.temperatures.size(); i++) {
@@ -935,6 +936,15 @@ public class AeroFragment extends Fragment {
     private String getOverviewDisplayValue(String value) {
         String normalized = normalizeValue(value);
         return normalized == null ? getString(R.string.unavailable) : normalized;
+    }
+
+    private String formatMemorySnapshot(MemorySnapshot memory) {
+        if (memory == null || !memory.isAvailable()) {
+            return getString(R.string.unavailable);
+        }
+        return "Available: " + memory.getAvailableMb() + " MB / "
+                + memory.getTotalMb() + " MB\nUsed: " + memory.getUsedMb()
+                + " MB (" + memory.getUsedPercent() + "%)";
     }
 
     private String getUnknownTemperatureLabel(String source, int fallbackIndex) {
