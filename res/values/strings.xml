@@ -88,6 +88,8 @@
     <!-- Overview & Live Hardware Information                      -->
     <!-- ========================================================= -->
     <string name="available_memory">Memory:</string>
+    <string name="storage_permission_required">Storage permission is required for this operation.</string>
+    <string name="storage_operation_failed">Unable to access shared storage.</string>
     <string name="current_cpu_speed">CPU Frequency:</string>
     <string name="current_governor">Governor:</string>
     <string name="current_governor_index">Governor %1$d:</string>

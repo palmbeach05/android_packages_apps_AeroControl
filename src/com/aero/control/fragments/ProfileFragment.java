@@ -32,6 +32,7 @@ import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.PerApp.PerAppManager;
 import com.aero.control.helpers.PerApp.perAppHelper;
+import com.aero.control.helpers.StoragePermission;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.settingsHelper;
 import com.aero.control.helpers.shellHelper;
@@ -66,6 +67,7 @@ public class ProfileFragment extends PreferenceFragment {
     private ViewGroup mRootView;
     public ShowcaseView mShowCase;
     private boolean mWarning;
+    private String mPendingExportProfile;
     private static final String LOG_TAG = PreferenceFragment.class.getName();
     public static final settingsHelper settings = new settingsHelper();
 
@@ -678,18 +680,12 @@ public class ProfileFragment extends PreferenceFragment {
                 }).setNeutralButton(R.string.pref_profile_export, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.ProfileFragment.13.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
-                        String title = txtView.getText().toString() + ".xml";
-                        if (!AeroActivity.genHelper.doesExist(dir) && !new File(dir).mkdirs()) {
-                            Log.e(ProfileFragment.LOG_TAG, "Couldn't create path: " + dir);
-                        }
-                        try {
-                            AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + title), AeroActivity.genHelper.getNewFile(dir + "/" + title));
-                        } catch (IOException e) {
-                            Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: /data/data/com.aero.control/shared_prefs/" + title, e);
-                        }
-                        if (AeroActivity.genHelper.doesExist(dir + "/" + title)) {
-                            Toast.makeText(ProfileFragment.this.mContext, R.string.successful, 0).show();
+                        String profileName = txtView.getText().toString();
+                        if (!StoragePermission.isGranted(ProfileFragment.this.getActivity())) {
+                            ProfileFragment.this.mPendingExportProfile = profileName;
+                            StoragePermission.request(ProfileFragment.this);
+                        } else {
+                            ProfileFragment.this.exportProfile(profileName);
                         }
                     }
                 }).create();
@@ -733,6 +729,40 @@ public class ProfileFragment extends PreferenceFragment {
                 return true;
             }
         });
+    }
+
+    private void exportProfile(String profileName) {
+        String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
+        String title = profileName + ".xml";
+        File directory = new File(dir);
+        if ((!directory.exists() && !directory.mkdirs()) || !directory.isDirectory()) {
+            Log.e(ProfileFragment.LOG_TAG, "Couldn't create path: " + dir);
+            Toast.makeText(this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+            return;
+        }
+        try {
+            AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + title), AeroActivity.genHelper.getNewFile(dir + "/" + title));
+        } catch (IOException e) {
+            Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: /data/data/com.aero.control/shared_prefs/" + title, e);
+        }
+        if (AeroActivity.genHelper.doesExist(dir + "/" + title)) {
+            Toast.makeText(this.mContext, R.string.successful, 0).show();
+        } else {
+            Toast.makeText(this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode != StoragePermission.REQUEST_CODE || mPendingExportProfile == null) {
+            return;
+        }
+        String profileName = mPendingExportProfile;
+        mPendingExportProfile = null;
+        if (StoragePermission.isGranted(getActivity())) {
+            exportProfile(profileName);
+        } else {
+            Toast.makeText(getActivity(), R.string.storage_permission_required, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment

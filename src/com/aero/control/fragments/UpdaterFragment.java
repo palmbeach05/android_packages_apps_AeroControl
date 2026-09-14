@@ -18,6 +18,7 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.StoragePermission;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.helpers.updateHelper;
 import java.io.File;
@@ -37,6 +38,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private CustomListPreference mRestoreKernel;
     private LoadKernelInfoTask mLoadTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
+    private boolean mBackupAfterPermission;
     private static final String timeStamp = new SimpleDateFormat("ddMMyyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
     private static final updateHelper update = new updateHelper();
 
@@ -116,7 +118,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 builder.setView(layout).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2.2
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog, int id) {
-                        UpdaterFragment.this.startKernelBackup();
+                            if (StoragePermission.isGranted(UpdaterFragment.this.getActivity())) {
+                                UpdaterFragment.this.startKernelBackup();
+                            } else {
+                                UpdaterFragment.this.mBackupAfterPermission = true;
+                                StoragePermission.request(UpdaterFragment.this);
+                            }
                     }
                 }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2.1
                     @Override // android.content.DialogInterface.OnClickListener
@@ -234,6 +241,18 @@ public class UpdaterFragment extends PlaceHolderFragment {
         new KernelBackupTask().execute();
     }
 
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode != StoragePermission.REQUEST_CODE || !mBackupAfterPermission) {
+            return;
+        }
+        mBackupAfterPermission = false;
+        if (StoragePermission.isGranted(getActivity())) {
+            startKernelBackup();
+        } else {
+            Toast.makeText(getActivity(), R.string.storage_permission_required, Toast.LENGTH_LONG).show();
+        }
+    }
+
     /**
      * Runs a kernel backup (boot partition or zImage, depending on device)
      * through the shared root shell on a background thread, blocks until the
@@ -250,11 +269,16 @@ public class UpdaterFragment extends PlaceHolderFragment {
         @Override // android.os.AsyncTask
         protected File doInBackground(Void... params) {
             String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/" + UpdaterFragment.timeStamp;
-            if (!AeroActivity.genHelper.doesExist(AERO_PATH) && !new File(AERO_PATH).mkdir() && !new File(AERO_PATH).mkdirs()) {
-                Log.e("Aero", "Couldn't create file: " + AERO_PATH);
+            File backupRoot = new File(AERO_PATH);
+            if ((!backupRoot.exists() && !backupRoot.mkdirs()) || !backupRoot.isDirectory()) {
+                Log.e("Aero", "Couldn't create backup directory: " + AERO_PATH);
+                return null;
             }
-            if (!AeroActivity.genHelper.doesExist(backupDir) && !new File(backupDir).mkdir() && !new File(backupDir).mkdirs()) {
-                Log.e("Aero", "Couldn't create file: " + backupDir);
+            File backupDirectory = new File(backupDir);
+            if ((!backupDirectory.exists() && !backupDirectory.mkdirs())
+                    || !backupDirectory.isDirectory()) {
+                Log.e("Aero", "Couldn't create backup directory: " + backupDir);
+                return null;
             }
             String source;
             String outputName;
