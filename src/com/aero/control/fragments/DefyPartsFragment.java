@@ -11,6 +11,7 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.shellHelper;
 import java.util.regex.Pattern;
 
@@ -200,7 +201,8 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             return false;
         }
         String[] command = {"setprop " + shellHelper.escapeShellArg(file) + " " + shellHelper.escapeShellArg(value)};
-        if (!AeroActivity.shell.setRootInfo(command)) {
+        OperationResult result = AeroActivity.shell.setRootInfoResult(command);
+        if (!result.isSuccess()) {
             return false;
         }
         Toast.makeText(getActivity(), R.string.need_reboot, 0).show();

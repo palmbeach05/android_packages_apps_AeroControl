@@ -337,14 +337,19 @@ public final class shellHelper {
      *         parameters are invalid, the shell is unavailable, or command submission fails
      */
     public boolean setRootInfo(String content, String path) {
+        return setRootInfoResult(content, path).isSuccess();
+    }
+
+    /** Executes a sysfs write synchronously and reports the shell outcome. */
+    public OperationResult setRootInfoResult(String content, String path) {
         if (content == null || content.isEmpty() || content.trim().isEmpty() || path == null || path.isEmpty() || path.trim().isEmpty()) {
             Log.e(shellHelper.class.getName(), "setRootInfo called with invalid content or path, ignoring.");
-            return false;
+            return OperationResult.failed("Invalid write content or path");
         }
         String quotedPath = escapeShellArg(path);
-        String[] commands = {"chmod 0666 " + quotedPath, "printf %s " + escapeShellArg(content) + " > " + quotedPath};
-        session.addCommands(commands);
-        return session.runCommands();
+        String command = "chmod 0666 " + quotedPath + " && printf %s "
+                + escapeShellArg(content) + " > " + quotedPath;
+        return runCheckedCommand(command);
     }
 
     /**
@@ -365,16 +370,46 @@ public final class shellHelper {
      * @return true if commands were executed successfully, false otherwise
      */
     public boolean setRootInfo(String[] array) {
-        session.addCommands(array);
-        return session.runCommands();
+        return setRootInfoResult(array).isSuccess();
+    }
+
+    /** Executes a batch of root commands synchronously and reports its outcome. */
+    public OperationResult setRootInfoResult(String[] array) {
+        if (array == null || array.length == 0) {
+            return OperationResult.failed("No root commands supplied");
+        }
+        StringBuilder command = new StringBuilder();
+        for (String item : array) {
+            if (item == null || item.trim().length() == 0) {
+                return OperationResult.failed("Empty root command supplied");
+            }
+            if (command.length() > 0) {
+                command.append(" && ");
+            }
+            command.append("(").append(item).append(")");
+        }
+        return runCheckedCommand(command.toString());
+    }
+
+    private OperationResult runCheckedCommand(String command) {
+        final String successMarker = "AERO_OPERATION_OK";
+        final String failureMarker = "AERO_OPERATION_FAILED";
+        String output = runCommandAndWaitForOutput(command + " && echo " + successMarker
+                + " || echo " + failureMarker);
+        if (output == null) {
+            return OperationResult.timedOut("Root shell did not complete the operation");
+        }
+        if (output.contains(successMarker)) {
+            return OperationResult.ok();
+        }
+        return OperationResult.failed(output);
     }
 
     /**
      * Remounts /system as read-write.
      */
-    public void remountSystem() {
-        session.addCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
-        session.runCommands();
+    public OperationResult remountSystem() {
+        return runCheckedCommand("mount -o remount,rw -t ext3 /dev/block/mmcblk1p21 /system");
     }
 
     /**

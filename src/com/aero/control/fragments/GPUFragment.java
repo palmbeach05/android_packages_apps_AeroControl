@@ -26,6 +26,7 @@ import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.Android.Material.Slider;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.Shell;
 import java.io.File;
@@ -632,36 +633,34 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPrefs.edit();
         if (preference == this.mSweep2wake) {
-            this.mSweep2wake.setClicked(Boolean.valueOf(this.mSweep2wake.isClicked().booleanValue() ? false : true));
-            if (this.mSweep2wake.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.SWEEP2WAKE);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.SWEEP2WAKE);
-            }
+            if (!applyToggle(this.mSweep2wake, FilePath.SWEEP2WAKE)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mDoubletap2Wake) {
-            this.mDoubletap2Wake.setClicked(Boolean.valueOf(this.mDoubletap2Wake.isClicked().booleanValue() ? false : true));
-            if (this.mDoubletap2Wake.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.DOUBLETAP2WAKE);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.DOUBLETAP2WAKE);
-            }
+            if (!applyToggle(this.mDoubletap2Wake, FilePath.DOUBLETAP2WAKE)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mColorControl) {
             cusPref = (CustomPreference) preference;
             showColorControl(editor, cusPref);
         } else if (preference == this.mGPUControl) {
-            this.mGPUControl.setClicked(Boolean.valueOf(this.mGPUControl.isClicked().booleanValue() ? false : true));
-            if (this.mGPUControl.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.GPU_CONTROL_ACTIVE);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.GPU_CONTROL_ACTIVE);
-            }
+            if (!applyToggle(this.mGPUControl, FilePath.GPU_CONTROL_ACTIVE)) return false;
             cusPref = (CustomPreference) preference;
         }
         if (cusPref != null && cusPref.isChecked().booleanValue() && cusPref.isClicked() != null) {
             String state = cusPref.isClicked().booleanValue() ? "1" : "0";
             editor.putString(cusPref.getName(), state).commit();
+        }
+        return true;
+    }
+
+    private boolean applyToggle(CustomPreference preference, String path) {
+        boolean previous = preference.isClicked().booleanValue();
+        boolean requested = !previous;
+        preference.setClicked(Boolean.valueOf(requested));
+        OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
+        if (!result.isSuccess()) {
+            preference.setClicked(Boolean.valueOf(previous));
+            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+            return false;
         }
         return true;
     }
@@ -704,12 +703,20 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 }
                 String displayPath = AeroActivity.shell.escapeShellArg(FilePath.DISPLAY_COLOR);
                 String[] commands = {"chmod 0664 " + displayPath, "echo " + AeroActivity.shell.escapeShellArg(a) + " > " + displayPath};
-                AeroActivity.shell.setRootInfo(commands);
+                OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
+                if (!result.isSuccess()) {
+                    Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                    return false;
+                }
                 Toast.makeText(getActivity(), "Turn your display off/on :)", 1).show();
             }
             return true;
         }
-        AeroActivity.shell.setRootInfo(a, path);
+        OperationResult result = AeroActivity.shell.setRootInfoResult(a, path);
+        if (!result.isSuccess()) {
+            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+            return false;
+        }
         if (!newSummary.equals("")) {
             preference.setSummary(newSummary);
         }

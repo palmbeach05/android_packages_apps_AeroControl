@@ -14,6 +14,7 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import java.util.ArrayList;
 
 /**
@@ -144,8 +145,10 @@ public class VoltageFragment extends PlaceHolderFragment {
      */
     public void executeVolt(String exeVolt) {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        AeroActivity.shell.setRootInfo(exeVolt, FilePath.VOLTAGE_PATH);
-        updateUI();
+        OperationResult result = AeroActivity.shell.setRootInfoResult(exeVolt, FilePath.VOLTAGE_PATH);
+        if (result.isSuccess()) {
+            updateUI();
+        }
     }
 
     /**

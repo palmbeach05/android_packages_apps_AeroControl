@@ -25,6 +25,7 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.Util;
 import com.github.amlcurran.showcaseview.ShowcaseView;
@@ -389,36 +390,16 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
     private boolean handlePreferenceClick(Preference preference) {
         CustomPreference cusPref = null;
         if (preference == this.mDynFSync) {
-            this.mDynFSync.setClicked(Boolean.valueOf(this.mDynFSync.isClicked().booleanValue() ? false : true));
-            if (this.mDynFSync.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.DYANMIC_FSYNC);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.DYANMIC_FSYNC);
-            }
+            if (!applyToggle(this.mDynFSync, FilePath.DYANMIC_FSYNC)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mFsync) {
-            this.mFsync.setClicked(Boolean.valueOf(this.mFsync.isClicked().booleanValue() ? false : true));
-            if (this.mFsync.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.FSYNC);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.FSYNC);
-            }
+            if (!applyToggle(this.mFsync, FilePath.FSYNC)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mKSMSettings) {
-            this.mKSMSettings.setClicked(Boolean.valueOf(this.mKSMSettings.isClicked().booleanValue() ? false : true));
-            if (this.mKSMSettings.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.KSM_SETTINGS);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.KSM_SETTINGS);
-            }
+            if (!applyToggle(this.mKSMSettings, FilePath.KSM_SETTINGS)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mWriteBackControl) {
-            this.mWriteBackControl.setClicked(Boolean.valueOf(this.mWriteBackControl.isClicked().booleanValue() ? false : true));
-            if (this.mWriteBackControl.isClicked().booleanValue()) {
-                AeroActivity.shell.setRootInfo("1", FilePath.WRITEBACK);
-            } else {
-                AeroActivity.shell.setRootInfo("0", FilePath.WRITEBACK);
-            }
+            if (!applyToggle(this.mWriteBackControl, FilePath.WRITEBACK)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mFSTrimToggle) {
             fsTrimToggleClick();
@@ -453,6 +434,19 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         return true;
     }
 
+    private boolean applyToggle(CustomPreference preference, String path) {
+        boolean previous = preference.isClicked().booleanValue();
+        boolean requested = !previous;
+        preference.setClicked(Boolean.valueOf(requested));
+        OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
+        if (!result.isSuccess()) {
+            preference.setClicked(Boolean.valueOf(previous));
+            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Handles preference value changes for the I/O scheduler and read-ahead preferences.
      * Updates preference summaries and applies changes to the kernel via root commands.
@@ -466,12 +460,20 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         String value = (String) newValue;
         if (preference == this.mIOScheduler) {
             this.mIOScheduler.setSummary(value);
-            AeroActivity.shell.setRootInfo(value, FilePath.GOV_IO_FILE);
+            OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.GOV_IO_FILE);
+            if (!result.isSuccess()) {
+                Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                return false;
+            }
             if (this.PrefCat != null) {
                 this.root.removePreference(this.PrefCat);
             }
         } else if (preference == this.mReadAHead) {
-            AeroActivity.shell.setRootInfo(value, FilePath.READAHEAD_PARAMETER);
+            OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.READAHEAD_PARAMETER);
+            if (!result.isSuccess()) {
+                Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                return false;
+            }
             this.mReadAHead.setSummary(value);
         } else {
             return false;
@@ -509,7 +511,11 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                     return;
                 }
                 String[] cmds = {"echo " + readValue + " > " + FilePath.RANDOM_READ_WAKEUP, "echo " + writeValue + " > " + FilePath.RANDOM_WRITE_WAKEUP};
-                AeroActivity.shell.setRootInfo(cmds);
+                OperationResult result = AeroActivity.shell.setRootInfoResult(cmds);
+                if (!result.isSuccess()) {
+                    Toast.makeText(MemoryFragment.this.getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if (MemoryFragment.this.mRandomSettings.isChecked().booleanValue()) {
                     SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(MemoryFragment.this.getActivity().getBaseContext());
                     preference.edit().putStringSet(MemoryFragment.this.mRandomSettings.getKey(), new HashSet(Arrays.asList(cmds))).commit();

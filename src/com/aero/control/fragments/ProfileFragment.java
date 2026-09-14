@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.PerApp.PerAppManager;
 import com.aero.control.helpers.PerApp.perAppHelper;
@@ -541,7 +542,12 @@ public class ProfileFragment extends PreferenceFragment {
         if (!deleted && prefFile.exists()) {
             Log.e(LOG_TAG, "Whoop, it still exists, something went wrong");
             String[] cmd = {"rm " + shellHelper.escapeShellArg("/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml")};
-            AeroActivity.shell.setRootInfo(cmd);
+            OperationResult result = AeroActivity.shell.setRootInfoResult(cmd);
+            if (!result.isSuccess()) {
+                Log.e(LOG_TAG, "Profile deletion failed: " + result.getStatus()
+                        + " " + result.getMessage());
+                return false;
+            }
             try {
                 Thread.sleep(350L);
             } catch (InterruptedException e) {
@@ -619,7 +625,13 @@ public class ProfileFragment extends PreferenceFragment {
         boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName + ".xml"));
         if (!renameSuccess) {
             String[] cmd = {"mv " + shellHelper.escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldFilename) + " " + shellHelper.escapeShellArg(FilePath.sharedPrefsPath + newFilename)};
-            AeroActivity.shell.setRootInfo(cmd);
+            OperationResult result = AeroActivity.shell.setRootInfoResult(cmd);
+            if (!result.isSuccess()) {
+                Log.e(LOG_TAG, "Profile rename failed: " + result.getStatus()
+                        + " " + result.getMessage());
+                Toast.makeText(this.mContext, R.string.storage_operation_failed, 1).show();
+                return;
+            }
         } else {
             prefFile.delete();
         }

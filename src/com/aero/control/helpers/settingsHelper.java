@@ -304,7 +304,9 @@ public class settingsHelper {
             shell.queueWork("echo " + mem_rah + " > " + FilePath.READAHEAD_PARAMETER);
         }
         if (governorApplied || mem_ios != null) {
-            shell.setRootInfo((String[]) governorSettings.toArray(new String[0]));
+            OperationResult result = shell.setRootInfoResult(
+                    (String[]) governorSettings.toArray(new String[0]));
+            logFailure("governor/I/O settings", result);
         }
         if (gpu_gov != null && genHelper.isSafeShellValue(gpu_gov)) {
             String[] arr$ = FilePath.GPU_GOV_ARRAY;
@@ -477,8 +479,16 @@ public class settingsHelper {
      */
     public void executeDefault() {
         String[] defaultValues = (String[]) defaultProfile.toArray(new String[0]);
-        shell.setRootInfo(defaultValues);
+        OperationResult result = shell.setRootInfoResult(defaultValues);
+        logFailure("default profile", result);
         defaultProfile.clear();
+    }
+
+    private void logFailure(String operation, OperationResult result) {
+        if (!result.isSuccess()) {
+            Log.e("Aero", operation + " failed: " + result.getStatus()
+                    + " " + result.getMessage());
+        }
     }
 
     /**

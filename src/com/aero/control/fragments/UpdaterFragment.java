@@ -18,6 +18,7 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.StoragePermission;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.helpers.updateHelper;
@@ -84,7 +85,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 builder.setTitle(((Object) UpdaterFragment.this.getText(R.string.backup_from)) + " " + s2);
                 aboutText.setText(((Object) UpdaterFragment.this.getText(R.string.restore_from_backup)) + " " + s2 + " ?");
-                AeroActivity.shell.remountSystem();
+                OperationResult remountResult = AeroActivity.shell.remountSystem();
+                if (!remountResult.isSuccess()) {
+                    Log.e("Aero", "System remount failed: " + remountResult.getStatus()
+                        + " " + remountResult.getMessage());
+                    Toast.makeText(UpdaterFragment.this.getActivity(),
+                        R.string.storage_operation_failed, 1).show();
+                    return false;
+                }
                 preference.getEditor().remove(preference.getKey()).commit();
                 builder.setView(layout).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.1.2
                     @Override // android.content.DialogInterface.OnClickListener
@@ -342,8 +350,13 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
         String source = new File(AERO_PATH + "/" + s, "zImage").getPath();
         String[] commands = {"rm -f /system/bootstrap/2nd-boot/zImage", "cp " + shellHelper.escapeShellArg(source) + " " + shellHelper.escapeShellArg(FilePath.zImage)};
-        AeroActivity.shell.setRootInfo(commands);
-        Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
+        OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
+        if (result.isSuccess()) {
+            Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
+        } else {
+            Log.e("Aero", "zImage restore failed: " + result.getStatus() + " " + result.getMessage());
+            Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
+        }
     }
 
     /**
@@ -360,8 +373,13 @@ public class UpdaterFragment extends PlaceHolderFragment {
         String filepath = new File("/sdcard/com.aero.control/backup/" + s + "/boot.img").getPath();
         String quotedFilepath = shellHelper.escapeShellArg(filepath);
         String[] commands = {"chmod 0777 " + quotedFilepath, "dd if=" + quotedFilepath + " of=" + shellHelper.escapeShellArg(this.mBackup)};
-        AeroActivity.shell.setRootInfo(commands);
-        Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
+        OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
+        if (result.isSuccess()) {
+            Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
+        } else {
+            Log.e("Aero", "Kernel restore failed: " + result.getStatus() + " " + result.getMessage());
+            Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
+        }
     }
 
     /**

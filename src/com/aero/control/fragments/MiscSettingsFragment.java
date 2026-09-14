@@ -23,6 +23,7 @@ import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.FileManager.FileManager;
 import com.aero.control.helpers.FileManager.FileManagerListener;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
@@ -301,7 +302,11 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String a = (String) o;
-                AeroActivity.shell.setRootInfo(a, FilePath.MISC_TCP_CONGESTION_CURRENT);
+                OperationResult result = AeroActivity.shell.setRootInfoResult(a, FilePath.MISC_TCP_CONGESTION_CURRENT);
+                if (!result.isSuccess()) {
+                    Toast.makeText(MiscSettingsFragment.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                    return false;
+                }
                 tcpPreference.setSummary(a);
                 return true;
             }

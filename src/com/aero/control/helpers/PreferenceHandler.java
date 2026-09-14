@@ -172,7 +172,10 @@ public class PreferenceHandler {
                     if (a.equals("")) {
                         return false;
                     }
-                    AeroActivity.shell.setRootInfo(a, parameterPath);
+                    OperationResult result = AeroActivity.shell.setRootInfoResult(a, parameterPath);
+                    if (!result.isSuccess()) {
+                        return false;
+                    }
                     prefload.setPrefSummary(a);
                     if (prefload.isChecked().booleanValue()) {
                         PreferenceHandler.this.mPreferences.edit().putString(parameterPath, o.toString()).commit();
