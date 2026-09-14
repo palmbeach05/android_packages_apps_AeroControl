@@ -399,7 +399,7 @@ public final class AeroActivity extends Activity {
         if (stackResourceIds != null && stackResourceIds.length > 0) {
             for (int resourceId : stackResourceIds) {
                 Fragment stackFragment = getFragmentByResourceId(resourceId, true);
-                if (stackFragment != null) {
+                if (stackFragment != null && !mFragmentStack.contains(stackFragment)) {
                     mFragmentStack.push(stackFragment);
                 }
             }
@@ -984,9 +984,10 @@ public final class AeroActivity extends Activity {
                 }
                 try {
                     AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
-                    // Only add to stack after the transaction has been committed
-                    // and only if the fragment is not already at the top of the stack
-                    if (addToStack && (mFragmentStack.isEmpty() || mFragmentStack.peek() != fragment)) {
+                    // Selecting a page already in the history moves it to the top
+                    // instead of creating a duplicate Back entry.
+                    if (addToStack) {
+                        mFragmentStack.remove(fragment);
                         mFragmentStack.push(fragment);
                     }
                 } catch (IllegalStateException e) {

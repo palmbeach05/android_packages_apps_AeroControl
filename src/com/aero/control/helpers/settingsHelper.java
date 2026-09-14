@@ -350,7 +350,8 @@ public class settingsHelper {
             }
             shell.queueWork("echo " + (gpu_enb.booleanValue() ? "1" : "0") + " > " + FilePath.GPU_CONTROL_ACTIVE);
         }
-        if (genHelper.doesExist(FilePath.SWEEP2WAKE)) {
+        if (genHelper.doesExist(FilePath.SWEEP2WAKE)
+                && (!onboot || this.prefs.contains(PREF_SWEEP2WAKE))) {
             shell.queueWork("chmod 0666 /sys/android_touch/sweep2wake");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.SWEEP2WAKE) + " > " + FilePath.SWEEP2WAKE);

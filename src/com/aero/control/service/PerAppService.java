@@ -138,12 +138,7 @@ public final class PerAppService extends Service {
             mJobManager.setContext(this.mContext);
             AppContext localContext = mJobManager.getAppContext(mCurrentApp);
             mJobManager.setSleep(!isScreenOn());
-            if (localContext == null && !mJobManager.getSleepState() && !isScreenOn()) {
-                AppLogger.print(this.mClassName, "Shutting down JobManager...", 0);
-                mJobManager = null;
-            } else {
-                mJobManager.schedule(localContext);
-            }
+            mJobManager.schedule(localContext);
             AeroActivity.mJobManager = mJobManager;
         }
         if (isScreenOn() && mPreviousApp != null && mCurrentApp != null && !mPreviousApp.equals(mCurrentApp)) {
