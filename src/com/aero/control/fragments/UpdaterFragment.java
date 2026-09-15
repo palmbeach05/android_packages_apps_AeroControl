@@ -176,12 +176,13 @@ public class UpdaterFragment extends PlaceHolderFragment {
      * so it must not run on the UI thread.
      */
     private class LoadKernelInfoTask extends AsyncTask<Void, Void, LoadKernelInfoTask.Result> {
-        boolean canReadBackupStorage;
         private final boolean mCanReadBackupStorage;
+    
         private LoadKernelInfoTask(boolean canReadBackupStorage) {
             this.mCanReadBackupStorage = canReadBackupStorage;
         }
         private class Result {
+            boolean canReadBackupStorage;
             boolean zImageAvailable;
             String bootSource;
             String whitelistedSource;
@@ -284,7 +285,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         new KernelBackupTask().execute();
     }
 
-    `@Override`
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
         if (requestCode != StoragePermission.REQUEST_CODE) {
