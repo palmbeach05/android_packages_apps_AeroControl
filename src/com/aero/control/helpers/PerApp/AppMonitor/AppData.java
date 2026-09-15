@@ -84,7 +84,6 @@ public final class AppData {
             if (i > 0) {
                 return true;
             }
-            LOG.warn("Couldn't add the following app, bailing out: " + context.getAppName());
             return false;
         }
 
