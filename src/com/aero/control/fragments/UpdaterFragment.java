@@ -302,10 +302,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
 
-        loadKernelInfo();
-
         if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
             startKernelBackup();
+        } else {
+            loadKernelInfo();
         }
     }
 
@@ -372,16 +372,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             }
             if (result != null) {
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup was successful!", 1).show();
-                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + UpdaterFragment.timeStamp);
-                String[] entries = UpdaterFragment.this.getSortedBackupEntries();
-                UpdaterFragment.this.mRestoreKernel.setEntries(entries);
-                UpdaterFragment.this.mRestoreKernel.setEntryValues(entries);
-                if (entries != null && entries.length > 0) {
-                    UpdaterFragment.this.mBackupKernel.setSummary(
-                        ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
-                            + " " + entries[0]);
-                }
-                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                UpdaterFragment.this.loadKernelInfo();
             } else {
                 Log.e("Aero", "Kernel backup failed verification: output file missing or empty.");
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup failed!", 1).show();
