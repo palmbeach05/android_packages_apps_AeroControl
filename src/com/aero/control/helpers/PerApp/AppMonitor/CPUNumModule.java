@@ -3,12 +3,14 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.AeroLog;
 
 /**
  * Monitoring module that tracks the number of online CPU cores.
  * Counts cores by checking their online status in sysfs.
  */
 public final class CPUNumModule extends AppModule {
+    private static final AeroLog LOG = AeroLog.forClass(CPUNumModule.class);
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private final String mClassName;
 
@@ -25,7 +27,7 @@ public final class CPUNumModule extends AppModule {
         setPrefix(context.getText(R.string.pref_cpu_number));
         setSuffix(" Cores");
         setDrawable(context.getResources().getDrawable(R.drawable.appmonitor_number));
-        AppLogger.print(this.mClassName, "CPU Num Module successfully initialized!", 0);
+        LOG.info("CPU Num Module successfully initialized!");
     }
 
     @Override // com.aero.control.helpers.PerApp.AppMonitor.AppModule
@@ -44,6 +46,6 @@ public final class CPUNumModule extends AppModule {
             }
         }
         addValues(Integer.valueOf(onlineCPUs));
-        AppLogger.print(this.mClassName, "CPUNumModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
+        LOG.debug("CPUNumModule.operate() time: " + (System.currentTimeMillis() - temp));
     }
 }

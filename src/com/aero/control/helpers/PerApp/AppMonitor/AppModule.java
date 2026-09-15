@@ -2,6 +2,7 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import com.aero.control.helpers.AeroLog;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * maintains a list of timestamped values for charting and analysis.
  */
 public class AppModule {
+    private static final AeroLog LOG = AeroLog.forClass(AppModule.class);
     public static final int MODULE_CPU_FREQ_IDENTIFIER = 10;
     public static final int MODULE_CPU_NUM_IDENTIFIER = 20;
     public static final int MODULE_GPU_IDENTIFIER = 50;
@@ -31,7 +33,7 @@ public class AppModule {
      */
     public AppModule(Context context) {
         this.mContext = context;
-        AppLogger.print(this.mClassName, "App Module initialized", 0);
+        LOG.info("App Module initialized");
     }
 
     protected final void setIdentifier(int identifier) {
@@ -108,7 +110,7 @@ public class AppModule {
 
     protected final void addValues(Integer value) {
         this.mValues.add(value);
-        AppLogger.print(this.mClassName, "Value added to module: " + value, 1);
+        LOG.debug("Value added to module: " + value);
     }
 
     protected final List<Integer> getValues() {

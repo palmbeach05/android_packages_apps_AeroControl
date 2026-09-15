@@ -25,7 +25,7 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.Material.CardBox;
 import com.aero.control.helpers.FilePath;
-import com.aero.control.helpers.PerApp.AppMonitor.AppLogger;
+import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.PerApp.AppMonitor.AppModule;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
@@ -48,8 +48,8 @@ import java.util.List;
  * and other metrics collected while the app was in the foreground.
  */
 public class AppMonitorDetailFragment extends Fragment {
+    private static final AeroLog LOG = AeroLog.forClass(AppMonitorDetailFragment.class);
     private static final int MIN_VISIBLE_TABS = 3;
-    private final String mClassName = getClass().getName();
     private LineChartView mLineChart;
     private TextView mAverage;
     private List<CardBox> mCards;
@@ -115,7 +115,7 @@ public class AppMonitorDetailFragment extends Fragment {
     @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        AppLogger.print(this.mClassName, "Creating AppMonitorDetailFragment result view", -1);
+        LOG.debug("Creating AppMonitorDetailFragment result view");
         this.mRoot = (ViewGroup) inflater.inflate(R.layout.appmonitor_detail, (ViewGroup) null);
         this.mAppName = null;
         this.mHeader = (TextView) this.mRoot.findViewById(R.id.usageTimer);
@@ -161,7 +161,7 @@ public class AppMonitorDetailFragment extends Fragment {
 
     @Override // android.app.Fragment
     public void onDestroyView() {
-        AppLogger.print(this.mClassName, "Destroying AppMonitorDetailFragment result view", -1);
+        LOG.debug("Destroying AppMonitorDetailFragment result view");
         if (this.mLineTooltip != null) {
             this.mLineTooltip.animate().cancel();
             if (this.mLineChart != null) {

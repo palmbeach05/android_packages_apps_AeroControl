@@ -20,7 +20,7 @@ import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.PerApp.AppMonitor.AppContext;
-import com.aero.control.helpers.PerApp.AppMonitor.AppLogger;
+import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.settingsHelper;
 import java.util.List;
@@ -33,6 +33,7 @@ import java.util.Map;
  * settings when appropriate.
  */
 public final class PerAppService extends Service {
+    private static final AeroLog LOG = AeroLog.forClass(PerAppService.class);
     private static JobManager mJobManager = null;
     private static final String perAppProfileHandler = "perAppProfileHandler";
     private boolean mActive;
@@ -47,7 +48,6 @@ public final class PerAppService extends Service {
     private static String mCurrentApp = null;
     private static final settingsHelper settingsHelper = new settingsHelper();
     private static final Handler mHandler = new Handler(Looper.getMainLooper());
-    private final String mClassName = getClass().getName();
     private boolean mShowToasts = true;
 
     /**
@@ -237,7 +237,7 @@ public final class PerAppService extends Service {
             screenOn = pm.isScreenOn();
         }
         if (this.mLastScreenOnState == null || this.mLastScreenOnState.booleanValue() != screenOn) {
-            AppLogger.print(this.mClassName, "Screen state changed, isScreenOn=" + screenOn, -1);
+            LOG.debug("Screen state changed, isScreenOn=" + screenOn);
             this.mLastScreenOnState = Boolean.valueOf(screenOn);
         }
         return screenOn;

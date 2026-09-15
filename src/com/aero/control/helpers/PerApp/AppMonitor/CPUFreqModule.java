@@ -3,12 +3,14 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.AeroLog;
 
 /**
  * Monitoring module that tracks average CPU frequency across all online cores.
  * Samples the current frequency from each online CPU and computes the mean.
  */
 public final class CPUFreqModule extends AppModule {
+    private static final AeroLog LOG = AeroLog.forClass(CPUFreqModule.class);
     private static final String SCALE_CUR_FILE = "/sys/devices/system/cpu/cpu";
     private static final String SCALE_PATH_NAME = "/cpufreq/scaling_cur_freq";
     private final String mClassName;
@@ -26,7 +28,7 @@ public final class CPUFreqModule extends AppModule {
         setPrefix(context.getText(R.string.pref_cpu_frequency));
         setSuffix(" Mhz");
         setDrawable(context.getResources().getDrawable(R.drawable.appmonitor_cpu));
-        AppLogger.print(this.mClassName, "CPU Freq Module successfully initialized!", 0);
+        LOG.info("CPU Freq Module successfully initialized!");
     }
 
     @Override // com.aero.control.helpers.PerApp.AppMonitor.AppModule
@@ -62,6 +64,6 @@ public final class CPUFreqModule extends AppModule {
             }
             addValues(Integer.valueOf((averageFreq / onlineCPUs) / 1000));
         }
-        AppLogger.print(this.mClassName, "CPUFreqModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
+        LOG.debug("CPUFreqModule.operate() time: " + (System.currentTimeMillis() - temp));
     }
 }
