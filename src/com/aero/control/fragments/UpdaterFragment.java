@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
@@ -46,7 +46,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private static final int PENDING_STORAGE_ACTION_NONE = 0;
     private static final int PENDING_STORAGE_ACTION_BACKUP = 1;
     private int mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
-    private static final String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime());
     private static final updateHelper update = new updateHelper();
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
@@ -290,11 +289,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (requestCode != StoragePermission.REQUEST_CODE) {
             return;
         }
-    
-        int pendingAction = this.mPendingStorageAction;
-        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
 
-        if (!StoragePermission.isGranted(getActivity())) {
+        int pendingAction = this.mPendingStorageAction;
+        boolean storageGranted = isStoragePermissionGranted(grantResults);
+
+        if (!storageGranted) {
+            this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
             if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
                 Toast.makeText(getActivity(), R.string.storage_permission_required,
                         Toast.LENGTH_LONG).show();
@@ -302,11 +302,18 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
 
+        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
         if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
             startKernelBackup();
+            return;
         } else {
             loadKernelInfo();
         }
+    }
+
+    static boolean isStoragePermissionGranted(int[] grantResults) {
+        return grantResults != null && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
@@ -324,7 +331,9 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
         @Override // android.os.AsyncTask
         protected File doInBackground(Void... params) {
-            String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/" + UpdaterFragment.timeStamp;
+            String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault())
+                    .format(new Date());
+            String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/" + timeStamp;
             File backupRoot = new File(AERO_PATH);
             if ((!backupRoot.exists() && !backupRoot.mkdirs()) || !backupRoot.isDirectory()) {
                 Log.e("Aero", "Couldn't create backup directory: " + AERO_PATH);
