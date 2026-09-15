@@ -43,7 +43,9 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private CustomListPreference mRestoreKernel;
     private LoadKernelInfoTask mLoadTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
-    private boolean mBackupAfterPermission;
+    private static final int PENDING_STORAGE_ACTION_NONE = 0;
+    private static final int PENDING_STORAGE_ACTION_BACKUP = 1;
+    private int mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
     private static final String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime());
     private static final updateHelper update = new updateHelper();
 
@@ -73,9 +75,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         this.mBackupKernel.setEnabled(false);
         this.mRestoreKernel.setEnabled(false);
         loadKernelInfo();
-        if (!StoragePermission.isGranted(getActivity())) {
-            StoragePermission.request(this);
-        }
         this.mRestoreKernel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.UpdaterFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -135,7 +134,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
                             if (StoragePermission.isGranted(UpdaterFragment.this.getActivity())) {
                                 UpdaterFragment.this.startKernelBackup();
                             } else {
-                                UpdaterFragment.this.mBackupAfterPermission = true;
+                                UpdaterFragment.this.mPendingStorageAction =
+                                        PENDING_STORAGE_ACTION_BACKUP;
                                 StoragePermission.request(UpdaterFragment.this);
                             }
                     }
@@ -291,18 +291,21 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
     
-        boolean startBackup = this.mBackupAfterPermission;
-        this.mBackupAfterPermission = false;
-    
-        if (StoragePermission.isGranted(getActivity())) {
-            loadKernelInfo();
-    
-            if (startBackup) {
-                startKernelBackup();
+        int pendingAction = this.mPendingStorageAction;
+        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+
+        if (!StoragePermission.isGranted(getActivity())) {
+            if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
+                Toast.makeText(getActivity(), R.string.storage_permission_required,
+                        Toast.LENGTH_LONG).show();
             }
-        } else if (startBackup) {
-            Toast.makeText(getActivity(), R.string.storage_permission_required,
-                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        loadKernelInfo();
+
+        if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
+            startKernelBackup();
         }
     }
 
