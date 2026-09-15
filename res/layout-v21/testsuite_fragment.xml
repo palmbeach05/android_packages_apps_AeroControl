@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Preference
+        android:title="@string/testsuite_linpack_test_title"
+        android:key="linpack_test"
+        android:summary="@string/testsuite_linpack_test_summary"/>
+    <com.aero.control.testsuite.TestSuiteSwitchPreference
+        android:title="@string/testsuite_use_all_cpus_title"
+        android:key="linpack_use_all_cpus"
+        android:defaultValue="false"
+        android:summary="@string/testsuite_use_all_cpus_summary"
+        android:layout="@layout/preference_switch_row"
+        android:widgetLayout="@layout/preference_switch_widget"/>
+</PreferenceScreen>
