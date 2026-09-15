@@ -72,8 +72,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
         // below reports back and updates them on the main thread.
         this.mBackupKernel.setEnabled(false);
         this.mRestoreKernel.setEnabled(false);
-        this.mLoadTask = new LoadKernelInfoTask();
-        this.mLoadTask.execute();
+        loadKernelInfo();
+        if (!StoragePermission.isGranted(getActivity())) {
+            StoragePermission.request(this);
+        }
         this.mRestoreKernel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.UpdaterFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -156,6 +158,15 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
     }
 
+    private void loadKernelInfo() {
+    if (this.mLoadTask != null) {
+        this.mLoadTask.cancel(true);
+    }
+    this.mLoadTask = new LoadKernelInfoTask(
+            StoragePermission.isGranted(getActivity()));
+    this.mLoadTask.execute();
+    }
+    
     /**
      * Looks up whether a zImage backup is available, detects a readable
      * boot-partition block device (if any), and lists any existing backup
@@ -165,6 +176,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
      * so it must not run on the UI thread.
      */
     private class LoadKernelInfoTask extends AsyncTask<Void, Void, LoadKernelInfoTask.Result> {
+        boolean canReadBackupStorage;
+        private final boolean mCanReadBackupStorage;
+        private LoadKernelInfoTask(boolean canReadBackupStorage) {
+            this.mCanReadBackupStorage = canReadBackupStorage;
+        }
         private class Result {
             boolean zImageAvailable;
             String bootSource;
@@ -204,7 +220,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (isCancelled()) {
                 return null;
             }
-            result.backupEntries = getSortedBackupEntries();
+            result.canReadBackupStorage = this.mCanReadBackupStorage;
+            if (this.mCanReadBackupStorage) {
+                result.backupEntries = getSortedBackupEntries();
+            }
             return result;
         }
 
@@ -233,11 +252,23 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (!result.zImageAvailable) {
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
-            if (result.backupEntries != null && result.backupEntries.length > 0) {
-                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + result.backupEntries[0]);
+            if (!result.canReadBackupStorage) {
+                UpdaterFragment.this.mBackupKernel.setSummary(
+                        ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
+                                + " "
+                                + ((Object) UpdaterFragment.this.getText(
+                                        R.string.storage_permission_required)));
+                UpdaterFragment.this.mRestoreKernel.setEnabled(false);
+            } else if (result.backupEntries != null && result.backupEntries.length > 0) {
+                UpdaterFragment.this.mBackupKernel.setSummary(
+                        ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
+                                + " " + result.backupEntries[0]);
                 UpdaterFragment.this.mRestoreKernel.setEnabled(true);
             } else {
-                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
+                UpdaterFragment.this.mBackupKernel.setSummary(
+                        ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
+                                + " "
+                                + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
             UpdaterFragment.this.mRestoreKernel.setEntries(result.backupEntries);
@@ -253,15 +284,25 @@ public class UpdaterFragment extends PlaceHolderFragment {
         new KernelBackupTask().execute();
     }
 
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode != StoragePermission.REQUEST_CODE || !mBackupAfterPermission) {
+    `@Override`
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            int[] grantResults) {
+        if (requestCode != StoragePermission.REQUEST_CODE) {
             return;
         }
-        mBackupAfterPermission = false;
+    
+        boolean startBackup = this.mBackupAfterPermission;
+        this.mBackupAfterPermission = false;
+    
         if (StoragePermission.isGranted(getActivity())) {
-            startKernelBackup();
-        } else {
-            Toast.makeText(getActivity(), R.string.storage_permission_required, Toast.LENGTH_LONG).show();
+            loadKernelInfo();
+    
+            if (startBackup) {
+                startKernelBackup();
+            }
+        } else if (startBackup) {
+            Toast.makeText(getActivity(), R.string.storage_permission_required,
+                    Toast.LENGTH_LONG).show();
         }
     }
 
