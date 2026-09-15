@@ -18,6 +18,7 @@ public class AeroData {
     public static final int TYPE_SYSTEM_CARD = 6;
     public static final int TYPE_BATTERY_CARD = 7;
 
+    
     public String content;
     public int file;
     public Drawable image;
