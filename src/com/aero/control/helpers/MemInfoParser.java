@@ -33,10 +33,14 @@ public final class MemInfoParser {
         }
 
         Long availableKb = fields.get("MemAvailable");
-        if (availableKb == null || availableKb < 0L) {
-            availableKb = sumFallbackAvailable(fields);
+        if (availableKb != null && availableKb >= 0L) {
+            return MemorySnapshot.fromKilobytes(totalKb, availableKb);
         }
-        return MemorySnapshot.fromKilobytes(totalKb, availableKb);
+        Long fallbackAvailableKb = sumFallbackAvailable(fields);
+        if (fallbackAvailableKb == null) {
+            return MemorySnapshot.unavailable();
+        }
+        return MemorySnapshot.fromKilobytes(totalKb, fallbackAvailableKb);
     }
 
     private static void parseLine(String line, Map<String, Long> fields) {
@@ -65,24 +69,23 @@ public final class MemInfoParser {
         }
     }
 
-    private static long sumFallbackAvailable(Map<String, Long> fields) {
-        long available = safeAdd(fields.get("MemFree"), fields.get("Buffers"));
-        available = safeAdd(available, fields.get("Cached"));
-        available = safeAdd(available, fields.get("SReclaimable"));
+    private static Long sumFallbackAvailable(Map<String, Long> fields) {
+        Long memFree = fields.get("MemFree");
+        Long buffers = fields.get("Buffers");
+        Long cached = fields.get("Cached");
+        Long sReclaimable = fields.get("SReclaimable");
+        if (memFree == null || buffers == null || cached == null || sReclaimable == null) {
+            return null;
+        }
+
+        long available = memFree + buffers + cached + sReclaimable;
         Long shmem = fields.get("Shmem");
         if (shmem != null) {
-            available = available < shmem ? Long.MIN_VALUE : available - shmem;
+            if (shmem < 0L || available < shmem) {
+                return null;
+            }
+            available -= shmem;
         }
-        return available;
-    }
-
-    private static long safeAdd(long left, Long right) {
-        if (right == null) {
-            return left;
-        }
-        if (right > 0L && left > Long.MAX_VALUE - right) {
-            return Long.MAX_VALUE;
-        }
-        return left + right;
+        return available < 0L ? 0L : available;
     }
 }

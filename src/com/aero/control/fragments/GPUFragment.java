@@ -652,16 +652,29 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return true;
     }
 
-    private boolean applyToggle(CustomPreference preference, String path) {
-        boolean previous = preference.isClicked().booleanValue();
-        boolean requested = !previous;
-        preference.setClicked(Boolean.valueOf(requested));
-        OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
-        if (!result.isSuccess()) {
-            preference.setClicked(Boolean.valueOf(previous));
-            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-            return false;
-        }
+    private boolean applyToggle(final CustomPreference preference, final String path) {
+        final boolean previous = preference.isClicked().booleanValue();
+        final boolean requested = !previous;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
+                if (!isAdded()) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!result.isSuccess()) {
+                            preference.setClicked(Boolean.valueOf(previous));
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        preference.setClicked(Boolean.valueOf(requested));
+                    }
+                });
+            }
+        }).start();
         return true;
     }
 
@@ -701,25 +714,55 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
                     return false;
                 }
-                String displayPath = AeroActivity.shell.escapeShellArg(FilePath.DISPLAY_COLOR);
-                String[] commands = {"chmod 0664 " + displayPath, "echo " + AeroActivity.shell.escapeShellArg(a) + " > " + displayPath};
-                OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
-                if (!result.isSuccess()) {
-                    Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                    return false;
-                }
-                Toast.makeText(getActivity(), "Turn your display off/on :)", 1).show();
+                final String displayPath = AeroActivity.shell.escapeShellArg(FilePath.DISPLAY_COLOR);
+                final String[] commands = {"chmod 0664 " + displayPath, "echo " + AeroActivity.shell.escapeShellArg(a) + " > " + displayPath};
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
+                        if (!isAdded()) {
+                            return;
+                        }
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!result.isSuccess()) {
+                                    Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                Toast.makeText(getActivity(), "Turn your display off/on :)", 1).show();
+                            }
+                        });
+                    }
+                }).start();
             }
             return true;
         }
-        OperationResult result = AeroActivity.shell.setRootInfoResult(a, path);
-        if (!result.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-            return false;
-        }
-        if (!newSummary.equals("")) {
-            preference.setSummary(newSummary);
-        }
+        final String requestedValue = a;
+        final String requestedPath = path;
+        final String summary = newSummary;
+        final Preference targetPreference = preference;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final OperationResult result = AeroActivity.shell.setRootInfoResult(requestedValue, requestedPath);
+                if (!isAdded()) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!result.isSuccess()) {
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        if (!summary.equals("")) {
+                            targetPreference.setSummary(summary);
+                        }
+                    }
+                });
+            }
+        }).start();
         return true;
     }
 

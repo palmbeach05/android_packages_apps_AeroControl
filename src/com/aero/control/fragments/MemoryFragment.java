@@ -434,16 +434,29 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         return true;
     }
 
-    private boolean applyToggle(CustomPreference preference, String path) {
-        boolean previous = preference.isClicked().booleanValue();
-        boolean requested = !previous;
-        preference.setClicked(Boolean.valueOf(requested));
-        OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
-        if (!result.isSuccess()) {
-            preference.setClicked(Boolean.valueOf(previous));
-            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-            return false;
-        }
+    private boolean applyToggle(final CustomPreference preference, final String path) {
+        final boolean previous = preference.isClicked().booleanValue();
+        final boolean requested = !previous;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
+                if (!isAdded()) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!result.isSuccess()) {
+                            preference.setClicked(Boolean.valueOf(previous));
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        preference.setClicked(Boolean.valueOf(requested));
+                    }
+                });
+            }
+        }).start();
         return true;
     }
 
@@ -457,28 +470,55 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
      */
     @Override // android.preference.Preference.OnPreferenceChangeListener
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        String value = (String) newValue;
+        final String value = (String) newValue;
         if (preference == this.mIOScheduler) {
-            this.mIOScheduler.setSummary(value);
-            OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.GOV_IO_FILE);
-            if (!result.isSuccess()) {
-                Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                return false;
-            }
-            if (this.PrefCat != null) {
-                this.root.removePreference(this.PrefCat);
-            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.GOV_IO_FILE);
+                    if (!isAdded()) {
+                        return;
+                    }
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!result.isSuccess()) {
+                                Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                            mIOScheduler.setSummary(value);
+                            if (PrefCat != null) {
+                                root.removePreference(PrefCat);
+                            }
+                        }
+                    });
+                }
+            }).start();
+            return true;
         } else if (preference == this.mReadAHead) {
-            OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.READAHEAD_PARAMETER);
-            if (!result.isSuccess()) {
-                Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                return false;
-            }
-            this.mReadAHead.setSummary(value);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.READAHEAD_PARAMETER);
+                    if (!isAdded()) {
+                        return;
+                    }
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!result.isSuccess()) {
+                                Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                            mReadAHead.setSummary(value);
+                        }
+                    });
+                }
+            }).start();
+            return true;
         } else {
             return false;
         }
-        return true;
     }
 
     /**

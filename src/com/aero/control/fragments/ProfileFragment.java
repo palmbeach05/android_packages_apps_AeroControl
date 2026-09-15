@@ -69,6 +69,7 @@ public class ProfileFragment extends PreferenceFragment {
     public ShowcaseView mShowCase;
     private boolean mWarning;
     private String mPendingExportProfile;
+    private boolean mPendingImport;
     private static final String LOG_TAG = PreferenceFragment.class.getName();
     public static final settingsHelper settings = new settingsHelper();
 
@@ -269,6 +270,11 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     private void showImportDialog() {
+        if (!StoragePermission.isGranted(this.getActivity())) {
+            this.mPendingImport = true;
+            StoragePermission.request(this);
+            return;
+        }
         AlertDialog.Builder dialog = new AlertDialog.Builder(this.mContext);
         final String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
         if (!AeroActivity.genHelper.doesExist(dir)) {
@@ -765,15 +771,26 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode != StoragePermission.REQUEST_CODE || mPendingExportProfile == null) {
+        if (requestCode != StoragePermission.REQUEST_CODE) {
             return;
         }
-        String profileName = mPendingExportProfile;
-        mPendingExportProfile = null;
-        if (StoragePermission.isGranted(getActivity())) {
-            exportProfile(profileName);
-        } else {
-            Toast.makeText(getActivity(), R.string.storage_permission_required, Toast.LENGTH_LONG).show();
+        if (mPendingExportProfile != null) {
+            String profileName = mPendingExportProfile;
+            mPendingExportProfile = null;
+            if (StoragePermission.isGranted(getActivity())) {
+                exportProfile(profileName);
+            } else {
+                Toast.makeText(getActivity(), R.string.storage_permission_required, Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+        if (mPendingImport) {
+            mPendingImport = false;
+            if (StoragePermission.isGranted(getActivity())) {
+                showImportDialog();
+            } else {
+                Toast.makeText(getActivity(), R.string.storage_permission_required, Toast.LENGTH_LONG).show();
+            }
         }
     }
 

@@ -23,8 +23,12 @@ import com.aero.control.helpers.StoragePermission;
 import com.aero.control.helpers.shellHelper;
 import com.aero.control.helpers.updateHelper;
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -40,7 +44,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private LoadKernelInfoTask mLoadTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
     private boolean mBackupAfterPermission;
-    private static final String timeStamp = new SimpleDateFormat("ddMMyyyy", Locale.getDefault()).format(Calendar.getInstance().getTime());
+    private static final String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime());
     private static final updateHelper update = new updateHelper();
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
@@ -200,7 +204,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (isCancelled()) {
                 return null;
             }
-            result.backupEntries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
+            result.backupEntries = getSortedBackupEntries();
             return result;
         }
 
@@ -325,9 +329,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (result != null) {
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup was successful!", 1).show();
                 UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + UpdaterFragment.timeStamp);
-                String[] entries = AeroActivity.shell.getDirInfo(UpdaterFragment.SDPATH + "/com.aero.control/backup/", false);
+                String[] entries = UpdaterFragment.this.getSortedBackupEntries();
                 UpdaterFragment.this.mRestoreKernel.setEntries(entries);
                 UpdaterFragment.this.mRestoreKernel.setEntryValues(entries);
+                if (entries != null && entries.length > 0) {
+                    UpdaterFragment.this.mBackupKernel.setSummary(
+                        ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
+                            + " " + entries[0]);
+                }
                 UpdaterFragment.this.mRestoreKernel.setEnabled(true);
             } else {
                 Log.e("Aero", "Kernel backup failed verification: output file missing or empty.");
@@ -335,6 +344,46 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
         }
+    }
+
+    private String[] getSortedBackupEntries() {
+        String backupRoot = UpdaterFragment.SDPATH + "/com.aero.control/backup/";
+        String[] entries = AeroActivity.shell.getDirInfo(backupRoot, false);
+        if (entries == null || entries.length < 2) {
+            return entries;
+        }
+        final File root = new File(backupRoot);
+        final SimpleDateFormat backupFormat = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.US);
+        Arrays.sort(entries, new Comparator<String>() {
+            @Override
+            public int compare(String left, String right) {
+                long leftTime = getBackupTimestamp(root, left, backupFormat);
+                long rightTime = getBackupTimestamp(root, right, backupFormat);
+                if (leftTime < rightTime) {
+                    return 1;
+                }
+                if (leftTime > rightTime) {
+                    return -1;
+                }
+                return right.compareTo(left);
+            }
+        });
+        return entries;
+    }
+
+    private long getBackupTimestamp(File root, String entry, SimpleDateFormat format) {
+        File backupDir = new File(root, entry);
+        if (entry != null && entry.matches("[a-zA-Z0-9_-]+")) {
+            try {
+                Date parsed = format.parse(entry);
+                if (parsed != null) {
+                    return parsed.getTime();
+                }
+            } catch (ParseException e) {
+                Log.w("Aero", "Could not parse backup timestamp from entry: " + entry, e);
+            }
+        }
+        return backupDir.lastModified();
     }
 
     /**

@@ -301,13 +301,26 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         tcpPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.5
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                String a = (String) o;
-                OperationResult result = AeroActivity.shell.setRootInfoResult(a, FilePath.MISC_TCP_CONGESTION_CURRENT);
-                if (!result.isSuccess()) {
-                    Toast.makeText(MiscSettingsFragment.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                    return false;
-                }
-                tcpPreference.setSummary(a);
+                final String a = (String) o;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final OperationResult result = AeroActivity.shell.setRootInfoResult(a, FilePath.MISC_TCP_CONGESTION_CURRENT);
+                        if (!MiscSettingsFragment.this.isAdded()) {
+                            return;
+                        }
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!result.isSuccess()) {
+                                    Toast.makeText(MiscSettingsFragment.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                tcpPreference.setSummary(a);
+                            }
+                        });
+                    }
+                }).start();
                 return true;
             }
         });

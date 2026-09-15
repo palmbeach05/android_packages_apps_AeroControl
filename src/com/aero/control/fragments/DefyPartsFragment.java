@@ -194,18 +194,32 @@ public class DefyPartsFragment extends PlaceHolderFragment {
      *         was rejected (in which case the calling listener should also return false so
      *         the invalid value is not persisted).
      */
-    public boolean changePreference(Preference preference, Object o, String file) {
+    public boolean changePreference(final Preference preference, final Object o, final String file) {
         String value = o == null ? null : o.toString();
         if (value == null || !SAFE_PROP_VALUE.matcher(value).matches() || !isAllowedProperty(file)) {
             Toast.makeText(getActivity(), R.string.error_detected, 0).show();
             return false;
         }
-        String[] command = {"setprop " + shellHelper.escapeShellArg(file) + " " + shellHelper.escapeShellArg(value)};
-        OperationResult result = AeroActivity.shell.setRootInfoResult(command);
-        if (!result.isSuccess()) {
-            return false;
-        }
-        Toast.makeText(getActivity(), R.string.need_reboot, 0).show();
+        final String[] command = {"setprop " + shellHelper.escapeShellArg(file) + " " + shellHelper.escapeShellArg(value)};
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final OperationResult result = AeroActivity.shell.setRootInfoResult(command);
+                if (!isAdded()) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!result.isSuccess()) {
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        Toast.makeText(getActivity(), R.string.need_reboot, 0).show();
+                    }
+                });
+            }
+        }).start();
         return true;
     }
 

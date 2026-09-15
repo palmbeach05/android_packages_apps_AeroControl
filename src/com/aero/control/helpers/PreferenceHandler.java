@@ -3,6 +3,8 @@ package com.aero.control.helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -10,7 +12,9 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ViewConfiguration;
 import com.aero.control.AeroActivity;
+import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomTextPreference;
+import android.widget.Toast;
 
 /**
  * Dynamically generates and manages preference UI elements from kernel sysfs files and
@@ -167,23 +171,36 @@ public class PreferenceHandler {
             this.mPrefCat.addPreference(prefload);
             prefload.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.helpers.PreferenceHandler.1
                 @Override // android.preference.Preference.OnPreferenceChangeListener
-                public boolean onPreferenceChange(Preference preference, Object o) {
-                    String a = (String) o;
+                public boolean onPreferenceChange(final Preference preference, final Object o) {
+                    final String a = (String) o;
                     if (a.equals("")) {
                         return false;
                     }
-                    OperationResult result = AeroActivity.shell.setRootInfoResult(a, parameterPath);
-                    if (!result.isSuccess()) {
-                        return false;
-                    }
-                    prefload.setPrefSummary(a);
-                    if (prefload.isChecked().booleanValue()) {
-                        PreferenceHandler.this.mPreferences.edit().putString(parameterPath, o.toString()).commit();
-                    }
-                    if (!flag) {
-                        return true;
-                    }
-                    PreferenceHandler.this.forceVibration();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final OperationResult result = AeroActivity.shell.setRootInfoResult(a, parameterPath);
+                            if (PreferenceHandler.this.mContext == null) {
+                                return;
+                            }
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (!result.isSuccess()) {
+                                        Toast.makeText(PreferenceHandler.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
+                                    prefload.setPrefSummary(a);
+                                    if (prefload.isChecked().booleanValue()) {
+                                        PreferenceHandler.this.mPreferences.edit().putString(parameterPath, o.toString()).commit();
+                                    }
+                                    if (flag) {
+                                        PreferenceHandler.this.forceVibration();
+                                    }
+                                }
+                            });
+                        }
+                    }).start();
                     return true;
                 }
             });

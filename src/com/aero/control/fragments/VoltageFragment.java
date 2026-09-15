@@ -10,6 +10,7 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomTextPreference;
@@ -126,7 +127,26 @@ public class VoltageFragment extends PlaceHolderFragment {
                         tmp = tmp + " " + a;
                         VoltageFragment.this.voltList.add(a);
                     }
-                    VoltageFragment.this.executeVolt(tmp);
+                    final String command = tmp;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final OperationResult result = AeroActivity.shell.setRootInfoResult(command, FilePath.VOLTAGE_PATH);
+                            if (!VoltageFragment.this.isAdded()) {
+                                return;
+                            }
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (!result.isSuccess()) {
+                                        Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
+                                    VoltageFragment.this.updateUI();
+                                }
+                            });
+                        }
+                    }).start();
                     return true;
                 }
             });
@@ -143,12 +163,27 @@ public class VoltageFragment extends PlaceHolderFragment {
      *
      * @param exeVolt a space-separated string of voltage values in millivolts
      */
-    public void executeVolt(String exeVolt) {
+    public void executeVolt(final String exeVolt) {
         this.mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        OperationResult result = AeroActivity.shell.setRootInfoResult(exeVolt, FilePath.VOLTAGE_PATH);
-        if (result.isSuccess()) {
-            updateUI();
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final OperationResult result = AeroActivity.shell.setRootInfoResult(exeVolt, FilePath.VOLTAGE_PATH);
+                if (!VoltageFragment.this.isAdded()) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result.isSuccess()) {
+                            updateUI();
+                        } else {
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     /**
