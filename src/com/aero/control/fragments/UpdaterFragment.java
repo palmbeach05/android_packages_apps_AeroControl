@@ -285,7 +285,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         new KernelBackupTask().execute();
     }
 
-    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
         if (requestCode != StoragePermission.REQUEST_CODE) {
