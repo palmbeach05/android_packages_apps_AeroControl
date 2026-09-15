@@ -425,7 +425,7 @@ public final class JobManager {
             return this.mAppData.getSimpleAppContext(appname);
         }
         if (this.mSleeping && !this.mPrevSleeping) {
-            LOG.info("JobManager is disabled");
+            LOG.info("JobManager is sleeping");
         }
         return null;
     }
@@ -440,7 +440,7 @@ public final class JobManager {
     public final AppContext getAppContext(String appname) {
         if (!this.mJobManagerEnable || this.mSleeping) {
             if (this.mSleeping && !this.mPrevSleeping) {
-                LOG.info("JobManager is disabled");
+                LOG.info("JobManager is sleeping");
             }
             return null;
         }
