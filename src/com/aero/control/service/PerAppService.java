@@ -135,15 +135,23 @@ public final class PerAppService extends Service {
             this.mPerAppPrefs = this.mContext.getSharedPreferences(perAppProfileHandler, 0);
         }
         this.mShowToasts = PreferenceManager.getDefaultSharedPreferences(this.mContext).getBoolean("per_app_toast", true);
+        String savedPreviousApp = mPreviousApp;
+        String savedCurrentApp = mCurrentApp;
         if (!setAppData()) {
             return;
         }
         if (mJobManager != null) {
-            mJobManager.setContext(this.mContext);
-            AppContext localContext = mJobManager.getAppContext(mCurrentApp);
-            mJobManager.setSleep(!isScreenOn());
-            mJobManager.schedule(localContext);
-            AeroActivity.mJobManager = mJobManager;
+            try {
+                mJobManager.setContext(this.mContext);
+                AppContext localContext = mJobManager.getAppContext(mCurrentApp);
+                mJobManager.setSleep(!isScreenOn());
+                mJobManager.schedule(localContext);
+                AeroActivity.mJobManager = mJobManager;
+            } catch (RuntimeException e) {
+                mPreviousApp = savedPreviousApp;
+                mCurrentApp = savedCurrentApp;
+                throw e;
+            }
         }
         if (isScreenOn() && mPreviousApp != null && mCurrentApp != null && !mPreviousApp.equals(mCurrentApp)) {
             if (this.mActive) {

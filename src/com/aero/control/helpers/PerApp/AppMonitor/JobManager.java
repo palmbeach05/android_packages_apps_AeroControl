@@ -301,8 +301,8 @@ public final class JobManager {
                 this.mModules = new ArrayList();
                 loadModules();
                 this.mAppModuleData = new AppModuleData(getModules());
-                this.mAppModuleData.setCleanupEnable(false);
                 try {
+                    this.mAppModuleData.setCleanupEnable(false);
                     JSONObject json = new JSONObject(tmp);
                     Iterator<?> keys = json.keys();
                     while (keys.hasNext()) {
@@ -355,9 +355,10 @@ public final class JobManager {
                 } catch (JSONException e3) {
                     LOG.warn("Unable to parse imported App Monitor data", e3);
                     this.mSleeping = false;
+                } finally {
+                    this.mAppModuleData.setCleanupEnable(true);
                 }
                 this.mSleeping = false;
-                this.mAppModuleData.setCleanupEnable(true);
                 LOG.info("Import of data successful in (" + (System.currentTimeMillis() - time) + " ms).");
                 return;
             } catch (IOException e4) {
