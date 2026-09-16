@@ -158,6 +158,17 @@ public final class RootShellSession {
      * @return the command output as a string, or null if reading fails or is interrupted
      */
     synchronized String getRootResult() {
+        return getRootResult(this.commandTimeoutMs);
+    }
+
+    /**
+     * Executes queued commands, allowing callers to select a timeout for an
+     * operation that is expected to take longer than an ordinary sysfs command.
+     */
+    synchronized String getRootResult(long timeoutMs) {
+        if (timeoutMs <= 0) {
+            throw new IllegalArgumentException("timeoutMs must be positive");
+        }
         final List<String> commands = new ArrayList<>(this.mCommands);
         this.mCommands.clear();
         if (!this.mShellLoaded) {
@@ -173,14 +184,14 @@ public final class RootShellSession {
         }, "AeroRootShellCommand");
         commandThread.start();
         try {
-            commandThread.join(this.commandTimeoutMs);
+            commandThread.join(timeoutMs);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             closeShell();
             return null;
         }
         if (commandThread.isAlive()) {
-            Log.e(LOG_TAG, "Root shell command timed out after " + this.commandTimeoutMs + "ms");
+            Log.e(LOG_TAG, "Root shell command timed out after " + timeoutMs + "ms");
             closeShell();
             return null;
         }
