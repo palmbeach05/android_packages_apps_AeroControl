@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.adapter.AppDataAdapter;
-import com.aero.control.helpers.PerApp.AppMonitor.AppLogger;
+import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElementDetail;
@@ -35,6 +35,7 @@ import java.util.List;
  * detailed monitoring charts.
  */
 public class AppMonitorFragment extends Fragment {
+    private static final AeroLog LOG = AeroLog.forClass(AppMonitorFragment.class);
     private static final String FILENAME = "firstrun_appmonitor";
     private AppMonitorDetailFragment mAppMonitorDetailFragment;
     private final String mClassName = getClass().getName();
@@ -186,12 +187,10 @@ public class AppMonitorFragment extends Fragment {
                     AppMonitorFragment.this.clearUI();
                     return;
                 }
-                if (AppLogger.getLogLevel() >= 1) {
-                    for (AppElement a : this.val$appData) {
-                        AppLogger.print(AppMonitorFragment.this.mClassName, a.getName(), 1);
-                        for (AppElementDetail acd : a.getChildData()) {
-                            AppLogger.print(AppMonitorFragment.this.mClassName, " -------> " + acd.getTitle() + " \n" + acd.getContent(), 1);
-                        }
+                for (AppElement a : this.val$appData) {
+                    LOG.debug(a.getName());
+                    for (AppElementDetail acd : a.getChildData()) {
+                        LOG.debug(" -------> " + acd.getTitle() + " \n" + acd.getContent());
                     }
                 }
                 AppMonitorFragment.this.mListView = (ListView) AppMonitorFragment.this.mRoot.findViewById(R.id.apppstatistics);

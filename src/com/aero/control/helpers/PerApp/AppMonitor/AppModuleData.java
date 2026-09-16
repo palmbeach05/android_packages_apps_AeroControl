@@ -1,5 +1,7 @@
 package com.aero.control.helpers.PerApp.AppMonitor;
 
+import com.aero.control.helpers.AeroLog;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,8 +10,8 @@ import java.util.List;
  * Stores per-app metadata and coordinates automatic cleanup when thresholds are reached.
  */
 public class AppModuleData {
+    private static final AeroLog LOG = AeroLog.forClass(AppModuleData.class);
     private List<AppModule> mModules;
-    private final String mClassName = getClass().getName();
     private boolean mCleanUpEnabled = true;
     private List<AppModuleMetaData> mAppModuleData = new ArrayList();
 
@@ -20,7 +22,7 @@ public class AppModuleData {
      */
     public AppModuleData(List<AppModule> modules) {
         this.mModules = modules;
-        AppLogger.print(this.mClassName, "AppModuleData successfully initialized!", 0);
+        LOG.info("AppModuleData successfully initialized!");
     }
 
     /**
@@ -92,7 +94,7 @@ public class AppModuleData {
             AppModuleMetaData appmetadata = existsAppModuleMetaData(context);
             if (appmetadata == null) {
                 appmetadata = new AppModuleMetaData(context, this.mModules);
-                AppLogger.print(this.mClassName, "Adding a new meta data module for: " + context.getAppName(), 0);
+                LOG.info("Adding a new meta data module for: " + context.getAppName());
                 this.mAppModuleData.add(appmetadata);
             }
             checkForCleanup(appmetadata, context);
@@ -102,7 +104,7 @@ public class AppModuleData {
 
     private void checkForCleanup(AppModuleMetaData appmetadata, AppContext context) {
         if (this.mCleanUpEnabled && appmetadata.readForCleanUp()) {
-            AppLogger.print(this.mClassName, "Cleaning up the found data for: " + context.getAppName(), 0);
+            LOG.info("Cleaning up the found data for: " + context.getAppName());
             appmetadata.cleanUp();
             context.cleanUp();
         }

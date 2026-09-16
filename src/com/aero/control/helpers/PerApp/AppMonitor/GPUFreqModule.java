@@ -3,6 +3,7 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.FilePath;
 
 /**
@@ -10,6 +11,7 @@ import com.aero.control.helpers.FilePath;
  * sysfs nodes. Auto-detects the correct GPU frequency file at initialization.
  */
 public final class GPUFreqModule extends AppModule {
+    private static final AeroLog LOG = AeroLog.forClass(GPUFreqModule.class);
     private final String mClassName;
     private String mGPUFile;
 
@@ -32,7 +34,7 @@ public final class GPUFreqModule extends AppModule {
                 this.mGPUFile = s;
             }
         }
-        AppLogger.print(this.mClassName, "GPU Frequency Module successfully initialized!", 0);
+        LOG.info("GPU Frequency Module successfully initialized!");
     }
 
     private Integer getFormatInt(String s) {
@@ -51,6 +53,6 @@ public final class GPUFreqModule extends AppModule {
         if (gpufreq != null) {
             addValues(gpufreq);
         }
-        AppLogger.print(this.mClassName, "GOUFreqModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
+        LOG.debug("GOUFreqModule.operate() time: " + (System.currentTimeMillis() - temp));
     }
 }

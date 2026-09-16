@@ -2,6 +2,7 @@ package com.aero.control.helpers.PerApp.AppMonitor;
 
 import android.content.Context;
 import com.aero.control.R;
+import com.aero.control.helpers.AeroLog;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.IOException;
  * Reports the MemFree value in megabytes.
  */
 public final class RAMModule extends AppModule {
+    private static final AeroLog LOG = AeroLog.forClass(RAMModule.class);
     private static final String mPROC_MEMINFO = "/proc/meminfo";
     private final String mClassName;
 
@@ -27,7 +29,7 @@ public final class RAMModule extends AppModule {
         setPrefix(context.getText(R.string.pref_ram_usage));
         setSuffix(" MB");
         setDrawable(context.getResources().getDrawable(R.drawable.appmonitor_ram));
-        AppLogger.print(this.mClassName, "RAM Module successfully initialized!", 0);
+        LOG.info("RAM Module successfully initialized!");
     }
 
     @Override // com.aero.control.helpers.PerApp.AppMonitor.AppModule
@@ -54,6 +56,6 @@ public final class RAMModule extends AppModule {
             addValues(Integer.valueOf(freeRAM.intValue() / 1000));
         } catch (NumberFormatException e) {
         }
-        AppLogger.print(this.mClassName, "RAMModule.operate() time: " + (System.currentTimeMillis() - temp), 1);
+        LOG.debug("RAMModule.operate() time: " + (System.currentTimeMillis() - temp));
     }
 }
