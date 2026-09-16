@@ -83,7 +83,11 @@ public final class PerAppService extends Service {
                                 return;
                             }
 
-                            PerAppService.this.runTask();
+                            try {
+                                PerAppService.this.runTask();
+                            } catch (RuntimeException e) {
+                                LOG.error("Per-app polling failed.", e);
+                            }
 
                             if (!mDestroyed) {
                                 PerAppService.mHandler.postDelayed(PerAppService.this.mRunnable, 5000L);

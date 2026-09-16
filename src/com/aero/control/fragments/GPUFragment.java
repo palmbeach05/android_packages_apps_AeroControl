@@ -10,7 +10,6 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +24,7 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.Android.Material.Slider;
+import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
@@ -36,6 +36,7 @@ import java.io.File;
  * Provides save/apply functionality for boot and profile persistence.
  */
 public class GPUFragment extends PlaceHolderFragment implements Preference.OnPreferenceChangeListener {
+    private static final AeroLog LOG = AeroLog.forClass(GPUFragment.class);
     private static final String NO_DATA_FOUND = "Unavailable";
     private PreferenceCategory PrefCat;
     private CustomPreference mColorControl;
@@ -179,7 +180,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                             try {
                                 GPUFragment.this.getFragmentManager().beginTransaction().setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out).replace(R.id.content_frame, GPUFragment.this.mGPUGovernorFragment).addToBackStack("GPU Governor").commit();
                             } catch (IllegalStateException e) {
-                                Log.e("Aero", "Could not commit fragment transaction, state already saved.", e);
+                                LOG.error("Could not commit fragment transaction because state is already saved.", e);
                             }
                         }
                     });
@@ -813,7 +814,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         completeParamterList = AeroActivity.shell.getDirInfo(this.mGPUGov + AeroActivity.shell.getInfo(this.mGPUGov + "governor"), true);
                         if (completeParamterList == null) {
                             Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
-                            Log.e("Aero", "We found no parameters for this governor, maybe because it has none?");
+                            LOG.warn("We found no parameters for this governor, maybe because it has none?");
                         } else {
                             if (this.PrefCat != null) {
                                 this.root.removePreference(this.PrefCat);
@@ -825,22 +826,22 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                                 PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
                                 h.genPrefFromDictionary(completeParamterList, this.mGPUGov + AeroActivity.shell.getInfo(this.mGPUGov + "governor"));
                             } catch (NullPointerException e) {
-                                Log.e("Aero", "I couldn't get any files!", e);
+                                LOG.error("I couldn't get any files!", e);
                             }
                         }
                     } catch (NullPointerException e2) {
                         Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
-                        Log.e("Aero", "Couldn't find any parameters for this governor!", e2);
+                        LOG.error("Couldn't find any parameters for this governor!", e2);
                         if (0 == 0) {
                             Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
-                            Log.e("Aero", "We found no parameters for this governor, maybe because it has none?");
+                            LOG.warn("We found no parameters for this governor, maybe because it has none?");
                         }
                     }
                     return true;
                 } catch (Throwable th) {
                     if (completeParamterList == null) {
                         Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
-                        Log.e("Aero", "We found no parameters for this governor, maybe because it has none?");
+                        LOG.warn("We found no parameters for this governor, maybe because it has none?");
                         return true;
                     }
                     throw th;

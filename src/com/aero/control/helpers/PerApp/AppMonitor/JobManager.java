@@ -60,13 +60,17 @@ public final class JobManager {
             public void run() {
                 try {
                     JobManager.this.importData();
+                } catch (RuntimeException e) {
+                    LOG.error("App Monitor data import failed.", e);
                 } catch (OutOfMemoryError e) {
                     LOG.warn("Import data is too large; deleting the import file", e);
                     new File(new ContextWrapper(JobManager.this.mContext).getFilesDir() + "/" + Configuration.EMERGENCY_FILE).delete();
+                } finally {
+                    JobManager.this.mSleeping = false;
                 }
             }
         };
-        Thread worker = new Thread(run);
+        Thread worker = new Thread(run, "Aero-AppMonitor-Import");
         worker.start();
         LOG.info("JobManager initialized, AppMonitor Version " + getVersion() + " loaded!");
     }
