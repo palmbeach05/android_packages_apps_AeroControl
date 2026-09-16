@@ -60,13 +60,17 @@ public final class JobManager {
             public void run() {
                 try {
                     JobManager.this.importData();
+                } catch (RuntimeException e) {
+                    LOG.error("App Monitor data import failed.", e);
                 } catch (OutOfMemoryError e) {
                     LOG.warn("Import data is too large; deleting the import file", e);
                     new File(new ContextWrapper(JobManager.this.mContext).getFilesDir() + "/" + Configuration.EMERGENCY_FILE).delete();
+                } finally {
+                    JobManager.this.mSleeping = false;
                 }
             }
         };
-        Thread worker = new Thread(run);
+        Thread worker = new Thread(run, "Aero-AppMonitor-Import");
         worker.start();
         LOG.info("JobManager initialized, AppMonitor Version " + getVersion() + " loaded!");
     }
@@ -297,8 +301,8 @@ public final class JobManager {
                 this.mModules = new ArrayList();
                 loadModules();
                 this.mAppModuleData = new AppModuleData(getModules());
-                this.mAppModuleData.setCleanupEnable(false);
                 try {
+                    this.mAppModuleData.setCleanupEnable(false);
                     JSONObject json = new JSONObject(tmp);
                     Iterator<?> keys = json.keys();
                     while (keys.hasNext()) {
@@ -351,9 +355,10 @@ public final class JobManager {
                 } catch (JSONException e3) {
                     LOG.warn("Unable to parse imported App Monitor data", e3);
                     this.mSleeping = false;
+                } finally {
+                    this.mAppModuleData.setCleanupEnable(true);
                 }
                 this.mSleeping = false;
-                this.mAppModuleData.setCleanupEnable(true);
                 LOG.info("Import of data successful in (" + (System.currentTimeMillis() - time) + " ms).");
                 return;
             } catch (IOException e4) {
