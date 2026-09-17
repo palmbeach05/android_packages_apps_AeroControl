@@ -41,6 +41,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private static final int PENDING_STORAGE_ACTION_NONE = 0;
     private static final int PENDING_STORAGE_ACTION_BACKUP = 1;
     private static final int PENDING_STORAGE_ACTION_RESTORE = 2;
+    private static final String STATE_PENDING_STORAGE_ACTION =
+            "pending_storage_action";
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
@@ -53,6 +55,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            this.mPendingStorageAction = savedInstanceState.getInt(
+                    STATE_PENDING_STORAGE_ACTION, PENDING_STORAGE_ACTION_NONE);
+        }
         addPreferencesFromResource(R.layout.updater_fragment);
         this.mBackupKernel = (CustomPreference) findPreference("backup_kernel");
         this.mBackupKernel.setHideOnBoot(true);
@@ -157,6 +163,13 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 return true;
             }
         });
+    }
+
+    /** Preserves an action while Android recreates the Fragment for a permission request. */
+    @Override // android.app.Fragment
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(STATE_PENDING_STORAGE_ACTION, this.mPendingStorageAction);
+        super.onSaveInstanceState(outState);
     }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
