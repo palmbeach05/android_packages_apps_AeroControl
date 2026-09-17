@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
@@ -38,13 +38,14 @@ import java.util.Locale;
 public class UpdaterFragment extends PlaceHolderFragment {
     private static final String AERO_PATH = "/sdcard/com.aero.control/backup";
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final int PENDING_STORAGE_ACTION_NONE = 0;
+    private static final int PENDING_STORAGE_ACTION_BACKUP = 1;
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
     private LoadKernelInfoTask mLoadTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
-    private boolean mBackupAfterPermission;
-    private static final String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime());
+    private int mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
     private static final updateHelper update = new updateHelper();
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
@@ -73,9 +74,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         this.mBackupKernel.setEnabled(false);
         this.mRestoreKernel.setEnabled(false);
         loadKernelInfo();
-        if (!StoragePermission.isGranted(getActivity())) {
-            StoragePermission.request(this);
-        }
         this.mRestoreKernel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.UpdaterFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -127,7 +125,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
                             if (StoragePermission.isGranted(UpdaterFragment.this.getActivity())) {
                                 UpdaterFragment.this.startKernelBackup();
                             } else {
-                                UpdaterFragment.this.mBackupAfterPermission = true;
+                                UpdaterFragment.this.mPendingStorageAction = PENDING_STORAGE_ACTION_BACKUP;
                                 StoragePermission.request(UpdaterFragment.this);
                             }
                     }
@@ -283,19 +281,27 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
     
-        boolean startBackup = this.mBackupAfterPermission;
-        this.mBackupAfterPermission = false;
-    
-        if (StoragePermission.isGranted(getActivity())) {
-            loadKernelInfo();
-    
-            if (startBackup) {
+        int pendingAction = this.mPendingStorageAction;
+        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+        boolean permissionGranted = isStoragePermissionGranted(grantResults);
+
+        if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
+            if (permissionGranted) {
                 startKernelBackup();
+            } else {
+                Toast.makeText(getActivity(), R.string.storage_permission_required,
+                        Toast.LENGTH_LONG).show();
             }
-        } else if (startBackup) {
-            Toast.makeText(getActivity(), R.string.storage_permission_required,
-                    Toast.LENGTH_LONG).show();
+            return;
         }
+
+        loadKernelInfo();
+    }
+
+    static boolean isStoragePermissionGranted(int[] grantResults) {
+        return grantResults != null
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
@@ -310,10 +316,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private class KernelBackupTask extends AsyncTask<Void, Void, File> {
         private static final String SUCCESS_MARKER = "DD_SUCCESS";
         private static final String FAILURE_MARKER = "DD_FAILURE";
+        private String mTimeStamp;
 
         @Override // android.os.AsyncTask
         protected File doInBackground(Void... params) {
-            String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/" + UpdaterFragment.timeStamp;
+            this.mTimeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault())
+                    .format(new Date());
+            String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/"
+                    + this.mTimeStamp;
             File backupRoot = new File(AERO_PATH);
             if ((!backupRoot.exists() && !backupRoot.mkdirs()) || !backupRoot.isDirectory()) {
                 Log.e("Aero", "Couldn't create backup directory: " + AERO_PATH);
@@ -359,16 +369,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             }
             if (result != null) {
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup was successful!", 1).show();
-                UpdaterFragment.this.mBackupKernel.setSummary(((Object) UpdaterFragment.this.getText(R.string.last_backup_from)) + " " + UpdaterFragment.timeStamp);
-                String[] entries = UpdaterFragment.this.getSortedBackupEntries();
-                UpdaterFragment.this.mRestoreKernel.setEntries(entries);
-                UpdaterFragment.this.mRestoreKernel.setEntryValues(entries);
-                if (entries != null && entries.length > 0) {
-                    UpdaterFragment.this.mBackupKernel.setSummary(
-                        ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
-                            + " " + entries[0]);
-                }
-                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                UpdaterFragment.this.loadKernelInfo();
             } else {
                 Log.e("Aero", "Kernel backup failed verification: output file missing or empty.");
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup failed!", 1).show();
