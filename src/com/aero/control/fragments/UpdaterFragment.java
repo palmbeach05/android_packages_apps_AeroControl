@@ -172,6 +172,16 @@ public class UpdaterFragment extends PlaceHolderFragment {
         super.onSaveInstanceState(outState);
     }
 
+    /** Recovers a pending storage action when Android omits the permission callback. */
+    @Override // android.app.Fragment
+    public void onResume() {
+        super.onResume();
+        if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE
+                && StoragePermission.isGranted(getActivity())) {
+            consumePendingStorageAction();
+        }
+    }
+
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onDestroyView() {
         super.onDestroyView();
@@ -317,31 +327,31 @@ public class UpdaterFragment extends PlaceHolderFragment {
      */
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
+        boolean permissionGranted = isStoragePermissionGranted(grantResults);
         if (requestCode != StoragePermission.REQUEST_CODE) {
             return;
         }
-    
-        int pendingAction = this.mPendingStorageAction;
-        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
-        boolean permissionGranted = isStoragePermissionGranted(grantResults);
 
-        if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
-            if (permissionGranted) {
-                startKernelBackup();
-            } else {
-                Toast.makeText(getActivity(), R.string.storage_permission_required,
-                        Toast.LENGTH_LONG).show();
-            }
+        if (permissionGranted) {
+            consumePendingStorageAction();
             return;
         }
 
-        if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
-            if (permissionGranted) {
-                loadKernelInfo();
-            } else {
-                Toast.makeText(getActivity(), R.string.storage_permission_required,
-                        Toast.LENGTH_LONG).show();
-            }
+        if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE) {
+            this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+            Toast.makeText(getActivity(), R.string.storage_permission_required,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Clears and executes the pending action so lifecycle paths cannot run it twice. */
+    private void consumePendingStorageAction() {
+        int pendingAction = this.mPendingStorageAction;
+        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+        if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
+            startKernelBackup();
+        } else if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
+            loadKernelInfo();
         }
     }
 
