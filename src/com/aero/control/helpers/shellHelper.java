@@ -25,6 +25,7 @@ import java.util.ArrayList;
  */
 public final class shellHelper {
     private static final String NO_DATA_FOUND = "Unavailable";
+    private static final long BOOT_IMAGE_OPERATION_TIMEOUT_MS = 60000L;
     private static shellHelper mShellHelper;
 
     private final RootShellSession session = new RootShellSession();
@@ -392,10 +393,17 @@ public final class shellHelper {
     }
 
     private OperationResult runCheckedCommand(String command) {
+        return runCheckedCommand(command, 0L);
+    }
+
+    private OperationResult runCheckedCommand(String command, long timeoutMs) {
         final String successMarker = "AERO_OPERATION_OK";
         final String failureMarker = "AERO_OPERATION_FAILED";
-        String output = runCommandAndWaitForOutput(command + " && echo " + successMarker
-                + " || echo " + failureMarker);
+        String checkedCommand = command + " && echo " + successMarker
+                + " || echo " + failureMarker;
+        String output = timeoutMs > 0
+                ? runCommandAndWaitForOutput(checkedCommand, timeoutMs)
+                : runCommandAndWaitForOutput(checkedCommand);
         if (output == null) {
             return OperationResult.timedOut("Root shell did not complete the operation");
         }
@@ -403,6 +411,11 @@ public final class shellHelper {
             return OperationResult.ok();
         }
         return OperationResult.failed(output);
+    }
+
+    /** Executes a boot-image command with the timeout reserved for long operations. */
+    public OperationResult runLongRunningRootCommand(String command) {
+        return runCheckedCommand(command, BOOT_IMAGE_OPERATION_TIMEOUT_MS);
     }
 
     /**
@@ -458,6 +471,19 @@ public final class shellHelper {
         }
         session.addCommand(command);
         return session.getRootResult();
+    }
+
+    /** Executes a root command using an explicit, positive timeout. */
+    public String runCommandAndWaitForOutput(String command, long timeoutMs) {
+        if (timeoutMs <= 0) {
+            throw new IllegalArgumentException("timeoutMs must be positive");
+        }
+        session.openShell();
+        if (!session.isLoaded()) {
+            return null;
+        }
+        session.addCommand(command);
+        return session.getRootResult(timeoutMs);
     }
 
     /**

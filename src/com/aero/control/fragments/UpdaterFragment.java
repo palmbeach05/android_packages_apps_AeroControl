@@ -91,14 +91,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 TextView aboutText = (TextView) layout.findViewById(R.id.aboutScreen);
                 builder.setTitle(((Object) UpdaterFragment.this.getText(R.string.backup_from)) + " " + s2);
                 aboutText.setText(((Object) UpdaterFragment.this.getText(R.string.restore_from_backup)) + " " + s2 + " ?");
-                OperationResult remountResult = AeroActivity.shell.remountSystem();
-                if (!remountResult.isSuccess()) {
-                    Log.e("Aero", "System remount failed: " + remountResult.getStatus()
-                        + " " + remountResult.getMessage());
-                    Toast.makeText(UpdaterFragment.this.getActivity(),
-                        R.string.storage_operation_failed, 1).show();
-                    return false;
-                }
                 preference.getEditor().remove(preference.getKey()).commit();
                 builder.setView(layout).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.1.2
                     @Override // android.content.DialogInterface.OnClickListener
@@ -345,14 +337,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
             File outputFile = new File(backupDir, outputName);
             String quotedSource = shellHelper.escapeShellArg(source);
             String quotedOutput = shellHelper.escapeShellArg(outputFile.getPath());
-            String command = "dd if=" + quotedSource + " of=" + quotedOutput + " && { chmod 777 " + quotedOutput + "; echo " + SUCCESS_MARKER + "; } || echo " + FAILURE_MARKER;
-            String output = AeroActivity.shell.runCommandAndWaitForOutput(command);
-            if (output == null) {
-                Log.e("Aero", "Kernel backup shell command was interrupted or failed to complete.");
-                return null;
-            }
-            if (!output.contains(SUCCESS_MARKER)) {
-                Log.e("Aero", "dd command failed - success marker not found in output. Output: " + output);
+            String command = "dd if=" + quotedSource + " of=" + quotedOutput 
+                + " && chmod 777 " + quotedOutput;
+            OperationResult commandResult = AeroActivity.shell.runLongRunningRootCommand(command);
+            if (!commandResult.isSuccess()) {
+                Log.e("Aero", "Kernel backup failed: " + commandResult.getStatus()
+                        + " " + commandResult.getMessage());
                 return null;
             }
             if (outputFile.exists() && outputFile.length() > 0) {
@@ -438,15 +428,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        String source = new File(AERO_PATH + "/" + s, "zImage").getPath();
-        String[] commands = {"rm -f /system/bootstrap/2nd-boot/zImage", "cp " + shellHelper.escapeShellArg(source) + " " + shellHelper.escapeShellArg(FilePath.zImage)};
-        OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
-        if (result.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
-        } else {
-            Log.e("Aero", "zImage restore failed: " + result.getStatus() + " " + result.getMessage());
-            Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
-        }
+        new KernelRestoreTask(false, s, null).execute();
     }
 
     /**
@@ -460,15 +442,56 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        String filepath = new File("/sdcard/com.aero.control/backup/" + s + "/boot.img").getPath();
-        String quotedFilepath = shellHelper.escapeShellArg(filepath);
-        String[] commands = {"chmod 0777 " + quotedFilepath, "dd if=" + quotedFilepath + " of=" + shellHelper.escapeShellArg(this.mBackup)};
-        OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
-        if (result.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
-        } else {
-            Log.e("Aero", "Kernel restore failed: " + result.getStatus() + " " + result.getMessage());
-            Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
+        new KernelRestoreTask(true, s, this.mBackup).execute();
+    }
+
+    /** Performs boot and zImage restores without blocking the main thread. */
+    private class KernelRestoreTask extends AsyncTask<Void, Void, OperationResult> {
+        private final boolean mRestoreBoot;
+        private final String mBackupName;
+        private final String mBootPartition;
+
+        KernelRestoreTask(boolean restoreBoot, String backupName, String bootPartition) {
+            this.mRestoreBoot = restoreBoot;
+            this.mBackupName = backupName;
+            this.mBootPartition = bootPartition;
+        }
+
+        @Override
+        protected OperationResult doInBackground(Void... params) {
+            if (this.mRestoreBoot) {
+                String filepath = new File(AERO_PATH + "/" + this.mBackupName,
+                        "boot.img").getPath();
+                String quotedFilepath = shellHelper.escapeShellArg(filepath);
+                String command = "chmod 0777 " + quotedFilepath + " && dd if="
+                        + quotedFilepath + " of=" + shellHelper.escapeShellArg(this.mBootPartition);
+                return AeroActivity.shell.runLongRunningRootCommand(command);
+            }
+
+            OperationResult remountResult = AeroActivity.shell.remountSystem();
+            if (!remountResult.isSuccess()) {
+                return remountResult;
+            }
+            String source = new File(AERO_PATH + "/" + this.mBackupName, "zImage").getPath();
+            String command = "rm -f /system/bootstrap/2nd-boot/zImage && cp "
+                    + shellHelper.escapeShellArg(source) + " "
+                    + shellHelper.escapeShellArg(FilePath.zImage);
+            return AeroActivity.shell.runLongRunningRootCommand(command);
+        }
+
+        @Override
+        protected void onPostExecute(OperationResult result) {
+            if (!UpdaterFragment.this.isAdded()) {
+                return;
+            }
+            if (result.isSuccess()) {
+                Toast.makeText(UpdaterFragment.this.getActivity(), R.string.need_reboot, 1).show();
+                return;
+            }
+            Log.e("Aero", (this.mRestoreBoot ? "Boot" : "zImage") + " restore failed: "
+                    + result.getStatus() + " " + result.getMessage());
+            Toast.makeText(UpdaterFragment.this.getActivity(),
+                    R.string.storage_operation_failed, 1).show();
         }
     }
 
