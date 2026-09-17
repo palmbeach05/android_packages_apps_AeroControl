@@ -127,8 +127,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
                         }
                         UpdaterFragment.this.mPendingStorageAction =
                                 PENDING_STORAGE_ACTION_RESTORE;
-                        Log.i("Aero", "Requesting storage permission; pending action="
-                                + UpdaterFragment.this.mPendingStorageAction);
                         StoragePermission.request(UpdaterFragment.this);
                         return true;
                     }
@@ -153,8 +151,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 UpdaterFragment.this.startKernelBackup();
                             } else {
                                 UpdaterFragment.this.mPendingStorageAction = PENDING_STORAGE_ACTION_BACKUP;
-                                Log.i("Aero", "Requesting storage permission; pending action="
-                                        + UpdaterFragment.this.mPendingStorageAction);
                                 StoragePermission.request(UpdaterFragment.this);
                             }
                     }
@@ -182,8 +178,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
         super.onResume();
         if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE
                 && StoragePermission.isGranted(getActivity())) {
-            Log.i("Aero", "Resuming pending storage action from onResume(); pending action="
-                    + this.mPendingStorageAction);
             consumePendingStorageAction();
         }
     }
@@ -321,7 +315,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
      * Backs up either the boot partition or zImage depending on device configuration.
      */
     public void startKernelBackup() {
-        Log.i("Aero", "Starting KernelBackupTask");
         new KernelBackupTask().execute();
     }
 
@@ -335,9 +328,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
         boolean permissionGranted = isStoragePermissionGranted(grantResults);
-        Log.i("Aero", "onRequestPermissionsResult: requestCode=" + requestCode
-                + ", granted=" + permissionGranted
-                + ", pending action=" + this.mPendingStorageAction);
         if (requestCode != StoragePermission.REQUEST_CODE) {
             return;
         }
@@ -457,8 +447,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 return;
             }
             if (result != null) {
-                Log.i("Aero", "KernelBackupTask completed with verified backup: "
-                        + result.getPath());
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup was successful!", 1).show();
                 UpdaterFragment.this.loadKernelInfo();
             } else {
