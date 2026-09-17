@@ -1,6 +1,7 @@
 package com.aero.control.fragments;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -8,6 +9,20 @@ import org.junit.Test;
 
 public class TegraI2cControllerCacheTest {
     private static final String PLATFORM_DIRECTORY = "/sys/devices/platform";
+
+    @Test
+    public void unreadablePlatformDirectoryIsNotCached() {
+        TegraI2cControllerCache cache = new TegraI2cControllerCache();
+
+        assertTrue(cache.discover(PLATFORM_DIRECTORY, null).isEmpty());
+        assertFalse(cache.isInitialized());
+
+        List<TegraI2cControllerCache.Controller> controllers = cache.discover(
+                PLATFORM_DIRECTORY, new String[] {"tegra-i2c.4"});
+
+        assertTrue(cache.isInitialized());
+        assertEquals("4", controllers.get(0).busNumber);
+    }
 
     @Test
     public void nonTegraPlatformIsCachedAsUnavailable() {

@@ -35,14 +35,16 @@ final class TegraI2cControllerCache {
             return this.controllers;
         }
 
+        if (platformEntries == null) {
+            return Collections.emptyList();
+        }
+
         List<Controller> discovered = new ArrayList<>();
-        if (platformEntries != null) {
-            for (String entry : platformEntries) {
-                Matcher matcher = CONTROLLER_PATTERN.matcher(entry);
-                if (matcher.matches()) {
-                    discovered.add(new Controller(
-                            matcher.group(1), platformDirectory + "/" + entry));
-                }
+        for (String entry : platformEntries) {
+            Matcher matcher = CONTROLLER_PATTERN.matcher(entry);
+            if (matcher.matches()) {
+                discovered.add(new Controller(
+                        matcher.group(1), platformDirectory + "/" + entry));
             }
         }
         this.controllers = Collections.unmodifiableList(discovered);
