@@ -112,6 +112,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         });
         this.mRestoreKernel.setOnPreferenceClickListener(
                 new Preference.OnPreferenceClickListener() {
+                    /** Requests storage access before showing available restore backups. */
                     @Override // android.preference.Preference.OnPreferenceClickListener
                     public boolean onPreferenceClick(Preference preference) {
                         if (StoragePermission.isGranted(
