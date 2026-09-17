@@ -337,7 +337,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             File outputFile = new File(backupDir, outputName);
             String quotedSource = shellHelper.escapeShellArg(source);
             String quotedOutput = shellHelper.escapeShellArg(outputFile.getPath());
-            String command = "dd if=" + quotedSource + " of=" + quotedOutput + " && { chmod 777 " + quotedOutput + "; echo " + SUCCESS_MARKER + "; } || echo " + FAILURE_MARKER;
+            String command = "dd if=" + quotedSource + " of=" + quotedOutput 
+                + " && chmod 777 " + quotedOutput;
             OperationResult commandResult = AeroActivity.shell.runLongRunningRootCommand(command);
             if (!commandResult.isSuccess()) {
                 Log.e("Aero", "Kernel backup failed: " + commandResult.getStatus()
