@@ -48,6 +48,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private int mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
     private static final updateHelper update = new updateHelper();
 
+    /** Initializes the backup and restore preferences and loads their current state. */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,6 +110,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             }
         });
         this.mBackupKernel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2
+            /** Shows the backup confirmation dialog when the backup preference is selected. */
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
                 Log.i("Aero", "Backup preference clicked. Source: " + (UpdaterFragment.this.mBackup != null ? UpdaterFragment.this.mBackup : FilePath.zImage));
@@ -120,6 +122,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 builder.setIcon(R.drawable.backup);
                 aboutText.setText(R.string.proceed_backup);
                 builder.setView(layout).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2.2
+                    /** Starts the backup immediately or requests the required storage permission. */
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog, int id) {
                             if (StoragePermission.isGranted(UpdaterFragment.this.getActivity())) {
@@ -148,6 +151,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         }
     }
 
+    /** Cancels any previous lookup and reloads kernel and backup information. */
     private void loadKernelInfo() {
     if (this.mLoadTask != null) {
         this.mLoadTask.cancel(true);
@@ -275,6 +279,13 @@ public class UpdaterFragment extends PlaceHolderFragment {
         new KernelBackupTask().execute();
     }
 
+    /**
+     * Resumes a pending backup after a successful storage permission request.
+     *
+     * @param requestCode the permission request identifier
+     * @param permissions the requested permissions
+     * @param grantResults grant results corresponding to {@code permissions}
+     */
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
         if (requestCode != StoragePermission.REQUEST_CODE) {
@@ -298,6 +309,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
         loadKernelInfo();
     }
 
+    /**
+     * Checks whether a storage permission request was granted.
+     *
+     * @param grantResults results returned by the permission request
+     * @return {@code true} when the first requested permission was granted
+     */
     static boolean isStoragePermissionGranted(int[] grantResults) {
         return grantResults != null
                 && grantResults.length > 0
@@ -318,6 +335,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
         private static final String FAILURE_MARKER = "DD_FAILURE";
         private String mTimeStamp;
 
+        /**
+         * Copies the active kernel image into a timestamped backup directory.
+         *
+         * @param params unused task parameters
+         * @return the verified backup file, or {@code null} when the backup fails
+         */
         @Override // android.os.AsyncTask
         protected File doInBackground(Void... params) {
             this.mTimeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault())
@@ -362,6 +385,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return null;
         }
 
+        /** Reports the backup result and refreshes the available backup information. */
         @Override // android.os.AsyncTask
         protected void onPostExecute(File result) {
             if (!UpdaterFragment.this.isAdded()) {
