@@ -261,6 +261,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return result;
         }
 
+        /** Applies discovered kernel and backup information to the preferences. */
         @Override // android.os.AsyncTask
         protected void onPostExecute(Result result) {
             if (result == null || !UpdaterFragment.this.isAdded()) {

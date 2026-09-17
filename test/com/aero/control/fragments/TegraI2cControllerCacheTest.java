@@ -10,6 +10,7 @@ import org.junit.Test;
 public class TegraI2cControllerCacheTest {
     private static final String PLATFORM_DIRECTORY = "/sys/devices/platform";
 
+    /** Verifies that an empty Tegra discovery result is cached. */
     @Test
     public void unreadablePlatformDirectoryIsNotCached() {
         TegraI2cControllerCache cache = new TegraI2cControllerCache();
@@ -35,6 +36,7 @@ public class TegraI2cControllerCacheTest {
                 new String[] {"tegra-i2c.4"}).isEmpty());
     }
 
+    /** Verifies that valid controller entries retain their bus numbers and paths. */
     @Test
     public void validControllersAreDiscoveredWithBusAndPath() {
         TegraI2cControllerCache cache = new TegraI2cControllerCache();
@@ -50,6 +52,7 @@ public class TegraI2cControllerCacheTest {
         assertEquals("/sys/devices/platform/tegra-i2c.10", controllers.get(1).path);
     }
 
+    /** Verifies that repeated discovery returns the original cached controllers. */
     @Test
     public void repeatedDiscoveryReusesSupportedControllerResult() {
         TegraI2cControllerCache cache = new TegraI2cControllerCache();

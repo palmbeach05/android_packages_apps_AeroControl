@@ -338,6 +338,11 @@ public class AeroFragment extends Fragment {
         return readings;
     }
 
+    /**
+     * Collects temperature readings from devices attached to cached Tegra I2C controllers.
+     *
+     * @return the available Tegra I2C temperature readings
+     */
     private List<RawTemperature> getTegraI2cTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
         List<TegraI2cControllerCache.Controller> controllers;
@@ -392,6 +397,14 @@ public class AeroFragment extends Fragment {
         return readings;
     }
 
+    /**
+     * Appends valid temperature channels exposed by a Tegra I2C device.
+     *
+     * @param readings destination for discovered temperature readings
+     * @param busNumber I2C bus number used in fallback sensor names
+     * @param device device directory name used in fallback sensor names
+     * @param devicePath absolute path to the device directory
+     */
     private void addTegraI2cDeviceTemperatures(List<RawTemperature> readings,
             String busNumber, String device, String devicePath) {
         String[] files = AeroActivity.shell.getRootAwareTegraI2cDirInfo(devicePath, true);

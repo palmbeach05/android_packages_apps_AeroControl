@@ -14,6 +14,12 @@ final class TegraI2cControllerCache {
         final String busNumber;
         final String path;
 
+        /**
+         * Creates metadata for a discovered Tegra I2C controller.
+         *
+         * @param busNumber controller bus number
+         * @param path absolute controller directory path
+         */
         Controller(String busNumber, String path) {
             this.busNumber = busNumber;
             this.path = path;
@@ -22,14 +28,31 @@ final class TegraI2cControllerCache {
 
     private List<Controller> controllers;
 
+    /**
+     * Reports whether controller discovery has already completed.
+     *
+     * @return {@code true} after the first discovery attempt
+     */
     boolean isInitialized() {
         return this.controllers != null;
     }
 
+    /**
+     * Returns the cached controller list.
+     *
+     * @return cached controllers, or {@code null} before discovery
+     */
     List<Controller> getControllers() {
         return this.controllers;
     }
 
+    /**
+     * Discovers Tegra I2C controllers once and caches the immutable result.
+     *
+     * @param platformDirectory absolute platform-device directory
+     * @param platformEntries entries found in the platform-device directory
+     * @return the cached immutable controller list
+     */
     List<Controller> discover(String platformDirectory, String[] platformEntries) {
         if (this.controllers != null) {
             return this.controllers;
