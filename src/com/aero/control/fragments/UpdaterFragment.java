@@ -40,6 +40,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final int PENDING_STORAGE_ACTION_NONE = 0;
     private static final int PENDING_STORAGE_ACTION_BACKUP = 1;
+    private static final int PENDING_STORAGE_ACTION_RESTORE = 2;
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
@@ -109,6 +110,20 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 return true;
             }
         });
+        this.mRestoreKernel.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    @Override // android.preference.Preference.OnPreferenceClickListener
+                    public boolean onPreferenceClick(Preference preference) {
+                        if (StoragePermission.isGranted(
+                                UpdaterFragment.this.getActivity())) {
+                            return false;
+                        }
+                        UpdaterFragment.this.mPendingStorageAction =
+                                PENDING_STORAGE_ACTION_RESTORE;
+                        StoragePermission.request(UpdaterFragment.this);
+                        return true;
+                    }
+                });
         this.mBackupKernel.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.UpdaterFragment.2
             /** Shows the backup confirmation dialog when the backup preference is selected. */
             @Override // android.preference.Preference.OnPreferenceClickListener
@@ -253,7 +268,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 + " "
                                 + ((Object) UpdaterFragment.this.getText(
                                         R.string.storage_permission_required)));
-                UpdaterFragment.this.mRestoreKernel.setEnabled(false);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
             } else if (result.backupEntries != null && result.backupEntries.length > 0) {
                 UpdaterFragment.this.mBackupKernel.setSummary(
                         ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
@@ -306,7 +321,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
 
-        loadKernelInfo();
+        if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
+            if (permissionGranted) {
+                loadKernelInfo();
+            } else {
+                Toast.makeText(getActivity(), R.string.storage_permission_required,
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     /**
