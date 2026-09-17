@@ -62,8 +62,6 @@ public class AeroFragment extends Fragment {
     private static final String POWER_SUPPLY_CURRENT_AVG_FILE = "current_avg";
     private static final String POWER_SUPPLY_ONLINE_FILE = "online";
     private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
-    private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
-            Pattern.compile("tegra-i2c\\.(\\d+)");
     private static final Pattern TEGRA_I2C_BUS_PATTERN = Pattern.compile("i2c-(\\d+)");
     private static final Pattern TEGRA_I2C_DEVICE_PATTERN =
             Pattern.compile("(\\d+)-[0-9a-fA-F]{4}");
@@ -86,6 +84,9 @@ public class AeroFragment extends Fragment {
     private AeroData mConfigurationSection;
     private AeroData mConfigurationData;
     private final CpuClusterHelper mCpuClusterHelper = new CpuClusterHelper();
+    private final TegraI2cControllerCache mTegraI2cControllerCache =
+            new TegraI2cControllerCache();
+    private boolean mLoggedTegraI2cUnavailable;
     private AeroData mSystemData;
     private ListView mOverView;
     private AeroData mRAMData;
@@ -339,39 +340,46 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getTegraI2cTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] controllers = AeroActivity.shell.getDirInfo(
-                TEGRA_I2C_PLATFORM_DIRECTORY, false);
-        if (controllers == null) {
+        List<TegraI2cControllerCache.Controller> controllers;
+        if (this.mTegraI2cControllerCache.isInitialized()) {
+            controllers = this.mTegraI2cControllerCache.getControllers();
+        } else {
+            controllers = this.mTegraI2cControllerCache.discover(
+                    TEGRA_I2C_PLATFORM_DIRECTORY,
+                    AeroActivity.shell.getDirInfo(TEGRA_I2C_PLATFORM_DIRECTORY, false));
+        }
+        if (controllers.isEmpty()) {
+            if (!this.mLoggedTegraI2cUnavailable) {
+                Log.d(AeroFragment.class.getName(),
+                        "Tegra I2C unavailable: no platform controllers found");
+                this.mLoggedTegraI2cUnavailable = true;
+            }
             return readings;
         }
-        for (String controller : controllers) {
-            Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
-            String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
-            if (!controllerMatcher.matches()) {
-                Log.d(AeroFragment.class.getName(),
-                        "Rejected Tegra I2C node path: " + controllerPath);
-                continue;
-            }
-            String busNumber = controllerMatcher.group(1);
+        for (TegraI2cControllerCache.Controller controller : controllers) {
+            String busNumber = controller.busNumber;
+            String controllerPath = controller.path;
             String[] buses = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
                     controllerPath, false);
+            if (buses == null) {
+                continue;
+            }
             for (String bus : buses) {
                 Matcher busMatcher = TEGRA_I2C_BUS_PATTERN.matcher(bus);
                 String busPath = controllerPath + "/" + bus;
                 if (!busMatcher.matches() || !busNumber.equals(busMatcher.group(1))) {
-                    Log.d(AeroFragment.class.getName(),
-                            "Rejected Tegra I2C node path: " + busPath);
                     continue;
                 }
                 String[] devices = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
                         busPath, false);
+                if (devices == null) {
+                    continue;
+                }
                 for (String device : devices) {
                     Matcher deviceMatcher = TEGRA_I2C_DEVICE_PATTERN.matcher(device);
                     String devicePath = busPath + "/" + device;
                     if (!deviceMatcher.matches()
                             || !busNumber.equals(deviceMatcher.group(1))) {
-                        Log.d(AeroFragment.class.getName(),
-                                "Rejected Tegra I2C node path: " + devicePath);
                         continue;
                     }
                     Log.d(AeroFragment.class.getName(),
@@ -393,15 +401,11 @@ public class AeroFragment extends Fragment {
             String filePath = devicePath + "/" + file;
             Matcher inputMatcher = HWMON_TEMP_INPUT_PATTERN.matcher(file);
             if (!inputMatcher.matches()) {
-                Log.d(AeroFragment.class.getName(),
-                        "Rejected Tegra I2C node path: " + filePath);
                 continue;
             }
             String temperature = formatTemperature(
                     AeroActivity.shell.getRootAwareTegraI2cInfo(filePath), false);
             if (temperature == null) {
-                Log.d(AeroFragment.class.getName(),
-                        "Rejected Tegra I2C node path: " + filePath);
                 continue;
             }
             Log.d(AeroFragment.class.getName(),
