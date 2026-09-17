@@ -127,6 +127,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
                         }
                         UpdaterFragment.this.mPendingStorageAction =
                                 PENDING_STORAGE_ACTION_RESTORE;
+                        Log.i("Aero", "Requesting storage permission; pending action="
+                                + UpdaterFragment.this.mPendingStorageAction);
                         StoragePermission.request(UpdaterFragment.this);
                         return true;
                     }
@@ -151,6 +153,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 UpdaterFragment.this.startKernelBackup();
                             } else {
                                 UpdaterFragment.this.mPendingStorageAction = PENDING_STORAGE_ACTION_BACKUP;
+                                Log.i("Aero", "Requesting storage permission; pending action="
+                                        + UpdaterFragment.this.mPendingStorageAction);
                                 StoragePermission.request(UpdaterFragment.this);
                             }
                     }
@@ -170,6 +174,18 @@ public class UpdaterFragment extends PlaceHolderFragment {
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_PENDING_STORAGE_ACTION, this.mPendingStorageAction);
         super.onSaveInstanceState(outState);
+    }
+
+    /** Recovers a pending storage action when Android omits the permission callback. */
+    @Override // android.app.Fragment
+    public void onResume() {
+        super.onResume();
+        if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE
+                && StoragePermission.isGranted(getActivity())) {
+            Log.i("Aero", "Resuming pending storage action from onResume(); pending action="
+                    + this.mPendingStorageAction);
+            consumePendingStorageAction();
+        }
     }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
@@ -305,6 +321,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
      * Backs up either the boot partition or zImage depending on device configuration.
      */
     public void startKernelBackup() {
+        Log.i("Aero", "Starting KernelBackupTask");
         new KernelBackupTask().execute();
     }
 
@@ -317,31 +334,34 @@ public class UpdaterFragment extends PlaceHolderFragment {
      */
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
+        boolean permissionGranted = isStoragePermissionGranted(grantResults);
+        Log.i("Aero", "onRequestPermissionsResult: requestCode=" + requestCode
+                + ", granted=" + permissionGranted
+                + ", pending action=" + this.mPendingStorageAction);
         if (requestCode != StoragePermission.REQUEST_CODE) {
             return;
         }
-    
-        int pendingAction = this.mPendingStorageAction;
-        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
-        boolean permissionGranted = isStoragePermissionGranted(grantResults);
 
-        if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
-            if (permissionGranted) {
-                startKernelBackup();
-            } else {
-                Toast.makeText(getActivity(), R.string.storage_permission_required,
-                        Toast.LENGTH_LONG).show();
-            }
+        if (permissionGranted) {
+            consumePendingStorageAction();
             return;
         }
 
-        if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
-            if (permissionGranted) {
-                loadKernelInfo();
-            } else {
-                Toast.makeText(getActivity(), R.string.storage_permission_required,
-                        Toast.LENGTH_LONG).show();
-            }
+        if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE) {
+            this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+            Toast.makeText(getActivity(), R.string.storage_permission_required,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Clears and executes the pending action so lifecycle paths cannot run it twice. */
+    private void consumePendingStorageAction() {
+        int pendingAction = this.mPendingStorageAction;
+        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+        if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
+            startKernelBackup();
+        } else if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
+            loadKernelInfo();
         }
     }
 
@@ -437,6 +457,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 return;
             }
             if (result != null) {
+                Log.i("Aero", "KernelBackupTask completed with verified backup: "
+                        + result.getPath());
                 Toast.makeText(UpdaterFragment.this.getActivity(), "Backup was successful!", 1).show();
                 UpdaterFragment.this.loadKernelInfo();
             } else {
