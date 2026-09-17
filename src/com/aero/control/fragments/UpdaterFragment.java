@@ -367,19 +367,28 @@ public class UpdaterFragment extends PlaceHolderFragment {
         protected File doInBackground(Void... params) {
             this.mTimeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault())
                     .format(new Date());
-            String backupDir = UpdaterFragment.SDPATH + "/com.aero.control/backup/"
-                    + this.mTimeStamp;
             File backupRoot = new File(AERO_PATH);
             if ((!backupRoot.exists() && !backupRoot.mkdirs()) || !backupRoot.isDirectory()) {
                 Log.e("Aero", "Couldn't create backup directory: " + AERO_PATH);
                 return null;
             }
-            File backupDirectory = new File(backupDir);
-            if ((!backupDirectory.exists() && !backupDirectory.mkdirs())
-                    || !backupDirectory.isDirectory()) {
-                Log.e("Aero", "Couldn't create backup directory: " + backupDir);
-                return null;
+            File backupDirectory;
+            int suffix = 0;
+            while (true) {
+                String directoryName = this.mTimeStamp
+                        + (suffix == 0 ? "" : "_" + suffix);
+                backupDirectory = new File(backupRoot, directoryName);
+                if (backupDirectory.mkdir()) {
+                    break;
+                }
+                if (!backupDirectory.exists()) {
+                    Log.e("Aero", "Couldn't create backup directory: "
+                            + backupDirectory.getPath());
+                    return null;
+                }
+                suffix++;
             }
+            String backupDir = backupDirectory.getPath();
             String source;
             String outputName;
             if (UpdaterFragment.this.mBackup != null) {
