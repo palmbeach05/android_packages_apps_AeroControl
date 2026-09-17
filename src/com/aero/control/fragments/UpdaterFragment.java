@@ -473,12 +473,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 return remountResult;
             }
             String source = new File(AERO_PATH + "/" + this.mBackupName, "zImage").getPath();
-            String[] commands = {
-                    "rm -f /system/bootstrap/2nd-boot/zImage",
-                    "cp " + shellHelper.escapeShellArg(source) + " "
-                            + shellHelper.escapeShellArg(FilePath.zImage)
-            };
-            return AeroActivity.shell.setRootInfoResult(commands);
+            String command = "rm -f /system/bootstrap/2nd-boot/zImage && cp "
+                    + shellHelper.escapeShellArg(source) + " "
+                    + shellHelper.escapeShellArg(FilePath.zImage);
+            return AeroActivity.shell.runLongRunningRootCommand(command);
         }
 
         @Override
