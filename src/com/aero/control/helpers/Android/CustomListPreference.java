@@ -326,12 +326,12 @@ public class CustomListPreference extends ListPreference {
             return;
         }
 
-        onClick();
-
         OnPreferenceClickListener listener = getOnPreferenceClickListener();
-        if (listener != null) {
-            listener.onPreferenceClick(this);
+        if (listener != null && listener.onPreferenceClick(this)) {
+            return;
         }
+
+        onClick();
     }
 
     /**

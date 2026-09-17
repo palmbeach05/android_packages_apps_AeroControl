@@ -43,11 +43,15 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private static final int PENDING_STORAGE_ACTION_RESTORE = 2;
     private static final String STATE_PENDING_STORAGE_ACTION =
             "pending_storage_action";
+    private static final String STATE_DEFERRED_RESTORE_DIALOG =
+            "deferred_restore_dialog";
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
     private LoadKernelInfoTask mLoadTask;
+    private KernelRestoreTask mRestoreTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
+    private boolean mDeferredRestoreDialog;
     private int mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
     private static final updateHelper update = new updateHelper();
 
@@ -58,6 +62,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (savedInstanceState != null) {
             this.mPendingStorageAction = savedInstanceState.getInt(
                     STATE_PENDING_STORAGE_ACTION, PENDING_STORAGE_ACTION_NONE);
+            this.mDeferredRestoreDialog = savedInstanceState.getBoolean(
+                    STATE_DEFERRED_RESTORE_DIALOG, false);
         }
         addPreferencesFromResource(R.layout.updater_fragment);
         this.mBackupKernel = (CustomPreference) findPreference("backup_kernel");
@@ -169,6 +175,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
     @Override // android.app.Fragment
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_PENDING_STORAGE_ACTION, this.mPendingStorageAction);
+        outState.putBoolean(STATE_DEFERRED_RESTORE_DIALOG,
+                this.mDeferredRestoreDialog);
         super.onSaveInstanceState(outState);
     }
 
@@ -192,12 +200,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
     /** Cancels any previous lookup and reloads kernel and backup information. */
     private void loadKernelInfo() {
-    if (this.mLoadTask != null) {
-        this.mLoadTask.cancel(true);
-    }
-    this.mLoadTask = new LoadKernelInfoTask(
-            StoragePermission.isGranted(getActivity()));
-    this.mLoadTask.execute();
+        if (this.mLoadTask != null) {
+            this.mLoadTask.cancel(true);
+        }
+        this.mLoadTask = new LoadKernelInfoTask(
+                StoragePermission.isGranted(getActivity()));
+        this.mLoadTask.execute();
     }
     
     /**
@@ -267,6 +275,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (result == null || !UpdaterFragment.this.isAdded()) {
                 return;
             }
+            UpdaterFragment.this.mRestoreKernel.setEntries(result.backupEntries);
+            UpdaterFragment.this.mRestoreKernel.setEntryValues(result.backupEntries);
             if (result.bootSource != null) {
                 UpdaterFragment.this.mBackup = result.bootSource;
                 Log.i("Aero", "Detected readable boot-partition backup source: " + UpdaterFragment.this.mBackup);
@@ -293,12 +303,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 + " "
                                 + ((Object) UpdaterFragment.this.getText(
                                         R.string.storage_permission_required)));
-                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(
+                        UpdaterFragment.this.mRestoreTask == null);
             } else if (result.backupEntries != null && result.backupEntries.length > 0) {
                 UpdaterFragment.this.mBackupKernel.setSummary(
                         ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
                                 + " " + result.backupEntries[0]);
-                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(
+                        UpdaterFragment.this.mRestoreTask == null);
             } else {
                 UpdaterFragment.this.mBackupKernel.setSummary(
                         ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
@@ -306,8 +318,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
-            UpdaterFragment.this.mRestoreKernel.setEntries(result.backupEntries);
-            UpdaterFragment.this.mRestoreKernel.setEntryValues(result.backupEntries);
+            if (UpdaterFragment.this.mDeferredRestoreDialog
+                    && UpdaterFragment.this.mRestoreKernel.isEnabled()) {
+                UpdaterFragment.this.mDeferredRestoreDialog = false;
+                UpdaterFragment.this.mRestoreKernel.performCustomClick();
+            }
         }
     }
 
@@ -338,6 +353,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
 
+        this.mDeferredRestoreDialog = false;
         if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE) {
             this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
             Toast.makeText(getActivity(), R.string.storage_permission_required,
@@ -352,6 +368,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
             startKernelBackup();
         } else if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
+            this.mDeferredRestoreDialog = true;
             loadKernelInfo();
         }
     }
@@ -509,7 +526,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        new KernelRestoreTask(false, s, null).execute();
+        if (this.mRestoreTask != null) {
+            return;
+        }
+        this.mRestoreKernel.setEnabled(false);
+        this.mRestoreTask = new KernelRestoreTask(false, s, null);
+        this.mRestoreTask.execute();
     }
 
     /**
@@ -523,7 +545,12 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        new KernelRestoreTask(true, s, this.mBackup).execute();
+        if (this.mRestoreTask != null) {
+            return;
+        }
+        this.mRestoreKernel.setEnabled(false);
+        this.mRestoreTask = new KernelRestoreTask(true, s, this.mBackup);
+        this.mRestoreTask.execute();
     }
 
     /** Performs boot and zImage restores without blocking the main thread. */
@@ -562,17 +589,19 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
         @Override
         protected void onPostExecute(OperationResult result) {
+            UpdaterFragment.this.mRestoreTask = null;
             if (!UpdaterFragment.this.isAdded()) {
                 return;
             }
             if (result.isSuccess()) {
                 Toast.makeText(UpdaterFragment.this.getActivity(), R.string.need_reboot, 1).show();
-                return;
+            } else {
+                Log.e("Aero", (this.mRestoreBoot ? "Boot" : "zImage") + " restore failed: "
+                        + result.getStatus() + " " + result.getMessage());
+                Toast.makeText(UpdaterFragment.this.getActivity(),
+                        R.string.storage_operation_failed, 1).show();
             }
-            Log.e("Aero", (this.mRestoreBoot ? "Boot" : "zImage") + " restore failed: "
-                    + result.getStatus() + " " + result.getMessage());
-            Toast.makeText(UpdaterFragment.this.getActivity(),
-                    R.string.storage_operation_failed, 1).show();
+            UpdaterFragment.this.loadKernelInfo();
         }
     }
 
