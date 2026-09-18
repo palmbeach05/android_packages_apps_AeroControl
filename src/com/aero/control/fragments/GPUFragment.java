@@ -26,10 +26,10 @@ import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.Android.Material.Slider;
 import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.LedController;
 import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
-import com.aero.control.helpers.Shell;
-import java.io.File;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Fragment for configuring GPU settings including maximum frequency and governor.
@@ -51,7 +51,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private String mGPUGov;
     private CustomListPreference mGPUGovernor;
     private GPUGovernorFragment mGPUGovernorFragment;
-    private Shell mShell;
+    private final LedController mLedController = AeroActivity.hardware.led();
     private CustomPreference mSweep2wake;
     private PreferenceScreen root;
 
@@ -278,14 +278,12 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param cusPref the CustomPreference associated with this color control
      */
     private void showColorControl(final SharedPreferences.Editor editor, final CustomPreference cusPref) {
-        if (this.mShell == null) {
-            this.mShell = new Shell("su", true);
-        }
-        this.mColorValues = AeroActivity.shell.getInfoArray(FilePath.COLOR_CONTROL, 0, 0);
-        if (this.mColorValues == null || this.mColorValues.length == 0 || this.mColorValues[0].equals(NO_DATA_FOUND)) {
+        SysfsResult<String[]> colorResult = this.mLedController.readColorValues();
+        if (!colorResult.isSuccess()) {
             Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
             return;
         }
+        this.mColorValues = colorResult.getValue();
         if (this.mColorValues.length < 3) {
             Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
             return;
@@ -594,11 +592,11 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             return;
         }
         String rgbValues = red + " " + green + " " + blue;
-        this.mShell.addCommand("echo " + rgbValues + " > " + FilePath.COLOR_CONTROL);
-        if (new File(FilePath.COLOR_CONTROL_BIT).exists()) {
-            this.mShell.addCommand("echo 1 > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl");
+        SysfsResult<String> result = this.mLedController.writeColorValue(rgbValues);
+        if (!result.isSuccess()) {
+            Toast.makeText(getActivity(), R.string.hardware_operation_failed, Toast.LENGTH_LONG).show();
+            return;
         }
-        this.mShell.runInteractive();
         if (cusPref.isChecked().booleanValue()) {
             editor.putString(cusPref.getName(), rgbValues).commit();
         }
@@ -609,10 +607,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         super.onPause();
         if (this.mColorDialog != null) {
             this.mColorDialog.dismiss();
-        }
-        if (this.mShell != null) {
-            this.mShell.closeInteractive();
-            this.mShell = null;
         }
     }
 

@@ -23,6 +23,19 @@ public final class SysfsRepository {
         return SysfsResult.success(value.trim());
     }
 
+    /** Reads a space-separated node value using an explicit decoding mode. */
+    public SysfsResult<String[]> readValues(SysfsNode node, ReadMode mode) {
+        if (node == null || mode == null) {
+            return SysfsResult.failure("Node and read mode are required");
+        }
+        String[] values = reader.getInfoArray(node.getPath(), mode);
+        if (values == null || values.length == 0
+                || (values.length == 1 && NO_DATA_FOUND.equals(values[0]))) {
+            return SysfsResult.failure("Unable to read " + node.getPath());
+        }
+        return SysfsResult.success(values);
+    }
+
     /** Writes a value and only reports success after reading the value back. */
     public SysfsResult<String> writeValue(SysfsNode node, String value) {
         if (node == null || value == null || value.trim().length() == 0) {

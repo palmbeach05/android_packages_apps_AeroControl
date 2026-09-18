@@ -34,6 +34,7 @@ import com.aero.control.fragments.ProfileFragment;
 import com.aero.control.fragments.StatisticsFragment;
 import com.aero.control.fragments.UpdaterFragment;
 import com.aero.control.helpers.GenericHelper;
+import com.aero.control.helpers.HardwareGateway;
 import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.ThemeHelper;
@@ -101,6 +102,7 @@ public final class AeroActivity extends Activity {
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     public static final shellHelper shell = shellHelper.instance();
+    public static final HardwareGateway hardware = shell.getHardwareGateway();
     public static GenericHelper genHelper = new GenericHelper();
 
     @Override // android.app.Activity
