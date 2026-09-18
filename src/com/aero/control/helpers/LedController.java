@@ -35,13 +35,21 @@ public final class LedController {
      * Writes a display-color value and enables the color control when supported.
      *
      * @param value space-separated display-color components to write
-     * @return the verified write result, or the activation failure when activation fails
+     * @return the verified write result, or an inspection/activation failure
      */
     public SysfsResult<String> writeColorValue(String value) {
         SysfsResult<String> result = repository.writeValue(
                 new SysfsNode(FilePath.COLOR_CONTROL), value);
+        if (!result.isSuccess()) {
+            return result;
+        }
+
         SysfsNode activationNode = new SysfsNode(FilePath.COLOR_CONTROL_BIT);
-        if (!result.isSuccess() || !repository.exists(activationNode)) {
+        SysfsResult<Boolean> inspectionResult = repository.exists(activationNode);
+        if (!inspectionResult.isSuccess()) {
+            return SysfsResult.failure(inspectionResult.getError());
+        }
+        if (!inspectionResult.getValue()) {
             return result;
         }
         SysfsResult<String> activationResult = repository.writeValue(
