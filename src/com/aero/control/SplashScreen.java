@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -45,6 +44,7 @@ public class SplashScreen extends FragmentActivity {
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
     private Thread mRootCheckThread;
+    private boolean mDestroyed;
     public Button mSkip;
 
     /**
@@ -88,9 +88,7 @@ public class SplashScreen extends FragmentActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (!rooted && !isFinishing()
-                                && (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1
-                                || !isDestroyed())) {
+                        if (!rooted && !isFinishing() && !mDestroyed) {
                             showRootDialog();
                         }
                     }
@@ -102,6 +100,7 @@ public class SplashScreen extends FragmentActivity {
 
     @Override
     protected void onDestroy() {
+        mDestroyed = true;
         if (mRootCheckThread != null) {
             mRootCheckThread.interrupt();
             mRootCheckThread = null;
