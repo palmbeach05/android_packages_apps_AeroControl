@@ -43,11 +43,17 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private static final int PENDING_STORAGE_ACTION_RESTORE = 2;
     private static final String STATE_PENDING_STORAGE_ACTION =
             "pending_storage_action";
+    private static final String STATE_DEFERRED_RESTORE_DIALOG =
+            "deferred_restore_dialog";
+    private static final Object RESTORE_TASK_LOCK = new Object();
+    private static KernelRestoreTask sRestoreTask;
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
     private LoadKernelInfoTask mLoadTask;
+    private KernelRestoreTask mRestoreTask;
     private static final String SDPATH = Environment.getExternalStorageDirectory().getPath();
+    private boolean mDeferredRestoreDialog;
     private int mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
     private static final updateHelper update = new updateHelper();
 
@@ -58,6 +64,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (savedInstanceState != null) {
             this.mPendingStorageAction = savedInstanceState.getInt(
                     STATE_PENDING_STORAGE_ACTION, PENDING_STORAGE_ACTION_NONE);
+            this.mDeferredRestoreDialog = savedInstanceState.getBoolean(
+                    STATE_DEFERRED_RESTORE_DIALOG, false);
         }
         addPreferencesFromResource(R.layout.updater_fragment);
         this.mBackupKernel = (CustomPreference) findPreference("backup_kernel");
@@ -81,10 +89,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
         // below reports back and updates them on the main thread.
         this.mBackupKernel.setEnabled(false);
         this.mRestoreKernel.setEnabled(false);
+        observeActiveRestoreTask();
         loadKernelInfo();
         this.mRestoreKernel.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.UpdaterFragment.1
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
+                if (UpdaterFragment.this.isRestoreInProgress()) {
+                    return false;
+                }
                 final String s2 = (String) o;
                 if (!isValidBackupName(s2)) {
                     Log.e("Aero", "Refusing to restore from suspicious backup name: " + s2);
@@ -121,6 +133,9 @@ public class UpdaterFragment extends PlaceHolderFragment {
                     /** Requests storage access before showing available restore backups. */
                     @Override // android.preference.Preference.OnPreferenceClickListener
                     public boolean onPreferenceClick(Preference preference) {
+                        if (UpdaterFragment.this.isRestoreInProgress()) {
+                            return true;
+                        }
                         if (StoragePermission.isGranted(
                                 UpdaterFragment.this.getActivity())) {
                             return false;
@@ -169,6 +184,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
     @Override // android.app.Fragment
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_PENDING_STORAGE_ACTION, this.mPendingStorageAction);
+        outState.putBoolean(STATE_DEFERRED_RESTORE_DIALOG,
+                this.mDeferredRestoreDialog);
         super.onSaveInstanceState(outState);
     }
 
@@ -176,6 +193,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     @Override // android.app.Fragment
     public void onResume() {
         super.onResume();
+        observeActiveRestoreTask();
         if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE
                 && StoragePermission.isGranted(getActivity())) {
             consumePendingStorageAction();
@@ -188,16 +206,40 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (this.mLoadTask != null) {
             this.mLoadTask.cancel(true);
         }
+        if (this.mRestoreTask != null) {
+            this.mRestoreTask.stopObserving(this);
+            this.mRestoreTask = null;
+        }
+    }
+
+    /** Observes the process-local restore task that may outlive this Fragment instance. */
+    private void observeActiveRestoreTask() {
+        synchronized (RESTORE_TASK_LOCK) {
+            this.mRestoreTask = sRestoreTask;
+            if (this.mRestoreTask != null) {
+                this.mRestoreTask.observe(this);
+                if (this.mRestoreKernel != null) {
+                    this.mRestoreKernel.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    /** Returns whether any UpdaterFragment currently owns an active restore. */
+    private boolean isRestoreInProgress() {
+        synchronized (RESTORE_TASK_LOCK) {
+            return sRestoreTask != null;
+        }
     }
 
     /** Cancels any previous lookup and reloads kernel and backup information. */
     private void loadKernelInfo() {
-    if (this.mLoadTask != null) {
-        this.mLoadTask.cancel(true);
-    }
-    this.mLoadTask = new LoadKernelInfoTask(
-            StoragePermission.isGranted(getActivity()));
-    this.mLoadTask.execute();
+        if (this.mLoadTask != null) {
+            this.mLoadTask.cancel(true);
+        }
+        this.mLoadTask = new LoadKernelInfoTask(
+                StoragePermission.isGranted(getActivity()));
+        this.mLoadTask.execute();
     }
     
     /**
@@ -267,6 +309,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             if (result == null || !UpdaterFragment.this.isAdded()) {
                 return;
             }
+            UpdaterFragment.this.mRestoreKernel.setEntries(result.backupEntries);
+            UpdaterFragment.this.mRestoreKernel.setEntryValues(result.backupEntries);
             if (result.bootSource != null) {
                 UpdaterFragment.this.mBackup = result.bootSource;
                 Log.i("Aero", "Detected readable boot-partition backup source: " + UpdaterFragment.this.mBackup);
@@ -293,12 +337,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 + " "
                                 + ((Object) UpdaterFragment.this.getText(
                                         R.string.storage_permission_required)));
-                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(
+                        UpdaterFragment.this.mRestoreTask == null);
             } else if (result.backupEntries != null && result.backupEntries.length > 0) {
                 UpdaterFragment.this.mBackupKernel.setSummary(
                         ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
                                 + " " + result.backupEntries[0]);
-                UpdaterFragment.this.mRestoreKernel.setEnabled(true);
+                UpdaterFragment.this.mRestoreKernel.setEnabled(
+                        UpdaterFragment.this.mRestoreTask == null);
             } else {
                 UpdaterFragment.this.mBackupKernel.setSummary(
                         ((Object) UpdaterFragment.this.getText(R.string.last_backup_from))
@@ -306,8 +352,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
-            UpdaterFragment.this.mRestoreKernel.setEntries(result.backupEntries);
-            UpdaterFragment.this.mRestoreKernel.setEntryValues(result.backupEntries);
+            if (UpdaterFragment.this.mDeferredRestoreDialog
+                    && UpdaterFragment.this.mRestoreKernel.isEnabled()) {
+                UpdaterFragment.this.mDeferredRestoreDialog = false;
+                UpdaterFragment.this.mRestoreKernel.performCustomClick();
+            }
         }
     }
 
@@ -338,6 +387,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
 
+        this.mDeferredRestoreDialog = false;
         if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE) {
             this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
             Toast.makeText(getActivity(), R.string.storage_permission_required,
@@ -352,6 +402,10 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (pendingAction == PENDING_STORAGE_ACTION_BACKUP) {
             startKernelBackup();
         } else if (pendingAction == PENDING_STORAGE_ACTION_RESTORE) {
+            if (isRestoreInProgress()) {
+                return;
+            }
+            this.mDeferredRestoreDialog = true;
             loadKernelInfo();
         }
     }
@@ -509,7 +563,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        new KernelRestoreTask(false, s, null).execute();
+        startKernelRestore(false, s, null);
     }
 
     /**
@@ -523,19 +577,100 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.unavailable, 1).show();
             return;
         }
-        new KernelRestoreTask(true, s, this.mBackup).execute();
+        startKernelRestore(true, s, this.mBackup);
+    }
+
+    /** Starts one restore process-wide and attaches this Fragment to its result. */
+    private void startKernelRestore(boolean restoreBoot, String backupName,
+            String bootPartition) {
+        KernelRestoreTask task;
+        synchronized (RESTORE_TASK_LOCK) {
+            if (sRestoreTask != null) {
+                this.mRestoreTask = sRestoreTask;
+                this.mRestoreTask.observe(this);
+                this.mRestoreKernel.setEnabled(false);
+                return;
+            }
+            task = new KernelRestoreTask(restoreBoot, backupName, bootPartition);
+            sRestoreTask = task;
+            this.mRestoreTask = task;
+            task.observe(this);
+        }
+        this.mRestoreKernel.setEnabled(false);
+        task.execute();
+    }
+
+    /** Clears and reports a completed restore to the currently observing Fragment. */
+    private static void finishKernelRestore(KernelRestoreTask task,
+            OperationResult result) {
+        UpdaterFragment observer;
+        synchronized (RESTORE_TASK_LOCK) {
+            if (sRestoreTask != task) {
+                return;
+            }
+            sRestoreTask = null;
+            observer = task.takeObserver();
+        }
+        if (observer != null) {
+            observer.onKernelRestoreFinished(task, result);
+        }
+    }
+
+    /** Updates the current Fragment after the shared restore task completes. */
+    private void onKernelRestoreFinished(KernelRestoreTask task,
+            OperationResult result) {
+        if (this.mRestoreTask != task) {
+            return;
+        }
+        this.mRestoreTask = null;
+        if (!isAdded()) {
+            return;
+        }
+        if (result.isSuccess()) {
+            Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
+        } else {
+            Log.e("Aero", (task.restoresBoot() ? "Boot" : "zImage")
+                    + " restore failed: " + result.getStatus() + " "
+                    + result.getMessage());
+            Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
+        }
+        loadKernelInfo();
     }
 
     /** Performs boot and zImage restores without blocking the main thread. */
-    private class KernelRestoreTask extends AsyncTask<Void, Void, OperationResult> {
+    private static class KernelRestoreTask extends AsyncTask<Void, Void, OperationResult> {
         private final boolean mRestoreBoot;
         private final String mBackupName;
         private final String mBootPartition;
+        private UpdaterFragment mObserver;
 
         KernelRestoreTask(boolean restoreBoot, String backupName, String bootPartition) {
             this.mRestoreBoot = restoreBoot;
             this.mBackupName = backupName;
             this.mBootPartition = bootPartition;
+        }
+
+        /** Attaches the current Fragment instance to receive this task's result. */
+        private void observe(UpdaterFragment observer) {
+            this.mObserver = observer;
+        }
+
+        /** Detaches the supplied Fragment when it is still observing this task. */
+        private void stopObserving(UpdaterFragment observer) {
+            if (this.mObserver == observer) {
+                this.mObserver = null;
+            }
+        }
+
+        /** Removes and returns the Fragment currently observing this task. */
+        private UpdaterFragment takeObserver() {
+            UpdaterFragment observer = this.mObserver;
+            this.mObserver = null;
+            return observer;
+        }
+
+        private boolean restoresBoot() {
+            return this.mRestoreBoot;
         }
 
         @Override
@@ -562,17 +697,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
         @Override
         protected void onPostExecute(OperationResult result) {
-            if (!UpdaterFragment.this.isAdded()) {
-                return;
-            }
-            if (result.isSuccess()) {
-                Toast.makeText(UpdaterFragment.this.getActivity(), R.string.need_reboot, 1).show();
-                return;
-            }
-            Log.e("Aero", (this.mRestoreBoot ? "Boot" : "zImage") + " restore failed: "
-                    + result.getStatus() + " " + result.getMessage());
-            Toast.makeText(UpdaterFragment.this.getActivity(),
-                    R.string.storage_operation_failed, 1).show();
+            finishKernelRestore(this, result);
         }
     }
 
