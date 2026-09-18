@@ -5,6 +5,13 @@ import android.util.Log;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Utility class for detecting whether the device has root access by attempting
@@ -14,6 +21,7 @@ public class rootHelper {
     private static final int BUFF_LEN = 1024;
     private static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = rootHelper.class.getName();
+    private static final long ROOT_CHECK_TIMEOUT_SECONDS = 10;
 
     /**
      * Checks whether the device has root access available.
@@ -44,54 +52,104 @@ public class rootHelper {
      * @return the output of the 'id' command or "Unavailable" if failed
      */
     private String suCheckRootMethod() {
+        final Process[] processHolder = new Process[1];
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> rootCheck = executor.submit(new Callable<String>() {
+            /**
+             * Runs the root command and returns its captured output.
+             *
+             * @return root command output or {@link #NO_DATA_FOUND} on failure
+             */
+            @Override
+            public String call() {
+                return runRootCheck(processHolder);
+            }
+        });
+
+        try {
+            return rootCheck.get(ROOT_CHECK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            Log.w(LOG_TAG, "Root check timed out");
+            return NO_DATA_FOUND;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return NO_DATA_FOUND;
+        } catch (ExecutionException e) {
+            Log.e(LOG_TAG, "Root check failed", e.getCause());
+            return NO_DATA_FOUND;
+        } finally {
+            rootCheck.cancel(true);
+            synchronized (processHolder) {
+                if (processHolder[0] != null) {
+                    processHolder[0].destroy();
+                }
+            }
+            executor.shutdownNow();
+        }
+    }
+
+    /**
+     * Executes the root-check command and captures its combined output.
+     *
+     * @param processHolder shared holder used to terminate a timed-out process
+     * @return command output when successful or {@link #NO_DATA_FOUND} otherwise
+     */
+    private String runRootCheck(Process[] processHolder) {
         Process process = null;
         DataOutputStream os = null;
         InputStream is = null;
         try {
-            process = Runtime.getRuntime().exec("su");
-            os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes("id\n");
-            os.flush();
-            is = process.getInputStream();
-            byte[] localBuffer = new byte[BUFF_LEN];
-            String result = "";
-            while (true) {
-                int read = is.read(localBuffer);
-                if (read == -1) {
-                    result = NO_DATA_FOUND;
-                    break;
-                }
-                result = result + new String(localBuffer, 0, read);
-                if (read < BUFF_LEN) {
-                    os.writeBytes("exit\n");
-                    os.flush();
-                    break;
+            process = new ProcessBuilder("su").redirectErrorStream(true).start();
+            synchronized (processHolder) {
+                processHolder[0] = process;
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
                 }
             }
-            return result;
+            os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes("id\nexit\n");
+            os.flush();
+            os.close();
+            os = null;
+
+            is = process.getInputStream();
+            byte[] buffer = new byte[BUFF_LEN];
+            StringBuilder result = new StringBuilder();
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                result.append(new String(buffer, 0, read));
+            }
+            process.waitFor();
+            return process.exitValue() == 0 ? result.toString() : NO_DATA_FOUND;
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Do you even root, bro? :/", e);
+            Log.e(LOG_TAG, "Unable to run root check", e);
+            return NO_DATA_FOUND;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return NO_DATA_FOUND;
         } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                }
-            }
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                }
-            }
+            close(os);
+            close(is);
             if (process != null) {
                 process.destroy();
-                try {
-                    process.waitFor();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            }
+            synchronized (processHolder) {
+                processHolder[0] = null;
+            }
+        }
+    }
+
+    /**
+     * Closes a root-check stream and logs cleanup failures.
+     *
+     * @param closeable stream to close, or {@code null} when none was opened
+     */
+    private void close(java.io.Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                Log.w(LOG_TAG, "Unable to close root-check stream", e);
             }
         }
     }

@@ -43,6 +43,8 @@ public class SplashScreen extends FragmentActivity {
     private List<Fragment> mFragments = new ArrayList();
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
+    private Thread mRootCheckThread;
+    private boolean mDestroyed;
     public Button mSkip;
 
     /**
@@ -62,9 +64,7 @@ public class SplashScreen extends FragmentActivity {
         this.mFragments.add(new TutorialFragment());
         ContextWrapper cw = new ContextWrapper(getBaseContext());
         File firstrun_aero = new File(cw.getFilesDir() + "/" + FIRSTRUN_AERO);
-        if (!rootCheck.isDeviceRooted()) {
-            showRootDialog();
-        }
+        startRootCheck();
         if (firstrun_aero.exists()) {
             Intent i = new Intent(this, (Class<?>) AeroActivity.class);
             startActivity(i);
@@ -78,6 +78,47 @@ public class SplashScreen extends FragmentActivity {
         this.mCircleIndicator.setViewPager(this.mPager);
         this.mSkip = (Button) findViewById(R.id.splash_button);
         initDefaultSkip();
+    }
+
+    /**
+     * Starts the root-access check on a background thread and shows a warning
+     * on the UI thread when root access is unavailable.
+     */
+    private void startRootCheck() {
+        mRootCheckThread = new Thread(new Runnable() {
+            /**
+             * Performs the potentially blocking root check away from the UI thread.
+             */
+            @Override
+            public void run() {
+                final boolean rooted = rootCheck.isDeviceRooted();
+                runOnUiThread(new Runnable() {
+                    /**
+                     * Displays the root warning while the activity is still active.
+                     */
+                    @Override
+                    public void run() {
+                        if (!rooted && !isFinishing() && !mDestroyed) {
+                            showRootDialog();
+                        }
+                    }
+                });
+            }
+        }, "Aero-root-check");
+        mRootCheckThread.start();
+    }
+
+    /**
+     * Interrupts the background root check before destroying the activity.
+     */
+    @Override
+    protected void onDestroy() {
+        mDestroyed = true;
+        if (mRootCheckThread != null) {
+            mRootCheckThread.interrupt();
+            mRootCheckThread = null;
+        }
+        super.onDestroy();
     }
 
     /**
