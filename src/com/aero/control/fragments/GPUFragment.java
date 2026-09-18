@@ -602,6 +602,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         }
     }
 
+    /** Dismisses the color dialog when the fragment leaves the foreground. */
     @Override // android.app.Fragment
     public void onPause() {
         super.onPause();

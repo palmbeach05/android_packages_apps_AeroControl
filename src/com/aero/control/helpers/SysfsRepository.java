@@ -7,11 +7,22 @@ public final class SysfsRepository {
     private final RootShellSession session;
     private final SysfsReader reader;
 
+    /**
+     * Creates a repository that performs reads and writes through a root shell session.
+     *
+     * @param session root shell session used to access sysfs nodes
+     */
     public SysfsRepository(RootShellSession session) {
         this.session = session;
         this.reader = new SysfsReader(session);
     }
 
+    /**
+     * Reads and trims a single value from a sysfs node.
+     *
+     * @param node node to read
+     * @return the node value, or a failure when the node cannot be read
+     */
     public SysfsResult<String> readValue(SysfsNode node) {
         if (node == null) {
             return SysfsResult.failure("Node is required");
