@@ -47,6 +47,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             "deferred_restore_dialog";
     private static final Object RESTORE_TASK_LOCK = new Object();
     private static KernelRestoreTask sRestoreTask;
+    private static OperationResult sCompletedRestoreResult;
+    private static boolean sCompletedRestoreBoot;
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
@@ -214,6 +216,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
     /** Observes the process-local restore task that may outlive this Fragment instance. */
     private void observeActiveRestoreTask() {
+        OperationResult completedResult = null;
+        boolean completedRestoreBoot = false;
         synchronized (RESTORE_TASK_LOCK) {
             this.mRestoreTask = sRestoreTask;
             if (this.mRestoreTask != null) {
@@ -221,7 +225,14 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 if (this.mRestoreKernel != null) {
                     this.mRestoreKernel.setEnabled(false);
                 }
+            } else if (sCompletedRestoreResult != null) {
+                completedResult = sCompletedRestoreResult;
+                completedRestoreBoot = sCompletedRestoreBoot;
+                sCompletedRestoreResult = null;
             }
+        }
+        if (completedResult != null) {
+            showKernelRestoreResult(completedRestoreBoot, completedResult);
         }
     }
 
@@ -352,9 +363,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
                                 + ((Object) UpdaterFragment.this.getText(R.string.unavailable)));
                 UpdaterFragment.this.mRestoreKernel.setEnabled(false);
             }
-            if (UpdaterFragment.this.mDeferredRestoreDialog
+            boolean showDeferredRestoreDialog =
+                    UpdaterFragment.this.mDeferredRestoreDialog;
+            UpdaterFragment.this.mDeferredRestoreDialog = false;
+            if (showDeferredRestoreDialog
                     && UpdaterFragment.this.mRestoreKernel.isEnabled()) {
-                UpdaterFragment.this.mDeferredRestoreDialog = false;
                 UpdaterFragment.this.mRestoreKernel.performCustomClick();
             }
         }
@@ -387,9 +400,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
             return;
         }
 
+        boolean hadPendingStorageAction =
+                this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE;
+        this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
         this.mDeferredRestoreDialog = false;
-        if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE) {
-            this.mPendingStorageAction = PENDING_STORAGE_ACTION_NONE;
+        if (hadPendingStorageAction) {
             Toast.makeText(getActivity(), R.string.storage_permission_required,
                     Toast.LENGTH_LONG).show();
         }
@@ -600,7 +615,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
         task.execute();
     }
 
-    /** Clears and reports a completed restore to the currently observing Fragment. */
+    /** Clears and reports a completed restore, retaining it until an observer is active. */
     private static void finishKernelRestore(KernelRestoreTask task,
             OperationResult result) {
         UpdaterFragment observer;
@@ -610,6 +625,11 @@ public class UpdaterFragment extends PlaceHolderFragment {
             }
             sRestoreTask = null;
             observer = task.takeObserver();
+            if (observer == null || !observer.isAdded()) {
+                sCompletedRestoreResult = result;
+                sCompletedRestoreBoot = task.restoresBoot();
+                observer = null;
+            }
         }
         if (observer != null) {
             observer.onKernelRestoreFinished(task, result);
@@ -626,10 +646,16 @@ public class UpdaterFragment extends PlaceHolderFragment {
         if (!isAdded()) {
             return;
         }
+        showKernelRestoreResult(task.restoresBoot(), result);
+    }
+
+    /** Displays one restore result and refreshes the available restore entries. */
+    private void showKernelRestoreResult(boolean restoredBoot,
+            OperationResult result) {
         if (result.isSuccess()) {
             Toast.makeText(getActivity(), R.string.need_reboot, 1).show();
         } else {
-            Log.e("Aero", (task.restoresBoot() ? "Boot" : "zImage")
+            Log.e("Aero", (restoredBoot ? "Boot" : "zImage")
                     + " restore failed: " + result.getStatus() + " "
                     + result.getMessage());
             Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
