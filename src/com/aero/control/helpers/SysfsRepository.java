@@ -47,6 +47,23 @@ public final class SysfsRepository {
         return SysfsResult.success(values);
     }
 
+    /** Returns whether a sysfs node exists when checked through the root session. */
+    public boolean exists(SysfsNode node) {
+        if (node == null) {
+            return false;
+        }
+        String path = RootShellSession.escapeShellArg(node.getPath());
+        synchronized (session) {
+            session.openShell();
+            if (!session.isLoaded()) {
+                return false;
+            }
+            session.addCommand("[ -e " + path + " ] && echo EXISTS || echo MISSING");
+            String result = session.getRootResult();
+            return result != null && "EXISTS".equals(result.trim());
+        }
+    }
+
     /** Writes a value and only reports success after reading the value back. */
     public SysfsResult<String> writeValue(SysfsNode node, String value) {
         if (node == null || value == null || value.trim().length() == 0) {
