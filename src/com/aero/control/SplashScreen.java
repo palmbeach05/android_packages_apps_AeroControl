@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -43,6 +44,7 @@ public class SplashScreen extends FragmentActivity {
     private List<Fragment> mFragments = new ArrayList();
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
+    private Thread mRootCheckThread;
     public Button mSkip;
 
     /**
@@ -62,9 +64,7 @@ public class SplashScreen extends FragmentActivity {
         this.mFragments.add(new TutorialFragment());
         ContextWrapper cw = new ContextWrapper(getBaseContext());
         File firstrun_aero = new File(cw.getFilesDir() + "/" + FIRSTRUN_AERO);
-        if (!rootCheck.isDeviceRooted()) {
-            showRootDialog();
-        }
+        startRootCheck();
         if (firstrun_aero.exists()) {
             Intent i = new Intent(this, (Class<?>) AeroActivity.class);
             startActivity(i);
@@ -78,6 +78,35 @@ public class SplashScreen extends FragmentActivity {
         this.mCircleIndicator.setViewPager(this.mPager);
         this.mSkip = (Button) findViewById(R.id.splash_button);
         initDefaultSkip();
+    }
+
+    private void startRootCheck() {
+        mRootCheckThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean rooted = rootCheck.isDeviceRooted();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!rooted && !isFinishing()
+                                && (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1
+                                || !isDestroyed())) {
+                            showRootDialog();
+                        }
+                    }
+                });
+            }
+        }, "Aero-root-check");
+        mRootCheckThread.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mRootCheckThread != null) {
+            mRootCheckThread.interrupt();
+            mRootCheckThread = null;
+        }
+        super.onDestroy();
     }
 
     /**
