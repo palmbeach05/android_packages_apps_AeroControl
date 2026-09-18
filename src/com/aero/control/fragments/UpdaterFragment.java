@@ -26,10 +26,12 @@ import com.aero.control.helpers.updateHelper;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Queue;
 
 /**
  * Fragment for backing up and restoring the boot partition on supported devices.
@@ -46,9 +48,9 @@ public class UpdaterFragment extends PlaceHolderFragment {
     private static final String STATE_DEFERRED_RESTORE_DIALOG =
             "deferred_restore_dialog";
     private static final Object RESTORE_TASK_LOCK = new Object();
+    private static final Queue<CompletedRestore> sCompletedRestores =
+            new ArrayDeque<CompletedRestore>();
     private static KernelRestoreTask sRestoreTask;
-    private static OperationResult sCompletedRestoreResult;
-    private static boolean sCompletedRestoreBoot;
     private String mBackup = null;
     private CustomPreference mBackupKernel;
     private CustomListPreference mRestoreKernel;
@@ -196,6 +198,7 @@ public class UpdaterFragment extends PlaceHolderFragment {
     public void onResume() {
         super.onResume();
         observeActiveRestoreTask();
+        consumeCompletedRestores();
         if (this.mPendingStorageAction != PENDING_STORAGE_ACTION_NONE
                 && StoragePermission.isGranted(getActivity())) {
             consumePendingStorageAction();
@@ -216,8 +219,6 @@ public class UpdaterFragment extends PlaceHolderFragment {
 
     /** Observes the process-local restore task that may outlive this Fragment instance. */
     private void observeActiveRestoreTask() {
-        OperationResult completedResult = null;
-        boolean completedRestoreBoot = false;
         synchronized (RESTORE_TASK_LOCK) {
             this.mRestoreTask = sRestoreTask;
             if (this.mRestoreTask != null) {
@@ -225,14 +226,22 @@ public class UpdaterFragment extends PlaceHolderFragment {
                 if (this.mRestoreKernel != null) {
                     this.mRestoreKernel.setEnabled(false);
                 }
-            } else if (sCompletedRestoreResult != null) {
-                completedResult = sCompletedRestoreResult;
-                completedRestoreBoot = sCompletedRestoreBoot;
-                sCompletedRestoreResult = null;
             }
         }
-        if (completedResult != null) {
-            showKernelRestoreResult(completedRestoreBoot, completedResult);
+    }
+
+    /** Displays retained restore completions in the order they finished. */
+    private void consumeCompletedRestores() {
+        while (true) {
+            CompletedRestore completedRestore;
+            synchronized (RESTORE_TASK_LOCK) {
+                completedRestore = sCompletedRestores.poll();
+            }
+            if (completedRestore == null) {
+                return;
+            }
+            showKernelRestoreResult(completedRestore.mRestoredBoot,
+                    completedRestore.mResult);
         }
     }
 
@@ -626,8 +635,8 @@ public class UpdaterFragment extends PlaceHolderFragment {
             sRestoreTask = null;
             observer = task.takeObserver();
             if (observer == null || !observer.isAdded()) {
-                sCompletedRestoreResult = result;
-                sCompletedRestoreBoot = task.restoresBoot();
+                sCompletedRestores.offer(new CompletedRestore(
+                        task.restoresBoot(), result));
                 observer = null;
             }
         }
@@ -661,6 +670,17 @@ public class UpdaterFragment extends PlaceHolderFragment {
             Toast.makeText(getActivity(), R.string.storage_operation_failed, 1).show();
         }
         loadKernelInfo();
+    }
+
+    /** Restore result retained together with the metadata needed to report it. */
+    private static class CompletedRestore {
+        private final boolean mRestoredBoot;
+        private final OperationResult mResult;
+
+        CompletedRestore(boolean restoredBoot, OperationResult result) {
+            this.mRestoredBoot = restoredBoot;
+            this.mResult = result;
+        }
     }
 
     /** Performs boot and zImage restores without blocking the main thread. */
