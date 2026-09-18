@@ -80,12 +80,22 @@ public class SplashScreen extends FragmentActivity {
         initDefaultSkip();
     }
 
+    /**
+     * Starts the root-access check on a background thread and shows a warning
+     * on the UI thread when root access is unavailable.
+     */
     private void startRootCheck() {
         mRootCheckThread = new Thread(new Runnable() {
+            /**
+             * Performs the potentially blocking root check away from the UI thread.
+             */
             @Override
             public void run() {
                 final boolean rooted = rootCheck.isDeviceRooted();
                 runOnUiThread(new Runnable() {
+                    /**
+                     * Displays the root warning while the activity is still active.
+                     */
                     @Override
                     public void run() {
                         if (!rooted && !isFinishing() && !mDestroyed) {
@@ -98,6 +108,9 @@ public class SplashScreen extends FragmentActivity {
         mRootCheckThread.start();
     }
 
+    /**
+     * Interrupts the background root check before destroying the activity.
+     */
     @Override
     protected void onDestroy() {
         mDestroyed = true;

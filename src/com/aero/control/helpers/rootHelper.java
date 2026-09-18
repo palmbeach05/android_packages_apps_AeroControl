@@ -55,6 +55,11 @@ public class rootHelper {
         final Process[] processHolder = new Process[1];
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> rootCheck = executor.submit(new Callable<String>() {
+            /**
+             * Runs the root command and returns its captured output.
+             *
+             * @return root command output or {@link #NO_DATA_FOUND} on failure
+             */
             @Override
             public String call() {
                 return runRootCheck(processHolder);
@@ -83,6 +88,12 @@ public class rootHelper {
         }
     }
 
+    /**
+     * Executes the root-check command and captures its combined output.
+     *
+     * @param processHolder shared holder used to terminate a timed-out process
+     * @return command output when successful or {@link #NO_DATA_FOUND} otherwise
+     */
     private String runRootCheck(Process[] processHolder) {
         Process process = null;
         DataOutputStream os = null;
@@ -128,6 +139,11 @@ public class rootHelper {
         }
     }
 
+    /**
+     * Closes a root-check stream and logs cleanup failures.
+     *
+     * @param closeable stream to close, or {@code null} when none was opened
+     */
     private void close(java.io.Closeable closeable) {
         if (closeable != null) {
             try {
