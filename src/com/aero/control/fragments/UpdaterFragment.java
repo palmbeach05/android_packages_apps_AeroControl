@@ -650,16 +650,19 @@ public class UpdaterFragment extends PlaceHolderFragment {
             this.mBootPartition = bootPartition;
         }
 
+        /** Attaches the current Fragment instance to receive this task's result. */
         private void observe(UpdaterFragment observer) {
             this.mObserver = observer;
         }
 
+        /** Detaches the supplied Fragment when it is still observing this task. */
         private void stopObserving(UpdaterFragment observer) {
             if (this.mObserver == observer) {
                 this.mObserver = null;
             }
         }
 
+        /** Removes and returns the Fragment currently observing this task. */
         private UpdaterFragment takeObserver() {
             UpdaterFragment observer = this.mObserver;
             this.mObserver = null;
