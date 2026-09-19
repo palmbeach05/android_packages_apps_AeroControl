@@ -2,8 +2,11 @@ package com.aero.control.fragments;
 
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
@@ -31,6 +34,9 @@ import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.SysfsResult;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * Fragment for configuring GPU settings including maximum frequency and governor.
  * Provides save/apply functionality for boot and profile persistence.
@@ -42,6 +48,13 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private CustomPreference mColorControl;
     private AlertDialog mColorDialog;
     private String[] mColorValues;
+    private final ExecutorService mColorWorker = Executors.newSingleThreadExecutor();
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Object mColorRequestLock = new Object();
+    private volatile int mColorGeneration;
+    private long mLatestColorRequest;
+    private ColorWriteRequest mPendingColorWrite;
+    private boolean mColorWriterRunning;
     private CustomListPreference mDisplayControl;
     private CustomPreference mDoubletap2Wake;
     private CustomPreference mGPUControl;
@@ -54,6 +67,26 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private final LedController mLedController = AeroActivity.hardware.led();
     private CustomPreference mSweep2wake;
     private PreferenceScreen root;
+
+    private static final class ColorWriteRequest {
+        final int generation;
+        final long sequence;
+        final String value;
+        final boolean persist;
+        final SharedPreferences.Editor editor;
+        final String preferenceName;
+
+        /** Captures one generation-aware color write for the background writer. */
+        ColorWriteRequest(int generation, long sequence, String value, boolean persist,
+                SharedPreferences.Editor editor, String preferenceName) {
+            this.generation = generation;
+            this.sequence = sequence;
+            this.value = value;
+            this.persist = persist;
+            this.editor = editor;
+            this.preferenceName = preferenceName;
+        }
+    }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
@@ -278,16 +311,41 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param cusPref the CustomPreference associated with this color control
      */
     private void showColorControl(final SharedPreferences.Editor editor, final CustomPreference cusPref) {
-        SysfsResult<String[]> colorResult = this.mLedController.readColorValues();
-        if (!colorResult.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-            return;
-        }
-        this.mColorValues = colorResult.getValue();
-        if (this.mColorValues.length < 3) {
-            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-            return;
-        }
+        final int generation = ++this.mColorGeneration;
+        this.mColorWorker.execute(new Runnable() {
+            /** Reads the current hardware color values away from the main thread. */
+            @Override
+            public void run() {
+                final SysfsResult<String[]> colorResult = mLedController.readColorValues();
+                mMainHandler.post(new Runnable() {
+                    /** Displays the color controls when the asynchronous read is still current. */
+                    @Override
+                    public void run() {
+                        if (!isColorCallbackCurrent(generation)) {
+                            return;
+                        }
+                        if (!colorResult.isSuccess() || colorResult.getValue().length < 3) {
+                            Toast.makeText(getActivity(), R.string.no_data_found, Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        showColorControlDialog(colorResult.getValue(), editor, cusPref, generation);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Builds and displays color controls for values read from the active fragment generation.
+     *
+     * @param colorValues current red, green, and blue hardware values
+     * @param editor preference editor retained for the existing color-control API
+     * @param cusPref color-control preference used to decide whether values are persisted
+     * @param generation fragment generation that owns this dialog
+     */
+    private void showColorControlDialog(String[] colorValues, final SharedPreferences.Editor editor,
+            final CustomPreference cusPref, final int generation) {
+        this.mColorValues = colorValues;
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setIcon(R.drawable.flower);
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -318,13 +376,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
 
+                /** Synchronizes a valid red text value with the slider and write queue. */
                 @Override // android.text.TextWatcher
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             redValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             redValue.setText("255");
                         }
@@ -341,13 +400,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
 
+                /** Synchronizes a valid green text value with the slider and write queue. */
                 @Override // android.text.TextWatcher
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             greenValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             greenValue.setText("255");
                         }
@@ -364,13 +424,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
 
+                /** Synchronizes a valid blue text value with the slider and write queue. */
                 @Override // android.text.TextWatcher
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             blueValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             blueValue.setText("255");
                         }
@@ -395,9 +456,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void onStartTrackingTouch(SeekBar seekBar) {
                 }
 
+                /** Queues the final red slider value when the user releases the control. */
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             greenValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -413,9 +475,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void onStartTrackingTouch(SeekBar seekBar) {
                 }
 
+                /** Queues the final green slider value when the user releases the control. */
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             blueValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -431,9 +494,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void onStartTrackingTouch(SeekBar seekBar) {
                 }
 
+                /** Queues the final blue slider value when the user releases the control. */
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
         } else {
@@ -459,13 +523,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
 
+                /** Synchronizes a valid red text value with the legacy slider and write queue. */
                 @Override // android.text.TextWatcher
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             redValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             redValue.setText("255");
                         }
@@ -482,13 +547,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
 
+                /** Synchronizes a valid green text value with the legacy slider and write queue. */
                 @Override // android.text.TextWatcher
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             greenValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             greenValue.setText("255");
                         }
@@ -505,13 +571,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
 
+                /** Synchronizes a valid blue text value with the legacy slider and write queue. */
                 @Override // android.text.TextWatcher
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             blueValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             blueValue.setText("255");
                         }
@@ -524,30 +591,42 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 }
             });
             redValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.5
+                /** Queues the selected red value from the legacy slider. */
                 @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
                 public void onValueChanged(int value) {
                     redValue.setText("" + value);
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             greenValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.6
+                /** Queues the selected green value from the legacy slider. */
                 @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
                 public void onValueChanged(int value) {
                     greenValue.setText("" + value);
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             blueValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.7
+                /** Queues the selected blue value from the legacy slider. */
                 @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
                 public void onValueChanged(int value) {
                     blueValue.setText("" + value);
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
         }
         builder.setTitle(R.string.pref_display_color);
         builder.setView(layout);
         this.mColorDialog = builder.create();
+        this.mColorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            /** Invalidates asynchronous work owned by the dialog being dismissed. */
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (mColorGeneration == generation) {
+                    invalidateColorWork();
+                }
+            }
+        });
         this.mColorDialog.show();
     }
 
@@ -577,6 +656,21 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param editor the SharedPreferences editor for saving the color values if enabled
      */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
+        setColorValues(redValue, greenValue, blueValue, cusPref, editor, this.mColorGeneration);
+    }
+
+    /**
+     * Validates a generation's RGB fields and coalesces them into the background write queue.
+     *
+     * @param redValue red component input
+     * @param greenValue green component input
+     * @param blueValue blue component input
+     * @param cusPref color-control preference used to decide whether values are persisted
+     * @param editor preference editor used to persist the color value
+     * @param generation fragment generation that requested the write
+     */
+    private void setColorValues(EditText redValue, EditText greenValue, EditText blueValue,
+            CustomPreference cusPref, SharedPreferences.Editor editor, int generation) {
         int red;
         int green;
         int blue;
@@ -591,24 +685,96 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             Toast.makeText(getActivity(), "The values are out of range!", 1).show();
             return;
         }
-        String rgbValues = red + " " + green + " " + blue;
-        SysfsResult<String> result = this.mLedController.writeColorValue(rgbValues);
-        if (!result.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.hardware_operation_failed, Toast.LENGTH_LONG).show();
+        if (!isColorCallbackCurrent(generation)) {
             return;
         }
-        if (cusPref.isChecked().booleanValue()) {
-            editor.putString(cusPref.getName(), rgbValues).commit();
+        String rgbValues = red + " " + green + " " + blue;
+        synchronized (this.mColorRequestLock) {
+            long sequence = ++this.mLatestColorRequest;
+            this.mPendingColorWrite = new ColorWriteRequest(generation, sequence, rgbValues,
+                    cusPref.isChecked().booleanValue(), editor, cusPref.getName());
+            if (this.mColorWriterRunning) {
+                return;
+            }
+            this.mColorWriterRunning = true;
+        }
+        this.mColorWorker.execute(new Runnable() {
+            /** Drains coalesced color writes on the fragment's single worker thread. */
+            @Override
+            public void run() {
+                drainColorWrites();
+            }
+        });
+    }
+
+    /** Writes the newest pending color request and reports current-generation failures. */
+    private void drainColorWrites() {
+        while (true) {
+            final ColorWriteRequest request;
+            synchronized (this.mColorRequestLock) {
+                request = this.mPendingColorWrite;
+                this.mPendingColorWrite = null;
+                if (request == null) {
+                    this.mColorWriterRunning = false;
+                    return;
+                }
+            }
+
+            final SysfsResult<String> result = this.mLedController.writeColorValue(request.value);
+            boolean isLatest;
+            synchronized (this.mColorRequestLock) {
+                isLatest = request.sequence == this.mLatestColorRequest
+                        && request.generation == this.mColorGeneration;
+            }
+            if (result.isSuccess() && isLatest && request.persist) {
+                request.editor.putString(request.preferenceName, request.value).commit();
+            } else if (!result.isSuccess() && isLatest) {
+                this.mMainHandler.post(new Runnable() {
+                    /** Reports a failed write only while its request still owns the dialog. */
+                    @Override
+                    public void run() {
+                        if (isColorCallbackCurrent(request.generation)
+                                && request.sequence == mLatestColorRequest) {
+                            Toast.makeText(getActivity(), R.string.hardware_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    /** Returns whether a color callback still belongs to this attached fragment generation. */
+    private boolean isColorCallbackCurrent(int generation) {
+        return generation == this.mColorGeneration && isAdded() && getActivity() != null;
+    }
+
+    /** Invalidates queued callbacks and discards any color write that has not started. */
+    private void invalidateColorWork() {
+        ++this.mColorGeneration;
+        synchronized (this.mColorRequestLock) {
+            ++this.mLatestColorRequest;
+            this.mPendingColorWrite = null;
         }
     }
 
     /** Dismisses the color dialog when the fragment leaves the foreground. */
     @Override // android.app.Fragment
     public void onPause() {
+        invalidateColorWork();
         super.onPause();
         if (this.mColorDialog != null) {
             this.mColorDialog.dismiss();
+            this.mColorDialog = null;
         }
+    }
+
+    /** Stops the color worker when the fragment is permanently destroyed. */
+    @Override // android.app.Fragment
+    public void onDestroy() {
+        invalidateColorWork();
+        this.mColorWorker.shutdownNow();
+        super.onDestroy();
     }
 
     @Override // android.preference.PreferenceFragment
