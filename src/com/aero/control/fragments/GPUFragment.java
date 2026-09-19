@@ -89,6 +89,11 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         }
     }
 
+    /**
+     * Builds the GPU preference screen and initializes controls from supported hardware nodes.
+     *
+     * @param savedInstanceState previously saved fragment state, if any
+     */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
         boolean checkGpuControl;
@@ -147,6 +152,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         this.mColorControl.setOrder(40);
         this.mColorControl.setLookUpDefault(FilePath.COLOR_CONTROL);
         Preference.OnPreferenceClickListener preferenceClickListener = new Preference.OnPreferenceClickListener() {
+            /** Delegates each supported preference click to the fragment handler. */
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 return handlePreferenceClick(preference);
@@ -185,12 +191,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             gpu_gov_settings.setOrder(35);
             gpu_gov_settings.setHideOnBoot(true);
             gpu_gov_settings.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.GPUFragment.1
+                /** Opens the detailed GPU governor settings screen. */
                 @Override // android.preference.Preference.OnPreferenceClickListener
                 public boolean onPreferenceClick(Preference preference) {
                     if (GPUFragment.this.mGPUGovernorFragment == null) {
                         GPUFragment.this.mGPUGovernorFragment = new GPUGovernorFragment();
                     }
                     AeroActivity.mHandler.post(new Runnable() { // from class: com.aero.control.fragments.GPUFragment.1.1
+                        /** Replaces the current fragment when its state can still be changed. */
                         @Override // java.lang.Runnable
                         public void run() {
                             if (!GPUFragment.this.isAdded() || GPUFragment.this.getFragmentManager() == null) {
@@ -755,6 +763,13 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         super.onDestroy();
     }
 
+    /**
+     * Routes preference-row clicks through the shared GPU click handler.
+     *
+     * @param preferenceScreen screen containing the clicked preference
+     * @param preference clicked preference
+     * @return true when the click is handled
+     */
     @Override // android.preference.PreferenceFragment
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         return handlePreferenceClick(preference);
@@ -792,10 +807,18 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return true;
     }
 
+    /**
+     * Applies a generic boolean sysfs preference on a worker thread.
+     *
+     * @param preference preference whose UI state is being toggled
+     * @param path sysfs path that stores the boolean state
+     * @return true after the asynchronous write has been scheduled
+     */
     private boolean applyToggle(final CustomPreference preference, final String path) {
         final boolean previous = preference.isClicked().booleanValue();
         final boolean requested = !previous;
         new Thread(new Runnable() {
+            /** Writes the requested state without blocking the UI thread. */
             @Override
             public void run() {
                 final OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
@@ -803,6 +826,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     return;
                 }
                 getActivity().runOnUiThread(new Runnable() {
+                    /** Applies the write result to the preference UI. */
                     @Override
                     public void run() {
                         if (!result.isSuccess()) {
@@ -818,15 +842,22 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return true;
     }
 
+    /**
+     * Applies the GPU control switch through the typed controller on a worker thread.
+     *
+     * @return true after the asynchronous write has been scheduled
+     */
     private boolean applyGpuControlToggle() {
         final boolean previous = this.mGPUControl.isClicked().booleanValue();
         final boolean requested = !previous;
         new Thread(new Runnable() {
+            /** Writes the requested GPU control state without blocking the UI thread. */
             @Override
             public void run() {
                 final SysfsResult<Boolean> result = mGpuController.writeControlEnabled(requested);
                 if (!isAdded()) return;
                 getActivity().runOnUiThread(new Runnable() {
+                    /** Updates or restores the preference after the controller write completes. */
                     @Override
                     public void run() {
                         if (!result.isSuccess()) {
@@ -844,6 +875,13 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return true;
     }
 
+    /**
+     * Validates and asynchronously applies changes to GPU and display list preferences.
+     *
+     * @param preference preference being changed
+     * @param newValue requested preference value
+     * @return true when the change is accepted for processing
+     */
     @Override // android.preference.Preference.OnPreferenceChangeListener
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String a = (String) newValue;
@@ -868,6 +906,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 final String displayPath = AeroActivity.shell.escapeShellArg(FilePath.DISPLAY_COLOR);
                 final String[] commands = {"chmod 0664 " + displayPath, "echo " + AeroActivity.shell.escapeShellArg(a) + " > " + displayPath};
                 new Thread(new Runnable() {
+                    /** Writes the display control value without blocking the UI thread. */
                     @Override
                     public void run() {
                         final OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
@@ -875,6 +914,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                             return;
                         }
                         getActivity().runOnUiThread(new Runnable() {
+                            /** Reports the display control write result to the user. */
                             @Override
                             public void run() {
                                 if (!result.isSuccess()) {
@@ -894,6 +934,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         final Preference targetPreference = preference;
         final boolean isFrequency = preference == this.mGPUControlFrequencies;
         new Thread(new Runnable() {
+            /** Writes the requested GPU frequency or governor through the controller. */
             @Override
             public void run() {
                 final SysfsResult<String> result = isFrequency
@@ -903,6 +944,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     return;
                 }
                 getActivity().runOnUiThread(new Runnable() {
+                    /** Reports a failed write or updates the applied preference summary. */
                     @Override
                     public void run() {
                         if (!result.isSuccess()) {
