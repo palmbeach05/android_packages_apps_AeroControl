@@ -73,17 +73,17 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         final long sequence;
         final String value;
         final boolean persist;
-        final SharedPreferences preferences;
+        final SharedPreferences.Editor editor;
         final String preferenceName;
 
         /** Captures one generation-aware color write for the background writer. */
         ColorWriteRequest(int generation, long sequence, String value, boolean persist,
-                SharedPreferences preferences, String preferenceName) {
+                SharedPreferences.Editor editor, String preferenceName) {
             this.generation = generation;
             this.sequence = sequence;
             this.value = value;
             this.persist = persist;
-            this.preferences = preferences;
+            this.editor = editor;
             this.preferenceName = preferenceName;
         }
     }
@@ -666,7 +666,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param greenValue green component input
      * @param blueValue blue component input
      * @param cusPref color-control preference used to decide whether values are persisted
-     * @param editor preference editor retained for compatibility with the public overload
+     * @param editor preference editor used to persist the color value
      * @param generation fragment generation that requested the write
      */
     private void setColorValues(EditText redValue, EditText greenValue, EditText blueValue,
@@ -689,11 +689,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             return;
         }
         String rgbValues = red + " " + green + " " + blue;
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         synchronized (this.mColorRequestLock) {
             long sequence = ++this.mLatestColorRequest;
             this.mPendingColorWrite = new ColorWriteRequest(generation, sequence, rgbValues,
-                    cusPref.isChecked().booleanValue(), preferences, cusPref.getName());
+                    cusPref.isChecked().booleanValue(), editor, cusPref.getName());
             if (this.mColorWriterRunning) {
                 return;
             }
@@ -728,7 +727,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         && request.generation == this.mColorGeneration;
             }
             if (result.isSuccess() && isLatest && request.persist) {
-                request.preferences.edit().putString(request.preferenceName, request.value).commit();
+                request.editor.putString(request.preferenceName, request.value).commit();
             } else if (!result.isSuccess() && isLatest) {
                 this.mMainHandler.post(new Runnable() {
                     /** Reports a failed write only while its request still owns the dialog. */
