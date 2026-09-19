@@ -2,8 +2,11 @@ package com.aero.control.fragments;
 
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
@@ -31,6 +34,9 @@ import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.SysfsResult;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * Fragment for configuring GPU settings including maximum frequency and governor.
  * Provides save/apply functionality for boot and profile persistence.
@@ -42,6 +48,13 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private CustomPreference mColorControl;
     private AlertDialog mColorDialog;
     private String[] mColorValues;
+    private final ExecutorService mColorWorker = Executors.newSingleThreadExecutor();
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Object mColorRequestLock = new Object();
+    private volatile int mColorGeneration;
+    private long mLatestColorRequest;
+    private ColorWriteRequest mPendingColorWrite;
+    private boolean mColorWriterRunning;
     private CustomListPreference mDisplayControl;
     private CustomPreference mDoubletap2Wake;
     private CustomPreference mGPUControl;
@@ -54,6 +67,25 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private final LedController mLedController = AeroActivity.hardware.led();
     private CustomPreference mSweep2wake;
     private PreferenceScreen root;
+
+    private static final class ColorWriteRequest {
+        final int generation;
+        final long sequence;
+        final String value;
+        final boolean persist;
+        final SharedPreferences preferences;
+        final String preferenceName;
+
+        ColorWriteRequest(int generation, long sequence, String value, boolean persist,
+                SharedPreferences preferences, String preferenceName) {
+            this.generation = generation;
+            this.sequence = sequence;
+            this.value = value;
+            this.persist = persist;
+            this.preferences = preferences;
+            this.preferenceName = preferenceName;
+        }
+    }
 
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public void onCreate(Bundle savedInstanceState) {
@@ -278,16 +310,31 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param cusPref the CustomPreference associated with this color control
      */
     private void showColorControl(final SharedPreferences.Editor editor, final CustomPreference cusPref) {
-        SysfsResult<String[]> colorResult = this.mLedController.readColorValues();
-        if (!colorResult.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-            return;
-        }
-        this.mColorValues = colorResult.getValue();
-        if (this.mColorValues.length < 3) {
-            Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-            return;
-        }
+        final int generation = ++this.mColorGeneration;
+        this.mColorWorker.execute(new Runnable() {
+            @Override
+            public void run() {
+                final SysfsResult<String[]> colorResult = mLedController.readColorValues();
+                mMainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isColorCallbackCurrent(generation)) {
+                            return;
+                        }
+                        if (!colorResult.isSuccess() || colorResult.getValue().length < 3) {
+                            Toast.makeText(getActivity(), R.string.no_data_found, Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        showColorControlDialog(colorResult.getValue(), editor, cusPref, generation);
+                    }
+                });
+            }
+        });
+    }
+
+    private void showColorControlDialog(String[] colorValues, final SharedPreferences.Editor editor,
+            final CustomPreference cusPref, final int generation) {
+        this.mColorValues = colorValues;
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setIcon(R.drawable.flower);
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -324,7 +371,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             redValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             redValue.setText("255");
                         }
@@ -347,7 +394,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             greenValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             greenValue.setText("255");
                         }
@@ -370,7 +417,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             blueValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             blueValue.setText("255");
                         }
@@ -397,7 +444,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             greenValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -415,7 +462,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             blueValues.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -433,7 +480,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
 
                 @Override // android.widget.SeekBar.OnSeekBarChangeListener
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
         } else {
@@ -465,7 +512,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             redValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             redValue.setText("255");
                         }
@@ -488,7 +535,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             greenValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             greenValue.setText("255");
                         }
@@ -511,7 +558,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         int i = Integer.parseInt(s.toString());
                         if (i <= 255 && i >= 0) {
                             blueValues.setProgress(i);
-                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                            GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                         } else {
                             blueValue.setText("255");
                         }
@@ -527,27 +574,35 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
                 public void onValueChanged(int value) {
                     redValue.setText("" + value);
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             greenValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.6
                 @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
                 public void onValueChanged(int value) {
                     greenValue.setText("" + value);
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
             blueValues.setOnValueChangedListener(new Slider.OnValueChangedListener() { // from class: com.aero.control.fragments.GPUFragment.7
                 @Override // com.aero.control.helpers.Android.Material.Slider.OnValueChangedListener
                 public void onValueChanged(int value) {
                     blueValue.setText("" + value);
-                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor);
+                    GPUFragment.this.setColorValues(redValue, greenValue, blueValue, cusPref, editor, generation);
                 }
             });
         }
         builder.setTitle(R.string.pref_display_color);
         builder.setView(layout);
         this.mColorDialog = builder.create();
+        this.mColorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (mColorGeneration == generation) {
+                    invalidateColorWork();
+                }
+            }
+        });
         this.mColorDialog.show();
     }
 
@@ -577,6 +632,11 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param editor the SharedPreferences editor for saving the color values if enabled
      */
     public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
+        setColorValues(redValue, greenValue, blueValue, cusPref, editor, this.mColorGeneration);
+    }
+
+    private void setColorValues(EditText redValue, EditText greenValue, EditText blueValue,
+            CustomPreference cusPref, SharedPreferences.Editor editor, int generation) {
         int red;
         int green;
         int blue;
@@ -591,24 +651,91 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             Toast.makeText(getActivity(), "The values are out of range!", 1).show();
             return;
         }
-        String rgbValues = red + " " + green + " " + blue;
-        SysfsResult<String> result = this.mLedController.writeColorValue(rgbValues);
-        if (!result.isSuccess()) {
-            Toast.makeText(getActivity(), R.string.hardware_operation_failed, Toast.LENGTH_LONG).show();
+        if (!isColorCallbackCurrent(generation)) {
             return;
         }
-        if (cusPref.isChecked().booleanValue()) {
-            editor.putString(cusPref.getName(), rgbValues).commit();
+        String rgbValues = red + " " + green + " " + blue;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        synchronized (this.mColorRequestLock) {
+            long sequence = ++this.mLatestColorRequest;
+            this.mPendingColorWrite = new ColorWriteRequest(generation, sequence, rgbValues,
+                    cusPref.isChecked().booleanValue(), preferences, cusPref.getName());
+            if (this.mColorWriterRunning) {
+                return;
+            }
+            this.mColorWriterRunning = true;
+        }
+        this.mColorWorker.execute(new Runnable() {
+            @Override
+            public void run() {
+                drainColorWrites();
+            }
+        });
+    }
+
+    private void drainColorWrites() {
+        while (true) {
+            final ColorWriteRequest request;
+            synchronized (this.mColorRequestLock) {
+                request = this.mPendingColorWrite;
+                this.mPendingColorWrite = null;
+                if (request == null) {
+                    this.mColorWriterRunning = false;
+                    return;
+                }
+            }
+
+            final SysfsResult<String> result = this.mLedController.writeColorValue(request.value);
+            boolean isLatest;
+            synchronized (this.mColorRequestLock) {
+                isLatest = request.sequence == this.mLatestColorRequest
+                        && request.generation == this.mColorGeneration;
+            }
+            if (result.isSuccess() && isLatest && request.persist) {
+                request.preferences.edit().putString(request.preferenceName, request.value).commit();
+            } else if (!result.isSuccess() && isLatest) {
+                this.mMainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isColorCallbackCurrent(request.generation)
+                                && request.sequence == mLatestColorRequest) {
+                            Toast.makeText(getActivity(), R.string.hardware_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private boolean isColorCallbackCurrent(int generation) {
+        return generation == this.mColorGeneration && isAdded() && getActivity() != null;
+    }
+
+    private void invalidateColorWork() {
+        ++this.mColorGeneration;
+        synchronized (this.mColorRequestLock) {
+            ++this.mLatestColorRequest;
+            this.mPendingColorWrite = null;
         }
     }
 
     /** Dismisses the color dialog when the fragment leaves the foreground. */
     @Override // android.app.Fragment
     public void onPause() {
+        invalidateColorWork();
         super.onPause();
         if (this.mColorDialog != null) {
             this.mColorDialog.dismiss();
+            this.mColorDialog = null;
         }
+    }
+
+    @Override // android.app.Fragment
+    public void onDestroy() {
+        invalidateColorWork();
+        this.mColorWorker.shutdownNow();
+        super.onDestroy();
     }
 
     @Override // android.preference.PreferenceFragment
