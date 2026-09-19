@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_theme_light">Light - Uses the platform Material theme with a blue accent</string>
+</resources>
