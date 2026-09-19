@@ -121,6 +121,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /** Initializes the CPU controls and populates them from the detected cpufreq clusters. */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -415,8 +416,10 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /** Connects the maximum and minimum frequency controls for a cluster to their sysfs writes. */
     private void attachFrequencyListeners(final ClusterControls controls) {
         controls.maxFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.6
+            /** {@inheritDoc} */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String a = (String) o;
@@ -443,6 +446,7 @@ public class CPUFragment extends PlaceHolderFragment {
 
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
+                        /** {@inheritDoc} */
                         @Override
                         public void run() {
                             final boolean success = CPUFragment.this.writeFrequency(
@@ -469,6 +473,7 @@ public class CPUFragment extends PlaceHolderFragment {
             }
         });
         controls.minFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.7
+            /** {@inheritDoc} */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String a = (String) o;
@@ -495,6 +500,7 @@ public class CPUFragment extends PlaceHolderFragment {
 
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
+                        /** {@inheritDoc} */
                         @Override
                         public void run() {
                             final boolean success = CPUFragment.this.writeFrequency(
@@ -522,8 +528,10 @@ public class CPUFragment extends PlaceHolderFragment {
         });
     }
 
+    /** Connects a cluster's governor control to its serialized sysfs update. */
     private void attachGovernorListener(final ClusterControls controls) {
         controls.governor.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.CPUFragment.5
+            /** {@inheritDoc} */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String a = (String) o;
@@ -540,6 +548,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 } else {
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
+                        /** {@inheritDoc} */
                         @Override
                         public void run() {
                             boolean writeSucceeded = CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
@@ -601,6 +610,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /** Returns whether a list preference has at least one selectable value. */
     private boolean hasConfiguredValues(CustomListPreference preference) {
         CharSequence[] values = preference.getEntryValues();
         return values != null && values.length > 0;
@@ -793,6 +803,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /** Validates and asynchronously applies a governor supported by every detected cluster. */
     private boolean applyGovernorToAllClusters(final ClusterControls source, final String value) {
         // Build intersection of supported governors across all clusters
         HashSet<String> supportedGovs = null;
@@ -824,6 +835,7 @@ public class CPUFragment extends PlaceHolderFragment {
         final int requestGeneration = mGovernorMirrorGeneration.incrementAndGet();
         final int lifecycleGeneration = mLifecycleGeneration.get();
         mMirrorExecutor.execute(new Runnable() {
+            /** {@inheritDoc} */
             @Override
             public void run() {
                 for (ClusterControls target : CPUFragment.this.mClusterControls) {
@@ -1031,6 +1043,7 @@ public class CPUFragment extends PlaceHolderFragment {
         return true;
     }
 
+    /** Returns whether a candidate exactly matches one of a list preference's configured values. */
     private boolean isConfiguredListValue(CustomListPreference preference, String candidate) {
         CharSequence[] entryValues = preference.getEntryValues();
         if (candidate == null || entryValues == null) {
@@ -1044,6 +1057,7 @@ public class CPUFragment extends PlaceHolderFragment {
         return false;
     }
 
+    /** Returns the display summary paired with a raw frequency value, or an unavailable marker. */
     private String findFrequencySummary(String currentValue, String[] values, String[] summaries) {
         for (int i = 0; i < values.length && i < summaries.length; i++) {
             if (currentValue.equals(values[i])) {
