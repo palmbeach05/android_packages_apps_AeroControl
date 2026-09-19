@@ -521,13 +521,17 @@ public class CustomPreference extends Preference {
             }
         }
         if (checked) {
-            if (tmp != null) {
-                editor.putString(getName(), tmp);
+            if (tmp == null) {
+                setChecked(false);
+                notifyChanged();
+                return;
             }
+            editor.putString(getName(), tmp);
         } else {
             editor.remove(getName());
         }
         editor.commit();
         setChecked(Boolean.valueOf(checked));
+        notifyChanged();
     }
 }
