@@ -1,7 +1,5 @@
 package com.aero.control.helpers;
 
-import java.io.File;
-
 /** LED and display-control operations exposed through the typed sysfs repository. */
 public final class LedController {
     private final SysfsRepository repository;
@@ -37,16 +35,25 @@ public final class LedController {
      * Writes a display-color value and enables the color control when supported.
      *
      * @param value space-separated display-color components to write
-     * @return the verified write result, or the activation failure when activation fails
+     * @return the verified write result, or an inspection/activation failure
      */
     public SysfsResult<String> writeColorValue(String value) {
         SysfsResult<String> result = repository.writeValue(
                 new SysfsNode(FilePath.COLOR_CONTROL), value);
-        if (!result.isSuccess() || !new File(FilePath.COLOR_CONTROL_BIT).exists()) {
+        if (!result.isSuccess()) {
+            return result;
+        }
+
+        SysfsNode activationNode = new SysfsNode(FilePath.COLOR_CONTROL_BIT);
+        SysfsResult<Boolean> inspectionResult = repository.exists(activationNode);
+        if (!inspectionResult.isSuccess()) {
+            return SysfsResult.failure(inspectionResult.getError());
+        }
+        if (!inspectionResult.getValue()) {
             return result;
         }
         SysfsResult<String> activationResult = repository.writeValue(
-                new SysfsNode(FilePath.COLOR_CONTROL_BIT), "1");
+                activationNode, "1");
         return activationResult.isSuccess() ? result : activationResult;
     }
 }

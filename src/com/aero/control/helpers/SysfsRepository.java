@@ -47,6 +47,33 @@ public final class SysfsRepository {
         return SysfsResult.success(values);
     }
 
+    /** Inspects whether a sysfs node exists through the root session. */
+    public SysfsResult<Boolean> exists(SysfsNode node) {
+        if (node == null) {
+            return SysfsResult.failure("Node is required");
+        }
+        String path = RootShellSession.escapeShellArg(node.getPath());
+        synchronized (session) {
+            session.openShell();
+            if (!session.isLoaded()) {
+                return SysfsResult.failure("Root shell is unavailable");
+            }
+            session.addCommand("[ -e " + path + " ] && echo EXISTS || echo MISSING");
+            String result = session.getRootResult();
+            if (result == null) {
+                return SysfsResult.failure("Unable to inspect " + node.getPath());
+            }
+            String inspection = result.trim();
+            if ("EXISTS".equals(inspection)) {
+                return SysfsResult.success(true);
+            }
+            if ("MISSING".equals(inspection)) {
+                return SysfsResult.success(false);
+            }
+            return SysfsResult.failure("Unexpected inspection result for " + node.getPath());
+        }
+    }
+
     /** Writes a value and only reports success after reading the value back. */
     public SysfsResult<String> writeValue(SysfsNode node, String value) {
         if (node == null || value == null || value.trim().length() == 0) {
