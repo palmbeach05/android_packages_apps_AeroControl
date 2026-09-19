@@ -360,7 +360,8 @@ public class settingsHelper {
             }
             shell.queueWork("echo " + (sweep.booleanValue() ? "1" : "0") + " > " + FilePath.SWEEP2WAKE);
         }
-        if (genHelper.doesExist(FilePath.DOUBLETAP2WAKE)) {
+        if (genHelper.doesExist(FilePath.DOUBLETAP2WAKE)
+                && (!onboot || this.prefs.contains(PREF_DOUBLETAP2WAKE))) {
             shell.queueWork("chmod 0666 /sys/android_touch/doubletap2wake");
             if (Profile != null) {
                 defaultProfile.add("echo " + shell.getInfo(FilePath.DOUBLETAP2WAKE) + " > " + FilePath.DOUBLETAP2WAKE);
