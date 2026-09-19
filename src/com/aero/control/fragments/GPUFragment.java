@@ -726,8 +726,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 isLatest = request.sequence == this.mLatestColorRequest
                         && request.generation == this.mColorGeneration;
             }
-            if (result.isSuccess() && isLatest && request.persist) {
-                request.editor.putString(request.preferenceName, request.value).commit();
+            if (result.isSuccess() && request.persist) {
             } else if (!result.isSuccess() && isLatest) {
                 this.mMainHandler.post(new Runnable() {
                     /** Reports a failed write only while its request still owns the dialog. */
