@@ -33,6 +33,7 @@ public class CustomPreference extends Preference {
     private String mHelpContent;
     private Boolean mHideOnBoot;
     private String mLookUpDefault;
+    private String mLookUpDefaultValue;
     private String mName;
     private View.OnClickListener mOnClickListener;
     private SharedPreferences mSharedPreference;
@@ -371,6 +372,11 @@ public class CustomPreference extends Preference {
         this.mLookUpDefault = filepath;
     }
 
+    /** Sets an already-read default value without making this view access hardware directly. */
+    public void setLookUpDefaultValue(String value) {
+        this.mLookUpDefaultValue = value;
+    }
+
     /**
      * Retrieves the default value for this preference from the configured lookup file path.
      * Handles special formatting for RGB values and voltage values.
@@ -507,17 +513,25 @@ public class CustomPreference extends Preference {
                 tmp = value;
             }
         }
-        if (tmp == null && this.mLookUpDefault != null) {
-            tmp = getLookUpDefault(getName());
+        if (tmp == null) {
+            if (this.mLookUpDefaultValue != null) {
+                tmp = this.mLookUpDefaultValue;
+            } else if (this.mLookUpDefault != null) {
+                tmp = getLookUpDefault(getName());
+            }
         }
         if (checked) {
-            if (tmp != null) {
-                editor.putString(getName(), tmp);
+            if (tmp == null) {
+                setChecked(false);
+                notifyChanged();
+                return;
             }
+            editor.putString(getName(), tmp);
         } else {
             editor.remove(getName());
         }
         editor.commit();
         setChecked(Boolean.valueOf(checked));
+        notifyChanged();
     }
 }
