@@ -134,6 +134,44 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    /** Immutable frequency state read from sysfs before posting preference updates. */
+    private static final class FrequencyRefreshResult {
+        private final ClusterControls controls;
+        private final String[] entries;
+        private final String[] entryValues;
+        private final String currentValue;
+
+        private FrequencyRefreshResult(ClusterControls controls, String[] entries,
+                String[] entryValues, String currentValue) {
+            this.controls = controls;
+            this.entries = entries;
+            this.entryValues = entryValues;
+            this.currentValue = currentValue;
+        }
+
+        private boolean isAvailable() {
+            return this.entries != null && this.entryValues != null && this.currentValue != null;
+        }
+    }
+
+    /** Immutable governor state read from sysfs before posting preference updates. */
+    private static final class GovernorRefreshResult {
+        private final ClusterControls controls;
+        private final String[] values;
+        private final String currentValue;
+
+        private GovernorRefreshResult(ClusterControls controls, String[] values,
+                String currentValue) {
+            this.controls = controls;
+            this.values = values;
+            this.currentValue = currentValue;
+        }
+
+        private boolean isAvailable() {
+            return this.values != null && this.currentValue != null;
+        }
+    }
+
     /** Initializes the CPU controls and populates them from the detected cpufreq clusters. */
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public final void onCreate(Bundle savedInstanceState) {
@@ -1090,60 +1128,48 @@ public class CPUFragment extends PlaceHolderFragment {
         return NO_DATA_FOUND;
     }
 
-    /**
-     * Updates the minimum frequency preference UI for all CPU clusters by reading
-     * current values from sysfs and refreshing the preference controls.
-     */
+    /** Queues a minimum-frequency sysfs refresh and posts its preference updates. */
     public void updateMinFreq() {
-        // Read sysfs values outside lock to minimize critical section
-        for (ClusterControls controls : this.mClusterControls) {
-            SysfsResult<List<Integer>> targets = this.mCpuController
-                    .getFrequencyWriteTargets(controls.cluster, false);
-            int targetCpu = targets.isSuccess() ? targets.getValue().get(0) : -1;
-            SysfsResult<String[]> entriesResult = targetCpu >= 0
-                    ? this.mCpuController.readAvailableFrequencies(targetCpu, ReadMode.FREQUENCY_MHZ)
-                    : SysfsResult.<String[]>failure(targets.getError());
-            SysfsResult<String[]> entryValuesResult = targetCpu >= 0
-                    ? this.mCpuController.readAvailableFrequencies(targetCpu, ReadMode.RAW)
-                    : SysfsResult.<String[]>failure(targets.getError());
-            SysfsResult<String> currentResult = targetCpu >= 0
-                    ? this.mCpuController.readMinFrequency(targetCpu)
-                    : SysfsResult.<String>failure(targets.getError());
-
-            // Apply updates under lock
-            synchronized (mPreferenceLock) {
-                if (entriesResult.isSuccess() && entryValuesResult.isSuccess() && currentResult.isSuccess()) {
-                    String currentValue = currentResult.getValue();
-                    controls.minFrequency.setEntries(entriesResult.getValue());
-                    controls.minFrequency.setEntryValues(entryValuesResult.getValue());
-                    controls.minFrequency.setValue(currentValue);
-                    controls.minFrequency.setSummary(findFrequencySummary(currentValue,
-                            entryValuesResult.getValue(), entriesResult.getValue()));
-                    controls.minFrequency.setEnabled(controls.index == 0 || !isApplyToAllClustersEnabled());
-                    controls.pendingMinFrequency = currentValue;
-                } else {
-                    controls.minFrequency.setEntries(new String[0]);
-                    controls.minFrequency.setEntryValues(new String[0]);
-                    controls.minFrequency.setValue(NO_DATA_FOUND);
-                    controls.minFrequency.setSummary(NO_DATA_FOUND);
-                    controls.minFrequency.setEnabled(false);
-                    controls.pendingMinFrequency = null;
-                    Log.e("Aero", "Unable to load minimum CPU frequency for cluster "
-                            + controls.cluster.getMemberRangeLabel());
-                }
-            }
-        }
+        queueFrequencyRefresh(false);
     }
 
-    /**
-     * Updates the maximum frequency preference UI for all CPU clusters by reading
-     * current values from sysfs and refreshing the preference controls.
-     */
+    /** Queues a maximum-frequency sysfs refresh and posts its preference updates. */
     public void updateMaxFreq() {
-        // Read sysfs values outside lock to minimize critical section
-        for (ClusterControls controls : this.mClusterControls) {
+        queueFrequencyRefresh(true);
+    }
+
+    /** Resolves frequency targets and reads their state on the serialized background executor. */
+    private void queueFrequencyRefresh(final boolean isMax) {
+        if (this.mMirrorExecutor.isShutdown()) {
+            return;
+        }
+        final int lifecycleGeneration = this.mLifecycleGeneration.get();
+        final ArrayList<ClusterControls> clusters = new ArrayList<>(this.mClusterControls);
+        this.mMirrorExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                final ArrayList<FrequencyRefreshResult> results =
+                        CPUFragment.this.readFrequencyRefreshResults(clusters, isMax);
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        CPUFragment.this.applyFrequencyRefreshResults(results, isMax);
+                    }
+                });
+            }
+        });
+    }
+
+    /** Reads frequency refresh state without touching preference objects. */
+    private ArrayList<FrequencyRefreshResult> readFrequencyRefreshResults(
+            List<ClusterControls> clusters, boolean isMax) {
+        ArrayList<FrequencyRefreshResult> results = new ArrayList<>();
+        for (ClusterControls controls : clusters) {
             SysfsResult<List<Integer>> targets = this.mCpuController
-                    .getFrequencyWriteTargets(controls.cluster, true);
+                    .getFrequencyWriteTargets(controls.cluster, isMax);
             int targetCpu = targets.isSuccess() ? targets.getValue().get(0) : -1;
             SysfsResult<String[]> entriesResult = targetCpu >= 0
                     ? this.mCpuController.readAvailableFrequencies(targetCpu, ReadMode.FREQUENCY_MHZ)
@@ -1152,37 +1178,87 @@ public class CPUFragment extends PlaceHolderFragment {
                     ? this.mCpuController.readAvailableFrequencies(targetCpu, ReadMode.RAW)
                     : SysfsResult.<String[]>failure(targets.getError());
             SysfsResult<String> currentResult = targetCpu >= 0
-                    ? this.mCpuController.readMaxFrequency(targetCpu)
+                    ? (isMax ? this.mCpuController.readMaxFrequency(targetCpu)
+                            : this.mCpuController.readMinFrequency(targetCpu))
                     : SysfsResult.<String>failure(targets.getError());
+            results.add(new FrequencyRefreshResult(controls,
+                    entriesResult.isSuccess() ? entriesResult.getValue() : null,
+                    entryValuesResult.isSuccess() ? entryValuesResult.getValue() : null,
+                    currentResult.isSuccess() ? currentResult.getValue() : null));
+        }
+        return results;
+    }
 
-            // Apply updates under lock
+    /** Applies pre-read frequency state to preferences on the main thread. */
+    private void applyFrequencyRefreshResults(
+            List<FrequencyRefreshResult> results, boolean isMax) {
+        for (FrequencyRefreshResult result : results) {
+            ClusterControls controls = result.controls;
+            CustomListPreference preference = isMax
+                    ? controls.maxFrequency : controls.minFrequency;
             synchronized (mPreferenceLock) {
-                if (entriesResult.isSuccess() && entryValuesResult.isSuccess() && currentResult.isSuccess()) {
-                    String currentValue = currentResult.getValue();
-                    controls.maxFrequency.setEntries(entriesResult.getValue());
-                    controls.maxFrequency.setEntryValues(entryValuesResult.getValue());
-                    controls.maxFrequency.setValue(currentValue);
-                    controls.maxFrequency.setSummary(findFrequencySummary(currentValue,
-                            entryValuesResult.getValue(), entriesResult.getValue()));
-                    controls.maxFrequency.setEnabled(controls.index == 0 || !isApplyToAllClustersEnabled());
-                    controls.pendingMaxFrequency = currentValue;
+                if (result.isAvailable()) {
+                    preference.setEntries(result.entries);
+                    preference.setEntryValues(result.entryValues);
+                    preference.setValue(result.currentValue);
+                    preference.setSummary(findFrequencySummary(result.currentValue,
+                            result.entryValues, result.entries));
+                    preference.setEnabled(
+                            controls.index == 0 || !isApplyToAllClustersEnabled());
+                    if (isMax) {
+                        controls.pendingMaxFrequency = result.currentValue;
+                    } else {
+                        controls.pendingMinFrequency = result.currentValue;
+                    }
                 } else {
-                    controls.maxFrequency.setEntries(new String[0]);
-                    controls.maxFrequency.setEntryValues(new String[0]);
-                    controls.maxFrequency.setValue(NO_DATA_FOUND);
-                    controls.maxFrequency.setSummary(NO_DATA_FOUND);
-                    controls.maxFrequency.setEnabled(false);
-                    controls.pendingMaxFrequency = null;
-                    Log.e("Aero", "Unable to load maximum CPU frequency for cluster "
+                    preference.setEntries(new String[0]);
+                    preference.setEntryValues(new String[0]);
+                    preference.setValue(NO_DATA_FOUND);
+                    preference.setSummary(NO_DATA_FOUND);
+                    preference.setEnabled(false);
+                    if (isMax) {
+                        controls.pendingMaxFrequency = null;
+                    } else {
+                        controls.pendingMinFrequency = null;
+                    }
+                    Log.e("Aero", "Unable to load " + (isMax ? "maximum" : "minimum")
+                            + " CPU frequency for cluster "
                             + controls.cluster.getMemberRangeLabel());
                 }
             }
         }
     }
 
-    /** Refreshes every governor control from the final observed sysfs state. */
+    /** Queues a governor sysfs refresh and posts its preference updates. */
     private void updateGovernorControls() {
-        for (ClusterControls controls : this.mClusterControls) {
+        if (this.mMirrorExecutor.isShutdown()) {
+            return;
+        }
+        final int lifecycleGeneration = this.mLifecycleGeneration.get();
+        final ArrayList<ClusterControls> clusters = new ArrayList<>(this.mClusterControls);
+        this.mMirrorExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                final ArrayList<GovernorRefreshResult> results =
+                        CPUFragment.this.readGovernorRefreshResults(clusters);
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        CPUFragment.this.applyGovernorRefreshResults(results);
+                    }
+                });
+            }
+        });
+    }
+
+    /** Resolves governor targets and reads their state without touching preferences. */
+    private ArrayList<GovernorRefreshResult> readGovernorRefreshResults(
+            List<ClusterControls> clusters) {
+        ArrayList<GovernorRefreshResult> results = new ArrayList<>();
+        for (ClusterControls controls : clusters) {
             SysfsResult<List<Integer>> targets = this.mCpuController
                     .getGovernorWriteTargets(controls.cluster);
             int targetCpu = targets.isSuccess() ? targets.getValue().get(0) : -1;
@@ -1192,12 +1268,23 @@ public class CPUFragment extends PlaceHolderFragment {
             SysfsResult<String> currentResult = targetCpu >= 0
                     ? this.mCpuController.readGovernor(targetCpu)
                     : SysfsResult.<String>failure(targets.getError());
+            results.add(new GovernorRefreshResult(controls,
+                    valuesResult.isSuccess() ? valuesResult.getValue() : null,
+                    currentResult.isSuccess() ? currentResult.getValue() : null));
+        }
+        return results;
+    }
+
+    /** Applies pre-read governor state to preferences on the main thread. */
+    private void applyGovernorRefreshResults(List<GovernorRefreshResult> results) {
+        for (GovernorRefreshResult result : results) {
+            ClusterControls controls = result.controls;
             synchronized (mPreferenceLock) {
-                if (valuesResult.isSuccess() && currentResult.isSuccess()) {
-                    controls.governor.setEntries(valuesResult.getValue());
-                    controls.governor.setEntryValues(valuesResult.getValue());
-                    controls.governor.setValue(currentResult.getValue());
-                    controls.governor.setSummary(currentResult.getValue());
+                if (result.isAvailable()) {
+                    controls.governor.setEntries(result.values);
+                    controls.governor.setEntryValues(result.values);
+                    controls.governor.setValue(result.currentValue);
+                    controls.governor.setSummary(result.currentValue);
                     controls.governor.setEnabled(
                             controls.index == 0 || !isApplyToAllClustersEnabled());
                 } else {
