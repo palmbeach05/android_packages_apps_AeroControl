@@ -336,7 +336,6 @@ public final class AeroActivity extends Activity {
         }
         Intent trIntent = new Intent("android.intent.action.PREFS");
         trIntent.setClass(this, PrefsActivity.class);
-        trIntent.setFlags(268435456);
         startActivity(trIntent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
@@ -873,6 +872,7 @@ public final class AeroActivity extends Activity {
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
+            startCloseConfirmation();
             switchContent(savedPreviousFragment, false, true, true);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(savedPreviousFragment);
