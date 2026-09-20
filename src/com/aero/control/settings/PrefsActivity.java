@@ -12,6 +12,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -21,6 +23,7 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.OrientationHelper;
@@ -37,6 +40,7 @@ import java.io.File;
  * application settings. Uses Material Design cards to group related preferences.
  */
 public class PrefsActivity extends PreferenceActivity {
+    private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     static Context context;
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private ActionBar mActionBar;
@@ -52,6 +56,9 @@ public class PrefsActivity extends PreferenceActivity {
     private int mIconTintColor;
     private NavigationDrawerHelper mNavigationDrawer;
     private SettingsCardAdapter mSettingsAdapter;
+    private boolean mClosePending = false;
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private Runnable mClearClosePending;
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
@@ -340,6 +347,23 @@ public class PrefsActivity extends PreferenceActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         this.mNavigationDrawer.syncState();
+    }
+
+    @Override // android.preference.PreferenceActivity, android.app.Activity
+    public void onBackPressed() {
+        if (this.mClosePending) {
+            finish();
+            return;
+        }
+        this.mClosePending = true;
+        Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_SHORT).show();
+        this.mClearClosePending = new Runnable() {
+            @Override // java.lang.Runnable
+            public void run() {
+                PrefsActivity.this.mClosePending = false;
+            }
+        };
+        this.mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
