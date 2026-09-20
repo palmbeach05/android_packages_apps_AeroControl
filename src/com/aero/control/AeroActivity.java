@@ -608,6 +608,7 @@ public final class AeroActivity extends Activity {
                 // onConfigurationChanged() can hand it off if rotation
                 // races ahead of this transaction committing.
                 mPendingDrawerTransactionItemResourceId = itemResourceId;
+                clearDetailBackStackForDrawerNavigation();
                 switchContent(fragment, oldFragment);
             }
         }
@@ -673,6 +674,15 @@ public final class AeroActivity extends Activity {
             }
         }
         return null;
+    }
+
+    private void clearDetailBackStackForDrawerNavigation() {
+        String detailEntry = getDetailBackStackEntryName();
+        if (detailEntry != null) {
+            getFragmentManager().popBackStackImmediate(
+                    detailEntry,
+                    android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
     }
 
     private boolean hasDetailBackStackEntry() {
