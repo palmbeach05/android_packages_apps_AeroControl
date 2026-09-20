@@ -865,10 +865,6 @@ public final class AeroActivity extends Activity {
             setTitle(getDetailParentTitle(detailEntry));
             return;
         }
-        if (this.mClosePending) {
-            finish();
-            return;
-        }
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
@@ -885,6 +881,10 @@ public final class AeroActivity extends Activity {
             if (restoredTitle != null) {
                 setTitle(restoredTitle);
             }
+            return;
+        }
+        if (this.mClosePending) {
+            finish();
             return;
         }
         this.mClosePending = true;
