@@ -981,6 +981,13 @@ public final class AeroActivity extends Activity {
         switchContent(fragment, null);
     }
 
+    /**
+     * Replaces the current fragment and removes its obsolete instance from the
+     * navigation history after the transaction succeeds.
+     *
+     * @param fragment the fragment to display
+     * @param obsoleteFragment the superseded instance to remove from the history
+     */
     private void switchContent(final Fragment fragment, final Fragment obsoleteFragment) {
         switchContent(fragment, true, false, false, obsoleteFragment);
     }
@@ -1006,6 +1013,16 @@ public final class AeroActivity extends Activity {
         switchContent(fragment, addToStack, removeCurrentFromStack, executeImmediately, null);
     }
 
+    /**
+     * Performs a queued or immediate fragment replacement and updates navigation
+     * history only after the transaction completes.
+     *
+     * @param fragment the fragment to display
+     * @param addToStack whether to add the fragment to the navigation history
+     * @param removeCurrentFromStack whether to remove the current history entry
+     * @param executeImmediately whether to run the replacement synchronously
+     * @param obsoleteFragment the superseded instance to remove from the history
+     */
     private void switchContent(final Fragment fragment, final boolean addToStack,
             final boolean removeCurrentFromStack, boolean executeImmediately,
             final Fragment obsoleteFragment) {
