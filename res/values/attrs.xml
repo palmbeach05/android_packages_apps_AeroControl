@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="aeroDrawerLayoutBackground" format="color">
+    </attr>
+    <attr name="aeroDrawerListBackground" format="color">
+    </attr>
+    <attr name="aeroPrimaryTextColor" format="color">
+    </attr>
+    <attr name="aeroSecondaryTextColor" format="color">
+    </attr>
+    <attr name="aeroCardBackground" format="reference">
+    </attr>
+    <attr name="aeroCardBackgroundClicked" format="reference">
+    </attr>
+    <attr name="aeroGraphBackground" format="reference">
+    </attr>
+    <attr name="aeroCardStyle" format="reference">
+    </attr>
+    <attr name="aeroTooltipBackground" format="reference">
+    </attr>
+    <attr name="aeroIconTint" format="color">
+    </attr>
+    <attr name="aeroDividerColor" format="color">
+    </attr>
+    <attr name="aeroPreferenceControlBackground" format="color">
+    </attr>
+    <attr name="aeroGraphLabelColor" format="color">
+    </attr>
+    <attr name="aeroGraphLineColor" format="color">
+    </attr>
+    <attr name="aeroAboutButtonStyle" format="reference">
+    </attr>
+    <attr name="aeroAboutBackground" format="reference|color">
+    </attr>
+    <attr name="chart_axisThickness" format="dimension">
+    </attr>
+    <attr name="chart_axisColor" format="reference|color">
+    </attr>
+    <attr name="chart_axisBorderSpacing" format="dimension">
+    </attr>
+    <attr name="chart_axisTopSpacing" format="dimension">
+    </attr>
+    <attr name="chart_labels" format="boolean">
+    </attr>
+    <attr name="chart_labelColor" format="reference|color">
+    </attr>
+    <attr name="chart_fontSize" format="dimension">
+    </attr>
+    <attr name="chart_typeface" format="string">
+    </attr>
+    <attr name="chart_shadowColor" format="reference|color">
+    </attr>
+    <attr name="chart_shadowDx" format="dimension">
+    </attr>
+    <attr name="chart_shadowDy" format="dimension">
+    </attr>
+    <attr name="chart_shadowRadius" format="dimension">
+    </attr>
+    <attr name="chart_barSpacing" format="dimension">
+    </attr>
+    <attr name="chart_setSpacing" format="dimension">
+    </attr>
+    <attr name="fab_colorPressed" format="color">
+    </attr>
+    <attr name="fab_colorDisabled" format="color">
+    </attr>
+    <attr name="fab_colorNormal" format="color">
+    </attr>
+    <attr name="fab_icon" format="reference">
+    </attr>
+    <attr name="fab_size">
+        <enum name="mini" value="1" />
+        <enum name="normal" value="0" />
+    </attr>
+    <attr name="fab_title" format="string">
+    </attr>
+    <attr name="fab_stroke_visible" format="boolean">
+    </attr>
+    <attr name="fab_plusIconColor" format="color">
+    </attr>
+    <attr name="fab_addButtonColorPressed" format="color">
+    </attr>
+    <attr name="fab_addButtonColorNormal" format="color">
+    </attr>
+    <attr name="fab_addButtonSize">
+        <enum name="mini" value="1" />
+        <enum name="normal" value="0" />
+    </attr>
+    <attr name="fab_addButtonPlusIconColor" format="color">
+    </attr>
+    <attr name="fab_addButtonStrokeVisible" format="boolean">
+    </attr>
+    <attr name="fab_labelStyle" format="reference">
+    </attr>
+    <attr name="fab_labelsPosition">
+        <enum name="left" value="0" />
+        <enum name="right" value="1" />
+    </attr>
+    <attr name="fab_expandDirection">
+        <enum name="left" value="2" />
+        <enum name="right" value="3" />
+        <enum name="down" value="1" />
+        <enum name="up" value="0" />
+    </attr>
+    <attr name="sv_backgroundColor" format="reference|color">
+    </attr>
+    <attr name="sv_detailTextColor" format="reference|color">
+    </attr>
+    <attr name="sv_titleTextColor" format="reference|color">
+    </attr>
+    <attr name="sv_buttonBackgroundColor" format="reference|color">
+    </attr>
+    <attr name="sv_buttonForegroundColor" format="reference|color">
+    </attr>
+    <attr name="sv_buttonText" format="reference|string">
+    </attr>
+    <attr name="sv_detailTextAppearance" format="reference">
+    </attr>
+    <attr name="sv_titleTextAppearance" format="reference">
+    </attr>
+    <attr name="sv_showcaseColor" format="reference|color">
+    </attr>
+    <attr name="sv_tintButtonColor" format="reference|boolean">
+    </attr>
+    <attr name="showcaseViewStyle" format="reference">
+    </attr>
+    <attr name="vpiCirclePageIndicatorStyle" format="reference">
+    </attr>
+    <attr name="selectedColor" format="color">
+    </attr>
+    <attr name="unselectedColor" format="color">
+    </attr>
+    <attr name="showNumberIndicator" format="boolean">
+    </attr>
+    <attr name="max" format="integer">
+    </attr>
+    <attr name="min" format="integer">
+    </attr>
+    <declare-styleable name="RippleView">
+        <attr name="rv_alpha" format="integer" />
+        <attr name="rv_framerate" format="integer" />
+        <attr name="rv_rippleDuration" format="integer" />
+        <attr name="rv_zoomDuration" format="integer" />
+        <attr name="rv_color" format="color" />
+        <attr name="rv_centered" format="boolean" />
+        <attr name="rv_type">
+            <enum name="doubleRipple" value="1" />
+            <enum name="rectangle" value="2" />
+            <enum name="simpleRipple" value="0" />
+        </attr>
+        <attr name="rv_ripplePadding" format="dimension" />
+        <attr name="rv_zoom" format="boolean" />
+        <attr name="rv_zoomScale" format="float" />
+    </declare-styleable>
+    <declare-styleable name="CirclePageIndicator">
+        <attr name="android:orientation" />
+        <attr name="android:background" />
+        <attr name="centered" format="boolean" />
+        <attr name="strokeWidth" format="dimension" />
+        <attr name="fillColor" format="color" />
+        <attr name="pageColor" format="color" />
+        <attr name="radius" format="dimension" />
+        <attr name="snap" format="boolean" />
+        <attr name="strokeColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="CardBox">
+        <attr name="cardTitle" format="string" />
+        <attr name="cardContent" format="string" />
+    </declare-styleable>
+        <declare-styleable name="FloatingActionButton">
+        <attr name="fab_colorPressed" />
+        <attr name="fab_colorDisabled" />
+        <attr name="fab_colorNormal" />
+        <attr name="fab_icon" />
+        <attr name="fab_size" />
+        <attr name="fab_title" />
+        <attr name="fab_stroke_visible" />
+    </declare-styleable>
+
+    <declare-styleable name="AddFloatingActionButton">
+        <attr name="fab_plusIconColor" />
+    </declare-styleable>
+
+    <declare-styleable name="FloatingActionsMenu">
+        <attr name="fab_addButtonColorPressed" />
+        <attr name="fab_addButtonColorNormal" />
+        <attr name="fab_addButtonSize" />
+        <attr name="fab_addButtonPlusIconColor" />
+        <attr name="fab_addButtonStrokeVisible" />
+        <attr name="fab_labelStyle" />
+        <attr name="fab_labelsPosition" />
+        <attr name="fab_expandDirection" />
+    </declare-styleable>
+
+    <declare-styleable name="ShowcaseView">
+        <attr name="sv_backgroundColor" />
+        <attr name="sv_detailTextColor" />
+        <attr name="sv_titleTextColor" />
+        <attr name="sv_buttonBackgroundColor" />
+        <attr name="sv_buttonForegroundColor" />
+        <attr name="sv_buttonText" />
+        <attr name="sv_detailTextAppearance" />
+        <attr name="sv_titleTextAppearance" />
+        <attr name="sv_showcaseColor" />
+        <attr name="sv_tintButtonColor" />
+    </declare-styleable>
+
+    <declare-styleable name="CustomTheme">
+        <attr name="showcaseViewStyle" />
+    </declare-styleable>
+
+    <declare-styleable name="ChartAttrs">
+        <attr name="chart_axisThickness" />
+        <attr name="chart_axisColor" />
+        <attr name="chart_axisBorderSpacing" />
+        <attr name="chart_axisTopSpacing" />
+        <attr name="chart_labels" />
+        <attr name="chart_labelColor" />
+        <attr name="chart_fontSize" />
+        <attr name="chart_typeface" />
+        <attr name="chart_shadowColor" />
+        <attr name="chart_shadowDx" />
+        <attr name="chart_shadowDy" />
+        <attr name="chart_shadowRadius" />
+    </declare-styleable>
+
+    <declare-styleable name="BarChartAttrs">
+        <attr name="chart_barSpacing" />
+        <attr name="chart_setSpacing" />
+    </declare-styleable>
+
+    <item name="fab_expand_menu_button" type="id" />
+    <item name="fab_label" type="id" />
+</resources>
