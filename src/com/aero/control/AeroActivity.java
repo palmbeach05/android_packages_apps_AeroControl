@@ -889,7 +889,6 @@ public final class AeroActivity extends Activity {
             return;
         }
         startCloseConfirmation();
-        Toast.makeText(this, R.string.back_for_close, 1).show();
     }
 
     /**
@@ -897,6 +896,7 @@ public final class AeroActivity extends Activity {
      */
     private void startCloseConfirmation() {
         this.mClosePending = true;
+        Toast.makeText(this, R.string.back_for_close, 1).show();
         if (this.mClearClosePending != null) {
             mHandler.removeCallbacks(this.mClearClosePending);
         }
