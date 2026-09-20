@@ -362,6 +362,15 @@ public class PrefsActivity extends PreferenceActivity {
      */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onBackPressed() {
+        if (this.mNavigationDrawer.isDrawerOpen()) {
+            this.mNavigationDrawer.closeDrawers();
+            this.mClosePending = false;
+            if (this.mClearClosePending != null) {
+                this.mHandler.removeCallbacks(this.mClearClosePending);
+                this.mClearClosePending = null;
+            }
+            return;
+        }
         if (this.mClosePending) {
             finish();
             return;
