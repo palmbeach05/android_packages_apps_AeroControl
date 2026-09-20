@@ -853,8 +853,8 @@ public final class AeroActivity extends Activity {
     }
 
     /**
-     * Handles the back button press. Closes app detail if open, navigates back through
-     * the fragment stack, or initiates the double-tap-to-close confirmation flow.
+     * Handles the back button press. Closes app detail if open, otherwise initiates
+     * the double-tap-to-close confirmation flow from every top-level drawer page.
      */
     @Override // android.app.Activity
     public void onBackPressed() {
@@ -867,24 +867,6 @@ public final class AeroActivity extends Activity {
         }
         if (this.mClosePending) {
             finish();
-            return;
-        }
-        if (mFragmentStack.size() > 1) {
-            int previousIndex = mFragmentStack.size() - 2;
-            Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            int previousResourceId = getResourceIdForFragment(savedPreviousFragment);
-            Fragment previousFragment = getFragmentByResourceId(previousResourceId, true);
-            if (previousFragment == null) {
-                previousFragment = savedPreviousFragment;
-            } else if (previousFragment != savedPreviousFragment) {
-                mFragmentStack.set(previousIndex, previousFragment);
-            }
-            switchContent(previousFragment, false, true, true);
-            // Restore title by finding which fragment we're returning to
-            String restoredTitle = getTitleForFragment(previousFragment);
-            if (restoredTitle != null) {
-                setTitle(restoredTitle);
-            }
             return;
         }
         this.mClosePending = true;
@@ -1063,13 +1045,10 @@ public final class AeroActivity extends Activity {
                     AeroActivity.this.getFragmentManager().beginTransaction()
                             .replace(R.id.content_frame, fragment).commit();
                     AeroActivity.this.getFragmentManager().executePendingTransactions();
-                    // Selecting a page already in the history moves it to the top
-                    // instead of creating a duplicate Back entry.
+                    // A drawer page is a top-level destination. Keep only the
+                    // displayed page so Back always enters the close flow.
                     if (addToStack) {
-                        if (obsoleteFragment != null && obsoleteFragment != fragment) {
-                            mFragmentStack.remove(obsoleteFragment);
-                        }
-                        mFragmentStack.remove(fragment);
+                        mFragmentStack.clear();
                         mFragmentStack.push(fragment);
                     } else if (removeCurrentFromStack && mFragmentStack.size() > 1
                             && mFragmentStack.get(mFragmentStack.size() - 2) == fragment) {
