@@ -54,7 +54,8 @@ public final class GpuController {
     public SysfsResult<String[]> readAvailableGovernors() {
         SysfsResult<SysfsNode> node = findGovernorNode(AVAILABLE_GOVERNORS);
         if (node.isSuccess()) {
-            return repository.readValues(node.getValue(), ReadMode.RAW);
+            SysfsResult<String[]> governors = repository.readValues(node.getValue(), ReadMode.RAW);
+            if (governors.isSuccess()) return governors;
         }
 
         SysfsResult<String> governor = readValue(findGovernorNode(GOVERNOR));
