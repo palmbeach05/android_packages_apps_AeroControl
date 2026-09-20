@@ -180,6 +180,13 @@ public class NavigationDrawerHelper {
     }
 
     /**
+     * Returns whether the start drawer is currently open.
+     */
+    public boolean isDrawerOpen() {
+        return this.mDrawerLayout.isDrawerOpen(GravityCompat.START);
+    }
+
+    /**
      * Returns the drawer item at the specified position.
      *
      * @param position the position of the item in the drawer list

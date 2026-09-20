@@ -336,7 +336,6 @@ public final class AeroActivity extends Activity {
         }
         Intent trIntent = new Intent("android.intent.action.PREFS");
         trIntent.setClass(this, PrefsActivity.class);
-        trIntent.setFlags(268435456);
         startActivity(trIntent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
@@ -430,63 +429,63 @@ public final class AeroActivity extends Activity {
      *
      * @param resourceId the string resource ID identifying the fragment
      * @param createIfMissing if true, creates a new fragment instance when the cached
-     *                        instance is absent or no longer added
+     *                        instance is absent
      * @return the fragment instance, or null if not found and createIfMissing is false
      */
     private Fragment getFragmentByResourceId(int resourceId, boolean createIfMissing) {
         // Map resource ID to fragment instance, optionally creating if missing
         if (resourceId == R.string.slider_overview) {
-            if (createIfMissing && (this.mAeroFragment == null || !this.mAeroFragment.isAdded())) {
+            if (createIfMissing && this.mAeroFragment == null) {
                 this.mAeroFragment = new AeroFragment();
             }
             return this.mAeroFragment;
         } else if (resourceId == R.string.slider_cpu_settings) {
-            if (createIfMissing && (this.mCPUFragement == null || !this.mCPUFragement.isAdded())) {
+            if (createIfMissing && this.mCPUFragement == null) {
                 this.mCPUFragement = new CPUFragment();
             }
             return this.mCPUFragement;
         } else if (resourceId == R.string.slider_statistics) {
-            if (createIfMissing && (this.mStatisticsFragment == null || !this.mStatisticsFragment.isAdded())) {
+            if (createIfMissing && this.mStatisticsFragment == null) {
                 this.mStatisticsFragment = new StatisticsFragment();
             }
             return this.mStatisticsFragment;
         } else if (resourceId == R.string.slider_gpu_settings) {
-            if (createIfMissing && (this.mGPUFragement == null || !this.mGPUFragement.isAdded())) {
+            if (createIfMissing && this.mGPUFragement == null) {
                 this.mGPUFragement = new GPUFragment();
             }
             return this.mGPUFragement;
         } else if (resourceId == R.string.slider_memory_settings) {
-            if (createIfMissing && (this.mMemoryFragment == null || !this.mMemoryFragment.isAdded())) {
+            if (createIfMissing && this.mMemoryFragment == null) {
                 this.mMemoryFragment = new MemoryFragment();
             }
             return this.mMemoryFragment;
         } else if (resourceId == R.string.slider_misc_settings) {
-            if (createIfMissing && (this.mMiscSettingsFragment == null || !this.mMiscSettingsFragment.isAdded())) {
+            if (createIfMissing && this.mMiscSettingsFragment == null) {
                 this.mMiscSettingsFragment = new MiscSettingsFragment();
             }
             return this.mMiscSettingsFragment;
         } else if (resourceId == R.string.slider_defy_parts) {
-            if (createIfMissing && (this.mDefyPartsFragment == null || !this.mDefyPartsFragment.isAdded())) {
+            if (createIfMissing && this.mDefyPartsFragment == null) {
                 this.mDefyPartsFragment = new DefyPartsFragment();
             }
             return this.mDefyPartsFragment;
         } else if (resourceId == R.string.slider_backup_restore) {
-            if (createIfMissing && (this.mUpdaterFragement == null || !this.mUpdaterFragement.isAdded())) {
+            if (createIfMissing && this.mUpdaterFragement == null) {
                 this.mUpdaterFragement = new UpdaterFragment();
             }
             return this.mUpdaterFragement;
         } else if (resourceId == R.string.slider_profile) {
-            if (createIfMissing && (this.mProfileFragment == null || !this.mProfileFragment.isAdded())) {
+            if (createIfMissing && this.mProfileFragment == null) {
                 this.mProfileFragment = new ProfileFragment();
             }
             return this.mProfileFragment;
         } else if (resourceId == R.string.slider_app_monitor) {
-            if (createIfMissing && (this.mAppStatisticsFragment == null || !this.mAppStatisticsFragment.isAdded())) {
+            if (createIfMissing && this.mAppStatisticsFragment == null) {
                 this.mAppStatisticsFragment = new AppMonitorFragment();
             }
             return this.mAppStatisticsFragment;
         } else if (resourceId == R.string.slider_test_suite_settings) {
-            if (createIfMissing && (this.mTestSuiteFragment == null || !this.mTestSuiteFragment.isAdded())) {
+            if (createIfMissing && this.mTestSuiteFragment == null) {
                 this.mTestSuiteFragment = new TestSuiteFragment();
             }
             return this.mTestSuiteFragment;
@@ -537,67 +536,67 @@ public final class AeroActivity extends Activity {
         // Map resource ID to fragment
         if (itemResourceId == R.string.slider_overview) {
             oldFragment = this.mAeroFragment;
-            if (this.mAeroFragment == null || !this.mAeroFragment.isAdded()) {
+            if (this.mAeroFragment == null) {
                 this.mAeroFragment = new AeroFragment();
             }
             fragment = this.mAeroFragment;
         } else if (itemResourceId == R.string.slider_cpu_settings) {
             oldFragment = this.mCPUFragement;
-            if (this.mCPUFragement == null || !this.mCPUFragement.isAdded()) {
+            if (this.mCPUFragement == null) {
                 this.mCPUFragement = new CPUFragment();
             }
             fragment = this.mCPUFragement;
         } else if (itemResourceId == R.string.slider_statistics) {
             oldFragment = this.mStatisticsFragment;
-            if (this.mStatisticsFragment == null || !this.mStatisticsFragment.isAdded()) {
+            if (this.mStatisticsFragment == null) {
                 this.mStatisticsFragment = new StatisticsFragment();
             }
             fragment = this.mStatisticsFragment;
         } else if (itemResourceId == R.string.slider_gpu_settings) {
             oldFragment = this.mGPUFragement;
-            if (this.mGPUFragement == null || !this.mGPUFragement.isAdded()) {
+            if (this.mGPUFragement == null) {
                 this.mGPUFragement = new GPUFragment();
             }
             fragment = this.mGPUFragement;
         } else if (itemResourceId == R.string.slider_memory_settings) {
             oldFragment = this.mMemoryFragment;
-            if (this.mMemoryFragment == null || !this.mMemoryFragment.isAdded()) {
+            if (this.mMemoryFragment == null) {
                 this.mMemoryFragment = new MemoryFragment();
             }
             fragment = this.mMemoryFragment;
         } else if (itemResourceId == R.string.slider_misc_settings) {
             oldFragment = this.mMiscSettingsFragment;
-            if (this.mMiscSettingsFragment == null || !this.mMiscSettingsFragment.isAdded()) {
+            if (this.mMiscSettingsFragment == null) {
                 this.mMiscSettingsFragment = new MiscSettingsFragment();
             }
             fragment = this.mMiscSettingsFragment;
         } else if (itemResourceId == R.string.slider_defy_parts) {
             oldFragment = this.mDefyPartsFragment;
-            if (this.mDefyPartsFragment == null || !this.mDefyPartsFragment.isAdded()) {
+            if (this.mDefyPartsFragment == null) {
                 this.mDefyPartsFragment = new DefyPartsFragment();
             }
             fragment = this.mDefyPartsFragment;
         } else if (itemResourceId == R.string.slider_backup_restore) {
             oldFragment = this.mUpdaterFragement;
-            if (this.mUpdaterFragement == null || !this.mUpdaterFragement.isAdded()) {
+            if (this.mUpdaterFragement == null) {
                 this.mUpdaterFragement = new UpdaterFragment();
             }
             fragment = this.mUpdaterFragement;
         } else if (itemResourceId == R.string.slider_profile) {
             oldFragment = this.mProfileFragment;
-            if (this.mProfileFragment == null || !this.mProfileFragment.isAdded()) {
+            if (this.mProfileFragment == null) {
                 this.mProfileFragment = new ProfileFragment();
             }
             fragment = this.mProfileFragment;
         } else if (itemResourceId == R.string.slider_app_monitor) {
             oldFragment = this.mAppStatisticsFragment;
-            if (this.mAppStatisticsFragment == null || !this.mAppStatisticsFragment.isAdded()) {
+            if (this.mAppStatisticsFragment == null) {
                 this.mAppStatisticsFragment = new AppMonitorFragment();
             }
             fragment = this.mAppStatisticsFragment;
         } else if (itemResourceId == R.string.slider_test_suite_settings) {
             oldFragment = this.mTestSuiteFragment;
-            if (this.mTestSuiteFragment == null || !this.mTestSuiteFragment.isAdded()) {
+            if (this.mTestSuiteFragment == null) {
                 this.mTestSuiteFragment = new TestSuiteFragment();
             }
             fragment = this.mTestSuiteFragment;
@@ -871,19 +870,12 @@ public final class AeroActivity extends Activity {
             return;
         }
         if (mFragmentStack.size() > 1) {
-            startCloseConfirmation();
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            int previousResourceId = getResourceIdForFragment(savedPreviousFragment);
-            Fragment previousFragment = getFragmentByResourceId(previousResourceId, true);
-            if (previousFragment == null) {
-                previousFragment = savedPreviousFragment;
-            } else if (previousFragment != savedPreviousFragment) {
-                mFragmentStack.set(previousIndex, previousFragment);
-            }
-            switchContent(previousFragment, false, true, true);
+            startCloseConfirmation();
+            switchContent(savedPreviousFragment, false, true, true);
             // Restore title by finding which fragment we're returning to
-            String restoredTitle = getTitleForFragment(previousFragment);
+            String restoredTitle = getTitleForFragment(savedPreviousFragment);
             if (restoredTitle != null) {
                 setTitle(restoredTitle);
             }
