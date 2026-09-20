@@ -909,6 +909,12 @@ public final class AeroActivity extends Activity {
         mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
     }
 
+    /**
+     * Returns the drawer title associated with a detail back-stack entry.
+     *
+     * @param detailEntry the detail back-stack entry name
+     * @return the title for the detail entry's parent drawer page
+     */
     private String getDetailParentTitle(String detailEntry) {
         if ("AppDetail".equals(detailEntry)) {
             return getString(R.string.slider_app_monitor);
