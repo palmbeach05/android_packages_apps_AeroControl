@@ -99,7 +99,7 @@ public class PrefsActivity extends PreferenceActivity {
                 }
                 Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
                 intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.putExtra(AeroActivity.EXTRA_RETURN_TO_SETTINGS, true);
                 PrefsActivity.this.startActivity(intent);
                 PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
