@@ -1,7 +1,7 @@
 package com.aero.control.helpers;
 
-/** LED and display-control operations exposed through the typed sysfs repository. */
-public final class LedController {
+/** Display-color operations exposed through the typed sysfs repository. */
+public final class DisplayColorController {
     private final SysfsRepository repository;
 
     /**
@@ -9,7 +9,7 @@ public final class LedController {
      *
      * @param repository repository used for display-color operations
      */
-    LedController(SysfsRepository repository) {
+    DisplayColorController(SysfsRepository repository) {
         this.repository = repository;
     }
 
