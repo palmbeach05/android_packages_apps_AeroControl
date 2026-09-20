@@ -14,18 +14,22 @@ public final class HardwareGateway {
         this.displayColorController = new DisplayColorController(repository);
     }
 
+    /** Returns the shared sysfs repository used by the hardware controllers. */
     public SysfsRepository sysfs() {
         return repository;
     }
 
+    /** Returns the controller for CPU hardware operations. */
     public CpuController cpu() {
         return cpuController;
     }
 
+    /** Returns the controller for GPU hardware operations. */
     public GpuController gpu() {
         return gpuController;
     }
 
+    /** Returns the controller for display-color hardware operations. */
     public DisplayColorController displayColor() {
         return displayColorController;
     }
