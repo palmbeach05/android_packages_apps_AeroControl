@@ -429,63 +429,64 @@ public final class AeroActivity extends Activity {
      * creating a new instance if it doesn't exist yet.
      *
      * @param resourceId the string resource ID identifying the fragment
-     * @param createIfMissing if true, creates a new fragment instance when the field is null
+     * @param createIfMissing if true, creates a new fragment instance when the cached
+     *                        instance is absent or no longer added
      * @return the fragment instance, or null if not found and createIfMissing is false
      */
     private Fragment getFragmentByResourceId(int resourceId, boolean createIfMissing) {
         // Map resource ID to fragment instance, optionally creating if missing
         if (resourceId == R.string.slider_overview) {
-            if (createIfMissing && this.mAeroFragment == null) {
+            if (createIfMissing && (this.mAeroFragment == null || !this.mAeroFragment.isAdded())) {
                 this.mAeroFragment = new AeroFragment();
             }
             return this.mAeroFragment;
         } else if (resourceId == R.string.slider_cpu_settings) {
-            if (createIfMissing && this.mCPUFragement == null) {
+            if (createIfMissing && (this.mCPUFragement == null || !this.mCPUFragement.isAdded())) {
                 this.mCPUFragement = new CPUFragment();
             }
             return this.mCPUFragement;
         } else if (resourceId == R.string.slider_statistics) {
-            if (createIfMissing && this.mStatisticsFragment == null) {
+            if (createIfMissing && (this.mStatisticsFragment == null || !this.mStatisticsFragment.isAdded())) {
                 this.mStatisticsFragment = new StatisticsFragment();
             }
             return this.mStatisticsFragment;
         } else if (resourceId == R.string.slider_gpu_settings) {
-            if (createIfMissing && this.mGPUFragement == null) {
+            if (createIfMissing && (this.mGPUFragement == null || !this.mGPUFragement.isAdded())) {
                 this.mGPUFragement = new GPUFragment();
             }
             return this.mGPUFragement;
         } else if (resourceId == R.string.slider_memory_settings) {
-            if (createIfMissing && this.mMemoryFragment == null) {
+            if (createIfMissing && (this.mMemoryFragment == null || !this.mMemoryFragment.isAdded())) {
                 this.mMemoryFragment = new MemoryFragment();
             }
             return this.mMemoryFragment;
         } else if (resourceId == R.string.slider_misc_settings) {
-            if (createIfMissing && this.mMiscSettingsFragment == null) {
+            if (createIfMissing && (this.mMiscSettingsFragment == null || !this.mMiscSettingsFragment.isAdded())) {
                 this.mMiscSettingsFragment = new MiscSettingsFragment();
             }
             return this.mMiscSettingsFragment;
         } else if (resourceId == R.string.slider_defy_parts) {
-            if (createIfMissing && this.mDefyPartsFragment == null) {
+            if (createIfMissing && (this.mDefyPartsFragment == null || !this.mDefyPartsFragment.isAdded())) {
                 this.mDefyPartsFragment = new DefyPartsFragment();
             }
             return this.mDefyPartsFragment;
         } else if (resourceId == R.string.slider_backup_restore) {
-            if (createIfMissing && this.mUpdaterFragement == null) {
+            if (createIfMissing && (this.mUpdaterFragement == null || !this.mUpdaterFragement.isAdded())) {
                 this.mUpdaterFragement = new UpdaterFragment();
             }
             return this.mUpdaterFragement;
         } else if (resourceId == R.string.slider_profile) {
-            if (createIfMissing && this.mProfileFragment == null) {
+            if (createIfMissing && (this.mProfileFragment == null || !this.mProfileFragment.isAdded())) {
                 this.mProfileFragment = new ProfileFragment();
             }
             return this.mProfileFragment;
         } else if (resourceId == R.string.slider_app_monitor) {
-            if (createIfMissing && this.mAppStatisticsFragment == null) {
+            if (createIfMissing && (this.mAppStatisticsFragment == null || !this.mAppStatisticsFragment.isAdded())) {
                 this.mAppStatisticsFragment = new AppMonitorFragment();
             }
             return this.mAppStatisticsFragment;
         } else if (resourceId == R.string.slider_test_suite_settings) {
-            if (createIfMissing && this.mTestSuiteFragment == null) {
+            if (createIfMissing && (this.mTestSuiteFragment == null || !this.mTestSuiteFragment.isAdded())) {
                 this.mTestSuiteFragment = new TestSuiteFragment();
             }
             return this.mTestSuiteFragment;
@@ -869,7 +870,15 @@ public final class AeroActivity extends Activity {
             return;
         }
         if (mFragmentStack.size() > 1) {
-            Fragment previousFragment = mFragmentStack.get(mFragmentStack.size() - 2);
+            int previousIndex = mFragmentStack.size() - 2;
+            Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
+            int previousResourceId = getResourceIdForFragment(savedPreviousFragment);
+            Fragment previousFragment = getFragmentByResourceId(previousResourceId, true);
+            if (previousFragment == null) {
+                previousFragment = savedPreviousFragment;
+            } else if (previousFragment != savedPreviousFragment) {
+                mFragmentStack.set(previousIndex, previousFragment);
+            }
             switchContent(previousFragment, false, true, true);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(previousFragment);
