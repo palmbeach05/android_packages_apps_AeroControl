@@ -30,7 +30,7 @@ import com.aero.control.helpers.Android.Material.Slider;
 import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.GpuController;
-import com.aero.control.helpers.LedController;
+import com.aero.control.helpers.DisplayColorController;
 import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.ReadMode;
@@ -66,7 +66,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private CustomListPreference mGPUGovernor;
     private GPUGovernorFragment mGPUGovernorFragment;
     private final GpuController mGpuController = AeroActivity.hardware.gpu();
-    private final LedController mLedController = AeroActivity.hardware.led();
+    private final DisplayColorController mDisplayColorController = AeroActivity.hardware.displayColor();
     private CustomPreference mSweep2wake;
     private PreferenceScreen root;
 
@@ -326,7 +326,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             /** Reads the current hardware color values away from the main thread. */
             @Override
             public void run() {
-                final SysfsResult<String[]> colorResult = mLedController.readColorValues();
+                final SysfsResult<String[]> colorResult = mDisplayColorController.readColorValues();
                 mMainHandler.post(new Runnable() {
                     /** Displays the color controls when the asynchronous read is still current. */
                     @Override
@@ -730,7 +730,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                 }
             }
 
-            final SysfsResult<String> result = this.mLedController.writeColorValue(request.value);
+            final SysfsResult<String> result = this.mDisplayColorController.writeColorValue(request.value);
             boolean isLatest;
             synchronized (this.mColorRequestLock) {
                 isLatest = request.sequence == this.mLatestColorRequest
