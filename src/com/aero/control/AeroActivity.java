@@ -55,6 +55,9 @@ import java.util.Stack;
  * the per-app monitoring service.
  */
 public final class AeroActivity extends Activity {
+    private static final String[] DETAIL_BACK_STACK_ENTRIES = {
+            "AppDetail", "GPU Governor", "Hotplug", "Voltage", "CPUBoost", "Memory"
+    };
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
     public static final String EXTRA_SELECTED_ITEM_ID = "com.aero.control.SELECTED_ITEM_ID";
@@ -178,8 +181,8 @@ public final class AeroActivity extends Activity {
             Fragment expectedFragment = (savedItemId != -1) ? getFragmentByResourceId(savedItemId) : null;
 
             // Enable replacement when restored content doesn't match saved selection
-            // Exception: AppDetail is handled via back stack, not drawer selection
-            boolean needsReplacement = (currentFragment != expectedFragment) && !hasAppDetailBackStackEntry();
+            // Detail fragments are restored through FragmentManager, not drawer selection.
+            boolean needsReplacement = (currentFragment != expectedFragment) && !hasDetailBackStackEntry();
 
             if (savedItemId != -1) {
                 selectItemByResourceId(savedItemId, needsReplacement);
@@ -663,19 +666,21 @@ public final class AeroActivity extends Activity {
         setActionBarTitle(getString(R.string.slider_app_monitor));
     }
 
-    /**
-     * Checks whether the AppDetail fragment is currently on the back stack.
-     *
-     * @return true if AppDetail is the top back stack entry, false otherwise
-     */
-    private boolean hasAppDetailBackStackEntry() {
+    /** Returns the name of the top detail back-stack entry, or null if none is open. */
+    private String getDetailBackStackEntryName() {
         android.app.FragmentManager fragmentManager = getFragmentManager();
         int backStackEntryCount = fragmentManager.getBackStackEntryCount();
         if (backStackEntryCount > 0) {
-            // Check only the top entry
-            return "AppDetail".equals(fragmentManager.getBackStackEntryAt(backStackEntryCount - 1).getName());
+            String name = fragmentManager.getBackStackEntryAt(backStackEntryCount - 1).getName();
+            for (String detailEntry : DETAIL_BACK_STACK_ENTRIES) {
+                if (detailEntry.equals(name)) return name;
+            }
         }
-        return false;
+        return null;
+    }
+
+    private boolean hasDetailBackStackEntry() {
+        return getDetailBackStackEntryName() != null;
     }
 
     @Override // android.app.Activity
@@ -804,7 +809,7 @@ public final class AeroActivity extends Activity {
     // restored CPU Statistics selection, performs a single replacement
     // transaction to force the fragment's view to be created.
     private void recoverBlankStatisticsContentIfNeeded(int savedItemId) {
-        if (isFinishing() || hasAppDetailBackStackEntry()) {
+        if (isFinishing() || hasDetailBackStackEntry()) {
             return;
         }
         // This instance is itself about to be recreated again (e.g. another
@@ -845,8 +850,11 @@ public final class AeroActivity extends Activity {
      */
     @Override // android.app.Activity
     public void onBackPressed() {
-        if (hasAppDetailBackStackEntry()) {
-            closeAppDetail();
+        String detailEntry = getDetailBackStackEntryName();
+        if (detailEntry != null) {
+            getFragmentManager().popBackStack(detailEntry,
+                    android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            setTitle(getDetailParentTitle(detailEntry));
             return;
         }
         if (this.mClosePending) {
@@ -875,6 +883,19 @@ public final class AeroActivity extends Activity {
         };
         mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
         Toast.makeText(this, R.string.back_for_close, 1).show();
+    }
+
+    private String getDetailParentTitle(String detailEntry) {
+        if ("AppDetail".equals(detailEntry)) {
+            return getString(R.string.slider_app_monitor);
+        }
+        if ("GPU Governor".equals(detailEntry)) {
+            return getString(R.string.slider_gpu_settings);
+        }
+        if ("Memory".equals(detailEntry)) {
+            return getString(R.string.slider_memory_settings);
+        }
+        return getString(R.string.slider_cpu_settings);
     }
 
     /**
