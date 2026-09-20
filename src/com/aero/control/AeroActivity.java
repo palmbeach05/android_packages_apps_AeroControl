@@ -870,6 +870,7 @@ public final class AeroActivity extends Activity {
             return;
         }
         if (mFragmentStack.size() > 1) {
+            startCloseConfirmation();
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
             int previousResourceId = getResourceIdForFragment(savedPreviousFragment);
@@ -887,6 +888,14 @@ public final class AeroActivity extends Activity {
             }
             return;
         }
+        startCloseConfirmation();
+        Toast.makeText(this, R.string.back_for_close, 1).show();
+    }
+
+    /**
+     * Starts the interval during which another Back press closes the activity.
+     */
+    private void startCloseConfirmation() {
         this.mClosePending = true;
         if (this.mClearClosePending != null) {
             mHandler.removeCallbacks(this.mClearClosePending);
@@ -898,7 +907,6 @@ public final class AeroActivity extends Activity {
             }
         };
         mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
-        Toast.makeText(this, R.string.back_for_close, 1).show();
     }
 
     private String getDetailParentTitle(String detailEntry) {
