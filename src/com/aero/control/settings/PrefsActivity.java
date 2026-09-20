@@ -337,18 +337,29 @@ public class PrefsActivity extends PreferenceActivity {
         }
     }
 
+    /**
+     * Reapplies the configured screen orientation when the activity resumes.
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     protected void onResume() {
         super.onResume();
         OrientationHelper.applyOrientation(this);
     }
 
+    /**
+     * Synchronizes the navigation drawer after activity creation completes.
+     *
+     * @param savedInstanceState the activity's previously saved state, if any
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         this.mNavigationDrawer.syncState();
     }
 
+    /**
+     * Requires a second Back press within the confirmation window to close settings.
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onBackPressed() {
         if (this.mClosePending) {
@@ -366,12 +377,23 @@ public class PrefsActivity extends PreferenceActivity {
         this.mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
     }
 
+    /**
+     * Forwards configuration changes to the navigation drawer.
+     *
+     * @param newConfig the updated device configuration
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         this.mNavigationDrawer.onConfigurationChanged(newConfig);
     }
 
+    /**
+     * Lets the navigation drawer handle action-bar items before the activity.
+     *
+     * @param item the selected menu item
+     * @return {@code true} when the selection was handled
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         if (this.mNavigationDrawer.onOptionsItemSelected(item)) {
