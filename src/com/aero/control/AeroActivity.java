@@ -677,6 +677,7 @@ public final class AeroActivity extends Activity {
     }
 
     private void clearDetailBackStackForDrawerNavigation() {
+        getFragmentManager().executePendingTransactions();
         String detailEntry = getDetailBackStackEntryName();
         if (detailEntry != null) {
             getFragmentManager().popBackStackImmediate(
