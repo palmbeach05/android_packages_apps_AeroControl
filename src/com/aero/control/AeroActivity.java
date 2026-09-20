@@ -603,16 +603,12 @@ public final class AeroActivity extends Activity {
         }
 
         if (fragment != null) {
-            // If a new fragment was created to replace an old one, remove the old one from the stack
-            if (oldFragment != null && oldFragment != fragment && mFragmentStack.contains(oldFragment)) {
-                mFragmentStack.remove(oldFragment);
-            }
             if (replaceFragment) {
                 // Track which drawer item this transaction is for, so
                 // onConfigurationChanged() can hand it off if rotation
                 // races ahead of this transaction committing.
                 mPendingDrawerTransactionItemResourceId = itemResourceId;
-                switchContent(fragment);
+                switchContent(fragment, oldFragment);
             }
         }
         this.mDrawerList.setItemChecked(position, true);
@@ -862,14 +858,14 @@ public final class AeroActivity extends Activity {
             return;
         }
         if (mFragmentStack.size() > 1) {
-            mFragmentStack.pop();
-            Fragment previousFragment = mFragmentStack.peek();
-            switchContent(previousFragment, false);
+            Fragment previousFragment = mFragmentStack.get(mFragmentStack.size() - 2);
+            switchContent(previousFragment, false, true, true);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(previousFragment);
             if (restoredTitle != null) {
                 setTitle(restoredTitle);
             }
+            return;
         }
         this.mClosePending = true;
         if (this.mClearClosePending != null) {
@@ -982,7 +978,11 @@ public final class AeroActivity extends Activity {
      * @param fragment the fragment to display
      */
     public final void switchContent(final Fragment fragment) {
-        switchContent(fragment, true);
+        switchContent(fragment, null);
+    }
+
+    private void switchContent(final Fragment fragment, final Fragment obsoleteFragment) {
+        switchContent(fragment, true, false, false, obsoleteFragment);
     }
 
     /**
@@ -993,6 +993,22 @@ public final class AeroActivity extends Activity {
      * @param addToStack if true, pushes the fragment onto the back stack
      */
     private void switchContent(final Fragment fragment, final boolean addToStack) {
+        switchContent(fragment, addToStack, false, false, null);
+    }
+
+    /**
+     * Queues a top-level replacement, superseding any replacement that has not
+     * started yet. Back navigation executes immediately so a following Back press
+     * observes the updated page history.
+     */
+    private void switchContent(final Fragment fragment, final boolean addToStack,
+            final boolean removeCurrentFromStack, boolean executeImmediately) {
+        switchContent(fragment, addToStack, removeCurrentFromStack, executeImmediately, null);
+    }
+
+    private void switchContent(final Fragment fragment, final boolean addToStack,
+            final boolean removeCurrentFromStack, boolean executeImmediately,
+            final Fragment obsoleteFragment) {
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
         }
@@ -1001,17 +1017,26 @@ public final class AeroActivity extends Activity {
             public void run() {
                 // This transaction is about to run (or be skipped below), so
                 // it's no longer pending.
+                AeroActivity.this.mPendingSwitch = null;
                 AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
                 if (AeroActivity.this.isFinishing()) {
                     return;
                 }
                 try {
-                    AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
+                    AeroActivity.this.getFragmentManager().beginTransaction()
+                            .replace(R.id.content_frame, fragment).commit();
+                    AeroActivity.this.getFragmentManager().executePendingTransactions();
                     // Selecting a page already in the history moves it to the top
                     // instead of creating a duplicate Back entry.
                     if (addToStack) {
+                        if (obsoleteFragment != null && obsoleteFragment != fragment) {
+                            mFragmentStack.remove(obsoleteFragment);
+                        }
                         mFragmentStack.remove(fragment);
                         mFragmentStack.push(fragment);
+                    } else if (removeCurrentFromStack && mFragmentStack.size() > 1
+                            && mFragmentStack.get(mFragmentStack.size() - 2) == fragment) {
+                        mFragmentStack.pop();
                     }
                 } catch (IllegalStateException e) {
                     if (!AeroActivity.this.isFinishing()) {
@@ -1020,7 +1045,11 @@ public final class AeroActivity extends Activity {
                 }
             }
         };
-        mHandler.post(this.mPendingSwitch);
+        if (executeImmediately) {
+            this.mPendingSwitch.run();
+        } else {
+            mHandler.post(this.mPendingSwitch);
+        }
     }
 
     /**
