@@ -677,6 +677,7 @@ public final class AeroActivity extends Activity {
         return null;
     }
 
+    /** Clears any open detail page before displaying a drawer destination. */
     private void clearDetailBackStackForDrawerNavigation() {
         getFragmentManager().executePendingTransactions();
         String detailEntry = getDetailBackStackEntryName();
