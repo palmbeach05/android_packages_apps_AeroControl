@@ -885,10 +885,18 @@ public final class AeroActivity extends Activity {
             setTitle(getDetailParentTitle(detailEntry));
             return;
         }
+        if (!this.mReturnToSettings && this.mClosePending) {
+            finish();
+            return;
+        }
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            clearClosePending();
+            if (this.mReturnToSettings) {
+                clearClosePending();
+            } else {
+                startCloseConfirmation();
+            }
             switchContent(savedPreviousFragment, false, true, true);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(savedPreviousFragment);
@@ -899,10 +907,6 @@ public final class AeroActivity extends Activity {
         }
         if (this.mReturnToSettings) {
             clearClosePending();
-            finish();
-            return;
-        }
-        if (this.mClosePending) {
             finish();
             return;
         }
