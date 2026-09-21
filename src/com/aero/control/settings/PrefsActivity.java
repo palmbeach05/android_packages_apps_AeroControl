@@ -60,6 +60,12 @@ public class PrefsActivity extends PreferenceActivity {
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private Runnable mClearClosePending;
 
+    /**
+     * Initializes the settings screen, its preference controls, and the
+     * navigation drawer.
+     *
+     * @param savedInstanceState the previously saved activity state, or null
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applySettingsTheme(this);
@@ -91,6 +97,7 @@ public class PrefsActivity extends PreferenceActivity {
         setTitle(R.string.aero_settings);
         context = this;
         this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
+            /** Opens the selected main-screen destination from Settings. */
             @Override
             public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
                 PrefsActivity.this.mNavigationDrawer.closeDrawers();
@@ -99,7 +106,7 @@ public class PrefsActivity extends PreferenceActivity {
                 }
                 Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
                 intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.putExtra(AeroActivity.EXTRA_RETURN_TO_SETTINGS, true);
                 PrefsActivity.this.startActivity(intent);
                 PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }

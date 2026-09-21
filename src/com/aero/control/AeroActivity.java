@@ -60,7 +60,9 @@ public final class AeroActivity extends Activity {
     };
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
+    private static final String RETURN_TO_SETTINGS = "ReturnToSettings";
     public static final String EXTRA_SELECTED_ITEM_ID = "com.aero.control.SELECTED_ITEM_ID";
+    public static final String EXTRA_RETURN_TO_SETTINGS = "com.aero.control.RETURN_TO_SETTINGS";
     public Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
@@ -85,6 +87,7 @@ public final class AeroActivity extends Activity {
     private String mCurrentTheme;
     private Runnable mPendingSwitch;
     private boolean mClosePending = false;
+    private boolean mReturnToSettings = false;
     private int mSelectedItemPosition = 0;
     private Runnable mClearClosePending;
     private Runnable mPendingBackgroundInit;
@@ -108,6 +111,12 @@ public final class AeroActivity extends Activity {
     public static final HardwareGateway hardware = shell.getHardwareGateway();
     public static GenericHelper genHelper = new GenericHelper();
 
+    /**
+     * Initializes the main activity, restores its navigation state, and starts
+     * the selected drawer destination.
+     *
+     * @param savedInstanceState the previously saved activity state, or null
+     */
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         this.mCurrentTheme = ThemeHelper.getTheme(this);
@@ -126,6 +135,11 @@ public final class AeroActivity extends Activity {
         }
         // Always initialize a fresh stack for this Activity instance
         mFragmentStack = new Stack<>();
+        if (savedInstanceState != null) {
+            this.mReturnToSettings = savedInstanceState.getBoolean(RETURN_TO_SETTINGS, false);
+        } else {
+            this.mReturnToSettings = getIntent().getBooleanExtra(EXTRA_RETURN_TO_SETTINGS, false);
+        }
         if (Build.VERSION.SDK_INT >= 19 && !ViewConfiguration.get(getBaseContext()).hasPermanentMenuKey()) {
             Window win = getWindow();
             WindowManager.LayoutParams winParams = win.getAttributes();
@@ -725,6 +739,7 @@ public final class AeroActivity extends Activity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_ITEM, this.mSelectedItemPosition);
+        outState.putBoolean(RETURN_TO_SETTINGS, this.mReturnToSettings);
         // Save stable navigation item resource ID for robust restoration
         NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(this.mSelectedItemPosition);
         if (item != null) {
@@ -858,6 +873,11 @@ public final class AeroActivity extends Activity {
      */
     @Override // android.app.Activity
     public void onBackPressed() {
+        if (this.mNavigationDrawer.isDrawerOpen()) {
+            this.mNavigationDrawer.closeDrawers();
+            clearClosePending();
+            return;
+        }
         String detailEntry = getDetailBackStackEntryName();
         if (detailEntry != null) {
             getFragmentManager().popBackStack(detailEntry,
@@ -865,15 +885,20 @@ public final class AeroActivity extends Activity {
             setTitle(getDetailParentTitle(detailEntry));
             return;
         }
-        if (this.mClosePending) {
+        if (!this.mReturnToSettings && this.mClosePending) {
             finish();
             return;
         }
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            startCloseConfirmation();
+            if (this.mReturnToSettings) {
+                clearClosePending();
+            } else {
+                startCloseConfirmation();
+            }
             switchContent(savedPreviousFragment, false, true, true);
+            synchronizeDrawerSelectionWithFragment(savedPreviousFragment);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(savedPreviousFragment);
             if (restoredTitle != null) {
@@ -881,7 +906,33 @@ public final class AeroActivity extends Activity {
             }
             return;
         }
+        if (this.mReturnToSettings) {
+            clearClosePending();
+            finish();
+            return;
+        }
         startCloseConfirmation();
+    }
+
+    /**
+     * Updates the checked drawer item to match a top-level fragment without
+     * triggering another fragment transaction or changing close confirmation state.
+     *
+     * @param fragment the visible top-level fragment
+     */
+    private void synchronizeDrawerSelectionWithFragment(Fragment fragment) {
+        int resourceId = getResourceIdForFragment(fragment);
+        if (resourceId == -1) {
+            return;
+        }
+        for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
+            NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(i);
+            if (item != null && item.content == resourceId) {
+                this.mSelectedItemPosition = i;
+                this.mDrawerList.setItemChecked(i, true);
+                return;
+            }
+        }
     }
 
     /**

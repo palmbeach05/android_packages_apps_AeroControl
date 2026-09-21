@@ -50,8 +50,8 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private CustomPreference mColorControl;
     private AlertDialog mColorDialog;
     private String[] mColorValues;
-    private final ExecutorService mColorWorker = Executors.newSingleThreadExecutor();
-    private final ExecutorService mGpuWorker = Executors.newSingleThreadExecutor();
+    private ExecutorService mColorWorker = Executors.newSingleThreadExecutor();
+    private ExecutorService mGpuWorker = Executors.newSingleThreadExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private final Object mColorRequestLock = new Object();
     private volatile int mColorGeneration;
@@ -100,6 +100,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         boolean checkmSweep2wake;
         boolean checkDoubletap2wake;
         super.onCreate(savedInstanceState);
+        ensureWorkersRunning();
         setHasOptionsMenu(true);
         addPreferencesFromResource(R.layout.gpu_fragment);
         this.root = getPreferenceScreen();
@@ -238,6 +239,19 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         }
         initializeGpuPreferences(gpuCategory);
         this.mGPUControlFrequencies.setDialogIcon(R.drawable.gpu);
+    }
+
+    /** Recreates background workers after this fragment instance has been restored. */
+    private void ensureWorkersRunning() {
+        if (this.mGpuWorker.isShutdown() || this.mGpuWorker.isTerminated()) {
+            this.mGpuWorker = Executors.newSingleThreadExecutor();
+        }
+        if (this.mColorWorker.isShutdown() || this.mColorWorker.isTerminated()) {
+            this.mColorWorker = Executors.newSingleThreadExecutor();
+            synchronized (this.mColorRequestLock) {
+                this.mColorWriterRunning = false;
+            }
+        }
     }
 
     /** Reads GPU state off the UI thread, then applies the snapshot on the main thread. */
