@@ -885,30 +885,22 @@ public final class AeroActivity extends Activity {
             setTitle(getDetailParentTitle(detailEntry));
             return;
         }
-        if (!this.mReturnToSettings && this.mClosePending) {
+        if (this.mClosePending) {
             finish();
             return;
         }
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            if (this.mReturnToSettings) {
-                clearClosePending();
-            } else {
-                startCloseConfirmation();
+            startCloseConfirmation();
+            if (switchContent(savedPreviousFragment, false, true, true)) {
+                synchronizeDrawerSelectionWithFragment(savedPreviousFragment);
+                // Restore title by finding which fragment we're returning to
+                String restoredTitle = getTitleForFragment(savedPreviousFragment);
+                if (restoredTitle != null) {
+                    setTitle(restoredTitle);
+                }
             }
-            switchContent(savedPreviousFragment, false, true, true);
-            synchronizeDrawerSelectionWithFragment(savedPreviousFragment);
-            // Restore title by finding which fragment we're returning to
-            String restoredTitle = getTitleForFragment(savedPreviousFragment);
-            if (restoredTitle != null) {
-                setTitle(restoredTitle);
-            }
-            return;
-        }
-        if (this.mReturnToSettings) {
-            clearClosePending();
-            finish();
             return;
         }
         startCloseConfirmation();
@@ -925,13 +917,9 @@ public final class AeroActivity extends Activity {
         if (resourceId == -1) {
             return;
         }
-        for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
-            NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(i);
-            if (item != null && item.content == resourceId) {
-                this.mSelectedItemPosition = i;
-                this.mDrawerList.setItemChecked(i, true);
-                return;
-            }
+        int position = this.mNavigationDrawer.setItemCheckedByResourceId(resourceId);
+        if (position != -1) {
+            this.mSelectedItemPosition = position;
         }
     }
 
@@ -1086,9 +1074,9 @@ public final class AeroActivity extends Activity {
      * started yet. Back navigation executes immediately so a following Back press
      * observes the updated page history.
      */
-    private void switchContent(final Fragment fragment, final boolean addToStack,
+    private boolean switchContent(final Fragment fragment, final boolean addToStack,
             final boolean removeCurrentFromStack, boolean executeImmediately) {
-        switchContent(fragment, addToStack, removeCurrentFromStack, executeImmediately, null);
+        return switchContent(fragment, addToStack, removeCurrentFromStack, executeImmediately, null);
     }
 
     /**
@@ -1101,9 +1089,10 @@ public final class AeroActivity extends Activity {
      * @param executeImmediately whether to run the replacement synchronously
      * @param obsoleteFragment the superseded instance to remove from the history
      */
-    private void switchContent(final Fragment fragment, final boolean addToStack,
+    private boolean switchContent(final Fragment fragment, final boolean addToStack,
             final boolean removeCurrentFromStack, boolean executeImmediately,
             final Fragment obsoleteFragment) {
+        final boolean[] replacementSucceeded = {false};
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
         }
@@ -1133,6 +1122,7 @@ public final class AeroActivity extends Activity {
                             && mFragmentStack.get(mFragmentStack.size() - 2) == fragment) {
                         mFragmentStack.pop();
                     }
+                    replacementSucceeded[0] = true;
                 } catch (IllegalStateException e) {
                     if (!AeroActivity.this.isFinishing()) {
                         AeroActivity.this.recreate();
@@ -1145,6 +1135,7 @@ public final class AeroActivity extends Activity {
         } else {
             mHandler.post(this.mPendingSwitch);
         }
+        return replacementSucceeded[0];
     }
 
     /**
