@@ -111,6 +111,12 @@ public final class AeroActivity extends Activity {
     public static final HardwareGateway hardware = shell.getHardwareGateway();
     public static GenericHelper genHelper = new GenericHelper();
 
+    /**
+     * Initializes the main activity, restores its navigation state, and starts
+     * the selected drawer destination.
+     *
+     * @param savedInstanceState the previously saved activity state, or null
+     */
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         this.mCurrentTheme = ThemeHelper.getTheme(this);
