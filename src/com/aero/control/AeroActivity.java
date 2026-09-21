@@ -180,11 +180,12 @@ public final class AeroActivity extends Activity {
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
-            // Restore full fragment stack from saved resource IDs
-            int[] stackResourceIds = savedInstanceState.getIntArray("FRAGMENT_STACK_IDS");
-            reconnectRestoredFragments(stackResourceIds);
             // Restore using stable resource ID if available, otherwise fall back to position
             savedItemId = savedInstanceState.getInt(SELECTED_ITEM_ID, -1);
+            // Restore full fragment stack from saved resource IDs. The selected drawer
+            // destination is also used to recover from stale FragmentManager state.
+            int[] stackResourceIds = savedInstanceState.getIntArray("FRAGMENT_STACK_IDS");
+            reconnectRestoredFragments(stackResourceIds, savedItemId);
 
             // Check if the current fragment in content_frame matches the saved selection.
             // Note: Fragment.getView() is not used here to test for a rendered view --
@@ -371,20 +372,13 @@ public final class AeroActivity extends Activity {
 
     /**
      * Reconnects fragments that were restored by the FragmentManager to the activity's
-     * fragment field variables and rebuilds the fragment stack.
-     */
-    private void reconnectRestoredFragments() {
-        reconnectRestoredFragments(null);
-    }
-
-    /**
-     * Reconnects fragments that were restored by the FragmentManager to the activity's
      * fragment field variables and rebuilds the fragment stack from saved resource IDs.
      *
      * @param stackResourceIds array of resource IDs representing the saved fragment stack,
      *                         or null to build a stack with just the current fragment
+     * @param selectedItemId resource ID of the selected drawer destination, or -1
      */
-    private void reconnectRestoredFragments(int[] stackResourceIds) {
+    private void reconnectRestoredFragments(int[] stackResourceIds, int selectedItemId) {
         // Reconnect any fragment restored by FragmentManager to activity fields
         android.app.FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.content_frame);
@@ -424,6 +418,20 @@ public final class AeroActivity extends Activity {
         } else if (fragment != null) {
             // Fallback: just push the current fragment if no stack was saved
             mFragmentStack.push(fragment);
+        }
+
+        // A saved history is useful only when its top is the restored top-level
+        // destination. If it is stale, retain the selected drawer destination as
+        // the sole root instead of accidentally manufacturing an Overview entry.
+        Fragment selectedFragment = selectedItemId != -1
+                ? getFragmentByResourceId(selectedItemId, true) : null;
+        Fragment visibleTopLevel = selectedFragment != null ? selectedFragment
+                : (fragment != null && getResourceIdForFragment(fragment) != -1
+                        ? fragment : null);
+        if (visibleTopLevel != null
+                && (mFragmentStack.empty() || mFragmentStack.peek() != visibleTopLevel)) {
+            mFragmentStack.clear();
+            mFragmentStack.push(visibleTopLevel);
         }
     }
 
@@ -885,18 +893,15 @@ public final class AeroActivity extends Activity {
             setTitle(getDetailParentTitle(detailEntry));
             return;
         }
-        if (!this.mReturnToSettings && this.mClosePending) {
+        if (this.mClosePending) {
             finish();
             return;
         }
+        synchronizeFragmentHistoryWithVisibleContent();
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            if (this.mReturnToSettings) {
-                clearClosePending();
-            } else {
-                startCloseConfirmation();
-            }
+            clearClosePending();
             switchContent(savedPreviousFragment, false, true, true);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(savedPreviousFragment);
@@ -905,12 +910,21 @@ public final class AeroActivity extends Activity {
             }
             return;
         }
-        if (this.mReturnToSettings) {
-            clearClosePending();
-            finish();
+        startCloseConfirmation();
+    }
+
+    /**
+     * Discards stale top-level history before Back chooses a prior destination.
+     */
+    private void synchronizeFragmentHistoryWithVisibleContent() {
+        Fragment visibleFragment = getFragmentManager().findFragmentById(R.id.content_frame);
+        if (visibleFragment == null || getResourceIdForFragment(visibleFragment) == -1) {
             return;
         }
-        startCloseConfirmation();
+        if (mFragmentStack.empty() || mFragmentStack.peek() != visibleFragment) {
+            mFragmentStack.clear();
+            mFragmentStack.push(visibleFragment);
+        }
     }
 
     /**
@@ -1099,6 +1113,10 @@ public final class AeroActivity extends Activity {
                     AeroActivity.this.getFragmentManager().beginTransaction()
                             .replace(R.id.content_frame, fragment).commit();
                     AeroActivity.this.getFragmentManager().executePendingTransactions();
+                    if (AeroActivity.this.getFragmentManager()
+                            .findFragmentById(R.id.content_frame) != fragment) {
+                        return;
+                    }
                     // Selecting a page already in the history moves it to the top
                     // instead of creating a duplicate Back entry.
                     if (addToStack) {
