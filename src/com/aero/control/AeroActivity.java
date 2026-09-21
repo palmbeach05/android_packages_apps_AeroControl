@@ -898,6 +898,7 @@ public final class AeroActivity extends Activity {
                 startCloseConfirmation();
             }
             switchContent(savedPreviousFragment, false, true, true);
+            synchronizeDrawerSelectionWithFragment(savedPreviousFragment);
             // Restore title by finding which fragment we're returning to
             String restoredTitle = getTitleForFragment(savedPreviousFragment);
             if (restoredTitle != null) {
@@ -911,6 +912,27 @@ public final class AeroActivity extends Activity {
             return;
         }
         startCloseConfirmation();
+    }
+
+    /**
+     * Updates the checked drawer item to match a top-level fragment without
+     * triggering another fragment transaction or changing close confirmation state.
+     *
+     * @param fragment the visible top-level fragment
+     */
+    private void synchronizeDrawerSelectionWithFragment(Fragment fragment) {
+        int resourceId = getResourceIdForFragment(fragment);
+        if (resourceId == -1) {
+            return;
+        }
+        for (int i = 0; i < this.mNavigationDrawer.getItemCount(); i++) {
+            NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(i);
+            if (item != null && item.content == resourceId) {
+                this.mSelectedItemPosition = i;
+                this.mDrawerList.setItemChecked(i, true);
+                return;
+            }
+        }
     }
 
     /**
