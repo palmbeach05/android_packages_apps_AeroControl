@@ -111,6 +111,7 @@ public class PrefsActivity extends PreferenceActivity {
                 PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
+        this.mNavigationDrawer.setItemCheckedByResourceId(R.string.aero_settings);
         this.mNavigationDrawer.syncState();
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
@@ -351,6 +352,9 @@ public class PrefsActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         OrientationHelper.applyOrientation(this);
+        if (this.mNavigationDrawer != null) {
+            this.mNavigationDrawer.setItemCheckedByResourceId(R.string.aero_settings);
+        }
     }
 
     /**

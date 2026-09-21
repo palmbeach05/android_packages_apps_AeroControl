@@ -53,6 +53,7 @@ public class NavigationDrawerHelper {
     private final DrawerLayout mDrawerLayout;
     private final ActionBarDrawerToggle mDrawerToggle;
     private final ItemAdapter mAdapter;
+    private final ListView mDrawerList;
 
     /**
      * Creates and configures the navigation drawer for the specified activity.
@@ -64,14 +65,14 @@ public class NavigationDrawerHelper {
      */
     public NavigationDrawerHelper(final Activity activity, final OnDrawerItemSelectedListener listener) {
         this.mDrawerLayout = (DrawerLayout) activity.findViewById(R.id.drawer_layout);
-        ListView drawerList = (ListView) activity.findViewById(R.id.left_drawer);
+        this.mDrawerList = (ListView) activity.findViewById(R.id.left_drawer);
 
         this.mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
         NavBarItems content = new NavBarItems(activity);
         this.mAdapter = new ItemAdapter(activity, content.ITEMS, ThemeHelper.getTheme(activity));
-        drawerList.setAdapter((ListAdapter) this.mAdapter);
-        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        this.mDrawerList.setAdapter((ListAdapter) this.mAdapter);
+        this.mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 NavBarItems.PreferenceItem item = NavigationDrawerHelper.this.mAdapter.getItem(position);
@@ -203,6 +204,24 @@ public class NavigationDrawerHelper {
      */
     public int getItemCount() {
         return this.mAdapter.getCount();
+    }
+
+    /**
+     * Marks the drawer item with the supplied resource ID as checked without
+     * invoking the selection listener or changing the drawer state.
+     *
+     * @param resourceId the string resource ID identifying the drawer item
+     * @return the matching item position, or {@code -1} when no item matches
+     */
+    public int setItemCheckedByResourceId(int resourceId) {
+        for (int position = 0; position < this.mAdapter.getCount(); position++) {
+            NavBarItems.PreferenceItem item = this.mAdapter.getItem(position);
+            if (item != null && item.content == resourceId) {
+                this.mDrawerList.setItemChecked(position, true);
+                return position;
+            }
+        }
+        return -1;
     }
 
     private static final class ItemAdapter extends ArrayAdapter<NavBarItems.PreferenceItem> {
