@@ -12,8 +12,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.os.SystemClock;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -26,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.BackConfirmation;
 import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
@@ -40,7 +40,8 @@ import java.io.File;
  * application settings. Uses Material Design cards to group related preferences.
  */
 public class PrefsActivity extends PreferenceActivity {
-    private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
+    public static final String EXTRA_RETURN_TO_PAGE = "com.aero.control.RETURN_TO_PAGE";
+    private boolean mReturnToPage;
     static Context context;
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     private ActionBar mActionBar;
@@ -56,14 +57,22 @@ public class PrefsActivity extends PreferenceActivity {
     private int mIconTintColor;
     private NavigationDrawerHelper mNavigationDrawer;
     private SettingsCardAdapter mSettingsAdapter;
-    private boolean mClosePending = false;
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
-    private Runnable mClearClosePending;
 
+    /**
+     * Initializes the settings screen, its preference controls, and the
+     * navigation drawer.
+     *
+     * @param savedInstanceState the previously saved activity state, or null
+     */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applySettingsTheme(this);
         super.onCreate(savedInstanceState);
+        BackConfirmation.restore(savedInstanceState == null ? 0
+                : savedInstanceState.getLong(BackConfirmation.STATE_DEADLINE));
+        this.mReturnToPage = savedInstanceState == null
+                ? getIntent().getBooleanExtra(EXTRA_RETURN_TO_PAGE, false)
+                : savedInstanceState.getBoolean(EXTRA_RETURN_TO_PAGE, false);
         TypedArray tintTypedArray = getTheme().obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
         this.mIconTintColor = tintTypedArray.getColor(0, 0);
         tintTypedArray.recycle();
@@ -91,6 +100,7 @@ public class PrefsActivity extends PreferenceActivity {
         setTitle(R.string.aero_settings);
         context = this;
         this.mNavigationDrawer = new NavigationDrawerHelper(this, new NavigationDrawerHelper.OnDrawerItemSelectedListener() {
+            /** Opens the selected main-screen destination from Settings. */
             @Override
             public void onDrawerItemSelected(NavBarItems.PreferenceItem item, int position) {
                 PrefsActivity.this.mNavigationDrawer.closeDrawers();
@@ -99,11 +109,12 @@ public class PrefsActivity extends PreferenceActivity {
                 }
                 Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
                 intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.putExtra(AeroActivity.EXTRA_RETURN_TO_SETTINGS, true);
                 PrefsActivity.this.startActivity(intent);
                 PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
+        this.mNavigationDrawer.setItemCheckedByResourceId(R.string.aero_settings);
         this.mNavigationDrawer.syncState();
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
@@ -344,6 +355,9 @@ public class PrefsActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         OrientationHelper.applyOrientation(this);
+        if (this.mNavigationDrawer != null) {
+            this.mNavigationDrawer.setItemCheckedByResourceId(R.string.aero_settings);
+        }
     }
 
     /**
@@ -357,24 +371,33 @@ public class PrefsActivity extends PreferenceActivity {
         this.mNavigationDrawer.syncState();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(EXTRA_RETURN_TO_PAGE, this.mReturnToPage);
+        outState.putLong(BackConfirmation.STATE_DEADLINE, BackConfirmation.getDeadline());
+    }
+
     /**
-     * Requires a second Back press within the confirmation window to close settings.
+     * Returns to the previous page and starts the shared close confirmation.
      */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onBackPressed() {
-        if (this.mClosePending) {
-            finish();
+        if (this.mNavigationDrawer.isDrawerOpen()) {
+            this.mNavigationDrawer.closeDrawers();
+            BackConfirmation.clear();
             return;
         }
-        this.mClosePending = true;
+        if (BackConfirmation.isPending(SystemClock.elapsedRealtime())) {
+            BackConfirmation.clear();
+            moveTaskToBack(true);
+            return;
+        }
+        BackConfirmation.start(SystemClock.elapsedRealtime());
         Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_SHORT).show();
-        this.mClearClosePending = new Runnable() {
-            @Override // java.lang.Runnable
-            public void run() {
-                PrefsActivity.this.mClosePending = false;
-            }
-        };
-        this.mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
+        if (this.mReturnToPage && !isTaskRoot()) {
+            finish();
+        }
     }
 
     /**
