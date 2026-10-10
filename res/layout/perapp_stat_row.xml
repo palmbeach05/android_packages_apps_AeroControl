@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    style="?attr/aeroCardStyle"
+    android:padding="5dp"
+    android:descendantFocusability="beforeDescendants"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/rowimage"
+        android:padding="2dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignParentLeft="true"/>
+    <TextView
+        android:textSize="16sp"
+        android:textColor="?attr/aeroSecondaryTextColor"
+        android:id="@+id/rowtext"
+        android:padding="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/rowimage"/>
+    <TextView
+        android:textSize="16sp"
+        android:id="@+id/rowtime"
+        android:padding="10dp"
+        android:focusable="false"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"/>
+</RelativeLayout>

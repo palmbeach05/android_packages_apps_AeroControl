@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <PreferenceCategory
+        android:title="@string/pref_memory_settings"
+        android:key="memory_settings">
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/pref_entropy_settings"
+            android:key="entropy_settings"
+            android:summary="@string/pref_entropy_settings_summary"/>
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/pref_fstrim"
+            android:key="fstrim_toggle"
+            android:summary="@string/pref_fstrim_summary"/>
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/pref_dalvik_settings"
+            android:key="dalvik_settings"
+            android:summary="@string/pref_dalvik_settings_summary"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/io_scheduler"
+        android:key="io_scheduler_parameter"/>
+</PreferenceScreen>
