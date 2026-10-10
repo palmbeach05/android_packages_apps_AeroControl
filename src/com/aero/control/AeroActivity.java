@@ -327,6 +327,13 @@ public final class AeroActivity extends Activity {
             selectItemByResourceId(R.string.slider_app_monitor);
         }
         getIntent().putExtra("NOTIFY_STRING", new String());
+        // A queued replacement still leaves the previous page in content_frame.
+        // It will synchronize the drawer after its transaction completes instead.
+        if (!sPendingRecreation && this.mPendingSwitch == null
+                && this.mPendingDrawerTransactionItemResourceId == NO_PENDING_DRAWER_ITEM) {
+            synchronizeDrawerSelectionWithFragment(
+                    getFragmentManager().findFragmentById(R.id.content_frame));
+        }
     }
 
     /**
@@ -930,6 +937,9 @@ public final class AeroActivity extends Activity {
      * @param fragment the visible top-level fragment
      */
     private void synchronizeDrawerSelectionWithFragment(Fragment fragment) {
+        if (fragment == null) {
+            return;
+        }
         int resourceId = getResourceIdForFragment(fragment);
         if (resourceId == -1) {
             return;
@@ -1126,6 +1136,7 @@ public final class AeroActivity extends Activity {
                             && mFragmentStack.get(mFragmentStack.size() - 2) == fragment) {
                         mFragmentStack.pop();
                     }
+                    synchronizeDrawerSelectionWithFragment(fragment);
                     replacementSucceeded[0] = true;
                 } catch (IllegalStateException e) {
                     if (!AeroActivity.this.isFinishing()) {
