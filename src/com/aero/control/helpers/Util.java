@@ -1,6 +1,7 @@
 package com.aero.control.helpers;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
@@ -8,9 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import com.aero.control.R;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -78,12 +82,15 @@ public class Util {
     @TargetApi(21)
     public static List<UsageStats> getUsageStatsList(Context context) {
         UsageStatsManager usm = getUsageStatsManager(context);
+        if (usm == null) {
+            return Collections.emptyList();
+        }
         Calendar calendar = Calendar.getInstance();
         long endTime = calendar.getTimeInMillis();
         calendar.add(1, -1);
         long startTime = calendar.getTimeInMillis();
         List<UsageStats> usageStatsList = usm.queryUsageStats(0, startTime, endTime);
-        return usageStatsList;
+        return usageStatsList == null ? Collections.<UsageStats>emptyList() : usageStatsList;
     }
 
     /**
@@ -106,15 +113,47 @@ public class Util {
      * @param context the context to display the dialog and launch settings
      */
     public static void showUsageStatDialog(final Context context) {
-        if (Build.VERSION.SDK_INT > 19 && getUsageStatsList(context).isEmpty()) {
-            AlertDialog dialog = new AlertDialog.Builder(context).setTitle(R.string.warning).setIcon(R.drawable.warning).setMessage(R.string.pref_lollipop_usage_warning).setCancelable(false).setPositiveButton(R.string.aero_continue, new DialogInterface.OnClickListener() { // from class: com.aero.control.helpers.Util.1
-                @Override // android.content.DialogInterface.OnClickListener
-                public void onClick(DialogInterface dialog2, int which) {
-                    Intent intent = new Intent("android.settings.USAGE_ACCESS_SETTINGS");
-                    context.startActivity(intent);
-                }
-            }).create();
-            dialog.show();
+        if (Build.VERSION.SDK_INT <= 19 || context == null) {
+            return;
         }
+        final Handler mainHandler = new Handler(Looper.getMainLooper());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean usageStatsUnavailable = getUsageStatsList(context).isEmpty();
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!usageStatsUnavailable || isActivityUnavailable(context)) {
+                            return;
+                        }
+                        AlertDialog dialog = new AlertDialog.Builder(context)
+                                .setTitle(R.string.warning)
+                                .setIcon(R.drawable.warning)
+                                .setMessage(R.string.pref_lollipop_usage_warning)
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.aero_continue,
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog2, int which) {
+                                                Intent intent = new Intent(
+                                                        "android.settings.USAGE_ACCESS_SETTINGS");
+                                                context.startActivity(intent);
+                                            }
+                                        }).create();
+                        dialog.show();
+                    }
+                });
+            }
+        }, "UsageStatsPermissionCheck").start();
+    }
+
+    private static boolean isActivityUnavailable(Context context) {
+        if (!(context instanceof Activity)) {
+            return false;
+        }
+        Activity activity = (Activity) context;
+        return activity.isFinishing()
+                || Build.VERSION.SDK_INT >= 17 && activity.isDestroyed();
     }
 }

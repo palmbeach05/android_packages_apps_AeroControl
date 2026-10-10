@@ -12,7 +12,6 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
-import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElement;
 import com.aero.control.helpers.PerApp.AppMonitor.model.AppElementDetail;
@@ -36,12 +35,12 @@ import org.json.JSONObject;
  * provides notification support for the monitoring service.
  */
 public final class JobManager {
-    private static final AeroLog LOG = AeroLog.forClass(JobManager.class);
     private static final String FILENAME_APPMONITOR_NOTIFY = "appmonitor_notify";
     private static JobManager mJobManager = null;
     private static final String mPreferenceValue = "per_app_monitor";
     private AppModuleData mAppModuleData;
     private Context mContext;
+    private final String mClassName = getClass().getName();
     private boolean mJobManagerEnable = true;
     private boolean mSleeping = false;
     private boolean mPrevSleeping = false;
@@ -60,19 +59,15 @@ public final class JobManager {
             public void run() {
                 try {
                     JobManager.this.importData();
-                } catch (RuntimeException e) {
-                    LOG.error("App Monitor data import failed.", e);
                 } catch (OutOfMemoryError e) {
-                    LOG.warn("Import data is too large; deleting the import file", e);
+                    AppLogger.print(JobManager.this.mClassName, "We tried to import to much data, deleting import file..." + e, 0);
                     new File(new ContextWrapper(JobManager.this.mContext).getFilesDir() + "/" + Configuration.EMERGENCY_FILE).delete();
-                } finally {
-                    JobManager.this.mSleeping = false;
                 }
             }
         };
-        Thread worker = new Thread(run, "Aero-AppMonitor-Import");
+        Thread worker = new Thread(run);
         worker.start();
-        LOG.info("JobManager initialized, AppMonitor Version " + getVersion() + " loaded!");
+        AppLogger.print(this.mClassName, "JobManager initialized, AppMonitor Version " + getVersion() + " loaded!", -1);
     }
 
     /**
@@ -93,7 +88,7 @@ public final class JobManager {
      */
     public final void enable() {
         this.mJobManagerEnable = true;
-        LOG.info("JobManager enabled!");
+        AppLogger.print(this.mClassName, "JobManager enabled!", 0);
     }
 
     /**
@@ -101,7 +96,7 @@ public final class JobManager {
      */
     public final void disable() {
         this.mJobManagerEnable = false;
-        LOG.info("JobManager disabled!");
+        AppLogger.print(this.mClassName, "JobManager disabled!", 0);
     }
 
     /**
@@ -161,8 +156,8 @@ public final class JobManager {
         PackageManager pm = context.getPackageManager();
         List<AppModuleMetaData> appModuleMetaData = getModuleData().getAppModuleData();
         for (AppModuleMetaData ammd : appModuleMetaData) {
-            LOG.verbose("App Module Data found! (" + ammd.getAppContext().getAppName() + ")");
-            LOG.verbose(ammd.getAppContext().getAppName() + " Time used: (" + ammd.getAppContext().getTimeUsage() + "ms) :");
+            AppLogger.print(this.mClassName, "App Module Data found! (" + ammd.getAppContext().getAppName() + ")", 2);
+            AppLogger.print(this.mClassName, ammd.getAppContext().getAppName() + " Time used: (" + ammd.getAppContext().getTimeUsage() + "ms) :", 2);
             if (ammd.getAppContext().isAboveThreshold()) {
                 try {
                     appicon = pm.getApplicationIcon(ammd.getAppContext().getAppName());
@@ -175,7 +170,7 @@ public final class JobManager {
                 parentData.getChildData().add(new AppElementDetail(ammd.getAppContext().getFormatTimeUsage(), ""));
                 for (AppModule module : getModules()) {
                     parentData.getChildData().add(new AppElementDetail(module.getPrefix(), ammd.getAverage(module.getIdentifier()) + module.getSuffix()));
-                    LOG.verbose("------ Average: " + ammd.getAverage(module.getIdentifier()));
+                    AppLogger.print(this.mClassName, "------ Average: " + ammd.getAverage(module.getIdentifier()), 2);
                 }
                 if (parentData.getRealName() != null) {
                     data.add(parentData);
@@ -219,7 +214,7 @@ public final class JobManager {
         JSONObject jSONObject = new JSONObject();
         long time = System.currentTimeMillis();
         new File(new ContextWrapper(this.mContext).getFilesDir() + "/" + Configuration.EMERGENCY_FILE).delete();
-        LOG.info("Starting emergency write of data...");
+        AppLogger.print(this.mClassName, "Starting emergency write of data...", 0);
         try {
             for (AppContext context : this.mAppData.getAppList()) {
                 JSONObject jSONObject2 = new JSONObject();
@@ -227,16 +222,16 @@ public final class JobManager {
                 jSONObject3.put("TimeUsed", context.getTimeUsage());
                 jSONObject3.put("LastChecked", context.getLastChecked());
                 jSONObject3.put("AppMonitorVersion", getVersion());
-                LOG.debug("Starting export for: " + context.getAppName());
+                AppLogger.print(this.mClassName, "Starting export for: " + context.getAppName(), 1);
                 List<AppModuleMetaData> moduleMetaData = Collections.synchronizedList(getModuleData().getAppModuleData());
                 synchronized (moduleMetaData) {
                     for (AppModuleMetaData ammd : moduleMetaData) {
                         if (ammd.getAppContext() == context) {
-                            LOG.debug("Current Context: " + context.getAppName());
+                            AppLogger.print(this.mClassName, "Current Context: " + context.getAppName(), 1);
                             for (AppModule module : this.mModules) {
                                 JSONObject appModule = new JSONObject();
                                 JSONArray values = new JSONArray();
-                                LOG.debug("Adding Data for module: " + module.getName());
+                                AppLogger.print(this.mClassName, "Adding Data for module: " + module.getName(), 1);
                                 List<Integer> currentValues = Collections.synchronizedList(ammd.getRawData(module.getIdentifier()));
                                 synchronized (currentValues) {
                                     for (Integer i : currentValues) {
@@ -253,29 +248,29 @@ public final class JobManager {
                 jSONObject.put(context.getAppName(), jSONObject2);
             }
         } catch (OutOfMemoryError e) {
-            LOG.warn("Insufficient memory while gathering data; forcing cleanup", e);
+            AppLogger.print(this.mClassName, "We got OOM, forcing cleanup! Exception: " + e, 0);
             for (AppModuleMetaData ammd2 : getModuleData().getAppModuleData()) {
                 forceCleanUp(ammd2.getAppContext().getAppName());
             }
         } catch (JSONException e2) {
         }
-        LOG.debug("Data gathered, writing to disk..");
+        AppLogger.print(this.mClassName, "Data gathered, writing to disk..", 1);
         try {
             FileOutputStream fos = this.mContext.openFileOutput(Configuration.EMERGENCY_FILE, 0);
             BufferedOutputStream bos = new BufferedOutputStream(fos, 8192);
             try {
                 bos.write(jSONObject.toString().getBytes());
             } catch (OutOfMemoryError e3) {
-                LOG.warn("Export data is too large; forcing cleanup", e3);
+                AppLogger.print(this.mClassName, "We tried to save a too large file, forcing cleanup! Exception: " + e3, 0);
                 for (AppModuleMetaData ammd3 : getModuleData().getAppModuleData()) {
                     forceCleanUp(ammd3.getAppContext().getAppName());
                 }
             }
             bos.flush();
             bos.close();
-            LOG.info("Data successfully written to disk in (" + (System.currentTimeMillis() - time) + " ms).");
+            AppLogger.print(this.mClassName, "Data successfully written to disk in (" + (System.currentTimeMillis() - time) + " ms).", 0);
         } catch (IOException e4) {
-            LOG.warn("Unable to write App Monitor data", e4);
+            AppLogger.print(this.mClassName, "Error during data-write..." + e4, 0);
         }
     }
 
@@ -288,7 +283,7 @@ public final class JobManager {
         long time = System.currentTimeMillis();
         this.mSleeping = true;
         if (AeroActivity.genHelper.doesExist(cw.getFilesDir() + "/" + Configuration.EMERGENCY_FILE)) {
-            LOG.info("Emergency file detected, starting import... ");
+            AppLogger.print(this.mClassName, "Emergency file detected, starting import... ", 0);
             try {
                 InputStream is = this.mContext.openFileInput(Configuration.EMERGENCY_FILE);
                 int size = is.available();
@@ -301,20 +296,20 @@ public final class JobManager {
                 this.mModules = new ArrayList();
                 loadModules();
                 this.mAppModuleData = new AppModuleData(getModules());
+                this.mAppModuleData.setCleanupEnable(false);
                 try {
-                    this.mAppModuleData.setCleanupEnable(false);
                     JSONObject json = new JSONObject(tmp);
                     Iterator<?> keys = json.keys();
                     while (keys.hasNext()) {
                         String tempAppName = keys.next().toString();
-                        LOG.debug(tempAppName + " : ");
+                        AppLogger.print(this.mClassName, tempAppName + " : ", 1);
                         AppContext localContext = new AppContext(tempAppName);
                         this.mAppData.addContext(localContext);
                         JSONObject appParent = json.getJSONObject(tempAppName);
                         Iterator<?> appKeys = appParent.keys();
                         while (appKeys.hasNext()) {
                             String tempApp = appKeys.next().toString();
-                            LOG.debug(tempApp + ": ");
+                            AppLogger.print(this.mClassName, tempApp + ": ", 1);
                             JSONObject appData = appParent.getJSONObject(tempApp);
                             Iterator<?> dataKeys = appData.keys();
                             while (dataKeys.hasNext()) {
@@ -322,7 +317,7 @@ public final class JobManager {
                                 try {
                                     int moduleIdentifier = Integer.parseInt(tempData);
                                     if (!isModuleRegistered(moduleIdentifier)) {
-                                        LOG.warn("Skipping data for unregistered module: " + moduleIdentifier);
+                                        AppLogger.print(this.mClassName, "Skipping data for unregistered module: " + moduleIdentifier, 0);
                                         continue;
                                     }
                                     JSONObject moduleData = appData.getJSONObject(tempData);
@@ -337,12 +332,12 @@ public final class JobManager {
                                         try {
                                             this.mAppModuleData.addData(localContext, values, Integer.valueOf(moduleIdentifier));
                                         } catch (RuntimeException e) {
-                                            LOG.warn("Module data was not added because the module is unavailable", e);
+                                            AppLogger.print(this.mClassName, "The data for this module was not added, maybe you tried to add data for a non-existing module?", 0);
                                         }
-                                        LOG.debug(tempModule + ": " + moduleData.getJSONArray(tempModule));
+                                        AppLogger.print(this.mClassName, tempModule + ": " + moduleData.getJSONArray(tempModule), 1);
                                     }
                                 } catch (NumberFormatException e2) {
-                                    LOG.debug(tempData + ": " + appData.get(tempData));
+                                    AppLogger.print(this.mClassName, tempData + ": " + appData.get(tempData), 1);
                                     if (tempData.equals("TimeUsed")) {
                                         localContext.setTimeUsage(appData.getLong(tempData));
                                     } else if (tempData.equals("LastChecked")) {
@@ -353,16 +348,15 @@ public final class JobManager {
                         }
                     }
                 } catch (JSONException e3) {
-                    LOG.warn("Unable to parse imported App Monitor data", e3);
+                    AppLogger.print(this.mClassName, "Error during json-parsing: " + e3, 0);
                     this.mSleeping = false;
-                } finally {
-                    this.mAppModuleData.setCleanupEnable(true);
                 }
                 this.mSleeping = false;
-                LOG.info("Import of data successful in (" + (System.currentTimeMillis() - time) + " ms).");
+                this.mAppModuleData.setCleanupEnable(true);
+                AppLogger.print(this.mClassName, "Import of data successful in (" + (System.currentTimeMillis() - time) + " ms).", 0);
                 return;
             } catch (IOException e4) {
-                LOG.warn("Unable to import App Monitor data", e4);
+                AppLogger.print(this.mClassName, "Error during import... " + e4, 0);
                 this.mSleeping = false;
                 return;
             }
@@ -395,14 +389,14 @@ public final class JobManager {
                     exportData();
                     setExportTimeNow();
                 }
-                LOG.debug("Calling context switch for: " + context.getAppName());
+                AppLogger.print(this.mClassName, "Calling context switch for: " + context.getAppName(), 1);
                 this.mAppData.addContext(context);
                 for (AppModule module : this.mModules) {
                     try {
                         module.operate();
                         this.mAppModuleData.addData(context, module.getLastValue(), module);
                     } catch (RuntimeException e) {
-                        LOG.warn("Module " + module.getName() + " failed during scheduling; skipping this cycle", e);
+                        AppLogger.print(this.mClassName, "Module " + module.getName() + " failed during scheduling, skipping this cycle: " + e, 0);
                     }
                 }
                 if (!this.mNotifcationShowed) {
@@ -430,7 +424,7 @@ public final class JobManager {
             return this.mAppData.getSimpleAppContext(appname);
         }
         if (this.mSleeping && !this.mPrevSleeping) {
-            LOG.info("JobManager is sleeping");
+            AppLogger.print(this.mClassName, "JobManager is disabled", 0);
         }
         return null;
     }
@@ -445,7 +439,7 @@ public final class JobManager {
     public final AppContext getAppContext(String appname) {
         if (!this.mJobManagerEnable || this.mSleeping) {
             if (this.mSleeping && !this.mPrevSleeping) {
-                LOG.info("JobManager is sleeping");
+                AppLogger.print(this.mClassName, "JobManager is disabled", 0);
             }
             return null;
         }
@@ -463,7 +457,7 @@ public final class JobManager {
      */
     public final void setSleep(boolean sleepValue) {
         if (sleepValue && !this.mSleeping) {
-            LOG.info("JobManager is sleeping because the display is off!");
+            AppLogger.print(this.mClassName, "JobManager is sleeping because the display is off!", 0);
         }
         this.mPrevSleeping = this.mSleeping;
         this.mSleeping = sleepValue;
@@ -483,7 +477,7 @@ public final class JobManager {
      */
     public final synchronized void wakeUp() {
         if (getSleepState()) {
-            LOG.info("Forcing a wakeup of the JobManager...");
+            AppLogger.print(this.mClassName, "Forcing a wakeup of the JobManager...", 0);
             setSleep(false);
         }
     }
@@ -508,7 +502,7 @@ public final class JobManager {
         if (counter > 0) {
             this.mModules.add(new GPUFreqModule(this.mContext));
         }
-        LOG.info("Modules successfully initialized!");
+        AppLogger.print(this.mClassName, "Modules successfully initialized!", 0);
     }
 
     /**

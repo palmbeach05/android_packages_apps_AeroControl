@@ -441,6 +441,51 @@ public final class shellHelper {
         return ret;
     }
 
+    /** Reads multiple files with one command through the shared root shell session. */
+    public String[] readFiles(String[] paths) {
+        if (paths == null) {
+            return null;
+        }
+        String[] values = new String[paths.length];
+        if (paths.length == 0) {
+            return values;
+        }
+
+        StringBuilder command = new StringBuilder("AERO_METRICS_OUTPUT=$(");
+        for (int i = 0; i < paths.length; i++) {
+            String startMarker = "AERO_FILE_" + i + "_START";
+            String endMarker = "AERO_FILE_" + i + "_END";
+            command.append("printf '%s\\n' ").append(escapeShellArg(startMarker)).append("; ");
+            if (paths[i] != null && !paths[i].trim().isEmpty()) {
+                command.append("cat ").append(escapeShellArg(paths[i])).append(" 2>/dev/null");
+            }
+            command.append("; printf '\\n%s\\n' ").append(escapeShellArg(endMarker)).append("; ");
+        }
+        command.append("); printf '%s' \"$AERO_METRICS_OUTPUT\"");
+
+        final String output;
+        synchronized (this.session) {
+            output = runCommandAndWaitForOutput(command.toString());
+        }
+        for (int i = 0; i < paths.length; i++) {
+            String startMarker = "AERO_FILE_" + i + "_START";
+            String endMarker = "AERO_FILE_" + i + "_END";
+            if (output == null) {
+                values[i] = NO_DATA_FOUND;
+                continue;
+            }
+            int start = output.indexOf(startMarker);
+            int end = start < 0 ? -1 : output.indexOf(endMarker, start + startMarker.length());
+            if (start < 0 || end < 0) {
+                values[i] = NO_DATA_FOUND;
+                continue;
+            }
+            String value = output.substring(start + startMarker.length(), end).trim();
+            values[i] = value.isEmpty() ? NO_DATA_FOUND : value;
+        }
+        return values;
+    }
+
     /**
      * Sends a single command to the root shell and blocks until the shell
      * produces a result for it (or the read fails/is interrupted), unlike
