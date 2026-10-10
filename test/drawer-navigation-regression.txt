@@ -1,0 +1,53 @@
+On-device drawer navigation regression
+
+The Gradle test source set uses plain JUnit and has no Android drawer UI harness.
+BackConfirmationTest covers deadline logic only. The following UI checks must be
+run on a device or emulator; they have not been executed by adding this procedure.
+
+Use a supported device with Overview (A), CPU Settings (B), and Memory Settings
+(C) available. Begin with a fresh task. Enable rotation in the app settings when
+testing recreation. Repeat on a pre-21 device and an API 21+ device if available.
+
+Forward navigation:
+1. Display Overview. Open the drawer and verify Overview is highlighted.
+2. Select Settings. Open its drawer and verify Settings is highlighted.
+3. Select CPU Settings from the Settings drawer. As soon as it appears, open
+   the drawer and verify CPU Settings is highlighted, including before selecting
+   another page. Close the drawer without navigating.
+4. Select Memory Settings. Verify its content and Memory Settings highlight.
+   The expected sequence is A -> Settings -> B -> C.
+
+Reverse navigation:
+1. Close the drawer before each navigation Back press; Back with an open drawer
+   only closes it. From C, press Back once: B and its highlight must return.
+2. Wait longer than 3.5 seconds after each navigation Back press to avoid the
+   intentional task-exit confirmation. From B, press Back: Settings must return
+   with Settings highlighted. From Settings, press Back: A must return with
+   Overview highlighted. Check each highlight by opening and closing the drawer.
+
+Activity recreation and pending transactions:
+1. Repeat the forward sequence, rotating at A, Settings, B, and C. After each
+   recreation, verify the same content and checked drawer item, then verify the
+   reverse sequence above. Also background and resume each destination.
+2. Repeat Settings -> B and B -> C while rotating immediately after tapping the
+   destination, before its replacement has rendered. Once settled, verify the
+   requested destination and highlight, never the previous page or Settings.
+   Verify reverse navigation still returns through B, Settings, and A.
+3. With a detail page open (for example App Monitor's app detail), background
+   and resume, then rotate. Verify the detail remains open and its parent drawer
+   item remains checked; Back must still return to the parent page.
+
+Shared Back confirmation (keep the drawer closed throughout these checks):
+1. Repeat A -> Settings -> B -> C. Press Back from C to B and immediately press
+   Back again, within 3.5 seconds of the first press. The task must background.
+2. Repeat the sequence, return to B, and wait beyond the confirmation interval.
+   Press Back to return to Settings, then immediately press Back again. The task
+   must background, confirming the deadline survives the activity transition.
+3. From Settings, wait for any previous interval to expire, then press Back to A.
+   A second Back within the original interval must background the task.
+4. Repeat steps 1-3 with a rotation between the two Back presses. The deadline
+   must retain only its remaining time, without being cleared or restarted.
+   Repeat with the second Back later than 3.5 seconds after the first: it must
+   perform normal Back navigation/start a new confirmation instead of exiting.
+5. Start a confirmation, then select a different drawer page. Close the drawer
+   and press Back once; navigation must occur instead of immediately exiting.
