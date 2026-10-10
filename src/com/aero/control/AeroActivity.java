@@ -295,6 +295,10 @@ public final class AeroActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        if (intent.hasExtra(EXTRA_RETURN_TO_SETTINGS)) {
+            clearClosePending();
+            this.mReturnToSettings = intent.getBooleanExtra(EXTRA_RETURN_TO_SETTINGS, false);
+        }
         handleSelectedItemRequest();
     }
 
@@ -355,6 +359,9 @@ public final class AeroActivity extends Activity {
      * Closes the navigation drawer and launches the settings activity with a fade transition.
      */
     private void launchSettings() {
+        clearClosePending();
+        this.mReturnToSettings = false;
+        getIntent().removeExtra(EXTRA_RETURN_TO_SETTINGS);
         if (this.mDrawerLayout != null) {
             this.mDrawerLayout.closeDrawers();
         }
@@ -900,20 +907,16 @@ public final class AeroActivity extends Activity {
         }
         String detailEntry = getDetailBackStackEntryName();
         if (detailEntry != null) {
+            clearClosePending();
             getFragmentManager().popBackStack(detailEntry,
                     android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
             setTitle(getDetailParentTitle(detailEntry));
             return;
         }
-        if (BackConfirmation.isPending(SystemClock.elapsedRealtime())) {
-            clearClosePending();
-            moveTaskToBack(true);
-            return;
-        }
         if (mFragmentStack.size() > 1) {
             int previousIndex = mFragmentStack.size() - 2;
             Fragment savedPreviousFragment = mFragmentStack.get(previousIndex);
-            startCloseConfirmation();
+            clearClosePending();
             if (switchContent(savedPreviousFragment, false, true, true)) {
                 synchronizeDrawerSelectionWithFragment(savedPreviousFragment);
                 // Restore title by finding which fragment we're returning to
@@ -924,10 +927,17 @@ public final class AeroActivity extends Activity {
             }
             return;
         }
-        startCloseConfirmation();
-        if (this.mReturnToSettings && !isTaskRoot()) {
-            finish();
+        if (this.mReturnToSettings) {
+            // CLEAR_TOP removed Settings when it handed this activity a page.
+            launchSettings();
+            return;
         }
+        if (BackConfirmation.isPending(SystemClock.elapsedRealtime())) {
+            clearClosePending();
+            moveTaskToBack(true);
+            return;
+        }
+        startCloseConfirmation();
     }
 
     /**

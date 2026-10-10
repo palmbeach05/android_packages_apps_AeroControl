@@ -108,8 +108,10 @@ public class PrefsActivity extends PreferenceActivity {
                     return;
                 }
                 Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
                 intent.putExtra(AeroActivity.EXTRA_RETURN_TO_SETTINGS, true);
+                BackConfirmation.clear();
                 PrefsActivity.this.startActivity(intent);
                 PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
@@ -379,13 +381,18 @@ public class PrefsActivity extends PreferenceActivity {
     }
 
     /**
-     * Returns to the previous page and starts the shared close confirmation.
+     * Returns to the previous page, or confirms closing when no page remains.
      */
     @Override // android.preference.PreferenceActivity, android.app.Activity
     public void onBackPressed() {
         if (this.mNavigationDrawer.isDrawerOpen()) {
             this.mNavigationDrawer.closeDrawers();
             BackConfirmation.clear();
+            return;
+        }
+        if (this.mReturnToPage && !isTaskRoot()) {
+            BackConfirmation.clear();
+            finish();
             return;
         }
         if (BackConfirmation.isPending(SystemClock.elapsedRealtime())) {
@@ -395,9 +402,6 @@ public class PrefsActivity extends PreferenceActivity {
         }
         BackConfirmation.start(SystemClock.elapsedRealtime());
         Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_SHORT).show();
-        if (this.mReturnToPage && !isTaskRoot()) {
-            finish();
-        }
     }
 
     /**
