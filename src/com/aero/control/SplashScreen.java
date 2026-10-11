@@ -45,6 +45,9 @@ public class SplashScreen extends FragmentActivity {
     private PagerAdapter mPagerAdapter;
     public Button mSkip;
     private boolean mActivityResumed;
+    private boolean mRootCheckComplete;
+    private boolean mDeviceRooted;
+    private boolean mRootDialogShown;
 
     /**
      * Initializes the splash screen activity with tutorial fragments and checks for
@@ -81,12 +84,13 @@ public class SplashScreen extends FragmentActivity {
     }
 
     /**
-     * Called when the activity is resumed. No special handling is performed.
+     * Delivers a completed root-check result after returning from root permission UI.
      */
     @Override // android.support.v4.app.FragmentActivity, android.app.Activity
     protected void onResume() {
         super.onResume();
         this.mActivityResumed = true;
+        showRootWarningIfNeeded();
     }
 
     @Override // android.support.v4.app.FragmentActivity, android.app.Activity
@@ -103,13 +107,21 @@ public class SplashScreen extends FragmentActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mActivityResumed && !isFinishing() && !rooted) {
-                            showRootDialog();
-                        }
+                        mDeviceRooted = rooted;
+                        mRootCheckComplete = true;
+                        showRootWarningIfNeeded();
                     }
                 });
             }
         }, "AeroRootCheck").start();
+    }
+
+    private void showRootWarningIfNeeded() {
+        if (this.mActivityResumed && this.mRootCheckComplete && !this.mDeviceRooted
+                && !this.mRootDialogShown && !isFinishing()) {
+            this.mRootDialogShown = true;
+            showRootDialog();
+        }
     }
 
     /**
