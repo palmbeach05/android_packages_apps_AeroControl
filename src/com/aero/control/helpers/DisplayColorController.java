@@ -31,6 +31,11 @@ public final class DisplayColorController {
         return repository.readValues(new SysfsNode(FilePath.COLOR_CONTROL), ReadMode.RAW);
     }
 
+    /** Checks whether the device exposes the calibration control node. */
+    public SysfsResult<Boolean> isAvailable() {
+        return repository.exists(new SysfsNode(FilePath.COLOR_CONTROL));
+    }
+
     /**
      * Writes a display-color value and enables the color control when supported.
      *
@@ -38,6 +43,9 @@ public final class DisplayColorController {
      * @return the verified write result, or an inspection/activation failure
      */
     public SysfsResult<String> writeColorValue(String value) {
+        if (!isValidColor(value)) {
+            return SysfsResult.failure("Color must contain three values from 0 to 255");
+        }
         SysfsResult<String> result = repository.writeValue(
                 new SysfsNode(FilePath.COLOR_CONTROL), value);
         if (!result.isSuccess()) {
@@ -55,5 +63,20 @@ public final class DisplayColorController {
         SysfsResult<String> activationResult = repository.writeValue(
                 activationNode, "1");
         return activationResult.isSuccess() ? result : activationResult;
+    }
+
+    private boolean isValidColor(String value) {
+        if (value == null) return false;
+        String[] components = value.trim().split("\\s+");
+        if (components.length != 3) return false;
+        for (String component : components) {
+            try {
+                int channel = Integer.parseInt(component);
+                if (channel < 0 || channel > 255) return false;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
     }
 }

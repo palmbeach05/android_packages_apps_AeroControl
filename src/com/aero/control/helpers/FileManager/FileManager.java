@@ -3,16 +3,18 @@ package com.aero.control.helpers.FileManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.adapter.FileAdapter;
+import com.aero.control.helpers.HardwareServices;
+import com.aero.control.helpers.SysfsResult;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,24 +78,23 @@ public class FileManager extends RelativeLayout implements AdapterView.OnItemCli
     }
 
     private void getDir(String dirPath, ListView v, boolean root) {
-        File[] files;
         setTitle(dirPath);
         List<FileData> MetaDirectory = new ArrayList<>();
         List<FileData> MetaFiles = new ArrayList<>();
         File f = new File(dirPath);
-        if (!root) {
-            files = f.listFiles();
-        } else {
-            ArrayList<File> rootFiles = new ArrayList<>();
-            String[] rootList = AeroActivity.shell.getRootArray("ls -d " + dirPath + "/*", "\n");
-            if (rootList != null) {
-                for (String a : rootList) {
-                    rootFiles.add(new File(a));
-                }
+        File[] files = f.listFiles();
+        if (root || files == null) {
+            SysfsResult<String[]> result = HardwareServices.rootFiles().listDirectory(dirPath);
+            if (!result.isSuccess()) {
+                Log.w(FileManager.class.getName(), result.getError());
+                files = new File[0];
             } else {
-                rootFiles.add(new File(this.mContext.getText(R.string.folder_empty).toString()));
+                String[] paths = result.getValue();
+                files = new File[paths.length];
+                for (int i = 0; i < paths.length; i++) {
+                    files[i] = new File(paths[i]);
+                }
             }
-            files = (File[]) rootFiles.toArray(new File[0]);
         }
         if (!dirPath.equals(mRoot)) {
             MetaDirectory.add(new FileData("../", f.getParent()));

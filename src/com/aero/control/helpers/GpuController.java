@@ -1,9 +1,24 @@
 package com.aero.control.helpers;
 
+import java.util.Arrays;
+
 /** Normal GPU frequency, governor, and control operations. */
 public final class GpuController {
     private static final String AVAILABLE_GOVERNORS = "available_governors";
     private static final String GOVERNOR = "governor";
+
+    public enum Toggle {
+        CONTROL(FilePath.GPU_CONTROL_ACTIVE),
+        SWEEP_TO_WAKE(FilePath.SWEEP2WAKE),
+        DOUBLE_TAP_TO_WAKE(FilePath.DOUBLETAP2WAKE);
+
+        private final String path;
+
+        Toggle(String path) {
+            this.path = path;
+        }
+    }
+
     private final SysfsRepository repository;
 
     /**
@@ -43,7 +58,15 @@ public final class GpuController {
      * @return the written value, or a discovery/write failure
      */
     public SysfsResult<String> writeMaxFrequency(String value) {
-        return writeValue(findNode(FilePath.GPU_FILES, "GPU maximum frequency"), value);
+        SysfsResult<String[]> available = readAvailableFrequencies(ReadMode.RAW);
+        if (!available.isSuccess()) return SysfsResult.failure(available.getError());
+        if (!contains(available.getValue(), value)) {
+            return SysfsResult.failure("Frequency is not supported by the GPU");
+        }
+        SysfsResult<SysfsNode> node = findNode(FilePath.GPU_FILES, "GPU maximum frequency");
+        if (!node.isSuccess()) return SysfsResult.failure(node.getError());
+        return repository.writeValue(new SysfsNode(node.getValue().getPath(),
+                Arrays.asList(available.getValue())), value);
     }
 
     /**
@@ -80,7 +103,15 @@ public final class GpuController {
      * @return the written governor name, or a discovery/write failure
      */
     public SysfsResult<String> writeGovernor(String value) {
-        return writeValue(findGovernorNode(GOVERNOR), value);
+        SysfsResult<String[]> available = readAvailableGovernors();
+        if (!available.isSuccess()) return SysfsResult.failure(available.getError());
+        if (!contains(available.getValue(), value)) {
+            return SysfsResult.failure("Governor is not supported by the GPU");
+        }
+        SysfsResult<SysfsNode> node = findGovernorNode(GOVERNOR);
+        if (!node.isSuccess()) return SysfsResult.failure(node.getError());
+        return repository.writeValue(new SysfsNode(node.getValue().getPath(),
+                Arrays.asList(available.getValue())), value);
     }
 
     /**
@@ -116,6 +147,49 @@ public final class GpuController {
      */
     public SysfsResult<Boolean> isControlAvailable() {
         return repository.exists(new SysfsNode(FilePath.GPU_CONTROL_ACTIVE));
+    }
+
+    /** Checks whether a supported toggle node is exposed by this kernel. */
+    public SysfsResult<Boolean> isToggleAvailable(Toggle toggle) {
+        if (toggle == null) return SysfsResult.failure("Toggle is required");
+        return repository.exists(new SysfsNode(toggle.path));
+    }
+
+    /** Reads a supported GPU or wake-gesture toggle without exposing its sysfs path. */
+    public SysfsResult<Boolean> readToggle(Toggle toggle) {
+        if (toggle == null) return SysfsResult.failure("Toggle is required");
+        SysfsResult<String> result = repository.readValue(new SysfsNode(toggle.path));
+        if (!result.isSuccess()) return SysfsResult.failure(result.getError());
+        if ("1".equals(result.getValue())) return SysfsResult.success(true);
+        if ("0".equals(result.getValue())) return SysfsResult.success(false);
+        return SysfsResult.failure("Unexpected state for " + toggle.name());
+    }
+
+    /** Writes and verifies a supported GPU or wake-gesture toggle. */
+    public SysfsResult<Boolean> writeToggle(Toggle toggle, boolean enabled) {
+        if (toggle == null) return SysfsResult.failure("Toggle is required");
+        SysfsResult<String> result = repository.writeValue(
+                new SysfsNode(toggle.path, 0, 1), enabled ? "1" : "0");
+        return result.isSuccess() ? SysfsResult.success(enabled)
+                : SysfsResult.<Boolean>failure(result.getError());
+    }
+
+    /** Writes and verifies one of the supported display modes. */
+    public SysfsResult<String> writeDisplayMode(String value) {
+        if (!"31".equals(value) && !"9".equals(value) && !"0".equals(value)) {
+            return SysfsResult.failure("Display mode is not supported");
+        }
+        return repository.writeValue(new SysfsNode(FilePath.DISPLAY_COLOR, 0, 31), value);
+    }
+
+    /** Reads the selected display mode from its supported sysfs control. */
+    public SysfsResult<String> readDisplayMode() {
+        return repository.readValue(new SysfsNode(FilePath.DISPLAY_COLOR, 0, 31));
+    }
+
+    /** Checks whether the display-mode control is exposed by this kernel. */
+    public SysfsResult<Boolean> isDisplayModeAvailable() {
+        return repository.exists(new SysfsNode(FilePath.DISPLAY_COLOR, 0, 31));
     }
 
     /**
@@ -169,5 +243,13 @@ public final class GpuController {
     private SysfsResult<String> writeValue(SysfsResult<SysfsNode> node, String value) {
         return node.isSuccess() ? repository.writeValue(node.getValue(), value)
                 : SysfsResult.<String>failure(node.getError());
+    }
+
+    private boolean contains(String[] values, String candidate) {
+        if (candidate == null) return false;
+        for (String value : values) {
+            if (candidate.trim().equals(value.trim())) return true;
+        }
+        return false;
     }
 }

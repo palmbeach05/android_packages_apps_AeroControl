@@ -14,6 +14,9 @@ import android.view.ViewConfiguration;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomTextPreference;
+import com.aero.control.helpers.ProcfsDirectory;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 import android.widget.Toast;
 
 /**
@@ -144,8 +147,8 @@ public class PreferenceHandler {
     private void generateSettings(String parameter, String path, final boolean flag) {
         final CustomTextPreference prefload = new CustomTextPreference(this.mContext);
         final String parameterPath = path + "/" + parameter;
-        String summary = AeroActivity.shell.getInfo(parameterPath);
-        if (!summary.equals(NO_DATA_FOUND) && !parameter.equals("uevent") && !parameter.equals("dev") && AeroActivity.genHelper.doesExist(parameterPath)) {
+        String summary = readParameterValue(parameterPath);
+        if (!summary.equals(NO_DATA_FOUND) && !parameter.equals("uevent") && !parameter.equals("dev")) {
             Integer tmp = null;
             try {
                 tmp = Integer.valueOf(Integer.parseInt(summary));
@@ -179,7 +182,7 @@ public class PreferenceHandler {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            final OperationResult result = AeroActivity.shell.setRootInfoResult(a, parameterPath);
+                            final SysfsResult<String> result = writeParameter(parameterPath, a);
                             if (PreferenceHandler.this.mContext == null) {
                                 return;
                             }
@@ -205,6 +208,53 @@ public class PreferenceHandler {
                 }
             });
         }
+    }
+
+    private String readParameterValue(String path) {
+        SysfsResult<String> result = accessParameter(path, null, false);
+        if (!result.isSuccess()) {
+            Log.w("Aero", "Unable to read dynamic hardware parameter " + path + ": "
+                    + result.getError());
+            return NO_DATA_FOUND;
+        }
+        return result.getValue();
+    }
+
+    private SysfsResult<String> writeParameter(String path, String value) {
+        return accessParameter(path, value, true);
+    }
+
+    private SysfsResult<String> accessParameter(String path, String value, boolean write) {
+        if (path == null) {
+            return SysfsResult.failure("Dynamic tunable path is required");
+        }
+        int separator = path.lastIndexOf('/');
+        if (separator <= 0 || separator == path.length() - 1) {
+            return SysfsResult.failure("Dynamic tunable path is invalid");
+        }
+        String directoryPath = path.substring(0, separator);
+        String parameterName = path.substring(separator + 1);
+        try {
+            if (directoryPath.startsWith("/sys/")) {
+                SysfsDirectory directory = new SysfsDirectory(directoryPath);
+                return write
+                        ? AeroActivity.hardware.dynamicTunables().writeSysfsParameter(
+                                directory, parameterName, value)
+                        : AeroActivity.hardware.dynamicTunables().readSysfsParameter(
+                                directory, parameterName);
+            }
+            if (directoryPath.startsWith("/proc/")) {
+                ProcfsDirectory directory = new ProcfsDirectory(directoryPath);
+                return write
+                        ? AeroActivity.hardware.dynamicTunables().writeProcfsParameter(
+                                directory, parameterName, value)
+                        : AeroActivity.hardware.dynamicTunables().readProcfsParameter(
+                                directory, parameterName);
+            }
+        } catch (IllegalArgumentException e) {
+            return SysfsResult.failure("Dynamic tunable path is invalid");
+        }
+        return SysfsResult.failure("Dynamic tunables must be under /sys or /proc");
     }
 
     /**

@@ -30,19 +30,20 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.OperationResult;
+import com.aero.control.helpers.ProfileBackupRestoreOperations;
+import com.aero.control.helpers.ProfileFileOperations;
+import com.aero.control.helpers.HardwareServices;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.PerApp.PerAppManager;
 import com.aero.control.helpers.PerApp.perAppHelper;
 import com.aero.control.helpers.StoragePermission;
 import com.aero.control.helpers.Util;
 import com.aero.control.helpers.settingsHelper;
-import com.aero.control.helpers.shellHelper;
 import com.aero.control.service.PerAppServiceHelper;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,6 +71,8 @@ public class ProfileFragment extends PreferenceFragment {
     private boolean mWarning;
     private String mPendingExportProfile;
     private boolean mPendingImport;
+    private final ProfileBackupRestoreOperations mBackupRestore =
+            new ProfileBackupRestoreOperations();
     private static final String LOG_TAG = PreferenceFragment.class.getName();
     public static final settingsHelper settings = new settingsHelper();
 
@@ -90,9 +93,13 @@ public class ProfileFragment extends PreferenceFragment {
         return this.mRootView;
     }
 
-    private String[] getDirectoryEntries(String path) {
-        String[] entries = AeroActivity.shell.getDirInfo(path, true);
-        return entries != null ? entries : new String[0];
+    private String[] getProfileEntries() {
+        try {
+            return HardwareServices.profileFiles().listProfileFiles();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Unable to list saved profiles", e);
+            return new String[0];
+        }
     }
 
     private void loadFloatingMenu() {
@@ -138,7 +145,7 @@ public class ProfileFragment extends PreferenceFragment {
      * them in the UI. Checks for running per-app service and shows a warning if needed.
      */
     public void loadProfiles() {
-        this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
+        this.mCompleteProfiles = getProfileEntries();
         String[] arr$ = this.mCompleteProfiles;
         for (String s : arr$) {
             if (isValidProfileFilename(s)) {
@@ -191,7 +198,7 @@ public class ProfileFragment extends PreferenceFragment {
      * @param editText the text field for entering the profile name
      */
     public void showDialog(final EditText editText) {
-        this.mCompleteProfiles = getDirectoryEntries(FilePath.sharedPrefsPath);
+        this.mCompleteProfiles = getProfileEntries();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             showMaterialProfileDialog(editText);
             return;
@@ -276,23 +283,20 @@ public class ProfileFragment extends PreferenceFragment {
             return;
         }
         AlertDialog.Builder dialog = new AlertDialog.Builder(this.mContext);
-        final String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
-        if (!AeroActivity.genHelper.doesExist(dir)) {
+        String[] availableBackups;
+        try {
+            availableBackups = this.mBackupRestore.listAvailableBackups();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Unable to list profile backups", e);
+            Toast.makeText(this.mContext, R.string.storage_operation_failed,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (availableBackups.length == 0) {
             Toast.makeText(this.mContext, R.string.pref_profile_no_import, 1).show();
             return;
         }
-        String[] directoryEntries = getDirectoryEntries(dir);
-        ArrayList<String> validProfiles = new ArrayList<>();
-        for (String entry : directoryEntries) {
-            if (isValidProfileFilename(entry)) {
-                validProfiles.add(entry);
-            }
-        }
-        if (validProfiles.isEmpty()) {
-            Toast.makeText(this.mContext, R.string.pref_profile_no_import, 1).show();
-            return;
-        }
-        final String[] strings = validProfiles.toArray(new String[validProfiles.size()]);
+        final String[] strings = availableBackups;
         final ArrayList<Boolean> importProfiles = new ArrayList<>();
         for (String str : strings) {
             importProfiles.add(false);
@@ -315,12 +319,14 @@ public class ProfileFragment extends PreferenceFragment {
                     String profile = strings[i];
                     if (importProfiles.get(i).booleanValue() && isValidProfileFilename(profile)) {
                         try {
-                            AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(dir + "/" + profile), AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + profile));
+                            ProfileFragment.this.mBackupRestore.restoreProfile(profile);
+                            Toast.makeText(ProfileFragment.this.mContext,
+                                    R.string.successful, Toast.LENGTH_SHORT).show();
                         } catch (IOException e) {
-                            Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: " + dir + "/" + profile, e);
-                        }
-                        if (AeroActivity.genHelper.doesExist(FilePath.sharedPrefsPath + profile)) {
-                            Toast.makeText(ProfileFragment.this.mContext, R.string.successful, 0).show();
+                            Log.e(ProfileFragment.LOG_TAG,
+                                    "Couldn't restore profile backup: " + profile, e);
+                            Toast.makeText(ProfileFragment.this.mContext,
+                                    R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                         }
                     }
                 }
@@ -542,46 +548,22 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     public boolean deleteProfile(String ProfileName) {
-        File prefFile = new File(FilePath.sharedPrefsPath + ProfileName + ".xml");
-        this.mPerAppPrefs.edit().remove(ProfileName).commit();
-        boolean deleted = prefFile.delete();
-        if (!deleted && prefFile.exists()) {
-            Log.e(LOG_TAG, "Whoop, it still exists, something went wrong");
-            String[] cmd = {"rm " + shellHelper.escapeShellArg("/data/data/com.aero.control/shared_prefs/" + ProfileName + ".xml")};
-            OperationResult result = AeroActivity.shell.setRootInfoResult(cmd);
-            if (!result.isSuccess()) {
-                Log.e(LOG_TAG, "Profile deletion failed: " + result.getStatus()
-                        + " " + result.getMessage());
-                return false;
-            }
-            try {
-                Thread.sleep(350L);
-            } catch (InterruptedException e) {
-                Log.e(LOG_TAG, "Something interrupted the main Thread, try again.", e);
-            }
+        OperationResult result = HardwareServices.profileFiles().deleteProfile(ProfileName);
+        if (!result.isSuccess()) {
+            Log.e(LOG_TAG, "Profile deletion failed: " + result.getStatus()
+                    + " " + result.getMessage());
+            return false;
         }
-        return !prefFile.exists();
+        this.mPerAppPrefs.edit().remove(ProfileName).commit();
+        return true;
     }
 
     private static boolean isValidProfileName(String name) {
-        return name != null
-                && name.equals(name.trim())
-                && !name.equals(".")
-                && !name.equals("..")
-                && name.matches("[A-Za-z0-9 _-]{1,64}");
+        return ProfileFileOperations.isValidProfileName(name);
     }
 
     private static boolean isValidProfileFilename(String filename) {
-        if (filename == null
-                || !filename.endsWith(".xml")
-                || filename.equals("com.aero.control_preferences.xml")
-                || filename.equals("showcase_internal.xml")
-                || filename.equals("app_rate_prefs.xml")
-                || filename.equals("perAppProfileHandler.xml")
-                || filename.equals("miscSettingsStorage.xml")) {
-            return false;
-        }
-        return isValidProfileName(filename.substring(0, filename.length() - 4));
+        return ProfileFileOperations.isValidProfileFilename(filename);
     }
 
     private void saveNewProfile(SharedPreferences AeroProfile) {
@@ -617,29 +599,22 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     public void renameProfile(CharSequence oldName, String newName, TextView txtView, TextView txtViewSummary) {
-        String oldFilename = oldName == null ? null : oldName.toString() + ".xml";
-        String newFilename = newName + ".xml";
-        if (!isValidProfileName(newName) || !isValidProfileFilename(oldFilename)) {
+        if (oldName == null || !isValidProfileName(newName)
+                || !isValidProfileFilename(oldName.toString() + ".xml")) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
             return;
         }
-        if (!isValidProfileFilename(newFilename)) {
+        if (!isValidProfileFilename(newName + ".xml")) {
             Toast.makeText(this.mContext, R.string.pref_profile_invalid_name, 1).show();
             return;
         }
-        File prefFile = new File(FilePath.sharedPrefsPath + oldName.toString() + ".xml");
-        boolean renameSuccess = prefFile.renameTo(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + newName + ".xml"));
-        if (!renameSuccess) {
-            String[] cmd = {"mv " + shellHelper.escapeShellArg("/data/data/com.aero.control/shared_prefs/" + oldFilename) + " " + shellHelper.escapeShellArg(FilePath.sharedPrefsPath + newFilename)};
-            OperationResult result = AeroActivity.shell.setRootInfoResult(cmd);
-            if (!result.isSuccess()) {
-                Log.e(LOG_TAG, "Profile rename failed: " + result.getStatus()
-                        + " " + result.getMessage());
-                Toast.makeText(this.mContext, R.string.storage_operation_failed, 1).show();
-                return;
-            }
-        } else {
-            prefFile.delete();
+        OperationResult result = HardwareServices.profileFiles()
+                .renameProfile(oldName.toString(), newName);
+        if (!result.isSuccess()) {
+            Log.e(LOG_TAG, "Profile rename failed: " + result.getStatus()
+                    + " " + result.getMessage());
+            Toast.makeText(this.mContext, R.string.storage_operation_failed, 1).show();
+            return;
         }
         String valueOld = this.mPerAppPrefs.getString(oldName.toString(), null);
         this.mPerAppPrefs.edit().remove(oldName.toString()).commit();
@@ -690,7 +665,18 @@ public class ProfileFragment extends PreferenceFragment {
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialog2, int which) {
                         ProfileFragment.this.mPrefs = ProfileFragment.this.mContext.getSharedPreferences("com.aero.control_preferences", 0);
-                        ProfileFragment.this.deleteProfile("com.aero.control_preferences");
+                        OperationResult resetResult = HardwareServices.profileFiles()
+                                .deleteCurrentSettings();
+                        if (!resetResult.isSuccess()) {
+                            Log.e(LOG_TAG, "Unable to reset saved settings: "
+                                    + resetResult.getStatus() + " "
+                                    + resetResult.getMessage());
+                            Toast.makeText(ProfileFragment.this.mContext,
+                                    R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        ProfileFragment.this.mPerAppPrefs.edit()
+                                .remove("com.aero.control_preferences").commit();
                         SharedPreferences AeroProfile2 = ProfileFragment.this.mContext.getSharedPreferences(txtView.getText().toString(), 0);
                         ProfileFragment.this.applyProfile(AeroProfile2);
                         ProfileFragment.settings.setSettings(ProfileFragment.this.mContext, null, false);
@@ -713,7 +699,7 @@ public class ProfileFragment extends PreferenceFragment {
         v.setOnLongClickListener(new View.OnLongClickListener() { // from class: com.aero.control.fragments.ProfileFragment.14
             @Override // android.view.View.OnLongClickListener
             public boolean onLongClick(View view) {
-                ProfileFragment.this.mCompleteProfiles = ProfileFragment.this.getDirectoryEntries(FilePath.sharedPrefsPath);
+                ProfileFragment.this.mCompleteProfiles = ProfileFragment.this.getProfileEntries();
                 final EditText editText = new EditText(ProfileFragment.this.mContext);
                 final CharSequence oldName = txtView.getText();
                 editText.setText(oldName);
@@ -750,22 +736,11 @@ public class ProfileFragment extends PreferenceFragment {
     }
 
     private void exportProfile(String profileName) {
-        String dir = FilePath.EXTERNAL_PATH + "/com.aero.control/profiles";
-        String title = profileName + ".xml";
-        File directory = new File(dir);
-        if ((!directory.exists() && !directory.mkdirs()) || !directory.isDirectory()) {
-            Log.e(ProfileFragment.LOG_TAG, "Couldn't create path: " + dir);
-            Toast.makeText(this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-            return;
-        }
         try {
-            AeroActivity.genHelper.copyFile(AeroActivity.genHelper.getNewFile(FilePath.sharedPrefsPath + title), AeroActivity.genHelper.getNewFile(dir + "/" + title));
+            this.mBackupRestore.backupProfile(profileName);
+            Toast.makeText(this.mContext, R.string.successful, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Log.e(ProfileFragment.LOG_TAG, "Couldn't copy file: /data/data/com.aero.control/shared_prefs/" + title, e);
-        }
-        if (AeroActivity.genHelper.doesExist(dir + "/" + title)) {
-            Toast.makeText(this.mContext, R.string.successful, 0).show();
-        } else {
+            Log.e(ProfileFragment.LOG_TAG, "Couldn't back up profile: " + profileName, e);
             Toast.makeText(this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
         }
     }

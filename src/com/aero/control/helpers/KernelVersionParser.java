@@ -7,9 +7,9 @@ import java.util.regex.Pattern;
  * Parses and formats the single-line contents of {@code /proc/version} into the
  * multi-line "release / builder / build id / date" form shown on the Device
  * Info screen. Pure string parsing with no file I/O or shell dependency, so it
- * is kept separate from the shell-session plumbing in {@link shellHelper}.
+ * is kept separate from the root-shell session plumbing.
  */
-final class KernelVersionParser {
+public final class KernelVersionParser {
     static final String NO_DATA_FOUND = "Unavailable";
 
     private static final Pattern KERNEL_VERSION_PREFIX_PATTERN =
@@ -24,7 +24,7 @@ final class KernelVersionParser {
     /**
      * Formats /proc/version while retaining the raw value if its structure is unfamiliar.
      */
-    static String format(String procVersion) {
+    public static String format(String procVersion) {
         if (procVersion == null || procVersion.trim().length() == 0) {
             return NO_DATA_FOUND;
         }

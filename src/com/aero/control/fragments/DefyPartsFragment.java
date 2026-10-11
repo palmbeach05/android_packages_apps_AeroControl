@@ -11,8 +11,8 @@ import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FilePath;
-import com.aero.control.helpers.OperationResult;
-import com.aero.control.helpers.shellHelper;
+import com.aero.control.helpers.LedController;
+import com.aero.control.helpers.SysfsResult;
 import java.util.regex.Pattern;
 
 /**
@@ -83,7 +83,8 @@ public class DefyPartsFragment extends PlaceHolderFragment {
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 String value = o.toString();
-                if (!DefyPartsFragment.this.changePreference(preference, value, FilePath.PROP_CHARGE_LED_MODE)) {
+                if (!DefyPartsFragment.this.changePreference(preference, value,
+                        LedController.Property.CHARGING_MODE)) {
                     return false;
                 }
                 DefyPartsFragment.this.led_charging.setValue(value);
@@ -101,7 +102,8 @@ public class DefyPartsFragment extends PlaceHolderFragment {
              */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                if (!DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_TOUCH_POINTS)) {
+                if (!DefyPartsFragment.this.changePreference(preference, o,
+                        LedController.Property.MULTI_TOUCH_POINTS)) {
                     return false;
                 }
                 DefyPartsFragment.this.multi_touch.setValue(o.toString());
@@ -119,7 +121,8 @@ public class DefyPartsFragment extends PlaceHolderFragment {
              */
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
-                if (!DefyPartsFragment.this.changePreference(preference, o, FilePath.PROP_BUTTON_BRIGHTNESS)) {
+                if (!DefyPartsFragment.this.changePreference(preference, o,
+                        LedController.Property.BUTTON_BRIGHTNESS)) {
                     return false;
                 }
                 DefyPartsFragment.this.button_brightness.setText(o.toString());
@@ -127,11 +130,9 @@ public class DefyPartsFragment extends PlaceHolderFragment {
                 return true;
             }
         });
-        // AeroActivity.shell.getRootInfo() can fall back to spawning a root
-        // shell (Runtime.exec("su")) and blocking on its response. Do this
-        // off the main thread so opening this screen can't ANR while
-        // waiting for the su prompt, then apply the results only if the
-        // fragment is still attached.
+        // Root-backed operations can block on a permission prompt. Do this
+        // off the main thread, then apply results only if the fragment is
+        // still attached.
         final AeroActivity activity = (AeroActivity) getActivity();
         final String unavailableMarker = activity.getText(R.string.unavailable).toString();
         new Thread(new Runnable() {
@@ -140,9 +141,12 @@ public class DefyPartsFragment extends PlaceHolderFragment {
              */
             @Override // java.lang.Runnable
             public void run() {
-                final String charger = AeroActivity.shell.getRootInfo("getprop ", FilePath.PROP_CHARGE_LED_MODE);
-                final String multitouch = AeroActivity.shell.getRootInfo("getprop ", FilePath.PROP_TOUCH_POINTS);
-                final String brightness = AeroActivity.shell.getRootInfo("getprop", FilePath.PROP_BUTTON_BRIGHTNESS);
+                final SysfsResult<String> charger = AeroActivity.hardware.led().read(
+                        LedController.Property.CHARGING_MODE);
+                final SysfsResult<String> multitouch = AeroActivity.hardware.led().read(
+                        LedController.Property.MULTI_TOUCH_POINTS);
+                final SysfsResult<String> brightness = AeroActivity.hardware.led().read(
+                        LedController.Property.BUTTON_BRIGHTNESS);
                 activity.runOnUiThread(new Runnable() {
                     /**
                      * Updates UI with loaded property values on the main thread.
@@ -152,27 +156,27 @@ public class DefyPartsFragment extends PlaceHolderFragment {
                         if (!DefyPartsFragment.this.isAdded()) {
                             return;
                         }
-                        if (charger != null && !charger.isEmpty() && !charger.equals(unavailableMarker)) {
+                        if (charger.isSuccess()) {
                             DefyPartsFragment.this.led_charging.setEnabled(true);
-                            DefyPartsFragment.this.led_charging.setValue(charger);
-                            DefyPartsFragment.this.led_charging.setSummary(charger);
+                            DefyPartsFragment.this.led_charging.setValue(charger.getValue());
+                            DefyPartsFragment.this.led_charging.setSummary(charger.getValue());
                         } else {
                             DefyPartsFragment.this.led_charging.setEnabled(false);
                             DefyPartsFragment.this.led_charging.setSummary(unavailableMarker);
                         }
-                        if (multitouch != null && !multitouch.isEmpty() && !multitouch.equals(unavailableMarker)) {
+                        if (multitouch.isSuccess()) {
                             DefyPartsFragment.this.multi_touch.setEnabled(true);
-                            DefyPartsFragment.this.multi_touch.setValue(multitouch);
-                            DefyPartsFragment.this.multi_touch.setSummary(multitouch);
+                            DefyPartsFragment.this.multi_touch.setValue(multitouch.getValue());
+                            DefyPartsFragment.this.multi_touch.setSummary(multitouch.getValue());
                         } else {
                             DefyPartsFragment.this.multi_touch.setEnabled(false);
                             DefyPartsFragment.this.multi_touch.setSummary(unavailableMarker);
                         }
-                        if (brightness != null && !brightness.isEmpty() && !brightness.equals(unavailableMarker)) {
+                        if (brightness.isSuccess()) {
                             DefyPartsFragment.this.button_brightness.setEnabled(true);
-                            DefyPartsFragment.this.button_brightness.setText(brightness);
-                            DefyPartsFragment.this.button_brightness.setPrefSummary(brightness);
-                            DefyPartsFragment.this.button_brightness.setSummary(brightness);
+                            DefyPartsFragment.this.button_brightness.setText(brightness.getValue());
+                            DefyPartsFragment.this.button_brightness.setPrefSummary(brightness.getValue());
+                            DefyPartsFragment.this.button_brightness.setSummary(brightness.getValue());
                         } else {
                             DefyPartsFragment.this.button_brightness.setEnabled(false);
                             DefyPartsFragment.this.button_brightness.setSummary(unavailableMarker);
@@ -184,27 +188,23 @@ public class DefyPartsFragment extends PlaceHolderFragment {
     }
 
     /**
-     * Applies a preference-driven value via a root "setprop" call.
-     *
-     * The value is validated against a strict allow-list of characters before being
-     * concatenated into the shell command, since it previously flowed unsanitized from
-     * user-editable preferences straight into a privileged root command (command injection).
+     * Applies a value through the typed LED capability API.
      *
      * @return true if the value was valid and the command was executed, false if the value
      *         was rejected (in which case the calling listener should also return false so
      *         the invalid value is not persisted).
      */
-    public boolean changePreference(final Preference preference, final Object o, final String file) {
-        String value = o == null ? null : o.toString();
-        if (value == null || !SAFE_PROP_VALUE.matcher(value).matches() || !isAllowedProperty(file)) {
+    public boolean changePreference(final Preference preference, final Object o,
+            final LedController.Property property) {
+        final String value = o == null ? null : o.toString();
+        if (value == null || !SAFE_PROP_VALUE.matcher(value).matches() || property == null) {
             Toast.makeText(getActivity(), R.string.error_detected, 0).show();
             return false;
         }
-        final String[] command = {"setprop " + shellHelper.escapeShellArg(file) + " " + shellHelper.escapeShellArg(value)};
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final OperationResult result = AeroActivity.shell.setRootInfoResult(command);
+                final SysfsResult<String> result = AeroActivity.hardware.led().write(property, value);
                 if (!isAdded()) {
                     return;
                 }
@@ -223,15 +223,4 @@ public class DefyPartsFragment extends PlaceHolderFragment {
         return true;
     }
 
-    /**
-     * Validates that a property name is in the allow-list of settable properties.
-     *
-     * @param property the property name to check
-     * @return true if the property is allowed
-     */
-    private static boolean isAllowedProperty(String property) {
-        return FilePath.PROP_CHARGE_LED_MODE.equals(property)
-                || FilePath.PROP_TOUCH_POINTS.equals(property)
-                || FilePath.PROP_BUTTON_BRIGHTNESS.equals(property);
-    }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.AeroLog;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Monitoring module that tracks the number of online CPU cores.
@@ -40,8 +41,12 @@ public final class CPUNumModule extends AppModule {
             onlineCPUs = 0 + 1;
         } else {
             for (int j = 0; j < i; j++) {
-                if (AeroActivity.shell.getFastInfo("/sys/devices/system/cpu/cpu" + j + "/online").equals("1")) {
+                SysfsResult<Boolean> online = AeroActivity.hardware.cpu().readOnlineState(j);
+                if (online.isSuccess() && online.getValue()) {
                     onlineCPUs++;
+                } else if (!online.isSuccess()) {
+                    LOG.warn("Unable to read CPU " + j + " online state: "
+                            + online.getError());
                 }
             }
         }

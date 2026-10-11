@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -16,6 +17,9 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.HelpTextHolder;
+import com.aero.control.helpers.SysfsNode;
+import com.aero.control.helpers.SysfsResult;
+import com.aero.control.helpers.ReadMode;
 import java.util.Map;
 
 /**
@@ -244,6 +248,9 @@ public class CustomPreference extends Preference {
     public void setSummary(CharSequence value) {
         super.setSummary(value);
         this.mSummaryPref = value;
+        if (this.mSummary != null) {
+            this.mSummary.setText(value);
+        }
     }
 
     /**
@@ -390,13 +397,34 @@ public class CustomPreference extends Preference {
         String tmp1 = "";
         int i = 0;
         if (name.equals("rgbValues")) {
-            content = AeroActivity.shell.getInfoArray(this.mLookUpDefault, 0, 0);
+            SysfsResult<String[]> result = AeroActivity.hardware.readValues(
+                    new SysfsNode(this.mLookUpDefault), ReadMode.RAW);
+            if (!result.isSuccess()) {
+                Log.w("Aero", "Unable to read preference default " + this.mLookUpDefault
+                        + ": " + result.getError());
+                return "Unavailable";
+            }
+            content = result.getValue();
             switcher = 1;
         } else if (name.equals("voltage_values")) {
-            content = AeroActivity.shell.getInfo(this.mLookUpDefault, false);
+            SysfsResult<String[]> result = AeroActivity.hardware.readLines(
+                    new SysfsNode(this.mLookUpDefault));
+            if (!result.isSuccess()) {
+                Log.w("Aero", "Unable to read preference default " + this.mLookUpDefault
+                        + ": " + result.getError());
+                return "Unavailable";
+            }
+            content = result.getValue();
             switcher = 2;
         } else {
-            return AeroActivity.shell.getInfo(this.mLookUpDefault);
+            SysfsResult<String> result =
+                    AeroActivity.hardware.read(new SysfsNode(this.mLookUpDefault));
+            if (!result.isSuccess()) {
+                Log.w("Aero", "Unable to read preference default " + this.mLookUpDefault
+                        + ": " + result.getError());
+                return "Unavailable";
+            }
+            return result.getValue();
         }
         String[] arr$ = content;
         for (String a : arr$) {
@@ -409,7 +437,12 @@ public class CustomPreference extends Preference {
                     }
                     break;
                 case 2:
-                    String tmp2 = a.split(":")[1].replace(" ", "");
+                    String[] voltage = a.split(":", 2);
+                    if (voltage.length != 2) {
+                        Log.w("Aero", "Ignoring malformed voltage preference default: " + a);
+                        continue;
+                    }
+                    String tmp2 = voltage[1].replace(" ", "");
                     if (i == 0) {
                         tmp1 = tmp1 + tmp2.replace("mV", "");
                     } else {

@@ -4,6 +4,8 @@ import android.content.Context;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.AeroLog;
+import com.aero.control.helpers.SysfsNode;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Monitoring module that tracks average CPU frequency across all online cores.
@@ -40,18 +42,27 @@ public final class CPUFreqModule extends AppModule {
         int i = Runtime.getRuntime().availableProcessors();
         boolean sampleValid = true;
         if (i == 1) {
+            SysfsResult<String> frequency = AeroActivity.hardware.read(new SysfsNode(
+                    "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"));
             try {
-                averageFreq = 0 + Integer.parseInt(AeroActivity.shell.getFastInfo("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"));
+                averageFreq = Integer.parseInt(requireValue(frequency));
                 onlineCPUs = 0 + 1;
             } catch (NumberFormatException e) {
                 sampleValid = false;
             }
         } else {
             for (int k = 0; k < i; k++) {
-                if (AeroActivity.shell.getFastInfo("/sys/devices/system/cpu/cpu" + k + "/online").equals("1")) {
+                SysfsResult<Boolean> online = AeroActivity.hardware.cpu().readOnlineState(k);
+                if (!online.isSuccess()) {
+                    LOG.warn("Unable to read CPU " + k + " online state: " + online.getError());
+                    continue;
+                }
+                if (online.getValue()) {
                     String complete_path = "/sys/devices/system/cpu/cpu" + k + SCALE_PATH_NAME;
                     try {
-                        averageFreq += Integer.parseInt(AeroActivity.shell.getFastInfo(complete_path));
+                        SysfsResult<String> frequency =
+                                AeroActivity.hardware.read(new SysfsNode(complete_path));
+                        averageFreq += Integer.parseInt(requireValue(frequency));
                     } catch (NumberFormatException e) {
                     }
                     onlineCPUs++;
@@ -65,5 +76,12 @@ public final class CPUFreqModule extends AppModule {
             addValues(Integer.valueOf((averageFreq / onlineCPUs) / 1000));
         }
         LOG.debug("CPUFreqModule.operate() time: " + (System.currentTimeMillis() - temp));
+    }
+
+    private static String requireValue(SysfsResult<String> result) {
+        if (!result.isSuccess()) {
+            throw new NumberFormatException(result.getError());
+        }
+        return result.getValue();
     }
 }

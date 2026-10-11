@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.aero.control.AeroActivity;
 
 /** Shares one worker and one batched root-shell read across hardware metric observers. */
 public final class HardwareMetricsPoller {
@@ -48,7 +49,6 @@ public final class HardwareMetricsPoller {
         }
     }
 
-    private final shellHelper mShell;
     private final HandlerThread mWorkerThread;
     private final Handler mWorker;
     private final Handler mMain = new Handler(Looper.getMainLooper());
@@ -64,7 +64,6 @@ public final class HardwareMetricsPoller {
     };
 
     private HardwareMetricsPoller() {
-        this.mShell = shellHelper.instance();
         this.mWorkerThread = new HandlerThread("HardwareMetricsPoller");
         this.mWorkerThread.start();
         this.mWorker = new Handler(this.mWorkerThread.getLooper());
@@ -173,7 +172,7 @@ public final class HardwareMetricsPoller {
     }
 
     private Map<String, String> readPaths(String[] paths) {
-        String[] contents = this.mShell.readFiles(paths);
+        String[] contents = AeroActivity.hardware.readMetrics(paths);
         Map<String, String> values = new HashMap<>();
         for (int i = 0; i < paths.length; i++) {
             values.put(paths[i], contents == null || i >= contents.length

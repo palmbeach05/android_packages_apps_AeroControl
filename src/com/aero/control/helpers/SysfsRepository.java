@@ -4,6 +4,10 @@ package com.aero.control.helpers;
 public final class SysfsRepository {
     private static final String NO_DATA_FOUND = "Unavailable";
 
+    public interface ReadbackVerifier {
+        boolean matches(String requestedValue, String readback);
+    }
+
     private final RootShellSession session;
     private final SysfsReader reader;
 
@@ -27,11 +31,18 @@ public final class SysfsRepository {
         if (node == null) {
             return SysfsResult.failure("Node is required");
         }
-        String value = reader.getInfo(node.getPath());
+        String value = reader.getContents(node.getPath());
         if (value == null || NO_DATA_FOUND.equals(value)) {
             return SysfsResult.failure("Unable to read " + node.getPath());
         }
         return SysfsResult.success(value.trim());
+    }
+
+    /** Reads all lines from a sysfs node. */
+    public SysfsResult<String[]> readLines(SysfsNode node) {
+        SysfsResult<String> result = readValue(node);
+        if (!result.isSuccess()) return SysfsResult.failure(result.getError());
+        return SysfsResult.success(result.getValue().split("\\r?\\n"));
     }
 
     /** Reads a space-separated node value using an explicit decoding mode. */
@@ -39,12 +50,22 @@ public final class SysfsRepository {
         if (node == null || mode == null) {
             return SysfsResult.failure("Node and read mode are required");
         }
-        String[] values = reader.getInfoArray(node.getPath(), mode);
-        if (values == null || values.length == 0
+        String contents = reader.getContents(node.getPath());
+        String[] values = reader.parseArray(contents, mode);
+        if (values.length == 0
                 || (values.length == 1 && NO_DATA_FOUND.equals(values[0]))) {
             return SysfsResult.failure("Unable to read " + node.getPath());
         }
         return SysfsResult.success(values);
+    }
+
+    /** Lists files or directories under a validated sysfs directory. */
+    public SysfsResult<String[]> listDirectory(
+            SysfsDirectory directory, DirectoryEntryType entryType) {
+        if (directory == null) {
+            return SysfsResult.failure("Sysfs directory is required");
+        }
+        return KernelDirectoryLister.list(directory.getPath(), entryType, session);
     }
 
     /** Inspects whether a sysfs node exists through the root session. */
@@ -53,31 +74,34 @@ public final class SysfsRepository {
             return SysfsResult.failure("Node is required");
         }
         String path = RootShellSession.escapeShellArg(node.getPath());
-        synchronized (session) {
-            session.openShell();
-            if (!session.isLoaded()) {
-                return SysfsResult.failure("Root shell is unavailable");
-            }
-            session.addCommand("[ -e " + path + " ] && echo EXISTS || echo MISSING");
-            String result = session.getRootResult();
-            if (result == null) {
-                return SysfsResult.failure("Unable to inspect " + node.getPath());
-            }
-            String inspection = result.trim();
-            if ("EXISTS".equals(inspection)) {
-                return SysfsResult.success(true);
-            }
-            if ("MISSING".equals(inspection)) {
-                return SysfsResult.success(false);
-            }
-            return SysfsResult.failure("Unexpected inspection result for " + node.getPath());
+        String inspection = session.execute("[ -e " + path + " ] && echo EXISTS || echo MISSING");
+        if (inspection == null) {
+            return SysfsResult.failure("Unable to inspect " + node.getPath());
         }
+        inspection = inspection.trim();
+        if ("EXISTS".equals(inspection)) return SysfsResult.success(true);
+        if ("MISSING".equals(inspection)) return SysfsResult.success(false);
+        return SysfsResult.failure("Unexpected inspection result for " + node.getPath());
     }
 
     /** Writes a value and only reports success after reading the value back. */
     public SysfsResult<String> writeValue(SysfsNode node, String value) {
+        return writeValue(node, value, new ReadbackVerifier() {
+            @Override
+            public boolean matches(String requestedValue, String readback) {
+                return requestedValue.equals(readback.trim());
+            }
+        });
+    }
+
+    /** Writes a value using a node-specific readback format verifier. */
+    public SysfsResult<String> writeValue(
+            SysfsNode node, String value, ReadbackVerifier verifier) {
         if (node == null || value == null || value.trim().length() == 0) {
             return SysfsResult.failure("Node and value are required");
+        }
+        if (verifier == null) {
+            return SysfsResult.failure("Readback verifier is required");
         }
         String normalizedValue = value.trim();
         if (normalizedValue.indexOf('\n') >= 0 || normalizedValue.indexOf('\r') >= 0) {
@@ -88,20 +112,13 @@ public final class SysfsRepository {
         }
 
         String path = RootShellSession.escapeShellArg(node.getPath());
-        String command = "chmod 0666 " + path + " && printf %s "
+        String command = "printf %s "
                 + RootShellSession.escapeShellArg(normalizedValue) + " > " + path
                 + " && cat " + path;
-        synchronized (session) {
-            session.openShell();
-            if (!session.isLoaded()) {
-                return SysfsResult.failure("Root shell is unavailable");
-            }
-            session.addCommand(command);
-            String readback = session.getRootResult();
-            if (readback == null || !normalizedValue.equals(readback.trim())) {
-                return SysfsResult.failure("Write verification failed for " + node.getPath());
-            }
-            return SysfsResult.success(readback.trim());
+        String readback = session.execute(command);
+        if (readback == null || !verifier.matches(normalizedValue, readback)) {
+            return SysfsResult.failure("Write verification failed for " + node.getPath());
         }
+        return SysfsResult.success(readback.trim());
     }
 }

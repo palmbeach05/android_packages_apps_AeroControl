@@ -27,15 +27,19 @@ import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.FrequencyFormat;
 import com.aero.control.helpers.HardwareMetricsPoller;
+import com.aero.control.helpers.legacy.LegacyOverclockController;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 import com.aero.control.helpers.ReadMode;
+import com.aero.control.helpers.SysfsResult;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +64,6 @@ public class CPUFragment extends PlaceHolderFragment {
     private ShowcaseView mShowCase;
     private VoltageFragment mVoltageFragment;
     private PreferenceScreen root;
-    private static final ArrayList<String> mVselList = new ArrayList<>();
     private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
     private final List<ClusterControls> mClusterControls = new ArrayList<>();
     private CheckBoxPreference mApplyToAllClusters;
@@ -144,10 +147,16 @@ public class CPUFragment extends PlaceHolderFragment {
             CharSequence governorTitle = singleCluster ? getString(R.string.pref_cpu_governor) : getString(R.string.pref_cpu_governor_cluster, cpuRange);
             governor.setTitle(governorTitle);
             governor.setDialogTitle(governorTitle);
-            String representativeGovPath = FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CPU_AVAILABLE_GOV_SUFFIX;
-            governor.setEntries(AeroActivity.shell.getInfoArray(representativeGovPath, ReadMode.RAW));
-            governor.setEntryValues(AeroActivity.shell.getInfoArray(representativeGovPath, ReadMode.RAW));
-            String currentGovernor = AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE);
+            SysfsResult<String[]> governorCapabilities =
+                    AeroActivity.hardware.cpu().readAvailableGovernors(cluster);
+            String[] availableGovernors = governorCapabilities.isSuccess()
+                    ? governorCapabilities.getValue() : new String[] {NO_DATA_FOUND};
+            governor.setEntries(availableGovernors);
+            governor.setEntryValues(availableGovernors);
+            SysfsResult<String> governorResult =
+                    AeroActivity.hardware.cpu().readGovernor(cluster);
+            String currentGovernor = governorResult.isSuccess()
+                    ? governorResult.getValue() : NO_DATA_FOUND;
             governor.setValue(currentGovernor);
             governor.setSummary(currentGovernor);
             governor.setDialogIcon(R.drawable.cpu);
@@ -274,7 +283,9 @@ public class CPUFragment extends PlaceHolderFragment {
             cpuCategory.removePreference(cpu_boost_control);
         }
         Preference cpu_oc_uc = this.root.findPreference("cpu_commands");
-        if (AeroActivity.shell.getInfo(FilePath.CPU_VSEL).equals(NO_DATA_FOUND)) {
+        SysfsResult<int[]> overclockVoltages =
+                AeroActivity.hardware.legacyOverclock().readVoltageSelections();
+        if (!overclockVoltages.isSuccess()) {
             cpuCategory.removePreference(cpu_oc_uc);
         } else {
             cpu_oc_uc.setOrder(20);
@@ -282,27 +293,35 @@ public class CPUFragment extends PlaceHolderFragment {
         cpu_oc_uc.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.CPUFragment.4
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                String overclockOutput = AeroActivity.shell.getRootInfo("cat", FilePath.CPU_VSEL);
-                CharSequence[] cpufreq = AeroActivity.shell.getInfoArray(FilePath.CPU_BASE_PATH + 0 + FilePath.CPU_AVAILABLE_FREQ_SUFFIX, ReadMode.RAW);
+                SysfsResult<int[]> voltageSelections =
+                        AeroActivity.hardware.legacyOverclock().readVoltageSelections();
+                SysfsResult<String[]> availableFrequencies =
+                        AeroActivity.hardware.cpu().readAvailableFrequencies(0, ReadMode.RAW);
+                if (!availableFrequencies.isSuccess()) {
+                    Log.e("Aero", "Unable to read CPU frequencies for legacy overclock: "
+                            + availableFrequencies.getError());
+                    return false;
+                }
+                CharSequence[] cpufreq = availableFrequencies.getValue();
+                if (!voltageSelections.isSuccess()
+                        || voltageSelections.getValue().length != cpufreq.length) {
+                    Log.e("Aero", "Unable to load legacy overclock table: "
+                            + (voltageSelections.isSuccess()
+                                    ? "frequency and voltage table sizes do not match"
+                                    : voltageSelections.getError()));
+                    return false;
+                }
+                final int[] currentVoltages = voltageSelections.getValue();
                 AlertDialog.Builder builder = new AlertDialog.Builder(CPUFragment.this.getActivity());
                 LayoutInflater inflater = CPUFragment.this.getActivity().getLayoutInflater();
                 View layout = inflater.inflate(R.layout.cpu_oc_uc, (ViewGroup) null);
                 final ViewGroup viewGroup = (ViewGroup) layout.findViewById(R.id.cpu_container);
                 int i = 0;
-                CPUFragment.mVselList.clear();
-                int k = -1;
-                while (true) {
-                    k = overclockOutput.indexOf(" vsel=", k + 1);
-                    if (k == -1) {
-                        break;
-                    }
-                    CPUFragment.mVselList.add(overclockOutput.substring(k + 6, k + 8));
-                }
                 for (CharSequence a : cpufreq) {
                     for (int j = 0; j < 2; j++) {
                         CustomEditText cpuValues = new CustomEditText(CPUFragment.this.getActivity());
                         if (j != 0) {
-                            cpuValues.setText(((String[]) CPUFragment.mVselList.toArray(new String[0]))[i]);
+                            cpuValues.setText(Integer.toString(currentVoltages[i]));
                         } else {
                             cpuValues.setText(a);
                         }
@@ -350,23 +369,33 @@ public class CPUFragment extends PlaceHolderFragment {
                             }
                         }
                         Integer[] newFrequencies = (Integer[]) cpuFreqs.toArray(new Integer[0]);
-                        CPUFragment.mVselList.clear();
-                        int listLength = newFrequencies.length;
-                        int i3 = 0;
-                        CPUFragment.mVselList.add("echo " + vselValues.get(0) + " > " + FilePath.CPU_VSEL_MAX);
-                        for (Integer freq : newFrequencies) {
-                            CPUFragment.mVselList.add("echo " + listLength + " " + freq + "000 " + vselValues.get(i3) + " > " + FilePath.CPU_VSEL);
-                            CPUFragment.mVselList.add("echo " + i3 + " " + freq + " > " + FilePath.CPU_FREQ_TABLE);
-                            Log.e("Aero", "echo " + listLength + " " + freq + "000 " + vselValues.get(i3) + " > " + FilePath.CPU_VSEL);
-                            listLength--;
-                            i3++;
+                        int[] frequencyValues = new int[newFrequencies.length];
+                        int[] voltageValues = new int[vselValues.size()];
+                        for (int j = 0; j < newFrequencies.length; j++) {
+                            frequencyValues[j] = newFrequencies[j];
+                            voltageValues[j] = vselValues.get(j);
                         }
-                        CPUFragment.mVselList.add("echo " + newFrequencies[0] + " > " + FilePath.CPU_MAX_RATE);
-                        CPUFragment.mVselList.add("echo " + newFrequencies[newFrequencies.length - 1] + " > " + FilePath.CPU_BASE_PATH + 0 + FilePath.CPU_MIN_FREQ);
-                        String[] commands = (String[]) CPUFragment.mVselList.toArray(new String[0]);
-                        AeroActivity.shell.setRootInfo(commands);
+                        SysfsResult<Boolean> writeResult = AeroActivity.hardware.legacyOverclock()
+                                .writeFrequencyTable(frequencyValues, voltageValues);
+                        if (!writeResult.isSuccess()) {
+                            Log.e("Aero", "Failed to apply legacy overclock table: "
+                                    + writeResult.getError());
+                            Toast.makeText(CPUFragment.this.getActivity(),
+                                    R.string.hardware_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
                         SharedPreferences preference2 = PreferenceManager.getDefaultSharedPreferences(CPUFragment.this.getActivity().getBaseContext());
-                        preference2.edit().putStringSet("cpu_commands", new HashSet(Arrays.asList(commands))).commit();
+                        boolean saved = preference2.edit()
+                                .putString(LegacyOverclockController.PREF_FREQUENCIES,
+                                        serializeIntegers(frequencyValues))
+                                .putString(LegacyOverclockController.PREF_VOLTAGES,
+                                        serializeIntegers(voltageValues))
+                                .remove("cpu_commands")
+                                .commit();
+                        if (!saved) {
+                            Log.e("Aero", "Failed to save the legacy overclock table");
+                        }
                         CPUFragment.this.mWantsMetricsPolling = true;
                         CPUFragment.this.startMetricsPolling();
                     }
@@ -411,34 +440,28 @@ public class CPUFragment extends PlaceHolderFragment {
                         }
                     }
 
-                    final ArrayList<String> array = new ArrayList<>();
-                    for (Integer cpu : controls.cluster.getMembers()) {
-                        String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
-                        String maxFrequencyPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MAX_FREQ;
-                        if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-                        }
-                        array.add("echo " + AeroActivity.shell.escapeShellArg(a) + " > " + AeroActivity.shell.escapeShellArg(maxFrequencyPath));
-                    }
-                    final String[] commands = (String[]) array.toArray(new String[0]);
-
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            final boolean success = AeroActivity.shell.setRootInfo(commands);
+                            final SysfsResult<String> result =
+                                    AeroActivity.hardware.cpu().writeMaxFrequency(
+                                            controls.cluster, a);
                             AeroActivity.mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     if (lifecycleGeneration != mLifecycleGeneration.get()) {
                                         return;
                                     }
-                                    if (success) {
+                                    if (result.isSuccess()) {
                                         synchronized (mPreferenceLock) {
-                                            controls.maxFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.maxFrequency.setSummary(FrequencyFormat.toMHz(a));
                                             controls.maxFrequency.setValue(a);
                                             controls.pendingMaxFrequency = a;
                                         }
+                                    } else {
+                                        Log.e("Aero", "Failed to write CPU maximum frequency: "
+                                                + result.getError());
                                     }
                                 }
                             });
@@ -473,34 +496,28 @@ public class CPUFragment extends PlaceHolderFragment {
                         }
                     }
 
-                    final ArrayList<String> array = new ArrayList<>();
-                    for (Integer cpu : controls.cluster.getMembers()) {
-                        String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
-                        String minFrequencyPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CPU_MIN_FREQ;
-                        if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                            array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-                        }
-                        array.add("echo " + AeroActivity.shell.escapeShellArg(a) + " > " + AeroActivity.shell.escapeShellArg(minFrequencyPath));
-                    }
-                    final String[] commands = (String[]) array.toArray(new String[0]);
-
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            final boolean success = AeroActivity.shell.setRootInfo(commands);
+                            final SysfsResult<String> result =
+                                    AeroActivity.hardware.cpu().writeMinFrequency(
+                                            controls.cluster, a);
                             AeroActivity.mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     if (lifecycleGeneration != mLifecycleGeneration.get()) {
                                         return;
                                     }
-                                    if (success) {
+                                    if (result.isSuccess()) {
                                         synchronized (mPreferenceLock) {
-                                            controls.minFrequency.setSummary(AeroActivity.shell.toMHz(a));
+                                            controls.minFrequency.setSummary(FrequencyFormat.toMHz(a));
                                             controls.minFrequency.setValue(a);
                                             controls.pendingMinFrequency = a;
                                         }
+                                    } else {
+                                        Log.e("Aero", "Failed to write CPU minimum frequency: "
+                                                + result.getError());
                                     }
                                 }
                             });
@@ -532,12 +549,11 @@ public class CPUFragment extends PlaceHolderFragment {
                     mMirrorExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            boolean writeSucceeded = CPUFragment.this.setGovernor(a, controls.cluster.getMembers());
+                            boolean writeSucceeded = CPUFragment.this.setGovernor(a, controls.cluster);
                             if (!writeSucceeded) {
                                 Log.e("Aero", "Failed to write governor " + a + " to cluster " + controls.index);
                             }
                             // Poll for governor change completion (max 10 attempts * 50ms = 500ms)
-                            final String governorPath = FilePath.CPU_BASE_PATH + controls.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE;
                             String currentGovernor = null;
                             for (int i = 0; i < 10; i++) {
                                 try {
@@ -546,7 +562,10 @@ public class CPUFragment extends PlaceHolderFragment {
                                     Log.e("Aero", "Governor polling interrupted", e);
                                     break;
                                 }
-                                currentGovernor = AeroActivity.shell.getInfo(governorPath);
+                                SysfsResult<String> governorResult =
+                                        AeroActivity.hardware.cpu().readGovernor(controls.cluster);
+                                currentGovernor = governorResult.isSuccess()
+                                        ? governorResult.getValue() : NO_DATA_FOUND;
                                 if (a.equals(currentGovernor)) {
                                     break;
                                 }
@@ -644,7 +663,7 @@ public class CPUFragment extends PlaceHolderFragment {
                         CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
                         String committed = isMax ? target.pendingMaxFrequency : target.pendingMinFrequency;
                         if (committed != null) {
-                            pref.setSummary(AeroActivity.shell.toMHz(committed));
+                            pref.setSummary(FrequencyFormat.toMHz(committed));
                             pref.setValue(committed);
                         }
                     }
@@ -699,7 +718,6 @@ public class CPUFragment extends PlaceHolderFragment {
             return;
         }
 
-        final ArrayList<String> array = new ArrayList<>();
         final ArrayList<ClusterControls> eligibleClusters = new ArrayList<>();
         for (ClusterControls target : this.mClusterControls) {
             // Validate against the opposite frequency limit, using the value a preceding queued
@@ -726,25 +744,27 @@ public class CPUFragment extends PlaceHolderFragment {
             }
 
             eligibleClusters.add(target);
-            String sysfsSuffix = isMax ? FilePath.CPU_MAX_FREQ : FilePath.CPU_MIN_FREQ;
-            for (Integer cpu : target.cluster.getMembers()) {
-                String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
-                String frequencyPath = FilePath.CPU_BASE_PATH + cpu + sysfsSuffix;
-                if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                    array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-                }
-                array.add("echo " + AeroActivity.shell.escapeShellArg(value) + " > " + AeroActivity.shell.escapeShellArg(frequencyPath));
-            }
         }
 
-        if (array.isEmpty()) {
+        if (eligibleClusters.isEmpty()) {
             Log.e("Aero", "No valid clusters to apply " + (isMax ? "max" : "min") + " frequency; rolling back to last committed state");
             rollbackFrequencyPreferences(isMax, lifecycleGeneration);
             return;
         }
 
-        String[] commands = array.toArray(new String[0]);
-        if (AeroActivity.shell.setRootInfo(commands)) {
+        boolean allWritesSucceeded = true;
+        for (ClusterControls target : eligibleClusters) {
+            SysfsResult<String> result = isMax
+                    ? AeroActivity.hardware.cpu().writeMaxFrequency(target.cluster, value)
+                    : AeroActivity.hardware.cpu().writeMinFrequency(target.cluster, value);
+            if (!result.isSuccess()) {
+                Log.e("Aero", "Failed to apply " + (isMax ? "maximum" : "minimum")
+                        + " frequency to cluster " + target.index + ": " + result.getError());
+                allWritesSucceeded = false;
+            }
+        }
+
+        if (allWritesSucceeded) {
             // Mark this request sequence as committed
             committedGeneration.set(requestSequence);
 
@@ -769,7 +789,7 @@ public class CPUFragment extends PlaceHolderFragment {
                     synchronized (mPreferenceLock) {
                         for (ClusterControls target : eligibleClusters) {
                             CustomListPreference pref = isMax ? target.maxFrequency : target.minFrequency;
-                            pref.setSummary(AeroActivity.shell.toMHz(value));
+                            pref.setSummary(FrequencyFormat.toMHz(value));
                             pref.setValue(value);
                         }
                     }
@@ -815,7 +835,7 @@ public class CPUFragment extends PlaceHolderFragment {
             @Override
             public void run() {
                 for (ClusterControls target : CPUFragment.this.mClusterControls) {
-                    boolean writeSucceeded = setGovernor(value, target.cluster.getMembers());
+                    boolean writeSucceeded = setGovernor(value, target.cluster);
                     if (!writeSucceeded) {
                         Log.e("Aero", "Failed to write governor " + value + " to cluster " + target.index);
                     }
@@ -836,8 +856,10 @@ public class CPUFragment extends PlaceHolderFragment {
                     allComplete = true;
                     for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
                         ClusterControls target = CPUFragment.this.mClusterControls.get(j);
-                        String governorPath = FilePath.CPU_BASE_PATH + target.cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE;
-                        String currentGovernor = AeroActivity.shell.getInfo(governorPath);
+                        SysfsResult<String> governorResult =
+                                AeroActivity.hardware.cpu().readGovernor(target.cluster);
+                        String currentGovernor = governorResult.isSuccess()
+                                ? governorResult.getValue() : NO_DATA_FOUND;
                         capturedGovernors[j] = currentGovernor;
                         if (!value.equals(currentGovernor)) {
                             allComplete = false;
@@ -932,29 +954,30 @@ public class CPUFragment extends PlaceHolderFragment {
 
     private void showGovernorSettings(ClusterControls controls) {
         String complete_path = FilePath.CPU_GOV_BASE + controls.governor.getValue();
+        SysfsResult<String[]> listing;
         try {
-            String[] completeParamterList = AeroActivity.shell.getDirInfo(complete_path, true);
-            if (this.PrefCat != null) {
-                this.root.removePreference(this.PrefCat);
-            }
-            if (completeParamterList.length == 0) {
-                Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
-                return;
-            }
-            this.PrefCat = new PreferenceCategory(getActivity());
-            this.PrefCat.setTitle(R.string.pref_gov_set);
-            this.root.addPreference(this.PrefCat);
-            try {
-                Thread.sleep(200L);
-            } catch (InterruptedException e) {
-                Log.e("Aero", "Something interrupted the main Thread, try again.", e);
-            }
-            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-            h.genPrefFromDictionary(completeParamterList, complete_path);
-        } catch (NullPointerException e2) {
+            listing = AeroActivity.hardware.dynamicTunables().listSysfsParameters(
+                    new SysfsDirectory(complete_path));
+        } catch (IllegalArgumentException e) {
+            Log.w("Aero", "Rejected CPU governor parameter directory " + complete_path, e);
             Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
-            Log.e("Aero", "There isn't any folder i can check. Does this governor has parameters?", e2);
+            return;
         }
+        if (!listing.isSuccess() || listing.getValue().length == 0) {
+            String error = listing.isSuccess() ? "No parameters are available"
+                    : listing.getError();
+            Log.w("Aero", "Unable to discover CPU governor settings: " + error);
+            Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
+            return;
+        }
+        if (this.PrefCat != null) {
+            this.root.removePreference(this.PrefCat);
+        }
+        this.PrefCat = new PreferenceCategory(getActivity());
+        this.PrefCat.setTitle(R.string.pref_gov_set);
+        this.root.addPreference(this.PrefCat);
+        PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+        h.genPrefFromDictionary(listing.getValue(), complete_path);
     }
 
     /**
@@ -996,19 +1019,13 @@ public class CPUFragment extends PlaceHolderFragment {
         super.onDestroy();
     }
 
-    /** Writes the governor only to the CPUs belonging to a single cluster. Returns true if the shell write succeeded, false otherwise. */
-    public boolean setGovernor(String s, List<Integer> members) {
-        ArrayList<String> array = new ArrayList<>();
-        for (Integer cpu : members) {
-            String onlinePath = FilePath.CPU_BASE_PATH + cpu + "/online";
-            String governorPath = FilePath.CPU_BASE_PATH + cpu + FilePath.CURRENT_GOV_AVAILABLE;
-            if (AeroActivity.genHelper.doesExist(onlinePath)) {
-                array.add("echo 1 > " + AeroActivity.shell.escapeShellArg(onlinePath));
-            }
-            array.add("echo " + AeroActivity.shell.escapeShellArg(s) + " > " + AeroActivity.shell.escapeShellArg(governorPath));
+    /** Writes a supported governor to the active policy node for a single cluster. */
+    public boolean setGovernor(String governor, CpuClusterHelper.Cluster cluster) {
+        SysfsResult<String> result = AeroActivity.hardware.cpu().writeGovernor(cluster, governor);
+        if (!result.isSuccess()) {
+            Log.e("Aero", "Failed to write CPU governor: " + result.getError());
         }
-        String[] commands = (String[]) array.toArray(new String[0]);
-        return AeroActivity.shell.setRootInfo(commands);
+        return result.isSuccess();
     }
 
     private boolean isConfiguredListValue(CustomListPreference preference, String candidate) {
@@ -1044,13 +1061,20 @@ public class CPUFragment extends PlaceHolderFragment {
     private String[] getCpuFrequencyPaths(List<ClusterControls> controls) {
         String[] paths = new String[controls.size() * 3];
         for (int i = 0; i < controls.size(); i++) {
-            int representativeCpu = controls.get(i).cluster.getRepresentativeCpu();
-            String cpuPath = FilePath.CPU_BASE_PATH + representativeCpu;
-            paths[i * 3] = cpuPath + FilePath.CPU_AVAILABLE_FREQ_SUFFIX;
-            paths[(i * 3) + 1] = cpuPath + FilePath.CPU_MIN_FREQ;
-            paths[(i * 3) + 2] = cpuPath + FilePath.CPU_MAX_FREQ;
+            String[] clusterPaths = AeroActivity.hardware.cpu()
+                    .getFrequencyMetricPaths(controls.get(i).cluster);
+            System.arraycopy(clusterPaths, 0, paths, i * 3, clusterPaths.length);
         }
         return paths;
+    }
+
+    private String serializeIntegers(int[] values) {
+        StringBuilder serialized = new StringBuilder();
+        for (int i = 0; i < values.length; i++) {
+            if (i > 0) serialized.append(',');
+            serialized.append(values[i]);
+        }
+        return serialized.toString();
     }
 
     private void startMetricsPolling() {
@@ -1068,7 +1092,13 @@ public class CPUFragment extends PlaceHolderFragment {
             poller.executeOnWorker(new Runnable() {
                 @Override
                 public void run() {
-                    mTableUpdate = AeroActivity.shell.setOverclockAddress();
+                    SysfsResult<Boolean> result =
+                            AeroActivity.hardware.legacyOverclock().initialize();
+                    mTableUpdate = result.isSuccess();
+                    if (!result.isSuccess()) {
+                        Log.e("Aero", "Failed to initialize legacy overclock: "
+                                + result.getError());
+                    }
                 }
             });
         }
@@ -1109,7 +1139,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 cluster.maxFrequency.setEntryValues(entryValues);
                 if (minValue != null) {
                     cluster.minFrequency.setValue(minValue);
-                    cluster.minFrequency.setSummary(AeroActivity.shell.toMHz(minValue));
+                    cluster.minFrequency.setSummary(FrequencyFormat.toMHz(minValue));
                     cluster.pendingMinFrequency = minValue;
                 } else {
                     cluster.minFrequency.setValue(NO_DATA_FOUND);
@@ -1118,7 +1148,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 }
                 if (maxValue != null) {
                     cluster.maxFrequency.setValue(maxValue);
-                    cluster.maxFrequency.setSummary(AeroActivity.shell.toMHz(maxValue));
+                    cluster.maxFrequency.setSummary(FrequencyFormat.toMHz(maxValue));
                     cluster.pendingMaxFrequency = maxValue;
                 } else {
                     cluster.maxFrequency.setValue(NO_DATA_FOUND);
@@ -1130,10 +1160,7 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     private String[] getCpuFrequencyPathsForCluster(ClusterControls controls) {
-        int representativeCpu = controls.cluster.getRepresentativeCpu();
-        String cpuPath = FilePath.CPU_BASE_PATH + representativeCpu;
-        return new String[]{cpuPath + FilePath.CPU_AVAILABLE_FREQ_SUFFIX,
-                cpuPath + FilePath.CPU_MIN_FREQ, cpuPath + FilePath.CPU_MAX_FREQ};
+        return AeroActivity.hardware.cpu().getFrequencyMetricPaths(controls.cluster);
     }
 
     private String[] splitFrequencyValues(String value, boolean convertToMhz) {
@@ -1144,7 +1171,7 @@ public class CPUFragment extends PlaceHolderFragment {
         String[] parsedValues = new String[rawValues.length];
         for (int i = 0; i < rawValues.length; i++) {
             parsedValues[i] = convertToMhz
-                    ? AeroActivity.shell.toMHz(rawValues[i]) : rawValues[i];
+                    ? FrequencyFormat.toMHz(rawValues[i]) : rawValues[i];
         }
         return parsedValues;
     }

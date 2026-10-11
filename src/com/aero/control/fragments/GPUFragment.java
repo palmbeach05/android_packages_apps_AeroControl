@@ -26,10 +26,12 @@ import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.Android.Material.Slider;
 import com.aero.control.helpers.FilePath;
-import com.aero.control.helpers.OperationResult;
+import com.aero.control.helpers.FrequencyFormat;
+import com.aero.control.helpers.GpuController;
 import com.aero.control.helpers.PreferenceHandler;
-import com.aero.control.helpers.Shell;
-import java.io.File;
+import com.aero.control.helpers.ReadMode;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Fragment for configuring GPU settings including maximum frequency and governor.
@@ -45,12 +47,9 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private CustomPreference mDoubletap2Wake;
     private CustomPreference mGPUControl;
     private CustomListPreference mGPUControlFrequencies;
-    private String mGPUFile;
-    private String mGPUFreq;
     private String mGPUGov;
     private CustomListPreference mGPUGovernor;
     private GPUGovernorFragment mGPUGovernorFragment;
-    private Shell mShell;
     private CustomPreference mSweep2wake;
     private PreferenceScreen root;
 
@@ -72,21 +71,18 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         this.mGPUControl.setName("gpu_control_enable");
         this.mGPUControl.setTitle(R.string.pref_gpu_control_enable);
         this.mGPUControl.setSummary(R.string.pref_gpu_control_enable_summary);
-        this.mGPUControl.setLookUpDefault(FilePath.GPU_CONTROL_ACTIVE);
         this.mGPUControl.setOrder(5);
         gpuCategory.addPreference(this.mGPUControl);
         this.mSweep2wake = new CustomPreference(getActivity());
         this.mSweep2wake.setName("sweeptowake");
         this.mSweep2wake.setTitle(R.string.pref_sweeptowake);
         this.mSweep2wake.setSummary(R.string.pref_sweeptowake_summary);
-        this.mSweep2wake.setLookUpDefault(FilePath.SWEEP2WAKE);
         this.mSweep2wake.setOrder(10);
         gpuCategory.addPreference(this.mSweep2wake);
         this.mDoubletap2Wake = new CustomPreference(getActivity());
         this.mDoubletap2Wake.setName("doubletaptowake");
         this.mDoubletap2Wake.setTitle(R.string.pref_doubletaptowake);
         this.mDoubletap2Wake.setSummary(R.string.pref_doubletaptowake_summary);
-        this.mDoubletap2Wake.setLookUpDefault(FilePath.DOUBLETAP2WAKE);
         this.mDoubletap2Wake.setOrder(15);
         gpuCategory.addPreference(this.mDoubletap2Wake);
         this.mGPUControlFrequencies = new CustomListPreference(getActivity());
@@ -112,7 +108,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         gpuCategory.addPreference(this.mDisplayControl);
         this.mColorControl = (CustomPreference) this.root.findPreference("rgbValues");
         this.mColorControl.setOrder(40);
-        this.mColorControl.setLookUpDefault(FilePath.COLOR_CONTROL);
         Preference.OnPreferenceClickListener preferenceClickListener = new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -127,39 +122,45 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         this.mGPUGovernor.setOrder(45);
         this.mGPUControlFrequencies.setOnPreferenceChangeListener(this);
         this.mGPUControlFrequencies.setOrder(21);
-        String[] arr$ = FilePath.GPU_FILES;
-        int len$ = arr$.length;
-        int i$ = 0;
-        while (true) {
-            if (i$ >= len$) {
-                break;
-            }
-            String a = arr$[i$];
-            if (!AeroActivity.genHelper.doesExist(a)) {
-                i$++;
-            } else {
-                this.mGPUFile = a;
-                break;
-            }
-        }
-        if (!AeroActivity.genHelper.doesExist(FilePath.SWEEP2WAKE)) {
+        SysfsResult<Boolean> sweepState = AeroActivity.hardware.gpu().readToggle(
+                com.aero.control.helpers.GpuController.Toggle.SWEEP_TO_WAKE);
+        SysfsResult<Boolean> doubleTapState = AeroActivity.hardware.gpu().readToggle(
+                com.aero.control.helpers.GpuController.Toggle.DOUBLE_TAP_TO_WAKE);
+        SysfsResult<Boolean> controlState = AeroActivity.hardware.gpu().readToggle(
+                com.aero.control.helpers.GpuController.Toggle.CONTROL);
+        if (!sweepState.isSuccess()) {
             gpuCategory.removePreference(this.mSweep2wake);
         }
-        if (!AeroActivity.genHelper.doesExist(FilePath.DOUBLETAP2WAKE)) {
+        if (!doubleTapState.isSuccess()) {
             gpuCategory.removePreference(this.mDoubletap2Wake);
         }
-        if (!AeroActivity.genHelper.doesExist(FilePath.GPU_CONTROL_ACTIVE)) {
+        SysfsResult<Boolean> controlAvailable =
+                AeroActivity.hardware.gpu().isControlAvailable();
+        if (!controlAvailable.isSuccess() || !controlAvailable.getValue()) {
             gpuCategory.removePreference(this.mGPUControl);
         }
-        if (this.mGPUFile == null) {
+        SysfsResult<String> currentGpuFrequency = AeroActivity.hardware.gpu().readMaxFrequency();
+        if (!currentGpuFrequency.isSuccess()) {
             gpuCategory.removePreference(this.mGPUControlFrequencies);
         }
-        if (!AeroActivity.genHelper.doesExist(FilePath.COLOR_CONTROL)) {
+        SysfsResult<Boolean> colorControlAvailable =
+                AeroActivity.hardware.displayColor().isAvailable();
+        if (!colorControlAvailable.isSuccess() || !colorControlAvailable.getValue()) {
             gpuCategory.removePreference(this.mColorControl);
         }
-        if (AeroActivity.shell.getInfo(FilePath.DISPLAY_COLOR).equals(NO_DATA_FOUND)) {
+        SysfsResult<String> displayMode = AeroActivity.hardware.gpu().readDisplayMode();
+        if (!displayMode.isSuccess()) {
             gpuCategory.removePreference(this.mDisplayControl);
         }
+        this.mGPUControl.setLookUpDefaultValue(
+                controlState.isSuccess() && controlState.getValue() ? "1" : "0");
+        this.mSweep2wake.setLookUpDefaultValue(
+                sweepState.isSuccess() && sweepState.getValue() ? "1" : "0");
+        this.mDoubletap2Wake.setLookUpDefaultValue(
+                doubleTapState.isSuccess() && doubleTapState.getValue() ? "1" : "0");
+        SysfsResult<String[]> initialColor = AeroActivity.hardware.displayColor().readColorValues();
+        this.mColorControl.setLookUpDefaultValue(initialColor.isSuccess()
+                ? joinValues(initialColor.getValue()) : NO_DATA_FOUND);
         CustomPreference gpu_gov_settings = (CustomPreference) this.root.findPreference("gpu_gov_settings");
         if (AeroActivity.genHelper.doesExist(FilePath.GPU_GOV_PATH)) {
             gpu_gov_settings.setOrder(35);
@@ -193,15 +194,13 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         CharSequence[] display_values = {"31", "9", "0"};
         this.mDisplayControl.setEntries(display_entries);
         this.mDisplayControl.setEntryValues(display_values);
-        String[] arr$2 = FilePath.GPU_FREQ_ARRAY;
-        for (String s : arr$2) {
-            if (AeroActivity.genHelper.doesExist(s)) {
-                this.mGPUFreq = s;
-            }
-        }
-        if (this.mGPUFreq != null) {
-            this.mGPUControlFrequencies.setEntries(AeroActivity.shell.getInfoArray(this.mGPUFreq, 1, 0));
-            this.mGPUControlFrequencies.setEntryValues(AeroActivity.shell.getInfoArray(this.mGPUFreq, 0, 0));
+        SysfsResult<String[]> availableGpuFrequencies =
+                AeroActivity.hardware.gpu().readAvailableFrequencies(ReadMode.FREQUENCY_MHZ);
+        SysfsResult<String[]> rawGpuFrequencies =
+                AeroActivity.hardware.gpu().readAvailableFrequencies(ReadMode.RAW);
+        if (availableGpuFrequencies.isSuccess() && rawGpuFrequencies.isSuccess()) {
+            this.mGPUControlFrequencies.setEntries(availableGpuFrequencies.getValue());
+            this.mGPUControlFrequencies.setEntryValues(rawGpuFrequencies.getValue());
         } else {
             this.mGPUControlFrequencies.setEntries(R.array.gpu_frequency_list);
             this.mGPUControlFrequencies.setEntryValues(R.array.gpu_frequency_list_values);
@@ -213,40 +212,41 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             }
         }
         if (this.mGPUGov != null) {
-            if (AeroActivity.genHelper.doesExist(this.mGPUGov + "available_governors")) {
-                tmp = this.mGPUGov + "available_governors";
+            SysfsResult<String[]> governors = AeroActivity.hardware.gpu().readAvailableGovernors();
+            SysfsResult<String> currentGovernor = AeroActivity.hardware.gpu().readGovernor();
+            if (governors.isSuccess() && currentGovernor.isSuccess()) {
+                this.mGPUGovernor.setEntries(governors.getValue());
+                this.mGPUGovernor.setEntryValues(governors.getValue());
+                this.mGPUGovernor.setValue(currentGovernor.getValue());
+                this.mGPUGovernor.setSummary(currentGovernor.getValue());
+                this.mGPUGovernor.setDialogIcon(R.drawable.device_old);
             } else {
-                tmp = this.mGPUGov + "governor";
+                gpuCategory.removePreference(this.mGPUGovernor);
             }
-            this.mGPUGovernor.setEntries(AeroActivity.shell.getInfoArray(tmp, 0, 0));
-            this.mGPUGovernor.setEntryValues(AeroActivity.shell.getInfoArray(tmp, 0, 0));
-            this.mGPUGovernor.setValue(AeroActivity.shell.getInfo(this.mGPUGov + "governor"));
-            this.mGPUGovernor.setSummary(AeroActivity.shell.getInfo(this.mGPUGov + "governor"));
-            this.mGPUGovernor.setDialogIcon(R.drawable.device_old);
         } else {
             gpuCategory.removePreference(this.mGPUGovernor);
         }
         try {
-            if (this.mGPUFile != null) {
-                String currentFreq = AeroActivity.shell.getInfoArray(this.mGPUFile, 0, 0)[0];
-                this.mGPUControlFrequencies.setValue(currentFreq);
-                this.mGPUControlFrequencies.setSummary(formatFrequencySummary(currentFreq));
+            if (currentGpuFrequency.isSuccess()) {
+                this.mGPUControlFrequencies.setValue(currentGpuFrequency.getValue());
+                this.mGPUControlFrequencies.setSummary(
+                        formatFrequencySummary(currentGpuFrequency.getValue()));
             }
-            if (AeroActivity.shell.getInfo(FilePath.GPU_CONTROL_ACTIVE).equals("1")) {
+            if (controlState.isSuccess() && controlState.getValue()) {
                 checkGpuControl = true;
                 this.mGPUControl.setSummary(R.string.enabled);
             } else {
                 checkGpuControl = false;
                 this.mGPUControl.setSummary(R.string.disabled);
             }
-            if (AeroActivity.shell.getInfo(FilePath.SWEEP2WAKE).equals("1")) {
+            if (sweepState.isSuccess() && sweepState.getValue()) {
                 checkmSweep2wake = true;
                 this.mSweep2wake.setSummary(R.string.enabled);
             } else {
                 checkmSweep2wake = false;
                 this.mSweep2wake.setSummary(R.string.disabled);
             }
-            if (AeroActivity.shell.getInfo(FilePath.DOUBLETAP2WAKE).equals("1")) {
+            if (doubleTapState.isSuccess() && doubleTapState.getValue()) {
                 checkDoubletap2wake = true;
                 this.mDoubletap2Wake.setSummary(R.string.enabled);
             } else {
@@ -277,11 +277,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param cusPref the CustomPreference associated with this color control
      */
     private void showColorControl(final SharedPreferences.Editor editor, final CustomPreference cusPref) {
-        if (this.mShell == null) {
-            this.mShell = new Shell("su", true);
-        }
-        this.mColorValues = AeroActivity.shell.getInfoArray(FilePath.COLOR_CONTROL, 0, 0);
-        if (this.mColorValues == null || this.mColorValues.length == 0 || this.mColorValues[0].equals(NO_DATA_FOUND)) {
+        SysfsResult<String[]> colorValues = AeroActivity.hardware.displayColor().readColorValues();
+        this.mColorValues = colorValues.isSuccess() ? colorValues.getValue() : null;
+        if (this.mColorValues == null || this.mColorValues.length == 0
+                || this.mColorValues[0].equals(NO_DATA_FOUND)) {
             Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
             return;
         }
@@ -563,7 +562,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         if (value == null || value.length() <= 3) {
             return NO_DATA_FOUND;
         }
-        return AeroActivity.shell.toMHz(value.substring(0, value.length() - 3));
+        return FrequencyFormat.toMHz(value.substring(0, value.length() - 3));
     }
 
     /**
@@ -577,7 +576,8 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
      * @param cusPref the CustomPreference for this color control setting
      * @param editor the SharedPreferences editor for saving the color values if enabled
      */
-    public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue, CustomPreference cusPref, SharedPreferences.Editor editor) {
+    public void setColorValues(EditText redValue, EditText greenValue, EditText blueValue,
+            final CustomPreference cusPref, final SharedPreferences.Editor editor) {
         int red;
         int green;
         int blue;
@@ -592,15 +592,28 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             Toast.makeText(getActivity(), "The values are out of range!", 1).show();
             return;
         }
-        String rgbValues = red + " " + green + " " + blue;
-        this.mShell.addCommand("echo " + rgbValues + " > " + FilePath.COLOR_CONTROL);
-        if (new File(FilePath.COLOR_CONTROL_BIT).exists()) {
-            this.mShell.addCommand("echo 1 > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl");
-        }
-        this.mShell.runInteractive();
-        if (cusPref.isChecked().booleanValue()) {
-            editor.putString(cusPref.getName(), rgbValues).commit();
-        }
+        final String rgbValues = red + " " + green + " " + blue;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final SysfsResult<String> result =
+                        AeroActivity.hardware.displayColor().writeColorValue(rgbValues);
+                if (!isAdded()) return;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!result.isSuccess()) {
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        if (cusPref.isChecked().booleanValue()) {
+                            editor.putString(cusPref.getName(), rgbValues).commit();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override // android.app.Fragment
@@ -608,10 +621,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         super.onPause();
         if (this.mColorDialog != null) {
             this.mColorDialog.dismiss();
-        }
-        if (this.mShell != null) {
-            this.mShell.closeInteractive();
-            this.mShell = null;
         }
     }
 
@@ -633,16 +642,17 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPrefs.edit();
         if (preference == this.mSweep2wake) {
-            if (!applyToggle(this.mSweep2wake, FilePath.SWEEP2WAKE)) return false;
+            if (!applyToggle(this.mSweep2wake, GpuController.Toggle.SWEEP_TO_WAKE)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mDoubletap2Wake) {
-            if (!applyToggle(this.mDoubletap2Wake, FilePath.DOUBLETAP2WAKE)) return false;
+            if (!applyToggle(this.mDoubletap2Wake,
+                    GpuController.Toggle.DOUBLE_TAP_TO_WAKE)) return false;
             cusPref = (CustomPreference) preference;
         } else if (preference == this.mColorControl) {
             cusPref = (CustomPreference) preference;
             showColorControl(editor, cusPref);
         } else if (preference == this.mGPUControl) {
-            if (!applyToggle(this.mGPUControl, FilePath.GPU_CONTROL_ACTIVE)) return false;
+            if (!applyToggle(this.mGPUControl, GpuController.Toggle.CONTROL)) return false;
             cusPref = (CustomPreference) preference;
         }
         if (cusPref != null && cusPref.isChecked().booleanValue() && cusPref.isClicked() != null) {
@@ -652,13 +662,14 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         return true;
     }
 
-    private boolean applyToggle(final CustomPreference preference, final String path) {
+    private boolean applyToggle(final CustomPreference preference, final GpuController.Toggle toggle) {
         final boolean previous = preference.isClicked().booleanValue();
         final boolean requested = !previous;
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
+                final SysfsResult<Boolean> result =
+                        AeroActivity.hardware.gpu().writeToggle(toggle, requested);
                 if (!isAdded()) {
                     return;
                 }
@@ -681,71 +692,47 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     @Override // android.preference.Preference.OnPreferenceChangeListener
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String a = (String) newValue;
-        String newSummary = "";
-        String path = "";
+        final boolean displayMode;
+        final String newSummary;
         if (preference == this.mGPUControlFrequencies) {
-            if (this.mGPUFile == null || !AeroActivity.genHelper.doesExist(this.mGPUFile)) {
-                Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
-                return false;
-            }
             newSummary = formatFrequencySummary(a);
             if (newSummary.equals(NO_DATA_FOUND)) {
                 Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
                 return false;
             }
-            path = this.mGPUFile;
+            displayMode = false;
         } else if (preference == this.mGPUGovernor) {
             if (this.PrefCat != null) {
                 this.root.removePreference(this.PrefCat);
             }
-            if (this.mGPUGov == null) {
-                String[] arr$ = FilePath.GPU_GOV_ARRAY;
-                for (String s : arr$) {
-                    if (AeroActivity.genHelper.doesExist(s)) {
-                        this.mGPUGov = s;
-                    }
-                }
-            }
-            path = this.mGPUGov + "governor";
             newSummary = a;
+            displayMode = false;
         } else {
             if (preference == this.mDisplayControl) {
                 if (!isConfiguredListValue(this.mDisplayControl, a)) {
                     Toast.makeText(getActivity(), R.string.no_data_found, 1).show();
                     return false;
                 }
-                final String displayPath = AeroActivity.shell.escapeShellArg(FilePath.DISPLAY_COLOR);
-                final String[] commands = {"chmod 0664 " + displayPath, "echo " + AeroActivity.shell.escapeShellArg(a) + " > " + displayPath};
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final OperationResult result = AeroActivity.shell.setRootInfoResult(commands);
-                        if (!isAdded()) {
-                            return;
-                        }
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!result.isSuccess()) {
-                                    Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-                                Toast.makeText(getActivity(), "Turn your display off/on :)", 1).show();
-                            }
-                        });
-                    }
-                }).start();
+                newSummary = "";
+                displayMode = true;
+            } else {
+                return true;
             }
-            return true;
         }
         final String requestedValue = a;
-        final String requestedPath = path;
         final String summary = newSummary;
         final Preference targetPreference = preference;
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final OperationResult result = AeroActivity.shell.setRootInfoResult(requestedValue, requestedPath);
+                final SysfsResult<String> result;
+                if (targetPreference == mGPUControlFrequencies) {
+                    result = AeroActivity.hardware.gpu().writeMaxFrequency(requestedValue);
+                } else if (targetPreference == mGPUGovernor) {
+                    result = AeroActivity.hardware.gpu().writeGovernor(requestedValue);
+                } else {
+                    result = AeroActivity.hardware.gpu().writeDisplayMode(requestedValue);
+                }
                 if (!isAdded()) {
                     return;
                 }
@@ -759,11 +746,23 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         if (!summary.equals("")) {
                             targetPreference.setSummary(summary);
                         }
+                        if (displayMode) {
+                            Toast.makeText(getActivity(), "Turn your display off/on :)", 1).show();
+                        }
                     }
                 });
             }
         }).start();
         return true;
+    }
+
+    private String joinValues(String[] values) {
+        StringBuilder result = new StringBuilder();
+        for (String value : values) {
+            if (result.length() > 0) result.append(' ');
+            result.append(value);
+        }
+        return result.toString();
     }
 
     /**
@@ -808,10 +807,29 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         switch (item.getItemId()) {
             case R.id.action_governor_settings /* 2131099747 */:
                 String[] completeParamterList = null;
+                String governorPath = null;
                 try {
                     try {
-                        completeParamterList = AeroActivity.shell.getDirInfo(this.mGPUGov + AeroActivity.shell.getInfo(this.mGPUGov + "governor"), true);
-                        if (completeParamterList == null) {
+                        SysfsDirectory governorRoot = new SysfsDirectory(this.mGPUGov);
+                        SysfsResult<String> governor = AeroActivity.hardware.dynamicTunables()
+                                .readSysfsParameter(governorRoot, "governor");
+                        if (governor.isSuccess()) {
+                            governorPath = this.mGPUGov + governor.getValue();
+                            SysfsResult<String[]> listing = AeroActivity.hardware
+                                    .dynamicTunables().listSysfsParameters(
+                                            new SysfsDirectory(governorPath));
+                            if (listing.isSuccess()) {
+                                completeParamterList = listing.getValue();
+                            } else {
+                                Log.w("Aero", "Unable to discover GPU governor parameters: "
+                                        + listing.getError());
+                            }
+                        } else {
+                            Log.w("Aero", "Unable to read the active GPU governor: "
+                                    + governor.getError());
+                        }
+                        if (completeParamterList == null
+                                || completeParamterList.length == 0) {
                             Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
                             Log.e("Aero", "We found no parameters for this governor, maybe because it has none?");
                         } else {
@@ -823,7 +841,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                             this.root.addPreference(this.PrefCat);
                             try {
                                 PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-                                h.genPrefFromDictionary(completeParamterList, this.mGPUGov + AeroActivity.shell.getInfo(this.mGPUGov + "governor"));
+                                h.genPrefFromDictionary(completeParamterList, governorPath);
                             } catch (NullPointerException e) {
                                 Log.e("Aero", "I couldn't get any files!", e);
                             }
@@ -835,6 +853,9 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                             Toast.makeText(getActivity(), "Looks like there are no parameter for this governor?", 1).show();
                             Log.e("Aero", "We found no parameters for this governor, maybe because it has none?");
                         }
+                    } catch (IllegalArgumentException e) {
+                        Log.w("Aero", "Rejected GPU governor parameter path", e);
+                        Toast.makeText(getActivity(), "Looks like there are no parameters for this governor?", 1).show();
                     }
                     return true;
                 } catch (Throwable th) {

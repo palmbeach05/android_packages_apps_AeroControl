@@ -8,6 +8,8 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Fragment for configuring CPU hotplug settings. Allows tuning of CPU hotplug
@@ -42,18 +44,24 @@ public class CPUHotplugFragment extends PlaceHolderFragment {
      * Loads CPU hotplug parameters from the kernel and generates preference UI elements.
      */
     public void loadHotplug() {
-        String[] completeParamterList = AeroActivity.shell.getDirInfo(this.mHotplugPath, true);
+        if (this.mHotplugPath == null) {
+            Log.w("Aero", "CPU hotplug controls are not available");
+            return;
+        }
+        SysfsResult<String[]> listing = AeroActivity.hardware.dynamicTunables()
+                .listSysfsParameters(new SysfsDirectory(this.mHotplugPath));
+        if (!listing.isSuccess()) {
+            Log.w("Aero", "Unable to discover CPU hotplug settings: " + listing.getError());
+            return;
+        }
+        String[] completeParamterList = listing.getValue();
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
         }
         this.PrefCat = new PreferenceCategory(getActivity());
         this.PrefCat.setTitle(R.string.perf_cpu_hotplug);
         this.root.addPreference(this.PrefCat);
-        try {
-            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-            h.genPrefFromDictionary(completeParamterList, this.mHotplugPath);
-        } catch (NullPointerException e) {
-            Log.e("Aero", "I couldn't get any files!", e);
-        }
+        PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+        h.genPrefFromDictionary(completeParamterList, this.mHotplugPath);
     }
 }

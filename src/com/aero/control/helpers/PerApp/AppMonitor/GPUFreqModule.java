@@ -5,6 +5,9 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.AeroLog;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.ProcfsNode;
+import com.aero.control.helpers.SysfsNode;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Monitoring module that tracks GPU frequency by reading from device-specific
@@ -47,8 +50,19 @@ public final class GPUFreqModule extends AppModule {
         long temp = System.currentTimeMillis();
         Integer gpufreq = null;
         try {
-            gpufreq = getFormatInt(AeroActivity.shell.getFastInfo(this.mGPUFile));
+            SysfsResult<String> frequency = this.mGPUFile.startsWith("/proc/")
+                    ? AeroActivity.hardware.procfs().readValue(
+                            new ProcfsNode(this.mGPUFile))
+                    : AeroActivity.hardware.read(new SysfsNode(this.mGPUFile));
+            if (frequency.isSuccess()) {
+                gpufreq = getFormatInt(frequency.getValue());
+            } else {
+                LOG.warn("Unable to read GPU frequency: " + frequency.getError());
+            }
         } catch (NumberFormatException e) {
+            LOG.warn("GPU frequency value is not numeric", e);
+        } catch (IllegalArgumentException e) {
+            LOG.warn("GPU frequency path was rejected", e);
         }
         if (gpufreq != null) {
             addValues(gpufreq);

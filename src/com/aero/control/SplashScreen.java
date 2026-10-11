@@ -44,6 +44,7 @@ public class SplashScreen extends FragmentActivity {
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
     public Button mSkip;
+    private boolean mActivityResumed;
 
     /**
      * Initializes the splash screen activity with tutorial fragments and checks for
@@ -62,13 +63,11 @@ public class SplashScreen extends FragmentActivity {
         this.mFragments.add(new TutorialFragment());
         ContextWrapper cw = new ContextWrapper(getBaseContext());
         File firstrun_aero = new File(cw.getFilesDir() + "/" + FIRSTRUN_AERO);
-        if (!rootCheck.isDeviceRooted()) {
-            showRootDialog();
-        }
         if (firstrun_aero.exists()) {
             Intent i = new Intent(this, (Class<?>) AeroActivity.class);
             startActivity(i);
             finish();
+            return;
         }
         this.mPager = (ViewPager) findViewById(R.id.pager);
         this.mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
@@ -78,6 +77,7 @@ public class SplashScreen extends FragmentActivity {
         this.mCircleIndicator.setViewPager(this.mPager);
         this.mSkip = (Button) findViewById(R.id.splash_button);
         initDefaultSkip();
+        checkRootAccessAsync();
     }
 
     /**
@@ -86,6 +86,30 @@ public class SplashScreen extends FragmentActivity {
     @Override // android.support.v4.app.FragmentActivity, android.app.Activity
     protected void onResume() {
         super.onResume();
+        this.mActivityResumed = true;
+    }
+
+    @Override // android.support.v4.app.FragmentActivity, android.app.Activity
+    protected void onPause() {
+        this.mActivityResumed = false;
+        super.onPause();
+    }
+
+    private void checkRootAccessAsync() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean rooted = rootCheck.isDeviceRooted();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mActivityResumed && !isFinishing() && !rooted) {
+                            showRootDialog();
+                        }
+                    }
+                });
+            }
+        }, "AeroRootCheck").start();
     }
 
     /**

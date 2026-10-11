@@ -8,6 +8,8 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.ProcfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Fragment for configuring Dalvik VM and kernel virtual memory parameters
@@ -38,18 +40,20 @@ public class MemoryDalvikFragment extends PlaceHolderFragment {
      * tweak directory.
      */
     public void loadDalvik() {
-        String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.DALVIK_TWEAK, true);
+        SysfsResult<String[]> listing = AeroActivity.hardware.dynamicTunables()
+                .listProcfsParameters(new ProcfsDirectory(FilePath.DALVIK_TWEAK));
+        if (!listing.isSuccess()) {
+            Log.w("Aero", "Unable to discover Dalvik tunables: " + listing.getError());
+            return;
+        }
+        String[] completeParamterList = listing.getValue();
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
         }
         this.PrefCat = new PreferenceCategory(getActivity());
         this.PrefCat.setTitle(R.string.pref_dalvik_settings_heading);
         this.root.addPreference(this.PrefCat);
-        try {
-            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-            h.genPrefFromDictionary(completeParamterList, FilePath.DALVIK_TWEAK);
-        } catch (NullPointerException e) {
-            Log.e("Aero", "I couldn't get any files!", e);
-        }
+        PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+        h.genPrefFromDictionary(completeParamterList, FilePath.DALVIK_TWEAK);
     }
 }

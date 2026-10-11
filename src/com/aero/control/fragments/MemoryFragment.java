@@ -24,17 +24,21 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
+import com.aero.control.helpers.DirectoryEntryType;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.HardwareServices;
 import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.ProcfsNode;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsNode;
+import com.aero.control.helpers.SysfsResult;
 import com.aero.control.helpers.Util;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * Fragment for configuring memory and I/O settings including read-ahead buffer,
@@ -85,10 +89,10 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mDynFSync.setLookUpDefault(FilePath.DYANMIC_FSYNC);
         this.mDynFSync.setOrder(15);
         memorySettingsCategory.addPreference(this.mDynFSync);
-        if ("1".equals(AeroActivity.shell.getInfo(FilePath.DYANMIC_FSYNC))) {
+        if ("1".equals(readSysfsValue(FilePath.DYANMIC_FSYNC))) {
             this.mDynFSync.setClicked(true);
             this.mDynFSync.setSummary(R.string.enabled);
-        } else if ("0".equals(AeroActivity.shell.getInfo(FilePath.DYANMIC_FSYNC))) {
+        } else if ("0".equals(readSysfsValue(FilePath.DYANMIC_FSYNC))) {
             this.mDynFSync.setClicked(false);
             this.mDynFSync.setSummary(R.string.disabled);
         } else if (memorySettingsCategory != null) {
@@ -101,7 +105,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mFsync.setLookUpDefault(FilePath.FSYNC);
         this.mFsync.setOrder(14);
         memorySettingsCategory.addPreference(this.mFsync);
-        String temp = AeroActivity.shell.getInfo(FilePath.FSYNC);
+        String temp = readSysfsValue(FilePath.FSYNC);
         if ("Y".equals(temp) || "1".equals(temp)) {
             this.mFsync.setClicked(true);
             this.mFsync.setSummary(R.string.enabled);
@@ -118,7 +122,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mKSMSettings.setLookUpDefault(FilePath.KSM_SETTINGS);
         this.mKSMSettings.setOrder(16);
         memorySettingsCategory.addPreference(this.mKSMSettings);
-        String temp2 = AeroActivity.shell.getInfo(FilePath.KSM_SETTINGS);
+        String temp2 = readSysfsValue(FilePath.KSM_SETTINGS);
         if ("1".equals(temp2)) {
             this.mKSMSettings.setClicked(true);
             this.mKSMSettings.setSummary(R.string.enabled);
@@ -135,10 +139,10 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mWriteBackControl.setLookUpDefault(FilePath.WRITEBACK);
         this.mWriteBackControl.setOrder(20);
         memorySettingsCategory.addPreference(this.mWriteBackControl);
-        if ("1".equals(AeroActivity.shell.getInfo(FilePath.WRITEBACK))) {
+        if ("1".equals(readSysfsValue(FilePath.WRITEBACK))) {
             this.mWriteBackControl.setClicked(true);
             this.mWriteBackControl.setSummary(R.string.enabled);
-        } else if ("0".equals(AeroActivity.shell.getInfo(FilePath.WRITEBACK))) {
+        } else if ("0".equals(readSysfsValue(FilePath.WRITEBACK))) {
             this.mWriteBackControl.setClicked(false);
             this.mWriteBackControl.setSummary(R.string.disabled);
         } else if (memorySettingsCategory != null) {
@@ -154,8 +158,9 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mReadAHead.setDialogTitle(R.string.pref_readahead_dialog);
         this.mReadAHead.setEntries((CharSequence[]) readaheadValues.toArray(new CharSequence[0]));
         this.mReadAHead.setEntryValues((CharSequence[]) readaheadValues.toArray(new CharSequence[0]));
-        this.mReadAHead.setValue(AeroActivity.shell.getInfo(FilePath.READAHEAD_PARAMETER));
-        this.mReadAHead.setSummary(AeroActivity.shell.getInfo(FilePath.READAHEAD_PARAMETER));
+        String readAheadValue = readSysfsValue(FilePath.READAHEAD_PARAMETER);
+        this.mReadAHead.setValue(readAheadValue);
+        this.mReadAHead.setSummary(readAheadValue);
         this.mReadAHead.setOnPreferenceChangeListener(this);
         memorySettingsCategory.addPreference(this.mReadAHead);
         this.mRandomSettings = (CustomPreference) findPreference("entropy_settings");
@@ -183,13 +188,23 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         this.mIOScheduler.setName("io_scheduler_list");
         this.mIOScheduler.setTitle(R.string.io_scheduler);
         this.mIOScheduler.setDialogTitle(R.string.io_scheduler);
-        this.mIOScheduler.setEntries(AeroActivity.shell.getInfoArray(FilePath.GOV_IO_FILE, 0, 1));
-        this.mIOScheduler.setEntryValues(AeroActivity.shell.getInfoArray(FilePath.GOV_IO_FILE, 0, 1));
-        this.mIOScheduler.setValue(AeroActivity.shell.getInfoString(AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE)));
-        this.mIOScheduler.setSummary(AeroActivity.shell.getInfoString(AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE)));
+        SysfsResult<String[]> availableSchedulers =
+                AeroActivity.hardware.ioScheduler().readAvailableSchedulers();
+        SysfsResult<String> currentScheduler =
+                AeroActivity.hardware.ioScheduler().readCurrentScheduler();
+        if (availableSchedulers.isSuccess() && currentScheduler.isSuccess()) {
+            this.mIOScheduler.setEntries(availableSchedulers.getValue());
+            this.mIOScheduler.setEntryValues(availableSchedulers.getValue());
+            this.mIOScheduler.setValue(currentScheduler.getValue());
+            this.mIOScheduler.setSummary(currentScheduler.getValue());
+            ioSettingsCategory.addPreference(this.mIOScheduler);
+        } else {
+            Log.w("Aero", "I/O scheduler is unavailable: "
+                    + (!availableSchedulers.isSuccess()
+                    ? availableSchedulers.getError() : currentScheduler.getError()));
+        }
         this.mIOScheduler.setDialogIcon(R.drawable.device_drive);
         this.mIOScheduler.setOnPreferenceChangeListener(this);
-        ioSettingsCategory.addPreference(this.mIOScheduler);
         this.mIOSchedulerHandler = new PreferenceHandler(getActivity(), ioSettingsCategory, getPreferenceManager());
         this.mIOSchedulerHandler.addInvisiblePreference();
         if (this.showDialog) {
@@ -197,7 +212,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                 @Override // java.lang.Runnable
                 public void run() {
                     boolean fileSystemCheck = false;
-                    String[] fileMount = AeroActivity.shell.getInfo("/proc/mounts", false);
+                    String[] fileMount = readProcfsLines("/proc/mounts");
                     boolean fileMountCheck = false;
                     int len$ = fileMount.length;
                     int i$ = 0;
@@ -215,8 +230,11 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                     }
                     MemoryFragment.this.showDialog = false;
                     if (fileMountCheck) {
-                        String fileJournal = AeroActivity.shell.getRootInfo("tune2fs -l", "/dev/block/mmcblk1p25");
-                        if (fileJournal.length() != 0 && fileJournal.contains("has_journal")) {
+                        SysfsResult<String> journalResult =
+                                HardwareServices.memoryMaintenance().readJournalInfo();
+                        if (!journalResult.isSuccess()) {
+                            Log.w("MemoryFragment", journalResult.getError());
+                        } else if (journalResult.getValue().contains("has_journal")) {
                             fileSystemCheck = true;
                         }
                         
@@ -263,38 +281,16 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             return;
         }
 
-        final String propertyPattern = "^" + FilePath.LOW_MEM_PROPERTY.replace(".", "\\.") + "=";
-        final String capabilityCommand = "grep -q '" + propertyPattern + "' " + FilePath.LOW_MEM
-                + " && echo " + FilePath.LOW_MEM_SUPPORTED + " || echo LOW_MEM_UNSUPPORTED";
-        final String valueCommand = "grep '" + propertyPattern + "' " + FilePath.LOW_MEM
-                + " | head -n 1 | cut -d= -f2-";
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String capabilityOutput;
-                try {
-                    capabilityOutput = AeroActivity.shell.runCommandAndWaitForOutput(capabilityCommand);
-                } catch (RuntimeException e) {
-                    Log.w("MemoryFragment", "Unable to check Low Memory support", e);
+                SysfsResult<String> statusResult =
+                        HardwareServices.memoryMaintenance().readLowMemoryStatus();
+                if (!statusResult.isSuccess()) {
+                    Log.w("MemoryFragment", statusResult.getError());
                     return;
                 }
-                if (capabilityOutput == null
-                        || !FilePath.LOW_MEM_SUPPORTED.equals(capabilityOutput.trim())) {
-                    return;
-                }
-
-                String propertyValue;
-                try {
-                    propertyValue = AeroActivity.shell.runCommandAndWaitForOutput(valueCommand);
-                } catch (RuntimeException e) {
-                    Log.w("MemoryFragment", "Unable to read Low Memory status", e);
-                    return;
-                }
-                if (propertyValue == null) {
-                    return;
-                }
-
-                final String lowMemoryStatus = propertyValue.trim();
+                final String lowMemoryStatus = statusResult.getValue();
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -440,7 +436,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final OperationResult result = AeroActivity.shell.setRootInfoResult(requested ? "1" : "0", path);
+                final SysfsResult<String> result = AeroActivity.hardware.write(
+                        new SysfsNode(path, 0, 1), requested ? "1" : "0");
                 if (!isAdded()) {
                     return;
                 }
@@ -448,6 +445,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                     @Override
                     public void run() {
                         if (!result.isSuccess()) {
+                            Log.e("Aero", "Failed to update memory toggle " + path + ": "
+                                    + result.getError());
                             preference.setClicked(Boolean.valueOf(previous));
                             Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                             return;
@@ -462,7 +461,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
 
     /**
      * Handles preference value changes for the I/O scheduler and read-ahead preferences.
-     * Updates preference summaries and applies changes to the kernel via root commands.
+     * Updates preference summaries and applies changes through the hardware service.
      *
      * @param preference the preference that changed
      * @param newValue the new value for the preference
@@ -475,7 +474,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.GOV_IO_FILE);
+                    final SysfsResult<String> result =
+                            AeroActivity.hardware.ioScheduler().writeScheduler(value);
                     if (!isAdded()) {
                         return;
                     }
@@ -483,6 +483,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                         @Override
                         public void run() {
                             if (!result.isSuccess()) {
+                                Log.e("Aero", "Failed to change I/O scheduler: "
+                                        + result.getError());
                                 Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                 return;
                             }
@@ -499,7 +501,9 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final OperationResult result = AeroActivity.shell.setRootInfoResult(value, FilePath.READAHEAD_PARAMETER);
+                    final SysfsResult<String> result = AeroActivity.hardware.write(
+                            new SysfsNode(FilePath.READAHEAD_PARAMETER, 0,
+                                    Integer.MAX_VALUE), value);
                     if (!isAdded()) {
                         return;
                     }
@@ -507,6 +511,8 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                         @Override
                         public void run() {
                             if (!result.isSuccess()) {
+                                Log.e("Aero", "Failed to update read-ahead: "
+                                        + result.getError());
                                 Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                 return;
                             }
@@ -521,10 +527,42 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         }
     }
 
+    private String readProcfsValue(String path) {
+        SysfsResult<String> result =
+                AeroActivity.hardware.procfs().readValue(new ProcfsNode(path));
+        if (!result.isSuccess()) {
+            Log.w("Aero", "Unable to read hardware value " + path + ": "
+                    + result.getError());
+            return "Unavailable";
+        }
+        return result.getValue();
+    }
+
+    private String readSysfsValue(String path) {
+        SysfsResult<String> result = AeroActivity.hardware.read(new SysfsNode(path));
+        if (!result.isSuccess()) {
+            Log.w("Aero", "Unable to read hardware value " + path + ": "
+                    + result.getError());
+            return "Unavailable";
+        }
+        return result.getValue();
+    }
+
+    private String[] readProcfsLines(String path) {
+        SysfsResult<String[]> result =
+                AeroActivity.hardware.procfs().readLines(new ProcfsNode(path));
+        if (!result.isSuccess()) {
+            Log.w("Aero", "Unable to read procfs file " + path + ": "
+                    + result.getError());
+            return new String[0];
+        }
+        return result.getValue();
+    }
+
     /**
      * Displays a dialog for configuring random/entropy pool settings. Shows current
      * read and write wakeup thresholds and allows editing them. Validates input and
-     * applies changes via root commands if valid.
+     * applies changes through the typed hardware service if valid.
      */
     private void onRandomClick() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -536,10 +574,12 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         final EditText editRandomWrite = (EditText) layout.findViewById(R.id.random_write_value);
         txtRandomRead.setText(Util.getLastSysValue(FilePath.RANDOM_READ_WAKEUP));
         txtRandomWrite.setText(Util.getLastSysValue(FilePath.RANDOM_WRITE_WAKEUP));
-        editRandomRead.setText(AeroActivity.shell.getFastInfo(FilePath.RANDOM_READ_WAKEUP));
-        editRandomWrite.setText(AeroActivity.shell.getFastInfo(FilePath.RANDOM_WRITE_WAKEUP));
+        editRandomRead.setText(readProcfsValue(FilePath.RANDOM_READ_WAKEUP));
+        editRandomWrite.setText(readProcfsValue(FilePath.RANDOM_WRITE_WAKEUP));
         builder.setIcon(R.drawable.puzzle);
-        builder.setTitle(((Object) getText(R.string.pref_entropy_settings)) + " (" + AeroActivity.shell.getFastInfo(FilePath.RANDOM_POOL_AVAIL) + "/" + AeroActivity.shell.getFastInfo(FilePath.RANDOM_POOL_SIZE) + ")");
+        builder.setTitle(((Object) getText(R.string.pref_entropy_settings)) + " ("
+                + readProcfsValue(FilePath.RANDOM_POOL_AVAIL) + "/"
+                + readProcfsValue(FilePath.RANDOM_POOL_SIZE) + ")");
         builder.setView(layout);
         builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MemoryFragment.3
             @Override // android.content.DialogInterface.OnClickListener
@@ -550,15 +590,54 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                     Toast.makeText(MemoryFragment.this.getActivity(), "Please enter a valid non-negative number.", 1).show();
                     return;
                 }
-                String[] cmds = {"echo " + readValue + " > " + FilePath.RANDOM_READ_WAKEUP, "echo " + writeValue + " > " + FilePath.RANDOM_WRITE_WAKEUP};
-                OperationResult result = AeroActivity.shell.setRootInfoResult(cmds);
-                if (!result.isSuccess()) {
+                ProcfsNode readNode = new ProcfsNode(FilePath.RANDOM_READ_WAKEUP, 0,
+                        Integer.MAX_VALUE);
+                ProcfsNode writeNode = new ProcfsNode(FilePath.RANDOM_WRITE_WAKEUP, 0,
+                        Integer.MAX_VALUE);
+                SysfsResult<String> oldReadResult =
+                        AeroActivity.hardware.procfs().readValue(readNode);
+                SysfsResult<String> oldWriteResult =
+                        AeroActivity.hardware.procfs().readValue(writeNode);
+                if (!oldReadResult.isSuccess() || !oldWriteResult.isSuccess()) {
+                    Log.e("Aero", "Unable to capture existing entropy thresholds: "
+                            + (!oldReadResult.isSuccess() ? oldReadResult.getError()
+                            : oldWriteResult.getError()));
+                    Toast.makeText(MemoryFragment.this.getActivity(),
+                            R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                SysfsResult<String> readResult =
+                        AeroActivity.hardware.procfs().writeValue(readNode, readValue);
+                if (!readResult.isSuccess()) {
+                    Log.e("Aero", "Failed to write entropy read threshold: "
+                            + readResult.getError());
+                    Toast.makeText(MemoryFragment.this.getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                SysfsResult<String> writeResult =
+                        AeroActivity.hardware.procfs().writeValue(writeNode, writeValue);
+                if (!writeResult.isSuccess()) {
+                    Log.e("Aero", "Failed to write entropy write threshold: "
+                            + writeResult.getError());
+                    SysfsResult<String> rollbackResult = AeroActivity.hardware.procfs()
+                            .writeValue(readNode, oldReadResult.getValue());
+                    if (!rollbackResult.isSuccess()) {
+                        Log.e("Aero", "Failed to restore entropy read threshold: "
+                                + rollbackResult.getError());
+                    }
                     Toast.makeText(MemoryFragment.this.getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                     return;
                 }
                 if (MemoryFragment.this.mRandomSettings.isChecked().booleanValue()) {
                     SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(MemoryFragment.this.getActivity().getBaseContext());
-                    preference.edit().putStringSet(MemoryFragment.this.mRandomSettings.getKey(), new HashSet(Arrays.asList(cmds))).commit();
+                    boolean saved = preference.edit()
+                            .putString("entropy_read_wakeup", readValue)
+                            .putString("entropy_write_wakeup", writeValue)
+                            .putString(MemoryFragment.this.mRandomSettings.getKey(), "enabled")
+                            .commit();
+                    if (!saved) {
+                        Log.e("Aero", "Failed to save entropy settings");
+                    }
                 }
             }
         });
@@ -582,7 +661,14 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             return;
         }
         if (this.mFileSystem == null) {
-            this.mFileSystem = AeroActivity.shell.getRootInfo("mount", "");
+            SysfsResult<String> mountResult =
+                    HardwareServices.memoryMaintenance().readMountTable();
+            if (!mountResult.isSuccess()) {
+                Log.e("MemoryFragment", mountResult.getError());
+                this.mFileSystem = "";
+            } else {
+                this.mFileSystem = mountResult.getValue();
+            }
         }
         CharSequence[] system = {" /system ", " /data ", " /cache "};
         ArrayList<String> fs = new ArrayList<>();
@@ -632,12 +718,24 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             this.val$update.setIndeterminateDrawable(MemoryFragment.this.getResources().getDrawable(R.drawable.spinner_animation));
             this.val$update.setMessage(Util.getRandomLoadingText(MemoryFragment.this.getActivity()));
             this.val$update.show();
-            AeroActivity.shell.remountSystem();
             Runnable runnable = new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.5.1
                 @Override // java.lang.Runnable
                 public void run() {
                     try {
-                        AeroActivity.shell.getRootInfo("fstrim -v", b);
+                        OperationResult remountResult = HardwareServices.memoryMaintenance()
+                                .remountSystemReadWrite();
+                        if (!remountResult.isSuccess()) {
+                            Log.e("MemoryFragment", "Unable to remount /system: "
+                                    + remountResult.getMessage());
+                        } else {
+                            String mountPoint = b.trim();
+                            OperationResult trimResult = HardwareServices.memoryMaintenance()
+                                    .trimFilesystem(mountPoint);
+                            if (!trimResult.isSuccess()) {
+                                Log.e("MemoryFragment", "Unable to trim " + mountPoint + ": "
+                                        + trimResult.getMessage());
+                            }
+                        }
                         Thread.sleep(2000L);
                     } catch (Exception e) {
                         Log.e("Aero", "An error occurred while trimming.", e);
@@ -690,7 +788,15 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
     private void loadIOParameter() {
         this.mIOSchedulerHandler.removeInvisiblePreference();
         try {
-            String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.GOV_IO_PARAMETER, true);
+            SysfsResult<String[]> parameterFiles = AeroActivity.hardware.listSysfsDirectory(
+                    new SysfsDirectory(FilePath.GOV_IO_PARAMETER), DirectoryEntryType.FILES);
+            if (!parameterFiles.isSuccess()) {
+                Log.w("Aero", "Unable to list I/O scheduler parameters: "
+                        + parameterFiles.getError());
+                Toast.makeText(getActivity(), R.string.pref_io_scheduler_no_parameter, 1).show();
+                return;
+            }
+            String[] completeParamterList = parameterFiles.getValue();
             if (this.PrefCat != null) {
                 this.root.removePreference(this.PrefCat);
             }

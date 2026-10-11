@@ -24,11 +24,16 @@ import com.aero.control.adapter.StatisticAdapter;
 import com.aero.control.adapter.statisticInit;
 import com.aero.control.helpers.CpuClusterHelper;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.FrequencyFormat;
+import com.aero.control.helpers.SysfsNode;
+import com.aero.control.helpers.SysfsResult;
 import com.echo.holographlibrary.PieGraph;
 import com.echo.holographlibrary.PieSlice;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -350,7 +355,7 @@ public class StatisticsFragment extends Fragment {
             Iterator<Long> it = this.cpuTime.iterator();
             while (it.hasNext()) {
                 long g = it.next().longValue();
-                String frequency = acceptedEntries.get(i2).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i2].toString());
+                String frequency = acceptedEntries.get(i2).isDeepsleep ? "Deep Sleep" : FrequencyFormat.toMHz(cpuFreqArray[i2].toString());
                 String time_in_state = convertTime(g);
                 int percentage = (int) Math.round((g / this.mCompleteTime) * 100.0d);
                 this.cpuPercentage.add(Long.valueOf(percentage));
@@ -367,7 +372,7 @@ public class StatisticsFragment extends Fragment {
             Log.w("Aero", "Total accepted residency is zero or negative; skipping percentage and pie calculations.");
             for (int i = 0; i < acceptedEntries.size(); i++) {
                 long g = this.cpuTime.get(i).longValue();
-                String frequency = acceptedEntries.get(i).isDeepsleep ? "Deep Sleep" : AeroActivity.shell.toMHz(cpuFreqArray[i].toString());
+                String frequency = acceptedEntries.get(i).isDeepsleep ? "Deep Sleep" : FrequencyFormat.toMHz(cpuFreqArray[i].toString());
                 String time_in_state = convertTime(g);
                 this.cpuPercentage.add(0L);
                 PieSlice slice = new PieSlice();
@@ -510,11 +515,23 @@ public class StatisticsFragment extends Fragment {
         if (!AeroActivity.genHelper.doesExist(path)) {
             return 0;
         }
-        this.data = AeroActivity.shell.getInfo(path, true);
-        if (this.data != null) {
-            return this.data.length;
+        SysfsResult<String[]> result;
+        try {
+            result = AeroActivity.hardware.readLines(new SysfsNode(path));
+        } catch (IllegalArgumentException e) {
+            Log.e("Aero", "Rejected CPU time-in-state path", e);
+            return 0;
         }
-        return 0;
+        if (!result.isSuccess()) {
+            Log.w("Aero", "Unable to read CPU time-in-state data: " + result.getError());
+            return 0;
+        }
+        String[] timeInState = result.getValue();
+        this.data = new String[timeInState.length + 1];
+        this.data[0] = Long.toString(
+                (SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()) / 10);
+        System.arraycopy(timeInState, 0, this.data, 1, timeInState.length);
+        return this.data.length;
     }
 
     /**
@@ -656,7 +673,7 @@ public class StatisticsFragment extends Fragment {
         if (!offsetFile.exists()) {
             return null;
         }
-        String[] rawOffsets = AeroActivity.shell.getInfoArray(offsetFile.getAbsolutePath(), 0, 0);
+        String[] rawOffsets = readLocalValues(offsetFile);
         if (rawOffsets == null || rawOffsets.length != acceptedCount + 1) {
             Log.w("Aero", "Offset file does not contain exactly the expected number of offsets; discarding reset state.");
             offsetFile.delete();
@@ -709,6 +726,27 @@ public class StatisticsFragment extends Fragment {
         return offsets;
     }
 
+    private static String[] readLocalValues(File file) {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file), 8192);
+            String line = reader.readLine();
+            return line == null || line.trim().length() == 0
+                    ? new String[0] : line.trim().split("\\s+");
+        } catch (IOException e) {
+            Log.w("Aero", "Unable to read CPU statistics reset offsets", e);
+            return new String[0];
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    Log.w("Aero", "Unable to close CPU statistics reset file", e);
+                }
+            }
+        }
+    }
+
     private final class ArrayDataLoader {
         private ArrayDataLoader() {
         }
@@ -716,7 +754,7 @@ public class StatisticsFragment extends Fragment {
         public final void loadSingleEntry(Long[] freq, Long[] time, Long[] percentage, boolean[] isDeepsleep) {
             int length = freq.length;
             for (int j = 0; j < length; j++) {
-                String convertedFreq = AeroActivity.shell.toMHz(freq[j] + "");
+                String convertedFreq = FrequencyFormat.toMHz(freq[j] + "");
                 if (convertedFreq.length() < 8) {
                     convertedFreq = convertedFreq + "\t";
                 } else if (convertedFreq.length() < 7) {

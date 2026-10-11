@@ -38,7 +38,8 @@ import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
-import com.aero.control.helpers.shellHelper;
+import com.aero.control.helpers.HardwareAccessService;
+import com.aero.control.helpers.HardwareServices;
 import com.aero.control.navItems.NavBarItems;
 import com.aero.control.navItems.NavigationDrawerHelper;
 import com.aero.control.service.PerAppService;
@@ -100,7 +101,7 @@ public final class AeroActivity extends Activity {
     private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
-    public static final shellHelper shell = shellHelper.instance();
+    public static final HardwareAccessService hardware = HardwareServices.hardware();
     public static GenericHelper genHelper = new GenericHelper();
 
     @Override // android.app.Activity

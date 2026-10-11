@@ -7,6 +7,7 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,8 +15,7 @@ import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomTextPreference;
-import com.aero.control.helpers.FilePath;
-import com.aero.control.helpers.OperationResult;
+import com.aero.control.helpers.SysfsResult;
 import java.util.ArrayList;
 
 /**
@@ -87,7 +87,14 @@ public class VoltageFragment extends PlaceHolderFragment {
      * for each frequency-voltage pair.
      */
     public void loadVoltage() {
-        String[] completeParamterList = AeroActivity.shell.getInfo(FilePath.VOLTAGE_PATH, false);
+        this.voltList.clear();
+        SysfsResult<String[]> voltageTable = AeroActivity.hardware.cpu().readVoltageTable();
+        if (!voltageTable.isSuccess()) {
+            Log.e("Aero", "Unable to load CPU voltage table: "
+                    + voltageTable.getError());
+            return;
+        }
+        String[] completeParamterList = voltageTable.getValue();
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
         }
@@ -111,27 +118,22 @@ public class VoltageFragment extends PlaceHolderFragment {
             voltPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.VoltageFragment.1
                 @Override // android.preference.Preference.OnPreferenceChangeListener
                 public boolean onPreferenceChange(Preference preference, Object o) {
-                    String value = o.toString().trim();
+                    final String value = o.toString().trim();
                     try {
                         Integer.parseInt(value);
                     } catch (NumberFormatException e) {
                         return false;
                     }
-                    String[] voltArray = (String[]) VoltageFragment.this.voltList.toArray(new String[0]);
-                    String tmp = "";
+                    final String[] voltArray =
+                            (String[]) VoltageFragment.this.voltList.toArray(new String[0]);
                     voltArray[preference.getOrder()] = value;
-                    preference.setSummary(value + "mV");
-                    voltPref.setPrefSummary(value + "mV");
-                    VoltageFragment.this.voltList.clear();
-                    for (String a : voltArray) {
-                        tmp = tmp + " " + a;
-                        VoltageFragment.this.voltList.add(a);
-                    }
-                    final String command = tmp;
+                    final String command = joinVoltageValues(voltArray);
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            final OperationResult result = AeroActivity.shell.setRootInfoResult(command, FilePath.VOLTAGE_PATH);
+                            final SysfsResult<String> result =
+                                    AeroActivity.hardware.cpu()
+                                            .writeVoltageValues(command);
                             if (!VoltageFragment.this.isAdded()) {
                                 return;
                             }
@@ -139,8 +141,14 @@ public class VoltageFragment extends PlaceHolderFragment {
                                 @Override
                                 public void run() {
                                     if (!result.isSuccess()) {
-                                        Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                                        Log.e("Aero", "Failed to update CPU voltage table: "
+                                                + result.getError());
+                                        Toast.makeText(getActivity(), R.string.hardware_operation_failed, Toast.LENGTH_LONG).show();
                                         return;
+                                    }
+                                    VoltageFragment.this.voltList.clear();
+                                    for (String voltage : voltArray) {
+                                        VoltageFragment.this.voltList.add(voltage);
                                     }
                                     VoltageFragment.this.updateUI();
                                 }
@@ -168,7 +176,9 @@ public class VoltageFragment extends PlaceHolderFragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final OperationResult result = AeroActivity.shell.setRootInfoResult(exeVolt, FilePath.VOLTAGE_PATH);
+                final SysfsResult<String> result =
+                        AeroActivity.hardware.cpu()
+                                .writeVoltageValues(exeVolt);
                 if (!VoltageFragment.this.isAdded()) {
                     return;
                 }
@@ -178,12 +188,23 @@ public class VoltageFragment extends PlaceHolderFragment {
                         if (result.isSuccess()) {
                             updateUI();
                         } else {
-                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            Log.e("Aero", "Failed to apply CPU voltage table: "
+                                    + result.getError());
+                            Toast.makeText(getActivity(), R.string.hardware_operation_failed, Toast.LENGTH_LONG).show();
                         }
                     }
                 });
             }
         }).start();
+    }
+
+    private static String joinVoltageValues(String[] values) {
+        StringBuilder result = new StringBuilder();
+        for (String value : values) {
+            if (result.length() > 0) result.append(' ');
+            result.append(value);
+        }
+        return result.toString();
     }
 
     /**

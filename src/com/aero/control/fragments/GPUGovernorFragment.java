@@ -8,6 +8,8 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Fragment for configuring GPU governor-specific parameters. Allows tuning
@@ -35,18 +37,20 @@ public class GPUGovernorFragment extends PlaceHolderFragment {
      * Loads GPU governor parameters from the kernel and generates preference UI elements.
      */
     public void loadGPUGov() {
-        String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.GPU_GOV_PATH, true);
+        SysfsResult<String[]> listing = AeroActivity.hardware.dynamicTunables()
+                .listSysfsParameters(new SysfsDirectory(FilePath.GPU_GOV_PATH));
+        if (!listing.isSuccess()) {
+            Log.w("Aero", "Unable to discover GPU governor settings: " + listing.getError());
+            return;
+        }
+        String[] completeParamterList = listing.getValue();
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
         }
         this.PrefCat = new PreferenceCategory(getActivity());
         this.PrefCat.setTitle(R.string.perf_gpu_gov_settings);
         this.root.addPreference(this.PrefCat);
-        try {
-            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-            h.genPrefFromDictionary(completeParamterList, FilePath.GPU_GOV_PATH);
-        } catch (NullPointerException e) {
-            Log.e("Aero", "I couldn't get any files!", e);
-        }
+        PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+        h.genPrefFromDictionary(completeParamterList, FilePath.GPU_GOV_PATH);
     }
 }

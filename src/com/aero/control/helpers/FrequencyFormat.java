@@ -7,7 +7,7 @@ import android.util.Log;
  * scaling_cur_freq}) into the "N MHz" form shown throughout the CPU/GPU
  * settings screens. Pure string/number formatting, no I/O.
  */
-final class FrequencyFormat {
+public final class FrequencyFormat {
     static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = FrequencyFormat.class.getName();
 
@@ -20,7 +20,7 @@ final class FrequencyFormat {
      * @param mhzString the frequency string to convert
      * @return the frequency in MHz with " MHz" suffix, or "Unavailable" if conversion fails
      */
-    static String toMHz(String mhzString) {
+    public static String toMHz(String mhzString) {
         String str;
         if (mhzString.equals(NO_DATA_FOUND) || mhzString.equals("Unavaila")) {
             return NO_DATA_FOUND;

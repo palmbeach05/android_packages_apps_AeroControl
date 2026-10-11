@@ -258,9 +258,16 @@ public class PrefsActivity extends PreferenceActivity {
                 dialog.setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() { // from class: com.aero.control.settings.PrefsActivity.10.1
                     @Override // android.content.DialogInterface.OnClickListener
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        String[] fileArray = AeroActivity.shell.getDirInfo(PrefsActivity.this.getApplicationInfo().dataDir + "/files/", true);
+                        File tutorialDirectory = new File(
+                                PrefsActivity.this.getApplicationInfo().dataDir, "files");
+                        String[] fileArray = tutorialDirectory.list();
+                        if (fileArray == null) {
+                            Log.e("Aero", "Couldn't list tutorial files in "
+                                    + tutorialDirectory.getPath());
+                            return;
+                        }
                         for (String s : fileArray) {
-                            if (!new File(PrefsActivity.this.getApplicationInfo().dataDir + "/files/" + s).delete()) {
+                            if (!new File(tutorialDirectory, s).delete()) {
                                 Log.e("Aero", "Couldn't delete: " + s);
                             }
                         }

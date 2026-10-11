@@ -1,5 +1,6 @@
 package com.aero.control.helpers;
 
+import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,11 +14,27 @@ final class RootAwareDirectory {
     }
 
     static String[] list(String path, boolean files, Pattern allowedPath, RootShellSession session) {
-        if (path == null || !allowedPath.matcher(path).matches()) {
+        SysfsResult<String[]> result = listResult(path, files, allowedPath, session);
+        if (!result.isSuccess()) {
+            Log.w(RootAwareDirectory.class.getName(), result.getError());
             return new String[0];
         }
+        return result.getValue();
+    }
 
-        File[] entries = new File(path).listFiles();
+    static SysfsResult<String[]> listResult(
+            String path, boolean files, Pattern allowedPath, RootShellSession session) {
+        if (path == null || !allowedPath.matcher(path).matches()) {
+            return SysfsResult.failure("Kernel directory path is invalid");
+        }
+
+        File[] entries = null;
+        try {
+            entries = new File(path).listFiles();
+        } catch (SecurityException e) {
+            Log.d(RootAwareDirectory.class.getName(),
+                    "Direct directory listing denied for " + path, e);
+        }
         if (entries != null) {
             List<String> results = new ArrayList<>();
             for (File entry : entries) {
@@ -26,26 +43,20 @@ final class RootAwareDirectory {
                 }
             }
             Collections.sort(results);
-            return results.toArray(new String[0]);
+            return SysfsResult.success(results.toArray(new String[0]));
         }
 
         String test = files ? "-f" : "-d";
         String command = "for entry in " + RootShellSession.escapeShellArg(path)
                 + "/*; do [ " + test + " \"$entry\" ]"
                 + " && printf '%s\\n' \"${entry##*/}\"; done";
-        synchronized (session) {
-            session.openShell();
-            if (!session.isLoaded()) {
-                return new String[0];
-            }
-            session.addCommand(command);
-            String output = session.getRootResult();
-            if (output == null || output.length() == 0) {
-                return new String[0];
-            }
-            String[] results = output.split("\\r?\\n");
-            Arrays.sort(results);
-            return results;
+        String output = session.execute(command);
+        if (output == null) {
+            return SysfsResult.failure("Unable to list kernel directory " + path);
         }
+        if (output.trim().length() == 0) return SysfsResult.success(new String[0]);
+        String[] results = output.trim().split("\\r?\\n");
+        Arrays.sort(results);
+        return SysfsResult.success(results);
     }
 }

@@ -8,6 +8,8 @@ import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsResult;
 
 /**
  * Fragment for configuring CPU boost settings. Allows tuning of CPU boost
@@ -35,18 +37,20 @@ public class CPUBoostFragment extends PlaceHolderFragment {
      * Loads CPU boost parameters from the kernel and generates preference UI elements.
      */
     public void loadCPUBoost() {
-        String[] completeParamterList = AeroActivity.shell.getDirInfo(FilePath.CPU_BOOST, true);
+        SysfsResult<String[]> listing = AeroActivity.hardware.dynamicTunables()
+                .listSysfsParameters(new SysfsDirectory(FilePath.CPU_BOOST));
+        if (!listing.isSuccess()) {
+            Log.w("Aero", "Unable to discover CPU boost settings: " + listing.getError());
+            return;
+        }
+        String[] completeParamterList = listing.getValue();
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
         }
         this.PrefCat = new PreferenceCategory(getActivity());
         this.PrefCat.setTitle(R.string.perf_cpu_boost_control);
         this.root.addPreference(this.PrefCat);
-        try {
-            PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-            h.genPrefFromDictionary(completeParamterList, FilePath.CPU_BOOST);
-        } catch (NullPointerException e) {
-            Log.e("Aero", "I couldn't get any files!", e);
-        }
+        PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
+        h.genPrefFromDictionary(completeParamterList, FilePath.CPU_BOOST);
     }
 }

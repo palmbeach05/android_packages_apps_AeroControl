@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * the generic {@link SysfsReader} because the allowlist regex and directory
  * layout here are specific to the hwmon subsystem.
  */
-final class HwmonInfo {
+public final class HwmonInfo {
     private static final Pattern HWMON_DIRECTORY_PATTERN =
             Pattern.compile("/sys/class/hwmon(?:/hwmon\\d+/?){0,1}");
 
@@ -27,7 +27,7 @@ final class HwmonInfo {
      * @param files if true, list files; if false, list directories
      * @return sorted entry names, or an empty array when the directory cannot be listed
      */
-    String[] getRootAwareHwmonDirInfo(String path, boolean files) {
+    public String[] getRootAwareHwmonDirInfo(String path, boolean files) {
         return RootAwareDirectory.list(path, files, HWMON_DIRECTORY_PATTERN, session);
     }
 }

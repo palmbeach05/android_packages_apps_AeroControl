@@ -23,8 +23,8 @@ import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.FileManager.FileManager;
 import com.aero.control.helpers.FileManager.FileManagerListener;
 import com.aero.control.helpers.FilePath;
-import com.aero.control.helpers.OperationResult;
 import com.aero.control.helpers.PreferenceHandler;
+import com.aero.control.helpers.SysfsResult;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.File;
@@ -291,12 +291,20 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         tcpPreference.setName("tcp_congestion");
         tcpPreference.setTitle(R.string.pref_misc_tcp_congestion);
         tcpPreference.setDialogTitle(R.string.pref_misc_tcp_congestion);
-        tcpPreference.setSummary(AeroActivity.shell.getInfo(FilePath.MISC_TCP_CONGESTION_CURRENT));
-        tcpPreference.setValue(AeroActivity.shell.getInfo(FilePath.MISC_TCP_CONGESTION_CURRENT));
-        tcpPreference.setEntries(AeroActivity.shell.getInfoArray(FilePath.MISC_TCP_CONGESTION_AVAILABLE, 0, 0));
-        tcpPreference.setEntryValues(AeroActivity.shell.getInfoArray(FilePath.MISC_TCP_CONGESTION_AVAILABLE, 0, 0));
-        if (AeroActivity.genHelper.doesExist(FilePath.MISC_TCP_CONGESTION_AVAILABLE)) {
+        SysfsResult<String> currentControl =
+                AeroActivity.hardware.network().readCongestionControl();
+        SysfsResult<String[]> availableControls =
+                AeroActivity.hardware.network().readAvailableCongestionControls();
+        if (currentControl.isSuccess() && availableControls.isSuccess()) {
+            tcpPreference.setSummary(currentControl.getValue());
+            tcpPreference.setValue(currentControl.getValue());
+            tcpPreference.setEntries(availableControls.getValue());
+            tcpPreference.setEntryValues(availableControls.getValue());
             this.PrefCat.addPreference(tcpPreference);
+        } else {
+            Log.w("Aero", "TCP congestion control is unavailable: "
+                    + (!currentControl.isSuccess()
+                    ? currentControl.getError() : availableControls.getError()));
         }
         tcpPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.5
             @Override // android.preference.Preference.OnPreferenceChangeListener
@@ -305,7 +313,8 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        final OperationResult result = AeroActivity.shell.setRootInfoResult(a, FilePath.MISC_TCP_CONGESTION_CURRENT);
+                        final SysfsResult<String> result =
+                                AeroActivity.hardware.network().writeCongestionControl(a);
                         if (!MiscSettingsFragment.this.isAdded()) {
                             return;
                         }
@@ -313,10 +322,12 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
                             @Override
                             public void run() {
                                 if (!result.isSuccess()) {
+                                    Log.e("Aero", "Failed to change TCP congestion control: "
+                                            + result.getError());
                                     Toast.makeText(MiscSettingsFragment.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                     return;
                                 }
-                                tcpPreference.setSummary(a);
+                                tcpPreference.setSummary(result.getValue());
                             }
                         });
                     }

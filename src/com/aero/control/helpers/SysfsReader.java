@@ -6,12 +6,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Generic (non device-specific) file reads and writes against sysfs/procfs
@@ -55,10 +52,11 @@ final class SysfsReader {
         } catch (IOException e) {
             synchronized (session) {
                 session.openShell();
-                session.addCommand("ls -l " + s);
+                String quotedPath = RootShellSession.escapeShellArg(s);
+                session.addCommand("ls -l " + quotedPath);
                 String tmp = session.getRootResult();
                 if (tmp != null && tmp.length() > 10 && !tmp.substring(0, 10).equals("--w-------")) {
-                    session.addCommand("cat " + s);
+                    session.addCommand("cat " + quotedPath);
                     String catResult = session.getRootResult();
                     if (catResult != null) {
                         info = catResult;
@@ -70,6 +68,33 @@ final class SysfsReader {
                 return info;
             }
         }
+    }
+
+    /** Reads complete file contents directly where possible, then through root. */
+    String getContents(String path) {
+        if (path == null) return NO_DATA_FOUND;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path), 8192);
+            try {
+                StringBuilder contents = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (contents.length() > 0) contents.append('\n');
+                    contents.append(line);
+                }
+                return contents.length() == 0 ? NO_DATA_FOUND : contents.toString();
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            Log.d(LOG_TAG, "Direct read failed; trying root access for " + path, e);
+        } catch (SecurityException e) {
+            Log.d(LOG_TAG, "Direct read denied; trying root access for " + path, e);
+        }
+
+        String output = session.execute("cat " + RootShellSession.escapeShellArg(path));
+        return output == null || output.trim().length() == 0
+                ? NO_DATA_FOUND : output;
     }
 
     /**
@@ -124,40 +149,6 @@ final class SysfsReader {
     }
 
     /**
-     * Lists directory contents. If flag is true, returns only files; otherwise returns only directories.
-     *
-     * @param s the directory path
-     * @param flag if true, list files; if false, list directories
-     * @return array of names, or null if the directory does not exist
-     */
-    String[] getDirInfo(String s, boolean flag) {
-        if (!new File(s).exists()) {
-            return null;
-        }
-        if (flag) {
-            List<String> results = new ArrayList<>();
-            File[] files = new File(s).listFiles();
-            for (File file : files) {
-                if (file.isFile()) {
-                    results.add(file.getName());
-                }
-            }
-            String[] result = new String[results.size()];
-            for (int i = 0; i < results.size(); i++) {
-                result[i] = results.get(i);
-            }
-            Arrays.sort(result);
-            return result;
-        }
-        return new File(s).list(new FilenameFilter() {
-            @Override // java.io.FilenameFilter
-            public boolean accept(File file2, String s2) {
-                return new File(file2, s2).isDirectory();
-            }
-        });
-    }
-
-    /**
      * Parses a string into an array by splitting on spaces, optionally removing brackets
      * and converting values to MHz format.
      *
@@ -174,18 +165,23 @@ final class SysfsReader {
         return buildArray(s, mode.convertsToMhz(), mode.stripsBrackets());
     }
 
+    String[] parseArray(String contents, ReadMode mode) {
+        if (contents == null || mode == null || contents.trim().length() == 0) {
+            return new String[] {NO_DATA_FOUND};
+        }
+        return buildArray(contents, mode);
+    }
+
     private String[] buildArray(String s, boolean convertToMhz, boolean stripBrackets) {
-        String[] completeString = new String[0];
-        if (s.charAt(s.length() - 1) == '\n') {
-            s = s.replace(Character.toString('\n'), "");
+        if (s == null || s.trim().length() == 0) {
+            return new String[] {NO_DATA_FOUND};
         }
+        s = s.trim();
         if (stripBrackets) {
-            completeString = s.replace("[", "").replace("]", "").split(" ");
-        } else {
-            completeString = s.split(" ");
+            s = s.replace("[", "").replace("]", "");
         }
+        String[] completeString = s.trim().split("\\s+");
         String[] output = new String[completeString.length];
-        output[0] = NO_DATA_FOUND;
         for (int i = 0; i < output.length; i++) {
             if (convertToMhz) {
                 output[i] = FrequencyFormat.toMHz(completeString[i]);
@@ -218,10 +214,11 @@ final class SysfsReader {
         } catch (IOException e) {
             synchronized (session) {
                 session.openShell();
-                session.addCommand("ls -l " + " " + s);
+                String quotedPath = RootShellSession.escapeShellArg(s);
+                session.addCommand("ls -l " + quotedPath);
                 String result = session.getRootResult();
                 if (result != null && result.length() > 10 && !result.substring(0, 10).equals("--w-------")) {
-                    session.addCommand("cat" + " " + s);
+                    session.addCommand("cat " + quotedPath);
                     String tmp = session.getRootResult();
                     output = buildArray(tmp, flag, flag_io);
                 }

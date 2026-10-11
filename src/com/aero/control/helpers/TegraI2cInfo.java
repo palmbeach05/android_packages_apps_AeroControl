@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * device-specific sysfs layout knowledge that has no reason to live inside
  * the generic shell-session helper.
  */
-final class TegraI2cInfo {
+public final class TegraI2cInfo {
     static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = TegraI2cInfo.class.getName();
 
@@ -45,7 +45,7 @@ final class TegraI2cInfo {
      * @param files if true, list files; if false, list directories
      * @return sorted child names, or an empty array when access is rejected or fails
      */
-    String[] getRootAwareTegraI2cDirInfo(String path, boolean files) {
+    public String[] getRootAwareTegraI2cDirInfo(String path, boolean files) {
         if (files && (path == null || !TEGRA_I2C_DEVICE_DIRECTORY_PATTERN.matcher(path).matches())) {
             return new String[0];
         }
@@ -62,7 +62,7 @@ final class TegraI2cInfo {
      * @param path an allowlisted Tegra I2C tempN_input path
      * @return the node contents, or "Unavailable" when access is rejected or fails
      */
-    String getRootAwareTegraI2cInfo(String path) {
+    public String getRootAwareTegraI2cInfo(String path) {
         if (path == null || !TEGRA_I2C_TEMPERATURE_FILE_PATTERN.matcher(path).matches()) {
             return NO_DATA_FOUND;
         }
@@ -100,7 +100,7 @@ final class TegraI2cInfo {
      * @param path an allowlisted Tegra I2C name or tempN_label path
      * @return the trimmed node contents, or "Unavailable" when access is rejected or fails
      */
-    String getDirectTegraI2cInfo(String path) {
+    public String getDirectTegraI2cInfo(String path) {
         if (path == null || !TEGRA_I2C_METADATA_FILE_PATTERN.matcher(path).matches()) {
             return NO_DATA_FOUND;
         }

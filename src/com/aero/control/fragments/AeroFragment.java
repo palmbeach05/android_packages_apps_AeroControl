@@ -18,14 +18,18 @@ import com.aero.control.R;
 import com.aero.control.adapter.AeroAdapter;
 import com.aero.control.adapter.AeroData;
 import com.aero.control.helpers.CpuClusterHelper;
+import com.aero.control.helpers.DirectoryEntryType;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.FrequencyFormat;
+import com.aero.control.helpers.KernelVersionParser;
 import com.aero.control.helpers.MemorySnapshot;
+import com.aero.control.helpers.ProcfsNode;
+import com.aero.control.helpers.SysfsDirectory;
+import com.aero.control.helpers.SysfsNode;
+import com.aero.control.helpers.SysfsResult;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -95,7 +99,6 @@ public class AeroFragment extends Fragment {
     private List<AeroData> mOverviewData = new ArrayList<AeroData>();
     private int mActionBarHeight = 0;
     private boolean mVisible = true;
-    private boolean mExecuted = false;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
@@ -237,7 +240,7 @@ public class AeroFragment extends Fragment {
         int i = Runtime.getRuntime().availableProcessors();
         for (int k = 0; k < i; k++) {
             String complete_path = "/sys/devices/system/cpu/cpu" + k + SCALE_PATH_NAME;
-            freq_string = freq_string + " " + AeroActivity.shell.toMHz(AeroActivity.shell.getInfo(complete_path));
+            freq_string = freq_string + " " + FrequencyFormat.toMHz(readSysfsValue(complete_path));
         }
         String freq_string2 = freq_string.replace(NO_DATA_FOUND, " Offline ");
         String cpu_util_line = getCpuUtilizationLine();
@@ -245,6 +248,58 @@ public class AeroFragment extends Fragment {
             return freq_string2;
         }
         return freq_string2 + "\n" + cpu_util_line;
+    }
+
+    private String readSysfsValue(String path) {
+        if (path == null || !path.startsWith("/sys/")) {
+            Log.w(AeroFragment.class.getName(), "Rejected sysfs path " + path);
+            return NO_DATA_FOUND;
+        }
+        return readKernelValue(path);
+    }
+
+    private String readKernelValue(String path) {
+        if (path == null) {
+            Log.w(AeroFragment.class.getName(), "Unable to read a null kernel path");
+            return NO_DATA_FOUND;
+        }
+
+        final SysfsResult<String> result;
+        try {
+            if (path.startsWith("/sys/")) {
+                result = AeroActivity.hardware.read(new SysfsNode(path));
+            } else if (path.startsWith("/proc/")) {
+                result = AeroActivity.hardware.procfs().readValue(new ProcfsNode(path));
+            } else {
+                Log.w(AeroFragment.class.getName(), "Rejected kernel path " + path);
+                return NO_DATA_FOUND;
+            }
+        } catch (IllegalArgumentException e) {
+            Log.w(AeroFragment.class.getName(), "Rejected kernel path " + path, e);
+            return NO_DATA_FOUND;
+        }
+        if (!result.isSuccess()) {
+            Log.w(AeroFragment.class.getName(), "Unable to read " + path + ": "
+                    + result.getError());
+            return NO_DATA_FOUND;
+        }
+        return result.getValue();
+    }
+
+    private String[] listSysfsDirectory(String path, DirectoryEntryType entryType) {
+        try {
+            SysfsResult<String[]> result = AeroActivity.hardware.listSysfsDirectory(
+                    new SysfsDirectory(path), entryType);
+            if (!result.isSuccess()) {
+                Log.w(AeroFragment.class.getName(), "Unable to list " + path + ": "
+                        + result.getError());
+                return new String[0];
+            }
+            return result.getValue();
+        } catch (IllegalArgumentException e) {
+            Log.w(AeroFragment.class.getName(), "Rejected sysfs directory " + path, e);
+            return new String[0];
+        }
     }
 
     /**
@@ -256,7 +311,7 @@ public class AeroFragment extends Fragment {
         List<String> perCore = new ArrayList<>(i);
         for (int k = 0; k < i; k++) {
             String complete_path = "/sys/devices/system/cpu/cpu" + k + SCALE_PATH_NAME;
-            String value = AeroActivity.shell.toMHz(AeroActivity.shell.getInfo(complete_path)).replace(NO_DATA_FOUND, "Offline");
+            String value = FrequencyFormat.toMHz(readSysfsValue(complete_path)).replace(NO_DATA_FOUND, "Offline");
             perCore.add("CPU" + k + "\n" + value);
         }
         return perCore;
@@ -275,7 +330,7 @@ public class AeroFragment extends Fragment {
         String cpu_util = "";
         for (int j = 0; j < i; j++) {
             String complete_path2 = "/sys/devices/system/cpu/cpu" + j + SCALE_CPU_UTIL;
-            String tmp = AeroActivity.shell.getInfo(complete_path2);
+            String tmp = readSysfsValue(complete_path2);
             if (!tmp.equals(NO_DATA_FOUND)) {
                 try {
                     if (Integer.parseInt(tmp.trim()) < 10) {
@@ -293,16 +348,16 @@ public class AeroFragment extends Fragment {
     private List<RawTemperature> getTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
         boolean hasPowerSupplyBatteryTemperature = false;
-        String[] powerSupplies = AeroActivity.shell.getDirInfo(POWER_SUPPLY_DIRECTORY, false);
+        String[] powerSupplies = listSysfsDirectory(POWER_SUPPLY_DIRECTORY, DirectoryEntryType.DIRECTORIES);
         if (powerSupplies != null) {
             for (String powerSupply : powerSupplies) {
                 String supplyPath = POWER_SUPPLY_DIRECTORY + "/" + powerSupply + "/";
-                String type = AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_TYPE_FILE);
+                String type = readSysfsValue(supplyPath + POWER_SUPPLY_TYPE_FILE);
                 if (type == null || !type.trim().equalsIgnoreCase("Battery")) {
                     continue;
                 }
                 String temperature = formatTemperature(
-                        AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_TEMP_FILE), true);
+                        readSysfsValue(supplyPath + POWER_SUPPLY_TEMP_FILE), true);
                 if (temperature != null) {
                     readings.add(new RawTemperature(
                             R.string.temperature_source_battery, "Battery", temperature));
@@ -313,21 +368,21 @@ public class AeroFragment extends Fragment {
         }
         readings.addAll(getTegraI2cTemperatures());
         readings.addAll(getHwmonTemperatures());
-        String[] thermalZones = AeroActivity.shell.getDirInfo(THERMAL_ZONE_DIRECTORY, false);
+        String[] thermalZones = listSysfsDirectory(THERMAL_ZONE_DIRECTORY, DirectoryEntryType.DIRECTORIES);
         if (thermalZones != null) {
             for (String thermalZone : thermalZones) {
                 if (!THERMAL_ZONE_NAME_PATTERN.matcher(thermalZone).matches()) {
                     continue;
                 }
                 String zonePath = THERMAL_ZONE_DIRECTORY + "/" + thermalZone + "/";
-                String type = AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TYPE_FILE);
+                String type = readSysfsValue(zonePath + THERMAL_ZONE_TYPE_FILE);
                 int labelResource = getTemperatureLabel(type);
                 if (hasPowerSupplyBatteryTemperature
                         && labelResource == R.string.temperature_source_battery) {
                     continue;
                 }
                 String temperature = formatTemperature(
-                        AeroActivity.shell.getInfo(zonePath + THERMAL_ZONE_TEMP_FILE), false);
+                        readSysfsValue(zonePath + THERMAL_ZONE_TEMP_FILE), false);
                 if (temperature != null) {
                     readings.add(new RawTemperature(
                             labelResource, safeSensorName(type, thermalZone), temperature));
@@ -339,8 +394,8 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getTegraI2cTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] controllers = AeroActivity.shell.getDirInfo(
-                TEGRA_I2C_PLATFORM_DIRECTORY, false);
+        String[] controllers = listSysfsDirectory(
+                TEGRA_I2C_PLATFORM_DIRECTORY, DirectoryEntryType.DIRECTORIES);
         if (controllers == null) {
             return readings;
         }
@@ -353,7 +408,7 @@ public class AeroFragment extends Fragment {
                 continue;
             }
             String busNumber = controllerMatcher.group(1);
-            String[] buses = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+            String[] buses = AeroActivity.hardware.tegraI2c().getRootAwareTegraI2cDirInfo(
                     controllerPath, false);
             for (String bus : buses) {
                 Matcher busMatcher = TEGRA_I2C_BUS_PATTERN.matcher(bus);
@@ -363,7 +418,7 @@ public class AeroFragment extends Fragment {
                             "Rejected Tegra I2C node path: " + busPath);
                     continue;
                 }
-                String[] devices = AeroActivity.shell.getRootAwareTegraI2cDirInfo(
+                String[] devices = AeroActivity.hardware.tegraI2c().getRootAwareTegraI2cDirInfo(
                         busPath, false);
                 for (String device : devices) {
                     Matcher deviceMatcher = TEGRA_I2C_DEVICE_PATTERN.matcher(device);
@@ -386,8 +441,10 @@ public class AeroFragment extends Fragment {
 
     private void addTegraI2cDeviceTemperatures(List<RawTemperature> readings,
             String busNumber, String device, String devicePath) {
-        String[] files = AeroActivity.shell.getRootAwareTegraI2cDirInfo(devicePath, true);
-        String deviceName = AeroActivity.shell.getDirectTegraI2cInfo(devicePath + "/name");
+        String[] files = AeroActivity.hardware.tegraI2c()
+                .getRootAwareTegraI2cDirInfo(devicePath, true);
+        String deviceName = AeroActivity.hardware.tegraI2c()
+                .getDirectTegraI2cInfo(devicePath + "/name");
         boolean hasDeviceName = !deviceName.equalsIgnoreCase(NO_DATA_FOUND);
         for (String file : files) {
             String filePath = devicePath + "/" + file;
@@ -398,7 +455,7 @@ public class AeroFragment extends Fragment {
                 continue;
             }
             String temperature = formatTemperature(
-                    AeroActivity.shell.getRootAwareTegraI2cInfo(filePath), false);
+                    AeroActivity.hardware.tegraI2c().getRootAwareTegraI2cInfo(filePath), false);
             if (temperature == null) {
                 Log.d(AeroFragment.class.getName(),
                         "Rejected Tegra I2C node path: " + filePath);
@@ -409,7 +466,7 @@ public class AeroFragment extends Fragment {
             String inputName = inputMatcher.group(1);
             String sourceName = "i2c-" + busNumber + " " + device + " " + inputName;
             if (hasDeviceName) {
-                String channelLabel = AeroActivity.shell.getDirectTegraI2cInfo(
+                String channelLabel = AeroActivity.hardware.tegraI2c().getDirectTegraI2cInfo(
                         devicePath + "/" + inputName + HWMON_TEMP_LABEL_SUFFIX);
                 sourceName = channelLabel.equalsIgnoreCase(NO_DATA_FOUND)
                         ? deviceName + " " + inputName
@@ -422,10 +479,7 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getHwmonTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        if (!new File(HWMON_DIRECTORY).exists()) {
-            return readings;
-        }
-        String[] hwmonDevices = AeroActivity.shell.getRootAwareHwmonDirInfo(
+        String[] hwmonDevices = AeroActivity.hardware.hwmon().getRootAwareHwmonDirInfo(
                 HWMON_DIRECTORY, false);
         if (hwmonDevices == null) {
             return readings;
@@ -433,8 +487,8 @@ public class AeroFragment extends Fragment {
         for (String hwmonDevice : hwmonDevices) {
             String devicePath = HWMON_DIRECTORY + "/" + hwmonDevice + "/";
             String deviceName = safeSensorName(
-                    AeroActivity.shell.getInfo(devicePath + HWMON_NAME_FILE), hwmonDevice);
-            String[] deviceFiles = AeroActivity.shell.getRootAwareHwmonDirInfo(
+                    readSysfsValue(devicePath + HWMON_NAME_FILE), hwmonDevice);
+            String[] deviceFiles = AeroActivity.hardware.hwmon().getRootAwareHwmonDirInfo(
                     devicePath, true);
             if (deviceFiles == null) {
                 continue;
@@ -445,12 +499,12 @@ public class AeroFragment extends Fragment {
                     continue;
                 }
                 String temperature = formatTemperature(
-                        AeroActivity.shell.getInfo(devicePath + deviceFile), false);
+                        readSysfsValue(devicePath + deviceFile), false);
                 if (temperature == null) {
                     continue;
                 }
                 String inputName = inputMatcher.group(1);
-                String label = AeroActivity.shell.getInfo(
+                String label = readSysfsValue(
                         devicePath + inputName + HWMON_TEMP_LABEL_SUFFIX);
                 String sourceName = deviceName + " " + inputName;
                 if (label != null
@@ -538,7 +592,7 @@ public class AeroFragment extends Fragment {
     }
 
     private RawBattery getBattery() {
-        String[] powerSupplies = AeroActivity.shell.getDirInfo(POWER_SUPPLY_DIRECTORY, false);
+        String[] powerSupplies = listSysfsDirectory(POWER_SUPPLY_DIRECTORY, DirectoryEntryType.DIRECTORIES);
         if (powerSupplies == null) {
             return new RawBattery(null, null, null, null, null);
         }
@@ -552,14 +606,14 @@ public class AeroFragment extends Fragment {
         for (String powerSupply : powerSupplies) {
             String supplyPath = POWER_SUPPLY_DIRECTORY + "/" + powerSupply + "/";
             String type = normalizeValue(
-                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_TYPE_FILE));
+                    readSysfsValue(supplyPath + POWER_SUPPLY_TYPE_FILE));
             if (type == null) {
                 sourceReadable = false;
                 continue;
             }
             if (type.equalsIgnoreCase("Mains") || type.equalsIgnoreCase("USB")) {
                 String online = normalizeValue(
-                        AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_ONLINE_FILE));
+                        readSysfsValue(supplyPath + POWER_SUPPLY_ONLINE_FILE));
                 if (online == null) {
                     sourceReadable = false;
                 } else if ("1".equals(online)) {
@@ -574,18 +628,18 @@ public class AeroFragment extends Fragment {
                 continue;
             }
             level = formatBatteryLevel(
-                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_CAPACITY_FILE));
+                    readSysfsValue(supplyPath + POWER_SUPPLY_CAPACITY_FILE));
             status = normalizeValue(
-                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_STATUS_FILE));
+                    readSysfsValue(supplyPath + POWER_SUPPLY_STATUS_FILE));
             voltage = formatElectricalValue(
-                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_VOLTAGE_FILE),
+                    readSysfsValue(supplyPath + POWER_SUPPLY_VOLTAGE_FILE),
                     100000000L, 1000000L, " V", false);
             current = formatElectricalValue(
-                    AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_CURRENT_FILE),
+                    readSysfsValue(supplyPath + POWER_SUPPLY_CURRENT_FILE),
                     100000000L, 1000L, " mA", true);
             if (current == null) {
                 current = formatElectricalValue(
-                        AeroActivity.shell.getInfo(supplyPath + POWER_SUPPLY_CURRENT_AVG_FILE),
+                        readSysfsValue(supplyPath + POWER_SUPPLY_CURRENT_AVG_FILE),
                         100000000L, 1000L, " mA", true);
             }
         }
@@ -660,25 +714,49 @@ public class AeroFragment extends Fragment {
         snapshot.securityUpdate = getAndroidSecurityUpdate();
         snapshot.apiLevel = String.valueOf(Build.VERSION.SDK_INT);
         snapshot.architecture = getApplicationAbi();
-        snapshot.kernel = AeroActivity.shell.getKernel();
+        SysfsResult<String> kernelVersion =
+                AeroActivity.hardware.procfs().readValue(new ProcfsNode("/proc/version"));
+        if (kernelVersion.isSuccess()) {
+            snapshot.kernel = KernelVersionParser.format(kernelVersion.getValue());
+        } else {
+            Log.w(AeroFragment.class.getName(), "Unable to read kernel version: "
+                    + kernelVersion.getError());
+            snapshot.kernel = NO_DATA_FOUND;
+        }
         snapshot.governors = new ArrayList<>();
         List<CpuClusterHelper.Cluster> clusters = this.mCpuClusterHelper.getClusters();
         for (CpuClusterHelper.Cluster cluster : clusters) {
-            snapshot.governors.add(AeroActivity.shell.getInfo(FilePath.CPU_BASE_PATH
+            snapshot.governors.add(readSysfsValue(FilePath.CPU_BASE_PATH
                     + cluster.getRepresentativeCpu() + FilePath.CURRENT_GOV_AVAILABLE));
         }
-        snapshot.ioScheduler = AeroActivity.shell.getInfoString(
-                AeroActivity.shell.getInfo(FilePath.GOV_IO_FILE));
+        SysfsResult<String> ioScheduler =
+                AeroActivity.hardware.ioScheduler().readCurrentScheduler();
+        if (ioScheduler.isSuccess()) {
+            snapshot.ioScheduler = ioScheduler.getValue();
+        } else {
+            Log.w(AeroFragment.class.getName(), "Unable to read I/O scheduler: "
+                    + ioScheduler.getError());
+            snapshot.ioScheduler = NO_DATA_FOUND;
+        }
         int coreCount = Runtime.getRuntime().availableProcessors();
         snapshot.coreFrequencies = coreCount <= MAX_GRID_CORES ? getCoreFrequencyList() : null;
         snapshot.frequencyContent = coreCount <= MAX_GRID_CORES ? getCpuUtilizationLine() : getFreqPerCore();
-        String gpuFrequency = AeroActivity.shell.getInfo(this.gpu_file);
+        String gpuFrequency = readKernelValue(this.gpu_file);
         if (gpuFrequency == null || gpuFrequency.length() <= 3 || gpuFrequency.equals(NO_DATA_FOUND)) {
             snapshot.gpuFrequency = NO_DATA_FOUND;
         } else {
-            snapshot.gpuFrequency = AeroActivity.shell.toMHz(gpuFrequency.substring(0, gpuFrequency.length() - 3));
+            snapshot.gpuFrequency = FrequencyFormat.toMHz(
+                    gpuFrequency.substring(0, gpuFrequency.length() - 3));
         }
-        snapshot.memory = AeroActivity.shell.getMemory(FilePath.FILENAME_PROC_MEMINFO);
+        SysfsResult<MemorySnapshot> memory = AeroActivity.hardware.procfs()
+                .readMemorySnapshot(new ProcfsNode(FilePath.FILENAME_PROC_MEMINFO));
+        if (memory.isSuccess()) {
+            snapshot.memory = memory.getValue();
+        } else {
+            Log.w(AeroFragment.class.getName(), "Unable to read memory statistics: "
+                    + memory.getError());
+            snapshot.memory = MemorySnapshot.unavailable();
+        }
         snapshot.temperatures = getTemperatures();
         snapshot.battery = getBattery();
         snapshot.uptime = getUptime();
@@ -721,33 +799,29 @@ public class AeroFragment extends Fragment {
     }
 
     private String getUptime() {
+        SysfsResult<String> result = AeroActivity.hardware.procfs()
+                .readValue(new ProcfsNode(UPTIME_FILE));
+        if (!result.isSuccess()) {
+            Log.w(AeroFragment.class.getName(), "Unable to read uptime: "
+                    + result.getError());
+            return NO_DATA_FOUND;
+        }
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(UPTIME_FILE), 8192);
-            try {
-                String line = reader.readLine();
-                if (line == null) return NO_DATA_FOUND;
-                String[] values = line.trim().split("\\s+");
-                if (values.length == 0 || values[0].length() == 0) return NO_DATA_FOUND;
-                double uptimeSeconds = Double.parseDouble(values[0]);
-                if (Double.isNaN(uptimeSeconds) || Double.isInfinite(uptimeSeconds)
-                        || uptimeSeconds < 0.0d) {
-                    return NO_DATA_FOUND;
-                }
-                long totalSeconds = (long) uptimeSeconds;
-                long days = totalSeconds / (24L * 60L * 60L);
-                long hours = (totalSeconds / (60L * 60L)) % 24L;
-                long minutes = (totalSeconds / 60L) % 60L;
-                long seconds = totalSeconds % 60L;
-                return String.format(Locale.US, "%dd %02d:%02d:%02d",
-                        days, hours, minutes, seconds);
-            } finally {
-                reader.close();
+            String[] values = result.getValue().trim().split("\\s+");
+            if (values.length == 0 || values[0].length() == 0) return NO_DATA_FOUND;
+            double uptimeSeconds = Double.parseDouble(values[0]);
+            if (Double.isNaN(uptimeSeconds) || Double.isInfinite(uptimeSeconds)
+                    || uptimeSeconds < 0.0d) {
+                return NO_DATA_FOUND;
             }
-        } catch (IOException e) {
-            return NO_DATA_FOUND;
+            long totalSeconds = (long) uptimeSeconds;
+            long days = totalSeconds / (24L * 60L * 60L);
+            long hours = (totalSeconds / (60L * 60L)) % 24L;
+            long minutes = (totalSeconds / 60L) % 60L;
+            long seconds = totalSeconds % 60L;
+            return String.format(Locale.US, "%dd %02d:%02d:%02d",
+                    days, hours, minutes, seconds);
         } catch (NumberFormatException e) {
-            return NO_DATA_FOUND;
-        } catch (SecurityException e) {
             return NO_DATA_FOUND;
         }
     }
@@ -996,13 +1070,4 @@ public class AeroFragment extends Fragment {
         this.mShowCase = new ShowcaseView.Builder(getActivity()).setContentTitle(header).setContentText(content).setTarget(homeTarget).build();
     }
 
-    /**
-     * Sets file permissions for CPU frequency scaling files to allow user modification.
-     * Requires root access to modify system file permissions.
-     */
-    public void setPermissions() {
-        String[] commands = {"chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", "chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", "chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq"};
-        AeroActivity.shell.setRootInfo(commands);
-        this.mExecuted = true;
-    }
 }
