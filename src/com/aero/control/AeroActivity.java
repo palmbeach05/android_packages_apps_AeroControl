@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
 import android.view.MenuItem;
@@ -34,6 +35,7 @@ import com.aero.control.fragments.ProfileFragment;
 import com.aero.control.fragments.StatisticsFragment;
 import com.aero.control.fragments.UpdaterFragment;
 import com.aero.control.helpers.GenericHelper;
+import com.aero.control.helpers.BackConfirmation;
 import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.ThemeHelper;
@@ -58,6 +60,12 @@ public final class AeroActivity extends Activity {
     private static final String SELECTED_ITEM = "SelectedItem";
     private static final String SELECTED_ITEM_ID = "SelectedItemId";
     public static final String EXTRA_SELECTED_ITEM_ID = "com.aero.control.SELECTED_ITEM_ID";
+    public static final String EXTRA_SETTINGS_RETURN_ITEM_ID =
+            "com.aero.control.SETTINGS_RETURN_ITEM_ID";
+    private static final String STATE_SETTINGS_RETURN_ITEM_IDS = "SettingsReturnItemIds";
+    private static final String STATE_SETTINGS_ENTRY_ITEM_IDS = "SettingsEntryItemIds";
+    private static final String STATE_PENDING_SETTINGS_RETURN_ITEM_ID =
+            "PendingSettingsReturnItemId";
     public Stack<Fragment> mFragmentStack;
     public static JobManager mJobManager;
     public static PerAppServiceHelper perAppService;
@@ -81,14 +89,16 @@ public final class AeroActivity extends Activity {
     private UpdaterFragment mUpdaterFragement;
     private String mCurrentTheme;
     private Runnable mPendingSwitch;
-    private boolean mClosePending = false;
     private int mSelectedItemPosition = 0;
-    private Runnable mClearClosePending;
+    private int mPendingSettingsReturnItemId = NO_PENDING_DRAWER_ITEM;
+    private final Stack<Integer> mSettingsReturnItemIds = new Stack<>();
+    private final Stack<Integer> mSettingsEntryItemIds = new Stack<>();
     private Runnable mPendingBackgroundInit;
     // Process-local handoff used to carry a drawer selection made on this activity
     // instance across into the instance created by recreate() (e.g. on rotation),
     // so the tap isn't lost or acted upon by the soon-to-be-destroyed instance.
     private static final int NO_PENDING_DRAWER_ITEM = -1;
+    private static AeroActivity sActiveInstance;
     private static int sPendingDrawerItemResourceId = NO_PENDING_DRAWER_ITEM;
     private static boolean sPendingRecreation = false;
     // Resource ID of the drawer item for a switchContent() transaction that
@@ -98,7 +108,6 @@ public final class AeroActivity extends Activity {
     // supported API levels, since rotation can race ahead of the posted
     // transaction on any of them.
     private int mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
-    private static final int CLOSE_CONFIRMATION_TIMEOUT_MS = 3500;
     public static final Handler mHandler = new Handler(Looper.getMainLooper());
     public static final Typeface font = Typeface.create("sans-serif-condensed", 0);
     public static final HardwareAccessService hardware = HardwareServices.hardware();
@@ -106,9 +115,15 @@ public final class AeroActivity extends Activity {
 
     @Override // android.app.Activity
     public void onCreate(Bundle savedInstanceState) {
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(BackConfirmation.STATE_DEADLINE)) {
+            BackConfirmation.restore(savedInstanceState.getLong(
+                    BackConfirmation.STATE_DEADLINE));
+        }
         this.mCurrentTheme = ThemeHelper.getTheme(this);
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        sActiveInstance = this;
         setContentView(R.layout.activity_main);
         OrientationHelper.applyOrientation(this);
         // This instance is the recreated activity (if any recreation was in
@@ -162,6 +177,11 @@ public final class AeroActivity extends Activity {
         if (savedInstanceState == null) {
             selectItem(0);
         } else {
+            this.mPendingSettingsReturnItemId = savedInstanceState.getInt(
+                    STATE_PENDING_SETTINGS_RETURN_ITEM_ID, NO_PENDING_DRAWER_ITEM);
+            restoreSettingsHistory(
+                    savedInstanceState.getIntArray(STATE_SETTINGS_RETURN_ITEM_IDS),
+                    savedInstanceState.getIntArray(STATE_SETTINGS_ENTRY_ITEM_IDS));
             // Restore full fragment stack from saved resource IDs
             int[] stackResourceIds = savedInstanceState.getIntArray("FRAGMENT_STACK_IDS");
             reconnectRestoredFragments(stackResourceIds);
@@ -286,8 +306,17 @@ public final class AeroActivity extends Activity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra(EXTRA_SELECTED_ITEM_ID)) {
             int selectedItemId = intent.getIntExtra(EXTRA_SELECTED_ITEM_ID, -1);
+            int settingsReturnItemId = intent.getIntExtra(
+                    EXTRA_SETTINGS_RETURN_ITEM_ID, NO_PENDING_DRAWER_ITEM);
             intent.removeExtra(EXTRA_SELECTED_ITEM_ID);
+            intent.removeExtra(EXTRA_SETTINGS_RETURN_ITEM_ID);
             if (selectedItemId != -1) {
+                this.mPendingSettingsReturnItemId = NO_PENDING_DRAWER_ITEM;
+                if (settingsReturnItemId != NO_PENDING_DRAWER_ITEM
+                        && settingsReturnItemId != selectedItemId) {
+                    this.mSettingsReturnItemIds.push(settingsReturnItemId);
+                    this.mSettingsEntryItemIds.push(selectedItemId);
+                }
                 selectItemByResourceId(selectedItemId);
             }
         }
@@ -306,6 +335,11 @@ public final class AeroActivity extends Activity {
             selectItemByResourceId(R.string.slider_app_monitor);
         }
         getIntent().putExtra("NOTIFY_STRING", new String());
+        if (this.mPendingSettingsReturnItemId != NO_PENDING_DRAWER_ITEM) {
+            int returnItemId = this.mPendingSettingsReturnItemId;
+            this.mPendingSettingsReturnItemId = NO_PENDING_DRAWER_ITEM;
+            showPageBehindSettingsInternal(returnItemId);
+        }
     }
 
     /**
@@ -327,12 +361,19 @@ public final class AeroActivity extends Activity {
      * Closes the navigation drawer and launches the settings activity with a fade transition.
      */
     private void launchSettings() {
+        launchSettings(getSelectedItemResourceId());
+    }
+
+    private void launchSettings(int returnItemId) {
         if (this.mDrawerLayout != null) {
             this.mDrawerLayout.closeDrawers();
         }
+        BackConfirmation.clear();
         Intent trIntent = new Intent("android.intent.action.PREFS");
         trIntent.setClass(this, PrefsActivity.class);
-        trIntent.setFlags(268435456);
+        if (returnItemId != NO_PENDING_DRAWER_ITEM) {
+            trIntent.putExtra(EXTRA_SETTINGS_RETURN_ITEM_ID, returnItemId);
+        }
         startActivity(trIntent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
@@ -662,6 +703,39 @@ public final class AeroActivity extends Activity {
         setActionBarTitle(getString(R.string.slider_app_monitor));
     }
 
+    private void showPageBehindSettingsInternal(int resourceId) {
+        Fragment fragment = getFragmentByResourceId(resourceId, true);
+        if (fragment == null) {
+            return;
+        }
+        if (this.mPendingSwitch != null) {
+            mHandler.removeCallbacks(this.mPendingSwitch);
+            this.mPendingSwitch = null;
+            this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
+        }
+        int position = this.mNavigationDrawer.setItemCheckedByResourceId(resourceId);
+        if (position == -1) {
+            return;
+        }
+        this.mSelectedItemPosition = position;
+        try {
+            android.app.FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame, fragment)
+                    .commitAllowingStateLoss();
+            fragmentManager.executePendingTransactions();
+        } catch (IllegalStateException e) {
+            if (!isFinishing()) {
+                recreate();
+            }
+            return;
+        }
+        String title = getTitleForFragment(fragment);
+        if (title != null) {
+            setTitle(title);
+        }
+    }
+
     /**
      * Checks whether the AppDetail fragment is currently on the back stack.
      *
@@ -710,6 +784,14 @@ public final class AeroActivity extends Activity {
     @Override // android.app.Activity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putLong(BackConfirmation.STATE_DEADLINE,
+                BackConfirmation.getDeadline());
+        outState.putIntArray(STATE_SETTINGS_RETURN_ITEM_IDS,
+                toIntArray(this.mSettingsReturnItemIds));
+        outState.putIntArray(STATE_SETTINGS_ENTRY_ITEM_IDS,
+                toIntArray(this.mSettingsEntryItemIds));
+        outState.putInt(STATE_PENDING_SETTINGS_RETURN_ITEM_ID,
+                this.mPendingSettingsReturnItemId);
         outState.putInt(SELECTED_ITEM, this.mSelectedItemPosition);
         // Save stable navigation item resource ID for robust restoration
         NavBarItems.PreferenceItem item = this.mNavigationDrawer.getItem(this.mSelectedItemPosition);
@@ -848,11 +930,18 @@ public final class AeroActivity extends Activity {
             closeAppDetail();
             return;
         }
-        if (this.mClosePending) {
+        long now = SystemClock.elapsedRealtime();
+        boolean settingsEntryCurrent = !this.mSettingsEntryItemIds.empty()
+                && getSelectedItemResourceId() == this.mSettingsEntryItemIds.peek();
+        boolean canNavigateBack = settingsEntryCurrent || mFragmentStack.size() > 1;
+        if (!canNavigateBack && BackConfirmation.isPending(now)) {
+            BackConfirmation.clear();
             finish();
             return;
         }
-        if (mFragmentStack.size() > 1) {
+        if (settingsEntryCurrent) {
+            showSettingsHistoryEntry();
+        } else if (mFragmentStack.size() > 1) {
             mFragmentStack.pop();
             Fragment previousFragment = mFragmentStack.peek();
             switchContent(previousFragment, false);
@@ -861,18 +950,15 @@ public final class AeroActivity extends Activity {
             if (restoredTitle != null) {
                 setTitle(restoredTitle);
             }
-        }
-        this.mClosePending = true;
-        if (this.mClearClosePending != null) {
-            mHandler.removeCallbacks(this.mClearClosePending);
-        }
-        this.mClearClosePending = new Runnable() { // from class: com.aero.control.AeroActivity.4
-            @Override // java.lang.Runnable
-            public void run() {
-                AeroActivity.this.mClosePending = false;
+            int resourceId = getResourceIdForFragment(previousFragment);
+            if (resourceId != -1) {
+                int position = this.mNavigationDrawer.setItemCheckedByResourceId(resourceId);
+                if (position != -1) {
+                    this.mSelectedItemPosition = position;
+                }
             }
-        };
-        mHandler.postDelayed(this.mClearClosePending, CLOSE_CONFIRMATION_TIMEOUT_MS);
+        }
+        BackConfirmation.start(now);
         Toast.makeText(this, R.string.back_for_close, 1).show();
     }
 
@@ -880,10 +966,54 @@ public final class AeroActivity extends Activity {
      * Clears the pending close state and removes any scheduled close timeout callbacks.
      */
     private void clearClosePending() {
-        this.mClosePending = false;
-        if (this.mClearClosePending != null) {
-            mHandler.removeCallbacks(this.mClearClosePending);
+        BackConfirmation.clear();
+    }
+
+    private int getSelectedItemResourceId() {
+        NavBarItems.PreferenceItem item =
+                this.mNavigationDrawer.getItem(this.mSelectedItemPosition);
+        return item == null ? NO_PENDING_DRAWER_ITEM : item.content;
+    }
+
+    private void showSettingsHistoryEntry() {
+        int returnItemId = this.mSettingsReturnItemIds.pop();
+        this.mSettingsEntryItemIds.pop();
+
+        Fragment returnFragment = getFragmentByResourceId(returnItemId, true);
+        if (returnFragment == null) {
+            return;
         }
+        while (!this.mFragmentStack.isEmpty()
+                && this.mFragmentStack.peek() != returnFragment) {
+            this.mFragmentStack.pop();
+        }
+        if (this.mFragmentStack.isEmpty()) {
+            this.mFragmentStack.push(returnFragment);
+        }
+
+        this.mPendingSettingsReturnItemId = returnItemId;
+        launchSettings(returnItemId);
+    }
+
+    private void restoreSettingsHistory(int[] returnItemIds, int[] entryItemIds) {
+        this.mSettingsReturnItemIds.clear();
+        this.mSettingsEntryItemIds.clear();
+        if (returnItemIds == null || entryItemIds == null
+                || returnItemIds.length != entryItemIds.length) {
+            return;
+        }
+        for (int i = 0; i < returnItemIds.length; i++) {
+            this.mSettingsReturnItemIds.push(returnItemIds[i]);
+            this.mSettingsEntryItemIds.push(entryItemIds[i]);
+        }
+    }
+
+    private static int[] toIntArray(Stack<Integer> values) {
+        int[] result = new int[values.size()];
+        for (int i = 0; i < values.size(); i++) {
+            result[i] = values.get(i);
+        }
+        return result;
     }
 
     /**
@@ -1007,11 +1137,11 @@ public final class AeroActivity extends Activity {
      */
     @Override // android.app.Activity
     protected void onDestroy() {
+        if (sActiveInstance == this) {
+            sActiveInstance = null;
+        }
         if (this.mPendingSwitch != null) {
             mHandler.removeCallbacks(this.mPendingSwitch);
-        }
-        if (this.mClearClosePending != null) {
-            mHandler.removeCallbacks(this.mClearClosePending);
         }
         if (this.mPendingBackgroundInit != null) {
             mHandler.removeCallbacks(this.mPendingBackgroundInit);

@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -21,8 +22,10 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
+import com.aero.control.helpers.BackConfirmation;
 import com.aero.control.helpers.OrientationHelper;
 import com.aero.control.helpers.ThemeHelper;
 import com.aero.control.helpers.Util;
@@ -57,6 +60,11 @@ public class PrefsActivity extends PreferenceActivity {
     public void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applySettingsTheme(this);
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(BackConfirmation.STATE_DEADLINE)) {
+            BackConfirmation.restore(savedInstanceState.getLong(
+                    BackConfirmation.STATE_DEADLINE));
+        }
         TypedArray tintTypedArray = getTheme().obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
         this.mIconTintColor = tintTypedArray.getColor(0, 0);
         tintTypedArray.recycle();
@@ -92,12 +100,19 @@ public class PrefsActivity extends PreferenceActivity {
                 }
                 Intent intent = new Intent(PrefsActivity.this, (Class<?>) AeroActivity.class);
                 intent.putExtra(AeroActivity.EXTRA_SELECTED_ITEM_ID, item.content);
+                int settingsReturnItemId = PrefsActivity.this.getIntent().getIntExtra(
+                        AeroActivity.EXTRA_SETTINGS_RETURN_ITEM_ID, -1);
+                if (settingsReturnItemId != -1) {
+                    intent.putExtra(AeroActivity.EXTRA_SETTINGS_RETURN_ITEM_ID,
+                            settingsReturnItemId);
+                }
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 PrefsActivity.this.startActivity(intent);
                 PrefsActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
         this.mNavigationDrawer.syncState();
+        this.mNavigationDrawer.setItemCheckedByResourceId(R.string.aero_settings);
         PreferenceScreen root = getPreferenceScreen();
         if (this.mRebootChecker == null) {
             this.mRebootChecker = (TwoStatePreference) root.findPreference("reboot_checker");
@@ -341,6 +356,23 @@ public class PrefsActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         OrientationHelper.applyOrientation(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        long now = SystemClock.elapsedRealtime();
+        if (!BackConfirmation.isPending(now)) {
+            BackConfirmation.start(now);
+        }
+        Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_SHORT).show();
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(BackConfirmation.STATE_DEADLINE,
+                BackConfirmation.getDeadline());
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
