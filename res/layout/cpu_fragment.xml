@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <PreferenceCategory
+        android:title="@string/pref_cpu_freq"
+        android:key="cpu_settings">
+        <CheckBoxPreference
+            android:title="@string/pref_apply_to_all_cpu_clusters"
+            android:key="apply_to_all_cpu_clusters"
+            android:defaultValue="false"
+            android:summary="@string/pref_apply_to_all_cpu_clusters_summary"/>
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/perf_live_oc_uc"
+            android:key="cpu_commands"
+            android:summary="@string/perf_live_oc_uc_summary"
+            android:inputType="number"/>
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/perf_cpu_hotplug"
+            android:key="hotplug_control"
+            android:summary="@string/perf_cpu_hotplug_summary"/>
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/perf_voltage_control"
+            android:key="voltage_values"
+            android:summary="@string/perf_voltage_control_summary"/>
+        <com.aero.control.helpers.Android.CustomPreference
+            android:title="@string/perf_cpu_boost_control"
+            android:key="cpu_boost_control"
+            android:summary="@string/perf_cpu_boost_control_summary"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/pref_cpu_governor"
+        android:key="cpu_governor"/>
+</PreferenceScreen>
