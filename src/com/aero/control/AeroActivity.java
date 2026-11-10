@@ -931,14 +931,13 @@ public final class AeroActivity extends Activity {
             return;
         }
         long now = SystemClock.elapsedRealtime();
-        boolean settingsEntryCurrent = !this.mSettingsEntryItemIds.empty()
-                && getSelectedItemResourceId() == this.mSettingsEntryItemIds.peek();
-        boolean canNavigateBack = settingsEntryCurrent || mFragmentStack.size() > 1;
-        if (!canNavigateBack && BackConfirmation.isPending(now)) {
+        if (BackConfirmation.isPending(now)) {
             BackConfirmation.clear();
             finish();
             return;
         }
+        boolean settingsEntryCurrent = !this.mSettingsEntryItemIds.empty()
+                && getSelectedItemResourceId() == this.mSettingsEntryItemIds.peek();
         if (settingsEntryCurrent) {
             showSettingsHistoryEntry();
         } else if (mFragmentStack.size() > 1) {

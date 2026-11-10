@@ -60,11 +60,6 @@ public class PrefsActivity extends PreferenceActivity {
     public void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applySettingsTheme(this);
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null
-                && savedInstanceState.containsKey(BackConfirmation.STATE_DEADLINE)) {
-            BackConfirmation.restore(savedInstanceState.getLong(
-                    BackConfirmation.STATE_DEADLINE));
-        }
         TypedArray tintTypedArray = getTheme().obtainStyledAttributes(new int[]{R.attr.aeroIconTint});
         this.mIconTintColor = tintTypedArray.getColor(0, 0);
         tintTypedArray.recycle();
@@ -360,19 +355,9 @@ public class PrefsActivity extends PreferenceActivity {
 
     @Override
     public void onBackPressed() {
-        long now = SystemClock.elapsedRealtime();
-        if (!BackConfirmation.isPending(now)) {
-            BackConfirmation.start(now);
-        }
         Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_SHORT).show();
+        BackConfirmation.start(SystemClock.elapsedRealtime());
         super.onBackPressed();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putLong(BackConfirmation.STATE_DEADLINE,
-                BackConfirmation.getDeadline());
     }
 
     @Override // android.preference.PreferenceActivity, android.app.Activity
