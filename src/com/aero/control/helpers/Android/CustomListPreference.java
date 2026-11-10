@@ -168,7 +168,12 @@ public class CustomListPreference extends ListPreference {
      */
     @Override // android.preference.ListPreference, android.preference.Preference
     public void setSummary(CharSequence value) {
+        boolean changed = this.mSummaryPref == null
+                ? value != null : !this.mSummaryPref.equals(value);
         this.mSummaryPref = value;
+        if (changed) {
+            notifyChanged();
+        }
         if (this.mSummary != null) {
             this.mSummary.setText(value);
         }

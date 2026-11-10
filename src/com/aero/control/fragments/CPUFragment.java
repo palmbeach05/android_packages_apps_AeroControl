@@ -26,6 +26,7 @@ import com.aero.control.helpers.Android.CustomEditText;
 import com.aero.control.helpers.Android.CustomListPreference;
 import com.aero.control.helpers.Android.CustomPreference;
 import com.aero.control.helpers.CpuClusterHelper;
+import com.aero.control.helpers.CpuController;
 import com.aero.control.helpers.FilePath;
 import com.aero.control.helpers.FrequencyFormat;
 import com.aero.control.helpers.HardwareMetricsPoller;
@@ -380,6 +381,7 @@ public class CPUFragment extends PlaceHolderFragment {
                         if (!writeResult.isSuccess()) {
                             Log.e("Aero", "Failed to apply legacy overclock table: "
                                     + writeResult.getError());
+                            CPUFragment.this.refreshCpuFrequencies();
                             Toast.makeText(CPUFragment.this.getActivity(),
                                     R.string.hardware_operation_failed,
                                     Toast.LENGTH_LONG).show();
@@ -397,6 +399,7 @@ public class CPUFragment extends PlaceHolderFragment {
                             Log.e("Aero", "Failed to save the legacy overclock table");
                         }
                         CPUFragment.this.mWantsMetricsPolling = true;
+                        CPUFragment.this.refreshCpuFrequencies();
                         CPUFragment.this.startMetricsPolling();
                     }
                 });
@@ -440,33 +443,7 @@ public class CPUFragment extends PlaceHolderFragment {
                         }
                     }
 
-                    final int lifecycleGeneration = mLifecycleGeneration.get();
-                    mMirrorExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            final SysfsResult<String> result =
-                                    AeroActivity.hardware.cpu().writeMaxFrequency(
-                                            controls.cluster, a);
-                            AeroActivity.mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (lifecycleGeneration != mLifecycleGeneration.get()) {
-                                        return;
-                                    }
-                                    if (result.isSuccess()) {
-                                        synchronized (mPreferenceLock) {
-                                            controls.maxFrequency.setSummary(FrequencyFormat.toMHz(a));
-                                            controls.maxFrequency.setValue(a);
-                                            controls.pendingMaxFrequency = a;
-                                        }
-                                    } else {
-                                        Log.e("Aero", "Failed to write CPU maximum frequency: "
-                                                + result.getError());
-                                    }
-                                }
-                            });
-                        }
-                    });
+                    CPUFragment.this.queueSingleFrequencyWrite(controls, a, true);
                     return false;
                 }
             }
@@ -496,35 +473,61 @@ public class CPUFragment extends PlaceHolderFragment {
                         }
                     }
 
-                    final int lifecycleGeneration = mLifecycleGeneration.get();
-                    mMirrorExecutor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            final SysfsResult<String> result =
-                                    AeroActivity.hardware.cpu().writeMinFrequency(
-                                            controls.cluster, a);
-                            AeroActivity.mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (lifecycleGeneration != mLifecycleGeneration.get()) {
-                                        return;
-                                    }
-                                    if (result.isSuccess()) {
-                                        synchronized (mPreferenceLock) {
-                                            controls.minFrequency.setSummary(FrequencyFormat.toMHz(a));
-                                            controls.minFrequency.setValue(a);
-                                            controls.pendingMinFrequency = a;
-                                        }
-                                    } else {
-                                        Log.e("Aero", "Failed to write CPU minimum frequency: "
-                                                + result.getError());
-                                    }
-                                }
-                            });
-                        }
-                    });
+                    CPUFragment.this.queueSingleFrequencyWrite(controls, a, false);
                     return false;
                 }
+            }
+        });
+    }
+
+    private void queueSingleFrequencyWrite(
+            final ClusterControls controls, final String value, final boolean isMax) {
+        final int lifecycleGeneration = mLifecycleGeneration.get();
+        mMirrorExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                final SysfsResult<String> writeResult = isMax
+                        ? AeroActivity.hardware.cpu().writeMaxFrequency(
+                                controls.cluster, value)
+                        : AeroActivity.hardware.cpu().writeMinFrequency(
+                                controls.cluster, value);
+                final SysfsResult<String> currentResult = writeResult.isSuccess()
+                        ? writeResult
+                        : (isMax
+                                ? AeroActivity.hardware.cpu().readMaxFrequency(controls.cluster)
+                                : AeroActivity.hardware.cpu().readMinFrequency(controls.cluster));
+                final String appliedValue = currentResult.isSuccess()
+                        ? currentResult.getValue() : null;
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        if (!writeResult.isSuccess()) {
+                            Log.e("Aero", "Failed to write CPU "
+                                    + (isMax ? "maximum" : "minimum") + " frequency: "
+                                    + writeResult.getError());
+                        }
+                        if (appliedValue == null) {
+                            Log.e("Aero", "Unable to refresh CPU "
+                                    + (isMax ? "maximum" : "minimum")
+                                    + " frequency after write");
+                            return;
+                        }
+                        synchronized (mPreferenceLock) {
+                            CustomListPreference preference = isMax
+                                    ? controls.maxFrequency : controls.minFrequency;
+                            preference.setValue(appliedValue);
+                            preference.setSummary(FrequencyFormat.toMHz(appliedValue));
+                            if (isMax) {
+                                controls.pendingMaxFrequency = appliedValue;
+                            } else {
+                                controls.pendingMinFrequency = appliedValue;
+                            }
+                        }
+                    }
+                });
             }
         });
     }
@@ -1127,10 +1130,19 @@ public class CPUFragment extends PlaceHolderFragment {
             String availablePath = getCpuFrequencyPathsForCluster(cluster)[0];
             String minPath = getCpuFrequencyPathsForCluster(cluster)[1];
             String maxPath = getCpuFrequencyPathsForCluster(cluster)[2];
-            String[] entryValues = splitFrequencyValues(values.get(availablePath), false);
-            String[] entries = splitFrequencyValues(values.get(availablePath), true);
             String minValue = firstFrequencyValue(values.get(minPath));
             String maxValue = firstFrequencyValue(values.get(maxPath));
+            String[] entryValues = CpuController.includeConfiguredFrequencies(
+                    splitFrequencyValues(values.get(availablePath), false),
+                    minValue, maxValue);
+            if (entryValues.length == 0) {
+                entryValues = new String[] {NO_DATA_FOUND};
+            }
+            String[] entries = new String[entryValues.length];
+            for (int j = 0; j < entryValues.length; j++) {
+                entries[j] = NO_DATA_FOUND.equals(entryValues[j])
+                        ? NO_DATA_FOUND : FrequencyFormat.toMHz(entryValues[j]);
+            }
 
             synchronized (this.mPreferenceLock) {
                 cluster.minFrequency.setEntries(entries);

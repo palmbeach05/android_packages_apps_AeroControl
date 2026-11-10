@@ -1,6 +1,8 @@
 package com.aero.control.helpers.legacy;
 
+import android.util.Log;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -15,6 +17,7 @@ import com.aero.control.helpers.SysfsResult;
  * only still here for backwards compatibility with that hardware.
  */
 public final class LegacyOverclockController {
+    private static final String LOG_TAG = LegacyOverclockController.class.getName();
     public static final String PREF_FREQUENCIES = "legacy_cpu_frequencies_khz";
     public static final String PREF_VOLTAGES = "legacy_cpu_voltage_selections";
     private static final String VOLTAGE_TABLE = "/proc/overclock/mpu_opps";
@@ -102,7 +105,7 @@ public final class LegacyOverclockController {
             minimumFrequency = Math.min(minimumFrequency, frequenciesKHz[i]);
             maximumFrequency = Math.max(maximumFrequency, frequenciesKHz[i]);
         }
-        StringBuilder commands = new StringBuilder("status=0\n");
+        StringBuilder commands = new StringBuilder("status=0\nfailed=''\n");
         appendWrite(commands, MAX_VOLTAGE, Integer.toString(maximumVoltage));
         int remaining = frequenciesKHz.length;
         for (int i = 0; i < frequenciesKHz.length; i++) {
@@ -115,10 +118,85 @@ public final class LegacyOverclockController {
         appendWrite(commands, MAX_RATE, Integer.toString(maximumFrequency));
         appendWrite(commands, MIN_FREQUENCY, Integer.toString(minimumFrequency));
         commands.append("if [ \"$status\" -eq 0 ]; then printf 'AERO_OK'; ")
-                .append("else printf 'AERO_ERROR'; fi");
+                .append("else printf 'AERO_ERROR%s' \"$failed\"; fi");
         String result = session.execute(commands.toString());
         if (!"AERO_OK".equals(result)) {
-            return SysfsResult.failure("Unable to apply the legacy frequency table");
+            if (result != null && result.startsWith("AERO_ERROR")) {
+                SysfsResult<Boolean> verification = verifyFrequencyTable(
+                        frequenciesKHz, voltages, minimumFrequency, maximumFrequency,
+                        maximumVoltage);
+                if (verification.isSuccess()) {
+                    Log.w(LOG_TAG, "Legacy frequency-table writes reported an error, but "
+                            + "readback confirms the requested settings were applied: " + result);
+                    return SysfsResult.success(Boolean.TRUE);
+                }
+                return SysfsResult.failure("Unable to apply the legacy frequency table: "
+                        + result + "; " + verification.getError());
+            }
+            return SysfsResult.failure("Unable to apply the legacy frequency table: "
+                    + (result == null ? "root shell did not return a result" : result));
+        }
+        return SysfsResult.success(Boolean.TRUE);
+    }
+
+    private SysfsResult<Boolean> verifyFrequencyTable(int[] frequenciesKHz, int[] voltages,
+            int minimumFrequency, int maximumFrequency, int maximumVoltage) {
+        String availableOutput = session.execute("cat " + RootShellSession.escapeShellArg(
+                "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies"));
+        if (availableOutput == null) {
+            return SysfsResult.failure("Unable to read back available CPU frequencies");
+        }
+        if (!matchesFrequencyList(availableOutput, frequenciesKHz)) {
+            return SysfsResult.failure("Available CPU frequency list does not match the request");
+        }
+
+        SysfsResult<int[]> currentVoltages = readVoltageSelections();
+        if (!currentVoltages.isSuccess()) {
+            return SysfsResult.failure(currentVoltages.getError());
+        }
+        if (!Arrays.equals(voltages, currentVoltages.getValue())) {
+            return SysfsResult.failure("CPU voltage table does not match the request");
+        }
+
+        SysfsResult<Boolean> maxVoltageResult = verifyNodeValue(
+                MAX_VOLTAGE, maximumVoltage);
+        if (!maxVoltageResult.isSuccess()) return maxVoltageResult;
+        SysfsResult<Boolean> maxRateResult = verifyNodeValue(MAX_RATE, maximumFrequency);
+        if (!maxRateResult.isSuccess()) return maxRateResult;
+        return verifyNodeValue(MIN_FREQUENCY, minimumFrequency);
+    }
+
+    static boolean matchesFrequencyList(String output, int[] expectedFrequencies) {
+        if (output == null || expectedFrequencies == null || expectedFrequencies.length == 0) {
+            return false;
+        }
+        String normalized = output.trim();
+        if (normalized.length() == 0) {
+            return false;
+        }
+        String[] values = normalized.split("\\s+");
+        if (values.length != expectedFrequencies.length) {
+            return false;
+        }
+        for (int i = 0; i < values.length; i++) {
+            try {
+                if (Integer.parseInt(values[i]) != expectedFrequencies[i]) {
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private SysfsResult<Boolean> verifyNodeValue(String path, int expectedValue) {
+        String output = session.execute("cat " + RootShellSession.escapeShellArg(path));
+        if (output == null) {
+            return SysfsResult.failure("Unable to read back " + path);
+        }
+        if (!Integer.toString(expectedValue).equals(output.trim())) {
+            return SysfsResult.failure("Readback for " + path + " does not match the request");
         }
         return SysfsResult.success(Boolean.TRUE);
     }
@@ -303,6 +381,8 @@ public final class LegacyOverclockController {
                 .append(RootShellSession.escapeShellArg(value))
                 .append(" > ")
                 .append(RootShellSession.escapeShellArg(path))
-                .append(" || status=1\n");
+                .append(" || { status=1; failed=\"$failed ")
+                .append(path)
+                .append("\"; }\n");
     }
 }

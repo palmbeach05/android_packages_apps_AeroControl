@@ -19,6 +19,16 @@ public class LegacyOverclockControllerTest {
     }
 
     @Test
+    public void verifiesFrequencyListReadback() {
+        assertTrue(LegacyOverclockController.matchesFrequencyList(
+                "1800000 350000\n", new int[] {1800000, 350000}));
+        assertFalse(LegacyOverclockController.matchesFrequencyList(
+                "1800000 350000\n", new int[] {1800000, 300000}));
+        assertFalse(LegacyOverclockController.matchesFrequencyList(
+                "1800000 350000 300000\n", new int[] {1800000, 350000}));
+    }
+
+    @Test
     public void rejectsNonPositiveFrequencyBeforeShellExecution() {
         assertFalse(LegacyOverclockController.validateFrequencyTable(
                 new int[] {0}, new int[] {50}).isSuccess());

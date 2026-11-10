@@ -2,6 +2,7 @@ package com.aero.control.helpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -123,6 +124,36 @@ public final class CpuController {
         return readAvailableFrequencies(targets.getValue().get(0), mode);
     }
 
+    /** Includes already-configured endpoints that the kernel omits from its capability list. */
+    public static String[] includeConfiguredFrequencies(
+            String[] available, String... configuredValues) {
+        LinkedHashSet<String> frequencies = new LinkedHashSet<>();
+        if (available != null) {
+            for (String value : available) {
+                addPositiveFrequency(frequencies, value);
+            }
+        }
+        if (configuredValues != null) {
+            for (String value : configuredValues) {
+                addPositiveFrequency(frequencies, value);
+            }
+        }
+        return frequencies.toArray(new String[frequencies.size()]);
+    }
+
+    private static void addPositiveFrequency(LinkedHashSet<String> frequencies, String value) {
+        if (value == null) return;
+        String normalized = value.trim();
+        if (!normalized.matches("\\d+")) return;
+        try {
+            if (Integer.parseInt(normalized) > 0) {
+                frequencies.add(normalized);
+            }
+        } catch (NumberFormatException e) {
+            // Values outside the supported integer range cannot be CPU frequencies.
+        }
+    }
+
     /** Returns the metric nodes associated with a cluster for batched read-only polling. */
     public String[] getFrequencyMetricPaths(CpuClusterHelper.Cluster cluster) {
         int cpu = cluster.getRepresentativeCpu();
@@ -233,44 +264,45 @@ public final class CpuController {
 
     /**
      * Applies a minimum/maximum pair without transiently crossing the current limits.
-     * Both requested values must be advertised by the kernel and the pair must be valid.
+     * Requested values must be advertised by the kernel or already be the configured
+     * endpoint, and the pair must be valid.
      */
     public SysfsResult<Boolean> writeFrequencyLimits(
             CpuClusterHelper.Cluster cluster, String minimum, String maximum) {
+        if (minimum == null || maximum == null) {
+            return SysfsResult.failure("CPU minimum and maximum frequencies are required");
+        }
         SysfsResult<List<Integer>> targets = getFrequencyWriteTargets(cluster, true);
         if (!targets.isSuccess()) return SysfsResult.failure(targets.getError());
         int cpu = targets.getValue().get(0);
-        SysfsResult<String[]> available = readAvailableFrequencies(cpu, ReadMode.RAW);
-        if (!available.isSuccess()) return SysfsResult.failure(available.getError());
-        if (!contains(available.getValue(), minimum)
-                || !contains(available.getValue(), maximum)) {
-            return SysfsResult.failure("Frequency is not supported by this CPU cluster");
-        }
-
-        final int requestedMinimum;
-        final int requestedMaximum;
-        try {
-            requestedMinimum = Integer.parseInt(minimum.trim());
-            requestedMaximum = Integer.parseInt(maximum.trim());
-        } catch (NumberFormatException e) {
-            return SysfsResult.failure("CPU frequencies must be numeric");
-        }
-        if (requestedMinimum > requestedMaximum) {
-            return SysfsResult.failure("CPU minimum frequency exceeds maximum frequency");
-        }
-
         SysfsResult<String> currentMinimum = readMinFrequency(cpu);
         SysfsResult<String> currentMaximum = readMaxFrequency(cpu);
         if (!currentMinimum.isSuccess()) return SysfsResult.failure(currentMinimum.getError());
         if (!currentMaximum.isSuccess()) return SysfsResult.failure(currentMaximum.getError());
 
+        SysfsResult<String[]> available = readAvailableFrequencies(cpu, ReadMode.RAW);
+        if (!available.isSuccess()) return SysfsResult.failure(available.getError());
+        if ((!contains(available.getValue(), minimum)
+                    && !minimum.trim().equals(currentMinimum.getValue().trim()))
+                || (!contains(available.getValue(), maximum)
+                    && !maximum.trim().equals(currentMaximum.getValue().trim()))) {
+            return SysfsResult.failure("Frequency is not supported by this CPU cluster");
+        }
+
+        final int requestedMinimum;
+        final int requestedMaximum;
         final int oldMinimum;
         final int oldMaximum;
         try {
+            requestedMinimum = Integer.parseInt(minimum.trim());
+            requestedMaximum = Integer.parseInt(maximum.trim());
             oldMinimum = Integer.parseInt(currentMinimum.getValue().trim());
             oldMaximum = Integer.parseInt(currentMaximum.getValue().trim());
         } catch (NumberFormatException e) {
-            return SysfsResult.failure("Current CPU frequency limits are invalid");
+            return SysfsResult.failure("CPU frequencies must be numeric");
+        }
+        if (requestedMinimum > requestedMaximum) {
+            return SysfsResult.failure("CPU minimum frequency exceeds maximum frequency");
         }
 
         boolean writeMinimumFirst = requestedMaximum < oldMinimum
@@ -295,9 +327,18 @@ public final class CpuController {
         SysfsResult<List<Integer>> targets = getFrequencyWriteTargets(cluster, maximum);
         if (!targets.isSuccess()) return SysfsResult.failure(targets.getError());
         int cpu = targets.getValue().get(0);
+        String suffix = maximum ? FilePath.CPU_MAX_FREQ : FilePath.CPU_MIN_FREQ;
+        SysfsNode frequencyNode = new SysfsNode(FilePath.CPU_BASE_PATH + cpu + suffix);
+        SysfsResult<String> currentFrequency = repository.readValue(frequencyNode);
+        if (!currentFrequency.isSuccess()) {
+            return SysfsResult.failure(currentFrequency.getError());
+        }
         SysfsResult<String[]> available = readAvailableFrequencies(cpu, ReadMode.RAW);
-        if (!available.isSuccess()) return SysfsResult.failure(available.getError());
-        if (!contains(available.getValue(), value)) {
+        boolean alreadyConfigured = value != null
+                && value.trim().equals(currentFrequency.getValue().trim());
+        boolean supported = available.isSuccess() && contains(available.getValue(), value);
+        if (!supported && !alreadyConfigured) {
+            if (!available.isSuccess()) return SysfsResult.failure(available.getError());
             return SysfsResult.failure("Frequency is not supported by this CPU cluster");
         }
 
@@ -318,9 +359,11 @@ public final class CpuController {
             return SysfsResult.failure("CPU frequencies must be numeric");
         }
 
-        String suffix = maximum ? FilePath.CPU_MAX_FREQ : FilePath.CPU_MIN_FREQ;
-        return repository.writeValue(new SysfsNode(FilePath.CPU_BASE_PATH + cpu + suffix,
-                Arrays.asList(available.getValue())), value);
+        SysfsNode writableNode = supported
+                ? new SysfsNode(FilePath.CPU_BASE_PATH + cpu + suffix,
+                        Arrays.asList(available.getValue()))
+                : frequencyNode;
+        return repository.writeValue(writableNode, value);
     }
 
     private boolean contains(String[] values, String candidate) {
