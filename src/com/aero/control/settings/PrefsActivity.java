@@ -355,6 +355,10 @@ public class PrefsActivity extends PreferenceActivity {
 
     @Override
     public void onBackPressed() {
+        if (this.mNavigationDrawer != null && this.mNavigationDrawer.isDrawerOpen()) {
+            this.mNavigationDrawer.closeDrawers();
+            return;
+        }
         Toast.makeText(this, R.string.back_for_close, Toast.LENGTH_SHORT).show();
         BackConfirmation.start(SystemClock.elapsedRealtime());
         super.onBackPressed();

@@ -89,6 +89,7 @@ public final class AeroActivity extends Activity {
     private UpdaterFragment mUpdaterFragement;
     private String mCurrentTheme;
     private Runnable mPendingSwitch;
+    private Stack<Fragment> mPendingSwitchPreviousStack;
     private int mSelectedItemPosition = 0;
     private int mPendingSettingsReturnItemId = NO_PENDING_DRAWER_ITEM;
     private final Stack<Integer> mSettingsReturnItemIds = new Stack<>();
@@ -120,6 +121,7 @@ public final class AeroActivity extends Activity {
             BackConfirmation.restore(savedInstanceState.getLong(
                     BackConfirmation.STATE_DEADLINE));
         }
+
         this.mCurrentTheme = ThemeHelper.getTheme(this);
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
@@ -197,8 +199,9 @@ public final class AeroActivity extends Activity {
             Fragment expectedFragment = (savedItemId != -1) ? getFragmentByResourceId(savedItemId) : null;
 
             // Enable replacement when restored content doesn't match saved selection
-            // Exception: AppDetail is handled via back stack, not drawer selection
-            boolean needsReplacement = (currentFragment != expectedFragment) && !hasAppDetailBackStackEntry();
+            // Nested detail screens are restored by FragmentManager, not drawer selection.
+            boolean needsReplacement = (currentFragment != expectedFragment)
+                    && !hasFragmentBackStackEntry();
 
             if (savedItemId != -1) {
                 selectItemByResourceId(savedItemId, needsReplacement);
@@ -645,11 +648,12 @@ public final class AeroActivity extends Activity {
                 mFragmentStack.remove(oldFragment);
             }
             if (replaceFragment) {
+                clearFragmentBackStack();
+                switchContent(fragment);
                 // Track which drawer item this transaction is for, so
                 // onConfigurationChanged() can hand it off if rotation
                 // races ahead of this transaction committing.
                 mPendingDrawerTransactionItemResourceId = itemResourceId;
-                switchContent(fragment);
             }
         }
         this.mDrawerList.setItemChecked(position, true);
@@ -708,11 +712,7 @@ public final class AeroActivity extends Activity {
         if (fragment == null) {
             return;
         }
-        if (this.mPendingSwitch != null) {
-            mHandler.removeCallbacks(this.mPendingSwitch);
-            this.mPendingSwitch = null;
-            this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
-        }
+        cancelPendingSwitch();
         int position = this.mNavigationDrawer.setItemCheckedByResourceId(resourceId);
         if (position == -1) {
             return;
@@ -745,10 +745,21 @@ public final class AeroActivity extends Activity {
         android.app.FragmentManager fragmentManager = getFragmentManager();
         int backStackEntryCount = fragmentManager.getBackStackEntryCount();
         if (backStackEntryCount > 0) {
-            // Check only the top entry
             return "AppDetail".equals(fragmentManager.getBackStackEntryAt(backStackEntryCount - 1).getName());
         }
         return false;
+    }
+
+    private boolean hasFragmentBackStackEntry() {
+        return getFragmentManager().getBackStackEntryCount() > 0;
+    }
+
+    private void clearFragmentBackStack() {
+        android.app.FragmentManager fragmentManager = getFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStackImmediate(
+                    null, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
     }
 
     @Override // android.app.Activity
@@ -885,7 +896,7 @@ public final class AeroActivity extends Activity {
     // restored CPU Statistics selection, performs a single replacement
     // transaction to force the fragment's view to be created.
     private void recoverBlankStatisticsContentIfNeeded(int savedItemId) {
-        if (isFinishing() || hasAppDetailBackStackEntry()) {
+        if (isFinishing() || hasFragmentBackStackEntry()) {
             return;
         }
         // This instance is itself about to be recreated again (e.g. another
@@ -921,44 +932,76 @@ public final class AeroActivity extends Activity {
     }
 
     /**
-     * Handles the back button press. Closes app detail if open, navigates back through
-     * the fragment stack, or initiates the double-tap-to-close confirmation flow.
+     * Closes an open drawer, honors a pending close confirmation, or navigates back
+     * through nested details and page history before starting the confirmation window.
      */
     @Override // android.app.Activity
     public void onBackPressed() {
-        if (hasAppDetailBackStackEntry()) {
-            closeAppDetail();
+        if (this.mNavigationDrawer != null && this.mNavigationDrawer.isDrawerOpen()) {
+            this.mNavigationDrawer.closeDrawers();
             return;
         }
+        cancelPendingSwitch();
         long now = SystemClock.elapsedRealtime();
         if (BackConfirmation.isPending(now)) {
             BackConfirmation.clear();
             finish();
             return;
         }
-        boolean settingsEntryCurrent = !this.mSettingsEntryItemIds.empty()
-                && getSelectedItemResourceId() == this.mSettingsEntryItemIds.peek();
-        if (settingsEntryCurrent) {
-            showSettingsHistoryEntry();
-        } else if (mFragmentStack.size() > 1) {
-            mFragmentStack.pop();
-            Fragment previousFragment = mFragmentStack.peek();
-            switchContent(previousFragment, false);
-            // Restore title by finding which fragment we're returning to
-            String restoredTitle = getTitleForFragment(previousFragment);
-            if (restoredTitle != null) {
-                setTitle(restoredTitle);
-            }
-            int resourceId = getResourceIdForFragment(previousFragment);
-            if (resourceId != -1) {
-                int position = this.mNavigationDrawer.setItemCheckedByResourceId(resourceId);
-                if (position != -1) {
-                    this.mSelectedItemPosition = position;
+        if (hasAppDetailBackStackEntry()) {
+            closeAppDetail();
+        } else if (hasFragmentBackStackEntry()) {
+            getFragmentManager().popBackStackImmediate();
+        } else {
+            boolean settingsEntryCurrent = !this.mSettingsEntryItemIds.empty()
+                    && getSelectedItemResourceId() == this.mSettingsEntryItemIds.peek();
+            if (settingsEntryCurrent) {
+                showSettingsHistoryEntry();
+            } else if (mFragmentStack.size() > 1) {
+                mFragmentStack.pop();
+                Fragment previousFragment = mFragmentStack.peek();
+                switchContent(previousFragment, false);
+                // Restore title by finding which fragment we're returning to
+                String restoredTitle = getTitleForFragment(previousFragment);
+                if (restoredTitle != null) {
+                    setTitle(restoredTitle);
+                }
+                int resourceId = getResourceIdForFragment(previousFragment);
+                if (resourceId != -1) {
+                    int position = this.mNavigationDrawer.setItemCheckedByResourceId(resourceId);
+                    if (position != -1) {
+                        this.mSelectedItemPosition = position;
+                    }
                 }
             }
         }
         BackConfirmation.start(now);
         Toast.makeText(this, R.string.back_for_close, 1).show();
+    }
+
+    private void cancelPendingSwitch() {
+        if (this.mPendingSwitch != null) {
+            mHandler.removeCallbacks(this.mPendingSwitch);
+            this.mPendingSwitch = null;
+            if (this.mPendingSwitchPreviousStack != null) {
+                this.mFragmentStack.clear();
+                this.mFragmentStack.addAll(this.mPendingSwitchPreviousStack);
+                if (!this.mFragmentStack.empty()) {
+                    Fragment currentFragment = this.mFragmentStack.peek();
+                    int resourceId = getResourceIdForFragment(currentFragment);
+                    if (resourceId != -1) {
+                        int position = this.mNavigationDrawer.setItemCheckedByResourceId(
+                                resourceId);
+                        if (position != -1) {
+                            this.mSelectedItemPosition = position;
+                        }
+                        setTitle(getString(resourceId));
+                    }
+                }
+            }
+        }
+        this.mPendingSwitchPreviousStack = null;
+        this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
     }
 
     /**
@@ -1100,12 +1143,23 @@ public final class AeroActivity extends Activity {
      * @param addToStack if true, pushes the fragment onto the back stack
      */
     private void switchContent(final Fragment fragment, final boolean addToStack) {
-        if (this.mPendingSwitch != null) {
-            mHandler.removeCallbacks(this.mPendingSwitch);
+        cancelPendingSwitch();
+        if (addToStack) {
+            this.mPendingSwitchPreviousStack = new Stack<>();
+            this.mPendingSwitchPreviousStack.addAll(this.mFragmentStack);
+            // Keep navigation history aligned with the latest requested destination,
+            // even if its posted fragment transaction is canceled by a later action.
+            mFragmentStack.remove(fragment);
+            mFragmentStack.push(fragment);
         }
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
+                if (AeroActivity.this.mPendingSwitch != this) {
+                    return;
+                }
+                AeroActivity.this.mPendingSwitch = null;
+                AeroActivity.this.mPendingSwitchPreviousStack = null;
                 // This transaction is about to run (or be skipped below), so
                 // it's no longer pending.
                 AeroActivity.this.mPendingDrawerTransactionItemResourceId = NO_PENDING_DRAWER_ITEM;
@@ -1114,12 +1168,6 @@ public final class AeroActivity extends Activity {
                 }
                 try {
                     AeroActivity.this.getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss();
-                    // Selecting a page already in the history moves it to the top
-                    // instead of creating a duplicate Back entry.
-                    if (addToStack) {
-                        mFragmentStack.remove(fragment);
-                        mFragmentStack.push(fragment);
-                    }
                 } catch (IllegalStateException e) {
                     if (!AeroActivity.this.isFinishing()) {
                         AeroActivity.this.recreate();
