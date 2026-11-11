@@ -39,6 +39,7 @@ import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Fragment for configuring memory and I/O settings including read-ahead buffer,
@@ -384,19 +385,14 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
      * @return true if the click was handled, false otherwise
      */
     private boolean handlePreferenceClick(Preference preference) {
-        CustomPreference cusPref = null;
         if (preference == this.mDynFSync) {
             if (!applyToggle(this.mDynFSync, FilePath.DYANMIC_FSYNC)) return false;
-            cusPref = (CustomPreference) preference;
         } else if (preference == this.mFsync) {
             if (!applyToggle(this.mFsync, FilePath.FSYNC)) return false;
-            cusPref = (CustomPreference) preference;
         } else if (preference == this.mKSMSettings) {
             if (!applyToggle(this.mKSMSettings, FilePath.KSM_SETTINGS)) return false;
-            cusPref = (CustomPreference) preference;
         } else if (preference == this.mWriteBackControl) {
             if (!applyToggle(this.mWriteBackControl, FilePath.WRITEBACK)) return false;
-            cusPref = (CustomPreference) preference;
         } else if (preference == this.mFSTrimToggle) {
             fsTrimToggleClick();
         } else if (preference == this.mDalvikSettings) {
@@ -421,42 +417,93 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         } else {
             return false;
         }
-        if (cusPref != null && cusPref.isChecked().booleanValue()) {
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            String state = cusPref.isClicked().booleanValue() ? "1" : "0";
-            editor.putString(cusPref.getName(), state).commit();
-        }
         return true;
     }
 
     private boolean applyToggle(final CustomPreference preference, final String path) {
         final boolean previous = preference.isClicked().booleanValue();
         final boolean requested = !previous;
+        final boolean shouldPersist = preference.isChecked().booleanValue();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final SysfsResult<String> result = AeroActivity.hardware.write(
-                        new SysfsNode(path, 0, 1), requested ? "1" : "0");
+                boolean fsyncToggle = FilePath.FSYNC.equals(path);
+                String requestedValue = fsyncToggle
+                        ? (requested ? "Y" : "N")
+                        : (requested ? "1" : "0");
+                SysfsNode node = fsyncToggle
+                        ? new SysfsNode(path, Arrays.asList("Y", "N"))
+                        : new SysfsNode(path, 0, 1);
+                final SysfsResult<String> writeResult = AeroActivity.hardware.write(
+                        node, requestedValue);
+                final Boolean actual = readToggleValue(path);
                 if (!isAdded()) {
                     return;
                 }
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (!result.isSuccess()) {
-                            Log.e("Aero", "Failed to update memory toggle " + path + ": "
-                                    + result.getError());
+                        if (!isAdded()) {
+                            return;
+                        }
+                        if (actual != null) {
+                            preference.setClicked(actual);
+                        } else {
                             preference.setClicked(Boolean.valueOf(previous));
+                        }
+                        if (actual == null || actual.booleanValue() != requested) {
+                            Log.e("Aero", "Failed to update memory toggle " + path + ": "
+                                    + (!writeResult.isSuccess()
+                                    ? writeResult.getError()
+                                    : "readback did not match the requested state"));
                             Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                             return;
                         }
-                        preference.setClicked(Boolean.valueOf(requested));
+                        if (!writeResult.isSuccess()) {
+                            Log.w("Aero", "Memory toggle readback confirms the requested state "
+                                    + "despite a write verification error for " + path + ": "
+                                    + writeResult.getError());
+                        }
+                        if (shouldPersist) {
+                            SharedPreferences sharedPrefs = PreferenceManager
+                                    .getDefaultSharedPreferences(getActivity());
+                            boolean saved = sharedPrefs.edit()
+                                    .putString(preference.getName(),
+                                            actual.booleanValue() ? "1" : "0")
+                                    .commit();
+                            if (!saved) {
+                                Log.e("Aero", "Failed to save memory toggle preference: "
+                                        + preference.getName());
+                                Toast.makeText(getActivity(),
+                                        R.string.storage_operation_failed,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
                     }
                 });
             }
         }).start();
         return true;
+    }
+
+    private Boolean readToggleValue(String path) {
+        SysfsResult<String> result = AeroActivity.hardware.read(new SysfsNode(path));
+        if (!result.isSuccess()) {
+            Log.e("Aero", "Unable to verify memory toggle " + path + ": "
+                    + result.getError());
+            return null;
+        }
+        String value = result.getValue().trim();
+        if ("1".equals(value) || "Y".equalsIgnoreCase(value)
+                || "yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)) {
+            return Boolean.TRUE;
+        }
+        if ("0".equals(value) || "2".equals(value) || "N".equalsIgnoreCase(value)
+                || "no".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+            return Boolean.FALSE;
+        }
+        Log.e("Aero", "Unrecognized memory toggle value for " + path + ": " + value);
+        return null;
     }
 
     /**
@@ -474,21 +521,46 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final SysfsResult<String> result =
+                    final SysfsResult<String> writeResult =
                             AeroActivity.hardware.ioScheduler().writeScheduler(value);
+                    final SysfsResult<String> readbackResult =
+                            AeroActivity.hardware.ioScheduler().readCurrentScheduler();
                     if (!isAdded()) {
                         return;
                     }
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (!result.isSuccess()) {
+                            if (!isAdded()) {
+                                return;
+                            }
+                            if (readbackResult.isSuccess()) {
+                                String actualValue = readbackResult.getValue();
+                                mIOScheduler.setValue(actualValue);
+                                mIOScheduler.setSummary(actualValue);
+                            }
+                            if (!readbackResult.isSuccess()
+                                    || !value.equals(readbackResult.getValue())) {
                                 Log.e("Aero", "Failed to change I/O scheduler: "
-                                        + result.getError());
+                                        + (!writeResult.isSuccess()
+                                        ? writeResult.getError()
+                                        : "readback did not match the requested value"));
+                                if (!readbackResult.isSuccess()) {
+                                    Log.e("Aero", "Unable to read active I/O scheduler: "
+                                            + readbackResult.getError());
+                                } else {
+                                    Log.w("Aero", "Active I/O scheduler is "
+                                            + readbackResult.getValue() + " after requesting "
+                                            + value);
+                                }
                                 Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                 return;
                             }
-                            mIOScheduler.setSummary(value);
+                            if (!writeResult.isSuccess()) {
+                                Log.w("Aero", "I/O scheduler readback confirms the requested "
+                                        + "value despite a write verification error: "
+                                        + writeResult.getError());
+                            }
                             if (PrefCat != null) {
                                 root.removePreference(PrefCat);
                             }
@@ -501,22 +573,48 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final SysfsResult<String> result = AeroActivity.hardware.write(
+                    final SysfsResult<String> writeResult = AeroActivity.hardware.write(
                             new SysfsNode(FilePath.READAHEAD_PARAMETER, 0,
                                     Integer.MAX_VALUE), value);
+                    final SysfsResult<String> readbackResult = AeroActivity.hardware.read(
+                            new SysfsNode(FilePath.READAHEAD_PARAMETER, 0,
+                                    Integer.MAX_VALUE));
                     if (!isAdded()) {
                         return;
                     }
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (!result.isSuccess()) {
+                            if (!isAdded()) {
+                                return;
+                            }
+                            if (readbackResult.isSuccess()) {
+                                String actualValue = readbackResult.getValue();
+                                mReadAHead.setValue(actualValue);
+                                mReadAHead.setSummary(actualValue);
+                            }
+                            if (!readbackResult.isSuccess()
+                                    || !value.equals(readbackResult.getValue())) {
                                 Log.e("Aero", "Failed to update read-ahead: "
-                                        + result.getError());
+                                        + (!writeResult.isSuccess()
+                                        ? writeResult.getError()
+                                        : "readback did not match the requested value"));
+                                if (!readbackResult.isSuccess()) {
+                                    Log.e("Aero", "Unable to read active read-ahead value: "
+                                            + readbackResult.getError());
+                                } else {
+                                    Log.w("Aero", "Active read-ahead value is "
+                                            + readbackResult.getValue() + " after requesting "
+                                            + value);
+                                }
                                 Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                 return;
                             }
-                            mReadAHead.setSummary(value);
+                            if (!writeResult.isSuccess()) {
+                                Log.w("Aero", "Read-ahead readback confirms the requested "
+                                        + "value despite a write verification error: "
+                                        + writeResult.getError());
+                            }
                         }
                     });
                 }
@@ -584,61 +682,59 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
         builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MemoryFragment.3
             @Override // android.content.DialogInterface.OnClickListener
             public void onClick(DialogInterface dialog, int which) {
-                String readValue = editRandomRead.getText().toString().trim();
-                String writeValue = editRandomWrite.getText().toString().trim();
+                final String readValue = editRandomRead.getText().toString().trim();
+                final String writeValue = editRandomWrite.getText().toString().trim();
                 if (!readValue.matches("^\\d+$") || !writeValue.matches("^\\d+$")) {
                     Toast.makeText(MemoryFragment.this.getActivity(), "Please enter a valid non-negative number.", 1).show();
                     return;
                 }
-                ProcfsNode readNode = new ProcfsNode(FilePath.RANDOM_READ_WAKEUP, 0,
+                final ProcfsNode readNode = new ProcfsNode(FilePath.RANDOM_READ_WAKEUP, 0,
                         Integer.MAX_VALUE);
-                ProcfsNode writeNode = new ProcfsNode(FilePath.RANDOM_WRITE_WAKEUP, 0,
+                final ProcfsNode writeNode = new ProcfsNode(FilePath.RANDOM_WRITE_WAKEUP, 0,
                         Integer.MAX_VALUE);
-                SysfsResult<String> oldReadResult =
-                        AeroActivity.hardware.procfs().readValue(readNode);
-                SysfsResult<String> oldWriteResult =
-                        AeroActivity.hardware.procfs().readValue(writeNode);
-                if (!oldReadResult.isSuccess() || !oldWriteResult.isSuccess()) {
-                    Log.e("Aero", "Unable to capture existing entropy thresholds: "
-                            + (!oldReadResult.isSuccess() ? oldReadResult.getError()
-                            : oldWriteResult.getError()));
-                    Toast.makeText(MemoryFragment.this.getActivity(),
-                            R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                    return;
-                }
-                SysfsResult<String> readResult =
-                        AeroActivity.hardware.procfs().writeValue(readNode, readValue);
-                if (!readResult.isSuccess()) {
-                    Log.e("Aero", "Failed to write entropy read threshold: "
-                            + readResult.getError());
-                    Toast.makeText(MemoryFragment.this.getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                    return;
-                }
-                SysfsResult<String> writeResult =
-                        AeroActivity.hardware.procfs().writeValue(writeNode, writeValue);
-                if (!writeResult.isSuccess()) {
-                    Log.e("Aero", "Failed to write entropy write threshold: "
-                            + writeResult.getError());
-                    SysfsResult<String> rollbackResult = AeroActivity.hardware.procfs()
-                            .writeValue(readNode, oldReadResult.getValue());
-                    if (!rollbackResult.isSuccess()) {
-                        Log.e("Aero", "Failed to restore entropy read threshold: "
-                                + rollbackResult.getError());
+                final boolean shouldPersist = MemoryFragment.this.mRandomSettings
+                        .isChecked().booleanValue();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final OperationResult result = applyEntropyValues(
+                                readNode, writeNode, readValue, writeValue);
+                        if (!isAdded()) {
+                            return;
+                        }
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!isAdded()) {
+                                    return;
+                                }
+                                if (!result.isSuccess()) {
+                                    Log.e("Aero", "Failed to apply entropy settings: "
+                                            + result.getMessage());
+                                    Toast.makeText(getActivity(),
+                                            R.string.storage_operation_failed,
+                                            Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                if (shouldPersist) {
+                                    SharedPreferences preference = PreferenceManager
+                                            .getDefaultSharedPreferences(getActivity());
+                                    boolean saved = preference.edit()
+                                            .putString("entropy_read_wakeup", readValue)
+                                            .putString("entropy_write_wakeup", writeValue)
+                                            .putString(mRandomSettings.getKey(), "enabled")
+                                            .commit();
+                                    if (!saved) {
+                                        Log.e("Aero", "Failed to save entropy settings");
+                                        Toast.makeText(getActivity(),
+                                                R.string.storage_operation_failed,
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                        });
                     }
-                    Toast.makeText(MemoryFragment.this.getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
-                    return;
-                }
-                if (MemoryFragment.this.mRandomSettings.isChecked().booleanValue()) {
-                    SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(MemoryFragment.this.getActivity().getBaseContext());
-                    boolean saved = preference.edit()
-                            .putString("entropy_read_wakeup", readValue)
-                            .putString("entropy_write_wakeup", writeValue)
-                            .putString(MemoryFragment.this.mRandomSettings.getKey(), "enabled")
-                            .commit();
-                    if (!saved) {
-                        Log.e("Aero", "Failed to save entropy settings");
-                    }
-                }
+                }).start();
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MemoryFragment.4
@@ -647,6 +743,63 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             }
         });
         builder.show();
+    }
+
+    private OperationResult applyEntropyValues(ProcfsNode readNode, ProcfsNode writeNode,
+            String readValue, String writeValue) {
+        SysfsResult<String> oldReadResult = AeroActivity.hardware.procfs().readValue(readNode);
+        SysfsResult<String> oldWriteResult = AeroActivity.hardware.procfs().readValue(writeNode);
+        if (!oldReadResult.isSuccess() || !oldWriteResult.isSuccess()) {
+            return OperationResult.failed("Unable to capture existing entropy thresholds: "
+                    + (!oldReadResult.isSuccess() ? oldReadResult.getError()
+                    : oldWriteResult.getError()));
+        }
+
+        String oldReadValue = oldReadResult.getValue().trim();
+        String oldWriteValue = oldWriteResult.getValue().trim();
+        SysfsResult<String> readWriteResult = AeroActivity.hardware.procfs()
+                .writeValue(readNode, readValue);
+        SysfsResult<String> readBack = AeroActivity.hardware.procfs().readValue(readNode);
+        if (!readBack.isSuccess() || !readValue.equals(readBack.getValue().trim())) {
+            restoreEntropyValues(readNode, writeNode, oldReadValue, oldWriteValue);
+            return OperationResult.failed("Entropy read threshold did not match the requested value");
+        }
+        if (!readWriteResult.isSuccess()) {
+            Log.w("Aero", "Entropy read threshold readback confirms the requested value despite "
+                    + "a write verification error: " + readWriteResult.getError());
+        }
+
+        SysfsResult<String> writeWriteResult = AeroActivity.hardware.procfs()
+                .writeValue(writeNode, writeValue);
+        SysfsResult<String> finalReadBack = AeroActivity.hardware.procfs().readValue(readNode);
+        SysfsResult<String> finalWriteBack = AeroActivity.hardware.procfs().readValue(writeNode);
+        if (!finalReadBack.isSuccess() || !finalWriteBack.isSuccess()
+                || !readValue.equals(finalReadBack.getValue().trim())
+                || !writeValue.equals(finalWriteBack.getValue().trim())) {
+            restoreEntropyValues(readNode, writeNode, oldReadValue, oldWriteValue);
+            return OperationResult.failed("Entropy thresholds did not match the requested values");
+        }
+        if (!writeWriteResult.isSuccess()) {
+            Log.w("Aero", "Entropy write threshold readback confirms the requested value despite "
+                    + "a write verification error: " + writeWriteResult.getError());
+        }
+        return OperationResult.ok();
+    }
+
+    private void restoreEntropyValues(ProcfsNode readNode, ProcfsNode writeNode,
+            String readValue, String writeValue) {
+        SysfsResult<String> readRestore = AeroActivity.hardware.procfs()
+                .writeValue(readNode, readValue);
+        SysfsResult<String> writeRestore = AeroActivity.hardware.procfs()
+                .writeValue(writeNode, writeValue);
+        SysfsResult<String> readBack = AeroActivity.hardware.procfs().readValue(readNode);
+        SysfsResult<String> writeBack = AeroActivity.hardware.procfs().readValue(writeNode);
+        if (!readRestore.isSuccess() || !writeRestore.isSuccess()
+                || !readBack.isSuccess() || !writeBack.isSuccess()
+                || !readValue.equals(readBack.getValue().trim())
+                || !writeValue.equals(writeBack.getValue().trim())) {
+            Log.e("Aero", "Unable to fully restore entropy thresholds after a failed update");
+        }
     }
 
     /**
@@ -665,7 +818,9 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                     HardwareServices.memoryMaintenance().readMountTable();
             if (!mountResult.isSuccess()) {
                 Log.e("MemoryFragment", mountResult.getError());
-                this.mFileSystem = "";
+                Toast.makeText(getActivity(), R.string.storage_operation_failed,
+                        Toast.LENGTH_LONG).show();
+                return;
             } else {
                 this.mFileSystem = mountResult.getValue();
             }
@@ -721,29 +876,35 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
             Runnable runnable = new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.5.1
                 @Override // java.lang.Runnable
                 public void run() {
-                    try {
-                        OperationResult remountResult = HardwareServices.memoryMaintenance()
-                                .remountSystemReadWrite();
-                        if (!remountResult.isSuccess()) {
-                            Log.e("MemoryFragment", "Unable to remount /system: "
-                                    + remountResult.getMessage());
-                        } else {
-                            String mountPoint = b.trim();
-                            OperationResult trimResult = HardwareServices.memoryMaintenance()
-                                    .trimFilesystem(mountPoint);
-                            if (!trimResult.isSuccess()) {
-                                Log.e("MemoryFragment", "Unable to trim " + mountPoint + ": "
-                                        + trimResult.getMessage());
-                            }
-                        }
-                        Thread.sleep(2000L);
-                    } catch (Exception e) {
-                        Log.e("Aero", "An error occurred while trimming.", e);
+                    String mountPoint = b.trim();
+                    OperationResult result = HardwareServices.memoryMaintenance()
+                            .remountSystemReadWrite();
+                    if (result.isSuccess()) {
+                        result = HardwareServices.memoryMaintenance()
+                                .trimFilesystem(mountPoint);
+                    }
+                    final OperationResult trimResult = result;
+                    if (!trimResult.isSuccess()) {
+                        Log.e("MemoryFragment", "Unable to trim " + mountPoint + ": "
+                                + trimResult.getMessage());
+                    }
+                    if (!MemoryFragment.this.isAdded()) {
+                        return;
                     }
                     MemoryFragment.this.getActivity().runOnUiThread(new Runnable() { // from class: com.aero.control.fragments.MemoryFragment.5.1.1
                         @Override // java.lang.Runnable
                         public void run() {
-                            AnonymousClass5.this.val$update.dismiss();
+                            if (!MemoryFragment.this.isAdded()) {
+                                return;
+                            }
+                            if (AnonymousClass5.this.val$update.isShowing()) {
+                                AnonymousClass5.this.val$update.dismiss();
+                            }
+                            if (!trimResult.isSuccess()) {
+                                Toast.makeText(MemoryFragment.this.getActivity(),
+                                        R.string.storage_operation_failed,
+                                        Toast.LENGTH_LONG).show();
+                            }
                         }
                     });
                 }

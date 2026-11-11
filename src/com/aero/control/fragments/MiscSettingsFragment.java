@@ -310,24 +310,57 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
             @Override // android.preference.Preference.OnPreferenceChangeListener
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String a = (String) o;
+                final String previousValue = tcpPreference.getValue();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        final SysfsResult<String> result =
+                        final SysfsResult<String> writeResult =
                                 AeroActivity.hardware.network().writeCongestionControl(a);
+                        final SysfsResult<String> readbackResult =
+                                AeroActivity.hardware.network().readCongestionControl();
                         if (!MiscSettingsFragment.this.isAdded()) {
                             return;
                         }
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (!result.isSuccess()) {
+                                if (!MiscSettingsFragment.this.isAdded()) {
+                                    return;
+                                }
+                                if (readbackResult.isSuccess()) {
+                                    tcpPreference.setValue(readbackResult.getValue());
+                                    tcpPreference.setSummary(readbackResult.getValue());
+                                } else if (previousValue != null) {
+                                    tcpPreference.setValue(previousValue);
+                                    tcpPreference.setSummary(previousValue);
+                                }
+                                if (!readbackResult.isSuccess()
+                                        || !a.equals(readbackResult.getValue())) {
                                     Log.e("Aero", "Failed to change TCP congestion control: "
-                                            + result.getError());
+                                            + (!readbackResult.isSuccess()
+                                            ? readbackResult.getError()
+                                            : "readback was " + readbackResult.getValue()));
                                     Toast.makeText(MiscSettingsFragment.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                     return;
                                 }
-                                tcpPreference.setSummary(result.getValue());
+                                if (!writeResult.isSuccess()) {
+                                    Log.w("Aero", "TCP congestion control readback confirms "
+                                            + "the requested value despite a write verification "
+                                            + "error: " + writeResult.getError());
+                                }
+                                if (tcpPreference.isChecked().booleanValue()) {
+                                    boolean saved = PreferenceManager
+                                            .getDefaultSharedPreferences(mContext).edit()
+                                            .putString(tcpPreference.getName(),
+                                                    readbackResult.getValue())
+                                            .commit();
+                                    if (!saved) {
+                                        Log.e("Aero", "Failed to save TCP congestion control");
+                                        Toast.makeText(MiscSettingsFragment.this.mContext,
+                                                R.string.storage_operation_failed,
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
                             }
                         });
                     }

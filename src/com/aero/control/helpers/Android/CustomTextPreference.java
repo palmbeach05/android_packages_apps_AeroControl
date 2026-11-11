@@ -201,6 +201,7 @@ public class CustomTextPreference extends EditTextPreference {
         if (this.mSummary != null) {
             this.mSummary.setText(summary);
         }
+        notifyChanged();
     }
 
     /**

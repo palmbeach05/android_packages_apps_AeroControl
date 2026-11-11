@@ -179,23 +179,56 @@ public class PreferenceHandler {
                     if (a.equals("")) {
                         return false;
                     }
+                    final String previousValue = prefload.getText();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            final SysfsResult<String> result = writeParameter(parameterPath, a);
+                            final SysfsResult<String> writeResult = writeParameter(parameterPath, a);
+                            final SysfsResult<String> readbackResult =
+                                    accessParameter(parameterPath, null, false);
                             if (PreferenceHandler.this.mContext == null) {
                                 return;
                             }
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (!result.isSuccess()) {
+                                    if (readbackResult.isSuccess()) {
+                                        String actualValue = readbackResult.getValue().trim();
+                                        prefload.setText(actualValue);
+                                        prefload.setPrefSummary(actualValue);
+                                    } else if (previousValue != null) {
+                                        prefload.setText(previousValue);
+                                        prefload.setPrefSummary(previousValue);
+                                    }
+                                    if (!readbackResult.isSuccess()
+                                            || !a.trim().equals(readbackResult.getValue().trim())) {
+                                        Log.e("Aero", "Dynamic parameter did not accept "
+                                                + parameterPath + ": "
+                                                + (!readbackResult.isSuccess()
+                                                ? readbackResult.getError()
+                                                : "readback was "
+                                                + readbackResult.getValue()));
                                         Toast.makeText(PreferenceHandler.this.mContext, R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
                                         return;
                                     }
-                                    prefload.setPrefSummary(a);
+                                    if (!writeResult.isSuccess()) {
+                                        Log.w("Aero", "Dynamic parameter readback confirms the "
+                                                + "requested value despite a write verification "
+                                                + "error for " + parameterPath + ": "
+                                                + writeResult.getError());
+                                    }
                                     if (prefload.isChecked().booleanValue()) {
-                                        PreferenceHandler.this.mPreferences.edit().putString(parameterPath, o.toString()).commit();
+                                        boolean saved = PreferenceHandler.this.mPreferences.edit()
+                                                .putString(parameterPath,
+                                                        readbackResult.getValue().trim())
+                                                .commit();
+                                        if (!saved) {
+                                            Log.e("Aero", "Failed to save dynamic parameter "
+                                                    + parameterPath);
+                                            Toast.makeText(PreferenceHandler.this.mContext,
+                                                    R.string.storage_operation_failed,
+                                                    Toast.LENGTH_LONG).show();
+                                        }
                                     }
                                     if (flag) {
                                         PreferenceHandler.this.forceVibration();

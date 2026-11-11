@@ -206,15 +206,7 @@ public class CustomPreference extends Preference {
      */
     public void setClicked(Boolean checked) {
         this.mClicked = checked;
-        if (this.mSummary != null) {
-            if (this.mClicked.booleanValue()) {
-                this.mSummary.setText(R.string.enabled);
-                setSummary(R.string.enabled);
-            } else {
-                this.mSummary.setText(R.string.disabled);
-                setSummary(R.string.disabled);
-            }
-        }
+        setSummary(this.mClicked.booleanValue() ? R.string.enabled : R.string.disabled);
     }
 
     /**
