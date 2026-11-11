@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Applies system tuning settings from preferences to kernel sysfs interfaces. Handles
@@ -59,6 +61,8 @@ public class settingsHelper {
             HardwareServices.hardware();
     private static final ArrayList<HardwareRollback> defaultHardwareProfile = new ArrayList<>();
     private static final GenericHelper genHelper = new GenericHelper();
+    private static final ExecutorService PROFILE_EXECUTOR =
+            Executors.newSingleThreadExecutor();
 
     private interface HardwareAction {
         SysfsResult<?> apply();
@@ -79,43 +83,116 @@ public class settingsHelper {
         }
     }
 
+    private static final class ProfileRequest {
+        private final String profile;
+        private final SharedPreferences preferences;
+        private final boolean onBoot;
+
+        private ProfileRequest(String profile, SharedPreferences preferences, boolean onBoot) {
+            this.profile = profile;
+            this.preferences = preferences;
+            this.onBoot = onBoot;
+        }
+    }
+
     /**
-     * Applies system settings from the specified profile in a background thread. Optionally
-     * shows a toast notification when complete if running at boot time.
+     * Queues system settings from the specified profile on the shared profile worker.
+     * Optionally shows a toast notification when complete if running at boot time.
      *
      * @param context the context
      * @param Profile the profile name to load settings from, or null for default preferences
      * @param onboot whether this is being called during system boot
      */
     public void setSettings(final Context context, final String Profile, final boolean onboot) {
-        new Thread(new Runnable() { // from class: com.aero.control.helpers.settingsHelper.1
+        final Context applicationContext = applicationContext(context);
+        final ProfileRequest request = createProfileRequest(
+                applicationContext, Profile, onboot);
+        enqueueProfileOperation(new Runnable() {
             @Override // java.lang.Runnable
             public void run() {
-                SysfsResult<Boolean> overclockInitialization =
-                        hardware.legacyOverclock().initialize();
-                if (overclockInitialization.isSuccess()) {
-                    try {
-                        Thread.sleep(2000L);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        Log.e("Aero", "Something went really wrong...", e);
-                    }
-                } else {
-                    Log.i("Aero", "Legacy overclock initialization unavailable: "
-                            + overclockInitialization.getError());
-                }
-                settingsHelper.this.doBackground(context, Profile, onboot);
-                if (onboot) {
-                    Handler h = new Handler(context.getMainLooper());
-                    h.post(new Runnable() { // from class: com.aero.control.helpers.settingsHelper.1.1
-                        @Override // java.lang.Runnable
-                        public void run() {
-                            Toast.makeText(context, ((Object) context.getText(R.string.app_name)) + ": " + ((Object) context.getText(R.string.pref_finishing_settings)), 1).show();
-                        }
-                    });
+                applyProfileRequest(applicationContext, request);
+            }
+        });
+    }
+
+    /**
+     * Restores the previous per-app settings and applies the selected profiles as one
+     * serialized transition. An empty profile list only restores the previous settings.
+     */
+    public void transitionToProfiles(final Context context, List<String> profiles) {
+        if (profiles == null) {
+            throw new IllegalArgumentException("Profile list is required");
+        }
+        final Context applicationContext = applicationContext(context);
+        final ArrayList<ProfileRequest> requests = new ArrayList<>();
+        for (String profile : profiles) {
+            if (profile == null) {
+                throw new IllegalArgumentException("Profile name is required");
+            }
+            requests.add(createProfileRequest(applicationContext, profile, false));
+        }
+        enqueueProfileOperation(new Runnable() {
+            @Override
+            public void run() {
+                restoreHardwareProfile();
+                for (ProfileRequest request : requests) {
+                    applyProfileRequest(applicationContext, request);
                 }
             }
-        }).start();
+        });
+    }
+
+    private Context applicationContext(Context context) {
+        Context applicationContext = context.getApplicationContext();
+        return applicationContext == null ? context : applicationContext;
+    }
+
+    private ProfileRequest createProfileRequest(Context context, String profile, boolean onBoot) {
+        SharedPreferences profilePreferences = profile == null
+                ? PreferenceManager.getDefaultSharedPreferences(context)
+                : context.getSharedPreferences(profile, 0);
+        return new ProfileRequest(profile, profilePreferences, onBoot);
+    }
+
+    private void applyProfileRequest(final Context context, ProfileRequest request) {
+        SysfsResult<Boolean> overclockInitialization =
+                hardware.legacyOverclock().initialize();
+        if (overclockInitialization.isSuccess()) {
+            try {
+                Thread.sleep(2000L);
+            } catch (InterruptedException e) {
+                Log.e("Aero", "Interrupted while initializing legacy overclock support", e);
+                return;
+            }
+        } else {
+            Log.i("Aero", "Legacy overclock initialization unavailable: "
+                    + overclockInitialization.getError());
+        }
+        doBackground(context, request.profile, request.preferences, request.onBoot);
+        if (request.onBoot) {
+            Handler h = new Handler(context.getMainLooper());
+            h.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(context, ((Object) context.getText(R.string.app_name)) + ": "
+                            + ((Object) context.getText(R.string.pref_finishing_settings)), 1)
+                            .show();
+                }
+            });
+        }
+    }
+
+    private static void enqueueProfileOperation(final Runnable operation) {
+        PROFILE_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    operation.run();
+                } catch (RuntimeException e) {
+                    Log.e("Aero", "Profile settings operation failed", e);
+                }
+            }
+        });
     }
 
     /**
@@ -128,12 +205,9 @@ public class settingsHelper {
      * @param Profile the profile name to load settings from, or null to use default preferences
      * @param onboot whether this is being called during system boot
      */
-    public void doBackground(final Context context, String Profile, boolean onboot) {
-        if (Profile == null) {
-            this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        } else {
-            this.prefs = context.getSharedPreferences(Profile, 0);
-        }
+    private void doBackground(final Context context, String Profile,
+            SharedPreferences profilePreferences, boolean onboot) {
+        this.prefs = profilePreferences;
         this.mMiscSettings = context.getSharedPreferences(MISC_SETTINGS_STORAGE, 0);
         if (onboot) {
             String timer_delay = this.prefs.getString(PREF_TIMER_DELAY, null);
@@ -341,10 +415,19 @@ public class settingsHelper {
     }
 
     /**
-     * Executes the rollback profile to restore default system settings that were saved
-     * before applying a custom profile. Clears the rollback queue after execution.
+     * Queues rollback of the default settings captured before applying a custom profile.
+     * This method returns immediately; rollback is performed on the shared profile worker.
      */
     public void executeDefault() {
+        enqueueProfileOperation(new Runnable() {
+            @Override
+            public void run() {
+                restoreHardwareProfile();
+            }
+        });
+    }
+
+    private void restoreHardwareProfile() {
         for (int i = defaultHardwareProfile.size() - 1; i >= 0; i--) {
             HardwareRollback rollback = defaultHardwareProfile.get(i);
             SysfsResult<?> rollbackResult = rollback.action.apply();

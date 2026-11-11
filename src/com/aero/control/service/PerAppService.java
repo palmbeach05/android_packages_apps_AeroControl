@@ -24,6 +24,7 @@ import com.aero.control.helpers.PerApp.AppMonitor.AppContext;
 import com.aero.control.helpers.PerApp.AppMonitor.AppLogger;
 import com.aero.control.helpers.PerApp.AppMonitor.JobManager;
 import com.aero.control.helpers.settingsHelper;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -178,14 +179,15 @@ public final class PerAppService extends Service {
             AeroActivity.mJobManager = mJobManager;
         }
         if (isScreenOn() && mPreviousApp != null && mCurrentApp != null && !mPreviousApp.equals(mCurrentApp)) {
+            boolean transitionRequired = this.mActive;
             if (this.mActive) {
                 if (this.mShowToasts) {
                     Toast.makeText(this.mContext, this.mContext.getText(R.string.return_to_normal), 1).show();
                 }
                 this.mActive = false;
                 this.mProfile = null;
-                settingsHelper.executeDefault();
             }
+            ArrayList<String> profilesToApply = new ArrayList<>();
             Map<String, ?> keys = this.mPerAppPrefs.getAll();
             for (Map.Entry<String, ?> entry : keys.entrySet()) {
                 String savedSelectedProfiles = this.mPerAppPrefs.getString(entry.getKey(), null);
@@ -198,12 +200,16 @@ public final class PerAppService extends Service {
                                 Toast.makeText(this.mContext, ((Object) this.mContext.getText(R.string.apply_profile)) + " " + this.mProfile, 1).show();
                             }
                             this.mActive = true;
-                            settingsHelper.setSettings(this.mContext, this.mProfile, false);
+                            profilesToApply.add(this.mProfile);
+                            transitionRequired = true;
                         }
                     }
                 } else {
-                    return;
+                    break;
                 }
+            }
+            if (transitionRequired) {
+                settingsHelper.transitionToProfiles(this.mContext, profilesToApply);
             }
         }
     }
