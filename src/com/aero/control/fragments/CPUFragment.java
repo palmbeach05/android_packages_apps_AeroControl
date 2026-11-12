@@ -1132,23 +1132,26 @@ public class CPUFragment extends PlaceHolderFragment {
             String maxPath = getCpuFrequencyPathsForCluster(cluster)[2];
             String minValue = firstFrequencyValue(values.get(minPath));
             String maxValue = firstFrequencyValue(values.get(maxPath));
-            String[] entryValues = CpuController.includeConfiguredFrequencies(
+            String[] minEntryValues = CpuController.includeConfiguredFrequencies(
                     splitFrequencyValues(values.get(availablePath), false),
-                    minValue, maxValue);
-            if (entryValues.length == 0) {
-                entryValues = new String[] {NO_DATA_FOUND};
+                    minValue);
+            String[] maxEntryValues = CpuController.includeConfiguredFrequencies(
+                    splitFrequencyValues(values.get(availablePath), false),
+                    maxValue);
+            if (minEntryValues.length == 0) {
+                minEntryValues = new String[] {NO_DATA_FOUND};
             }
-            String[] entries = new String[entryValues.length];
-            for (int j = 0; j < entryValues.length; j++) {
-                entries[j] = NO_DATA_FOUND.equals(entryValues[j])
-                        ? NO_DATA_FOUND : FrequencyFormat.toMHz(entryValues[j]);
+            if (maxEntryValues.length == 0) {
+                maxEntryValues = new String[] {NO_DATA_FOUND};
             }
+            String[] minEntries = formatFrequencyEntries(minEntryValues);
+            String[] maxEntries = formatFrequencyEntries(maxEntryValues);
 
             synchronized (this.mPreferenceLock) {
-                cluster.minFrequency.setEntries(entries);
-                cluster.minFrequency.setEntryValues(entryValues);
-                cluster.maxFrequency.setEntries(entries);
-                cluster.maxFrequency.setEntryValues(entryValues);
+                cluster.minFrequency.setEntries(minEntries);
+                cluster.minFrequency.setEntryValues(minEntryValues);
+                cluster.maxFrequency.setEntries(maxEntries);
+                cluster.maxFrequency.setEntryValues(maxEntryValues);
                 if (minValue != null) {
                     cluster.minFrequency.setValue(minValue);
                     cluster.minFrequency.setSummary(FrequencyFormat.toMHz(minValue));
@@ -1169,6 +1172,15 @@ public class CPUFragment extends PlaceHolderFragment {
                 }
             }
         }
+    }
+
+    private String[] formatFrequencyEntries(String[] frequencies) {
+        String[] entries = new String[frequencies.length];
+        for (int i = 0; i < frequencies.length; i++) {
+            entries[i] = NO_DATA_FOUND.equals(frequencies[i])
+                    ? NO_DATA_FOUND : FrequencyFormat.toMHz(frequencies[i]);
+        }
+        return entries;
     }
 
     private String[] getCpuFrequencyPathsForCluster(ClusterControls controls) {

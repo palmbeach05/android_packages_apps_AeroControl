@@ -14,6 +14,16 @@ public class CpuControllerTest {
     }
 
     @Test
+    public void includesOnlyTheMatchingConfiguredEndpointForEachControl() {
+        String[] available = {"1800000", "1200000"};
+
+        assertArrayEquals(new String[] {"1800000", "1200000", "300000"},
+                CpuController.includeConfiguredFrequencies(available, "300000"));
+        assertArrayEquals(new String[] {"1800000", "1200000", "900000"},
+                CpuController.includeConfiguredFrequencies(available, "900000"));
+    }
+
+    @Test
     public void ignoresInvalidConfiguredFrequencies() {
         assertArrayEquals(new String[] {"1200000"},
                 CpuController.includeConfiguredFrequencies(
