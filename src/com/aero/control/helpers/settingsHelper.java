@@ -107,12 +107,53 @@ public class settingsHelper {
         final Context applicationContext = applicationContext(context);
         final ProfileRequest request = createProfileRequest(
                 applicationContext, Profile, onboot);
-        enqueueProfileOperation(new Runnable() {
+        final Runnable applyRequest = new Runnable() {
             @Override // java.lang.Runnable
             public void run() {
                 applyProfileRequest(applicationContext, request);
             }
-        });
+        };
+        if (!request.onBoot) {
+            enqueueProfileOperation(applyRequest);
+            return;
+        }
+
+        final long bootDelayMillis = getBootDelayMillis(request.preferences);
+        Thread delayThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (bootDelayMillis > 0) {
+                    try {
+                        Thread.sleep(bootDelayMillis);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        Log.w("Aero", "Boot delay interrupted; queuing profile settings");
+                    }
+                }
+                enqueueProfileOperation(applyRequest);
+            }
+        }, "Aero-Boot-Delay");
+        delayThread.start();
+    }
+
+    private long getBootDelayMillis(SharedPreferences preferences) {
+        String delay = preferences.getString(PREF_TIMER_DELAY, null);
+        if (delay == null) {
+            return 0L;
+        }
+        try {
+            long minutes = Long.parseLong(delay);
+            if (minutes <= 0L) {
+                return 0L;
+            }
+            if (minutes > Long.MAX_VALUE / (60L * 1000L)) {
+                return Long.MAX_VALUE;
+            }
+            return minutes * 60L * 1000L;
+        } catch (NumberFormatException e) {
+            Log.w("Aero", "Ignoring invalid boot delay: " + delay, e);
+            return 0L;
+        }
     }
 
     /**
@@ -210,18 +251,6 @@ public class settingsHelper {
         this.prefs = profilePreferences;
         this.mMiscSettings = context.getSharedPreferences(MISC_SETTINGS_STORAGE, 0);
         if (onboot) {
-            String timer_delay = this.prefs.getString(PREF_TIMER_DELAY, null);
-            if (timer_delay != null) {
-                int i = 0;
-                try {
-                    i = Integer.parseInt(timer_delay);
-                } catch (NumberFormatException e) {
-                }
-                try {
-                    Thread.sleep(i * 1000 * 60);
-                } catch (InterruptedException e2) {
-                }
-            }
             Handler h = new Handler(context.getMainLooper());
             h.post(new Runnable() { // from class: com.aero.control.helpers.settingsHelper.2
                 @Override // java.lang.Runnable

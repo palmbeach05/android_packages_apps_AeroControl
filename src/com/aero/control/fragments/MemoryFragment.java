@@ -423,7 +423,6 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
     private boolean applyToggle(final CustomPreference preference, final String path) {
         final boolean previous = preference.isClicked().booleanValue();
         final boolean requested = !previous;
-        final boolean shouldPersist = preference.isChecked().booleanValue();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -464,7 +463,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                                     + "despite a write verification error for " + path + ": "
                                     + writeResult.getError());
                         }
-                        if (shouldPersist) {
+                        if (preference.isChecked().booleanValue()) {
                             SharedPreferences sharedPrefs = PreferenceManager
                                     .getDefaultSharedPreferences(getActivity());
                             boolean saved = sharedPrefs.edit()
@@ -692,8 +691,6 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                         Integer.MAX_VALUE);
                 final ProcfsNode writeNode = new ProcfsNode(FilePath.RANDOM_WRITE_WAKEUP, 0,
                         Integer.MAX_VALUE);
-                final boolean shouldPersist = MemoryFragment.this.mRandomSettings
-                        .isChecked().booleanValue();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -716,7 +713,7 @@ public class MemoryFragment extends PlaceHolderFragment implements Preference.On
                                             Toast.LENGTH_LONG).show();
                                     return;
                                 }
-                                if (shouldPersist) {
+                                if (mRandomSettings.isChecked().booleanValue()) {
                                     SharedPreferences preference = PreferenceManager
                                             .getDefaultSharedPreferences(getActivity());
                                     boolean saved = preference.edit()

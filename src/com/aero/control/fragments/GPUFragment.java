@@ -696,7 +696,6 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private boolean applyToggle(final CustomPreference preference, final GpuController.Toggle toggle) {
         final boolean previous = preference.isClicked().booleanValue();
         final boolean requested = !previous;
-        final boolean shouldPersist = preference.isChecked().booleanValue();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -732,7 +731,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                                     + "despite a write verification error for " + toggle + ": "
                                     + writeResult.getError());
                         }
-                        if (shouldPersist) {
+                        if (preference.isChecked().booleanValue()) {
                             boolean saved = PreferenceManager.getDefaultSharedPreferences(
                                     getActivity()).edit()
                                     .putString(preference.getName(),
