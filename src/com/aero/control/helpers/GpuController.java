@@ -6,6 +6,9 @@ import java.util.Arrays;
 public final class GpuController {
     private static final String AVAILABLE_GOVERNORS = "available_governors";
     private static final String GOVERNOR = "governor";
+    private static final String[] FALLBACK_FREQUENCIES = {
+        "100000000", "133333333", "160000000", "200000000", "266666666"
+    };
 
     public enum Toggle {
         CONTROL(FilePath.GPU_CONTROL_ACTIVE),
@@ -59,14 +62,15 @@ public final class GpuController {
      */
     public SysfsResult<String> writeMaxFrequency(String value) {
         SysfsResult<String[]> available = readAvailableFrequencies(ReadMode.RAW);
-        if (!available.isSuccess()) return SysfsResult.failure(available.getError());
-        if (!contains(available.getValue(), value)) {
+        String[] supportedFrequencies = available.isSuccess()
+                ? available.getValue() : FALLBACK_FREQUENCIES;
+        if (!contains(supportedFrequencies, value)) {
             return SysfsResult.failure("Frequency is not supported by the GPU");
         }
         SysfsResult<SysfsNode> node = findNode(FilePath.GPU_FILES, "GPU maximum frequency");
         if (!node.isSuccess()) return SysfsResult.failure(node.getError());
         return repository.writeValue(new SysfsNode(node.getValue().getPath(),
-                Arrays.asList(available.getValue())), value);
+                Arrays.asList(supportedFrequencies)), value);
     }
 
     /**
@@ -160,8 +164,8 @@ public final class GpuController {
         if (toggle == null) return SysfsResult.failure("Toggle is required");
         SysfsResult<String> result = repository.readValue(new SysfsNode(toggle.path));
         if (!result.isSuccess()) return SysfsResult.failure(result.getError());
-        if ("1".equals(result.getValue())) return SysfsResult.success(true);
-        if ("0".equals(result.getValue())) return SysfsResult.success(false);
+        Boolean enabled = parseToggleState(result.getValue());
+        if (enabled != null) return SysfsResult.success(enabled);
         return SysfsResult.failure("Unexpected state for " + toggle.name());
     }
 
@@ -169,9 +173,32 @@ public final class GpuController {
     public SysfsResult<Boolean> writeToggle(Toggle toggle, boolean enabled) {
         if (toggle == null) return SysfsResult.failure("Toggle is required");
         SysfsResult<String> result = repository.writeValue(
-                new SysfsNode(toggle.path, 0, 1), enabled ? "1" : "0");
+                new SysfsNode(toggle.path, 0, 1), enabled ? "1" : "0",
+                new SysfsRepository.ReadbackVerifier() {
+                    @Override
+                    public boolean matches(String requestedValue, String readback) {
+                        Boolean requested = parseToggleState(requestedValue);
+                        Boolean actual = parseToggleState(readback);
+                        return requested != null && requested.equals(actual);
+                    }
+                });
         return result.isSuccess() ? SysfsResult.success(enabled)
                 : SysfsResult.<Boolean>failure(result.getError());
+    }
+
+    static Boolean parseToggleState(String value) {
+        String normalized = value.trim();
+        if ("1".equals(normalized) || "Y".equalsIgnoreCase(normalized)
+                || "yes".equalsIgnoreCase(normalized)
+                || "true".equalsIgnoreCase(normalized)) {
+            return Boolean.TRUE;
+        }
+        if ("0".equals(normalized) || "N".equalsIgnoreCase(normalized)
+                || "no".equalsIgnoreCase(normalized)
+                || "false".equalsIgnoreCase(normalized)) {
+            return Boolean.FALSE;
+        }
+        return null;
     }
 
     /** Writes and verifies one of the supported display modes. */

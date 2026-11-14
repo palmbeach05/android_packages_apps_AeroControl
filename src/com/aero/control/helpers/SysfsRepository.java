@@ -112,13 +112,35 @@ public final class SysfsRepository {
         }
 
         String path = RootShellSession.escapeShellArg(node.getPath());
-        String command = "printf %s "
+        String command = "(printf '%s\\n' "
                 + RootShellSession.escapeShellArg(normalizedValue) + " > " + path
-                + " && cat " + path;
-        String readback = session.execute(command);
-        if (readback == null || !verifier.matches(normalizedValue, readback)) {
-            return SysfsResult.failure("Write verification failed for " + node.getPath());
+                + " && cat " + path + ") 2>&1";
+        String immediateReadback = session.execute(command);
+        if (immediateReadback != null
+                && verifier.matches(normalizedValue, immediateReadback)) {
+            return SysfsResult.success(immediateReadback.trim());
         }
-        return SysfsResult.success(readback.trim());
+
+        SysfsResult<String> readbackResult = readValue(node);
+        if (!readbackResult.isSuccess()) {
+            String error = "Unable to verify write to " + node.getPath() + ": "
+                    + readbackResult.getError();
+            if (immediateReadback != null && immediateReadback.length() > 0) {
+                error += "; immediate readback was '" + immediateReadback.trim() + "'";
+            }
+            return SysfsResult.failure(error);
+        }
+        String readback = readbackResult.getValue();
+        if (verifier.matches(normalizedValue, readback)) {
+            return SysfsResult.success(readback);
+        }
+
+        String error = "Write verification failed for " + node.getPath()
+                + ": requested '" + normalizedValue + "' but read back '"
+                + readback + "'";
+        error += "; immediate command output was "
+                + (immediateReadback == null ? "<unavailable>"
+                        : "'" + immediateReadback.trim() + "'");
+        return SysfsResult.failure(error);
     }
 }

@@ -108,9 +108,34 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    private static final class GovernorInitialState {
+        private final ClusterControls controls;
+        private final SysfsResult<String[]> available;
+        private final SysfsResult<String> current;
+
+        private GovernorInitialState(ClusterControls controls, SysfsResult<String[]> available,
+                SysfsResult<String> current) {
+            this.controls = controls;
+            this.available = available;
+            this.current = current;
+        }
+    }
+
+    private static final class CpuInitialState {
+        private final List<GovernorInitialState> governors;
+        private final SysfsResult<int[]> voltageSelections;
+
+        private CpuInitialState(List<GovernorInitialState> governors,
+                SysfsResult<int[]> voltageSelections) {
+            this.governors = governors;
+            this.voltageSelections = voltageSelections;
+        }
+    }
+
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final int lifecycleGeneration = this.mLifecycleGeneration.get();
         setHasOptionsMenu(true);
         addPreferencesFromResource(R.layout.cpu_fragment);
         this.root = getPreferenceScreen();
@@ -148,18 +173,12 @@ public class CPUFragment extends PlaceHolderFragment {
             CharSequence governorTitle = singleCluster ? getString(R.string.pref_cpu_governor) : getString(R.string.pref_cpu_governor_cluster, cpuRange);
             governor.setTitle(governorTitle);
             governor.setDialogTitle(governorTitle);
-            SysfsResult<String[]> governorCapabilities =
-                    AeroActivity.hardware.cpu().readAvailableGovernors(cluster);
-            String[] availableGovernors = governorCapabilities.isSuccess()
-                    ? governorCapabilities.getValue() : new String[] {NO_DATA_FOUND};
+            String[] availableGovernors = new String[] {NO_DATA_FOUND};
             governor.setEntries(availableGovernors);
             governor.setEntryValues(availableGovernors);
-            SysfsResult<String> governorResult =
-                    AeroActivity.hardware.cpu().readGovernor(cluster);
-            String currentGovernor = governorResult.isSuccess()
-                    ? governorResult.getValue() : NO_DATA_FOUND;
-            governor.setValue(currentGovernor);
-            governor.setSummary(currentGovernor);
+            governor.setValue(NO_DATA_FOUND);
+            governor.setSummary(NO_DATA_FOUND);
+            governor.setEnabled(false);
             governor.setDialogIcon(R.drawable.cpu);
             governor.setOrder(i);
             cpuGovernor.addPreference(governor);
@@ -190,6 +209,7 @@ public class CPUFragment extends PlaceHolderFragment {
             }
         }
         refreshCpuFrequencies();
+        loadInitialCpuSettings(cpuCategory, lifecycleGeneration);
         String[] arr$ = FilePath.HOTPLUG_PATH;
         for (String s : arr$) {
             if (AeroActivity.genHelper.doesExist(s)) {
@@ -284,137 +304,238 @@ public class CPUFragment extends PlaceHolderFragment {
             cpuCategory.removePreference(cpu_boost_control);
         }
         Preference cpu_oc_uc = this.root.findPreference("cpu_commands");
-        SysfsResult<int[]> overclockVoltages =
-                AeroActivity.hardware.legacyOverclock().readVoltageSelections();
-        if (!overclockVoltages.isSuccess()) {
-            cpuCategory.removePreference(cpu_oc_uc);
-        } else {
-            cpu_oc_uc.setOrder(20);
-        }
-        cpu_oc_uc.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.CPUFragment.4
+        cpu_oc_uc.setEnabled(false);
+        cpu_oc_uc.setOrder(20);
+        cpu_oc_uc.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override // android.preference.Preference.OnPreferenceClickListener
             public boolean onPreferenceClick(Preference preference) {
-                SysfsResult<int[]> voltageSelections =
-                        AeroActivity.hardware.legacyOverclock().readVoltageSelections();
-                SysfsResult<String[]> availableFrequencies =
-                        AeroActivity.hardware.cpu().readAvailableFrequencies(0, ReadMode.RAW);
-                if (!availableFrequencies.isSuccess()) {
-                    Log.e("Aero", "Unable to read CPU frequencies for legacy overclock: "
-                            + availableFrequencies.getError());
-                    return false;
-                }
-                CharSequence[] cpufreq = availableFrequencies.getValue();
-                if (!voltageSelections.isSuccess()
-                        || voltageSelections.getValue().length != cpufreq.length) {
-                    Log.e("Aero", "Unable to load legacy overclock table: "
-                            + (voltageSelections.isSuccess()
-                                    ? "frequency and voltage table sizes do not match"
-                                    : voltageSelections.getError()));
-                    return false;
-                }
-                final int[] currentVoltages = voltageSelections.getValue();
-                AlertDialog.Builder builder = new AlertDialog.Builder(CPUFragment.this.getActivity());
-                LayoutInflater inflater = CPUFragment.this.getActivity().getLayoutInflater();
-                View layout = inflater.inflate(R.layout.cpu_oc_uc, (ViewGroup) null);
-                final ViewGroup viewGroup = (ViewGroup) layout.findViewById(R.id.cpu_container);
-                int i = 0;
-                for (CharSequence a : cpufreq) {
-                    for (int j = 0; j < 2; j++) {
-                        CustomEditText cpuValues = new CustomEditText(CPUFragment.this.getActivity());
-                        if (j != 0) {
-                            cpuValues.setText(Integer.toString(currentVoltages[i]));
-                        } else {
-                            cpuValues.setText(a);
-                        }
-                        viewGroup.addView(cpuValues);
-                        ViewGroup.MarginLayoutParams cpuMargins = new ViewGroup.MarginLayoutParams(cpuValues.getLayoutParams());
-                        cpuMargins.setMargins(0, i * 75, j * 30, 0);
-                        RelativeLayout.LayoutParams cpuLayout = new RelativeLayout.LayoutParams(cpuMargins);
-                        if (j > 0) {
-                            cpuLayout.addRule(11);
-                            cpuLayout.width = 100;
-                        } else {
-                            cpuLayout.width = 200;
-                        }
-                        cpuValues.setLayoutParams(cpuLayout);
-                    }
-                    i++;
-                }
-                builder.setIcon(R.drawable.calculator);
-                builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.CPUFragment.4.1
-                    @Override // android.content.DialogInterface.OnClickListener
-                    public void onClick(DialogInterface dialogInterface, int i2) {
-                        ArrayList<Integer> cpuFreqs = new ArrayList<>();
-                        ArrayList<Integer> vselValues = new ArrayList<>();
-                        int t = viewGroup.getChildCount();
-                        for (int l = 0; l < t; l++) {
-                            CustomEditText editText = (CustomEditText) viewGroup.getChildAt(l);
-                            try {
-                                int tmp = Integer.parseInt(editText.getText().toString());
-                                if (l % 2 > 0) {
-                                    if (l > 1 && vselValues.get(vselValues.size() - 1).intValue() < tmp && tmp > 15 && tmp < 80) {
-                                        Log.e("Aero", "Invalid input: " + tmp + " Last input: " + vselValues.get(vselValues.size() - 1));
-                                        return;
-                                    }
-                                    vselValues.add(Integer.valueOf(tmp));
-                                } else {
-                                    if (l > 1 && cpuFreqs.get(cpuFreqs.size() - 1).intValue() < tmp && tmp > 1500000 && tmp > 300000) {
-                                        Log.e("Aero", "Invalid input: " + tmp + " Last input: " + cpuFreqs.get(cpuFreqs.size() - 1));
-                                        return;
-                                    }
-                                    cpuFreqs.add(Integer.valueOf(tmp));
-                                }
-                            } catch (NumberFormatException e) {
-                                Log.e("Aero", "An Error occured! ", e);
-                                return;
-                            }
-                        }
-                        Integer[] newFrequencies = (Integer[]) cpuFreqs.toArray(new Integer[0]);
-                        int[] frequencyValues = new int[newFrequencies.length];
-                        int[] voltageValues = new int[vselValues.size()];
-                        for (int j = 0; j < newFrequencies.length; j++) {
-                            frequencyValues[j] = newFrequencies[j];
-                            voltageValues[j] = vselValues.get(j);
-                        }
-                        SysfsResult<Boolean> writeResult = AeroActivity.hardware.legacyOverclock()
-                                .writeFrequencyTable(frequencyValues, voltageValues);
-                        if (!writeResult.isSuccess()) {
-                            Log.e("Aero", "Failed to apply legacy overclock table: "
-                                    + writeResult.getError());
-                            CPUFragment.this.refreshCpuFrequencies();
-                            Toast.makeText(CPUFragment.this.getActivity(),
-                                    R.string.hardware_operation_failed,
-                                    Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        SharedPreferences preference2 = PreferenceManager.getDefaultSharedPreferences(CPUFragment.this.getActivity().getBaseContext());
-                        boolean saved = preference2.edit()
-                                .putString(LegacyOverclockController.PREF_FREQUENCIES,
-                                        serializeIntegers(frequencyValues))
-                                .putString(LegacyOverclockController.PREF_VOLTAGES,
-                                        serializeIntegers(voltageValues))
-                                .remove("cpu_commands")
-                                .commit();
-                        if (!saved) {
-                            Log.e("Aero", "Failed to save the legacy overclock table");
-                        }
-                        CPUFragment.this.mWantsMetricsPolling = true;
-                        CPUFragment.this.refreshCpuFrequencies();
-                        CPUFragment.this.startMetricsPolling();
-                    }
-                });
-                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.CPUFragment.4.2
-                    @Override // android.content.DialogInterface.OnClickListener
-                    public void onClick(DialogInterface dialogInterface, int i2) {
-                    }
-                });
-                builder.setView(layout).setTitle(R.string.perf_live_oc_uc).show();
-                return false;
+                loadLegacyOverclockDialog();
+                return true;
             }
         });
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
         }
+    }
+
+    private void loadInitialCpuSettings(final PreferenceCategory cpuCategory,
+            final int lifecycleGeneration) {
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
+            @Override
+            public void run() {
+                final List<GovernorInitialState> governors = new ArrayList<>();
+                for (ClusterControls controls : mClusterControls) {
+                    SysfsResult<String[]> available = AeroActivity.hardware.cpu()
+                            .readAvailableGovernors(controls.cluster);
+                    SysfsResult<String> current = AeroActivity.hardware.cpu()
+                            .readGovernor(controls.cluster);
+                    governors.add(new GovernorInitialState(controls, available, current));
+                }
+                final CpuInitialState state = new CpuInitialState(governors,
+                        AeroActivity.hardware.legacyOverclock().readVoltageSelections());
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()
+                                || lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        for (GovernorInitialState governor : state.governors) {
+                            if (!governor.available.isSuccess()
+                                    || !governor.current.isSuccess()) {
+                                Log.w("Aero", "Unable to initialize CPU governor for cluster "
+                                        + governor.controls.index + ": "
+                                        + (!governor.available.isSuccess()
+                                        ? governor.available.getError()
+                                        : governor.current.getError()));
+                                continue;
+                            }
+                            String[] availableValues = governor.available.getValue();
+                            if (availableValues.length == 0) {
+                                Log.w("Aero", "No CPU governors available for cluster "
+                                        + governor.controls.index);
+                                continue;
+                            }
+                            governor.controls.governor.setEntries(availableValues);
+                            governor.controls.governor.setEntryValues(availableValues);
+                            governor.controls.governor.setValue(governor.current.getValue());
+                            governor.controls.governor.setSummary(governor.current.getValue());
+                            governor.controls.governor.setEnabled(
+                                    governor.controls.index == 0
+                                            || !isApplyToAllClustersEnabled());
+                        }
+                        Preference legacyControl = root.findPreference("cpu_commands");
+                        if (state.voltageSelections.isSuccess()) {
+                            legacyControl.setEnabled(true);
+                        } else {
+                            cpuCategory.removePreference(legacyControl);
+                            Log.i("Aero", "Legacy overclock controls unavailable: "
+                                    + state.voltageSelections.getError());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void loadLegacyOverclockDialog() {
+        final int lifecycleGeneration = this.mLifecycleGeneration.get();
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
+            @Override
+            public void run() {
+                final SysfsResult<int[]> voltageSelections =
+                        AeroActivity.hardware.legacyOverclock().readVoltageSelections();
+                final SysfsResult<String[]> availableFrequencies =
+                        AeroActivity.hardware.cpu().readAvailableFrequencies(0, ReadMode.RAW);
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()
+                                || lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        if (!availableFrequencies.isSuccess()) {
+                            Log.e("Aero", "Unable to read CPU frequencies for legacy overclock: "
+                                    + availableFrequencies.getError());
+                            Toast.makeText(getActivity(), R.string.hardware_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        String[] frequencies = availableFrequencies.getValue();
+                        if (!voltageSelections.isSuccess()
+                                || voltageSelections.getValue().length != frequencies.length) {
+                            Log.e("Aero", "Unable to load legacy overclock table: "
+                                    + (voltageSelections.isSuccess()
+                                    ? "frequency and voltage table sizes do not match"
+                                    : voltageSelections.getError()));
+                            Toast.makeText(getActivity(), R.string.hardware_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        showLegacyOverclockDialog(frequencies, voltageSelections.getValue(),
+                                lifecycleGeneration);
+                    }
+                });
+            }
+        });
+    }
+
+    private void showLegacyOverclockDialog(final String[] frequencies,
+            final int[] currentVoltages, final int lifecycleGeneration) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View layout = inflater.inflate(R.layout.cpu_oc_uc, (ViewGroup) null);
+        final ViewGroup viewGroup = (ViewGroup) layout.findViewById(R.id.cpu_container);
+        for (int i = 0; i < frequencies.length; i++) {
+            for (int j = 0; j < 2; j++) {
+                CustomEditText cpuValues = new CustomEditText(getActivity());
+                cpuValues.setText(j != 0
+                        ? Integer.toString(currentVoltages[i]) : frequencies[i]);
+                viewGroup.addView(cpuValues);
+                ViewGroup.MarginLayoutParams cpuMargins =
+                        new ViewGroup.MarginLayoutParams(cpuValues.getLayoutParams());
+                cpuMargins.setMargins(0, i * 75, j * 30, 0);
+                RelativeLayout.LayoutParams cpuLayout =
+                        new RelativeLayout.LayoutParams(cpuMargins);
+                if (j > 0) {
+                    cpuLayout.addRule(11);
+                    cpuLayout.width = 100;
+                } else {
+                    cpuLayout.width = 200;
+                }
+                cpuValues.setLayoutParams(cpuLayout);
+            }
+        }
+        builder.setIcon(R.drawable.calculator);
+        builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                ArrayList<Integer> cpuFrequencies = new ArrayList<>();
+                ArrayList<Integer> voltageValues = new ArrayList<>();
+                for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                    CustomEditText editText = (CustomEditText) viewGroup.getChildAt(i);
+                    try {
+                        int value = Integer.parseInt(editText.getText().toString());
+                        if (i % 2 > 0) {
+                            if (i > 1 && voltageValues.get(voltageValues.size() - 1) < value
+                                    && value > 15 && value < 80) {
+                                Log.e("Aero", "Invalid legacy voltage value: " + value);
+                                return;
+                            }
+                            voltageValues.add(value);
+                        } else {
+                            if (i > 1
+                                    && cpuFrequencies.get(cpuFrequencies.size() - 1) < value
+                                    && value > 1500000 && value > 300000) {
+                                Log.e("Aero", "Invalid legacy CPU frequency value: " + value);
+                                return;
+                            }
+                            cpuFrequencies.add(value);
+                        }
+                    } catch (NumberFormatException e) {
+                        Log.e("Aero", "Invalid legacy overclock input", e);
+                        return;
+                    }
+                }
+                final int[] requestedFrequencies = new int[cpuFrequencies.size()];
+                final int[] requestedVoltages = new int[voltageValues.size()];
+                for (int i = 0; i < requestedFrequencies.length; i++) {
+                    requestedFrequencies[i] = cpuFrequencies.get(i);
+                    requestedVoltages[i] = voltageValues.get(i);
+                }
+                applyLegacyOverclockTable(requestedFrequencies, requestedVoltages,
+                        lifecycleGeneration);
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+            }
+        });
+        builder.setView(layout).setTitle(R.string.perf_live_oc_uc).show();
+    }
+
+    private void applyLegacyOverclockTable(final int[] frequencies, final int[] voltages,
+            final int lifecycleGeneration) {
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
+            @Override
+            public void run() {
+                final SysfsResult<Boolean> result = AeroActivity.hardware.legacyOverclock()
+                        .writeFrequencyTable(frequencies, voltages);
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()
+                                || lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        if (!result.isSuccess()) {
+                            Log.e("Aero", "Failed to apply legacy overclock table: "
+                                    + result.getError());
+                            refreshCpuFrequencies();
+                            Toast.makeText(getActivity(), R.string.hardware_operation_failed,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        SharedPreferences preferences = PreferenceManager
+                                .getDefaultSharedPreferences(getActivity());
+                        boolean saved = preferences.edit()
+                                .putString(LegacyOverclockController.PREF_FREQUENCIES,
+                                        serializeIntegers(frequencies))
+                                .putString(LegacyOverclockController.PREF_VOLTAGES,
+                                        serializeIntegers(voltages))
+                                .remove("cpu_commands")
+                                .commit();
+                        if (!saved) {
+                            Log.e("Aero", "Failed to save the legacy overclock table");
+                        }
+                        mWantsMetricsPolling = true;
+                        refreshCpuFrequencies();
+                        startMetricsPolling();
+                    }
+                });
+            }
+        });
     }
 
     private void attachFrequencyListeners(final ClusterControls controls) {

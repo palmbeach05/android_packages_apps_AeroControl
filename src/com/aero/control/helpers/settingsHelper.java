@@ -119,16 +119,19 @@ public class settingsHelper {
         }
 
         final long bootDelayMillis = getBootDelayMillis(request.preferences);
+        if (bootDelayMillis == 0L) {
+            enqueueProfileOperation(applyRequest);
+            return;
+        }
+
         Thread delayThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                if (bootDelayMillis > 0) {
-                    try {
-                        Thread.sleep(bootDelayMillis);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        Log.w("Aero", "Boot delay interrupted; queuing profile settings");
-                    }
+                try {
+                    Thread.sleep(bootDelayMillis);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    Log.w("Aero", "Boot delay interrupted; queuing profile settings");
                 }
                 enqueueProfileOperation(applyRequest);
             }
