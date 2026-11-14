@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="UndoBar" parent="@style/UndoBarKitKat">
+    </style>
+    <style name="UndoBarMessage" parent="@style/UndoBarMessageKitKat">
+    </style>
+    <style name="UndoBarButton" parent="@style/UndoBarButtonKitKat">
+    </style>
+    <style name="Theme.Transparent" parent="@android:style/Theme.Holo.NoActionBar">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+    <style name="Translucent" parent="@android:style/Theme.Translucent">
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+</resources>
