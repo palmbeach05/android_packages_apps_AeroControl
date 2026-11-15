@@ -820,7 +820,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         final boolean wasEnabled = preference.isEnabled();
         preference.setEnabled(false);
         final Context applicationContext = getActivity().getApplicationContext();
-        new Thread(new Runnable() {
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
             @Override
             public void run() {
                 final SysfsResult<Boolean> writeResult =
@@ -888,7 +888,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                     }
                 });
             }
-        }).start();
+        });
         return true;
     }
 
