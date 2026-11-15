@@ -89,6 +89,7 @@ public class CPUFragment extends PlaceHolderFragment {
     private final AtomicInteger mLifecycleGeneration = new AtomicInteger(0);
     private HardwareMetricsPoller.Subscription mMetricsSubscription;
     private boolean mWantsMetricsPolling;
+    private boolean mGovernorSettingsReady;
     private volatile boolean mTableUpdate;
 
     /** Holds the max-frequency, min-frequency and governor controls generated for a single cpufreq cluster. */
@@ -153,6 +154,7 @@ public class CPUFragment extends PlaceHolderFragment {
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.mGovernorSettingsReady = false;
         this.mMirrorExecutor = Executors.newSingleThreadExecutor();
         final int lifecycleGeneration = this.mLifecycleGeneration.get();
         setHasOptionsMenu(true);
@@ -396,6 +398,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                 || lifecycleGeneration != mLifecycleGeneration.get()) {
                             return;
                         }
+                        boolean allGovernorsReady = !state.governors.isEmpty();
                         for (GovernorInitialState governor : state.governors) {
                             if (!governor.available.isSuccess()
                                     || !governor.current.isSuccess()) {
@@ -404,21 +407,36 @@ public class CPUFragment extends PlaceHolderFragment {
                                         + (!governor.available.isSuccess()
                                         ? governor.available.getError()
                                         : governor.current.getError()));
+                                allGovernorsReady = false;
                                 continue;
                             }
                             String[] availableValues = governor.available.getValue();
                             if (availableValues.length == 0) {
                                 Log.w("Aero", "No CPU governors available for cluster "
                                         + governor.controls.index);
+                                allGovernorsReady = false;
+                                continue;
+                            }
+                            String currentGovernor = governor.current.getValue();
+                            if (currentGovernor == null || currentGovernor.length() == 0
+                                    || NO_DATA_FOUND.equals(currentGovernor)) {
+                                Log.w("Aero", "No current CPU governor available for cluster "
+                                        + governor.controls.index);
+                                allGovernorsReady = false;
                                 continue;
                             }
                             governor.controls.governor.setEntries(availableValues);
                             governor.controls.governor.setEntryValues(availableValues);
-                            governor.controls.governor.setValue(governor.current.getValue());
-                            governor.controls.governor.setSummary(governor.current.getValue());
+                            governor.controls.governor.setValue(currentGovernor);
+                            governor.controls.governor.setSummary(currentGovernor);
                             governor.controls.governor.setEnabled(
                                     governor.controls.index == 0
                                             || !isApplyToAllClustersEnabled());
+                        }
+                        mGovernorSettingsReady = allGovernorsReady;
+                        Activity activity = getActivity();
+                        if (activity != null) {
+                            activity.invalidateOptionsMenu();
                         }
                         Preference legacyControl = root.findPreference("cpu_commands");
                         if (state.voltageSelections.isSuccess()) {
@@ -1089,6 +1107,10 @@ public class CPUFragment extends PlaceHolderFragment {
     @Override // android.app.Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.cpu_menu, menu);
+        MenuItem governorSettings = menu.findItem(R.id.action_governor_settings);
+        if (governorSettings != null) {
+            governorSettings.setEnabled(this.mGovernorSettingsReady);
+        }
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -1104,6 +1126,9 @@ public class CPUFragment extends PlaceHolderFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_governor_settings /* 2131099747 */:
+                if (!this.mGovernorSettingsReady) {
+                    return true;
+                }
                 if (this.mClusterControls.size() > 1) {
                     showClusterSelectionForGovernorSettings();
                 } else if (!this.mClusterControls.isEmpty()) {
