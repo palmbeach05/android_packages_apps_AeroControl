@@ -81,7 +81,7 @@ public class AboutActivity extends Activity {
         githubButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openExternalUri("https://github.com/Blechd0se/android_packages_apps_AeroControl");
+                openExternalUri("https://github.com/palmbeach05/android_packages_apps_AeroControl");
             }
         });
 
@@ -92,12 +92,6 @@ public class AboutActivity extends Activity {
             }
         });
 
-        findViewById(R.id.about_donate).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openExternalUri("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=46VQEKBETN36U");
-            }
-        });
     }
 
     private void tintGithubIcon(Button githubButton) {
