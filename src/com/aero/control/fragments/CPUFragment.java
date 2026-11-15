@@ -2,6 +2,7 @@ package com.aero.control.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -497,11 +498,25 @@ public class CPUFragment extends PlaceHolderFragment {
 
     private void applyLegacyOverclockTable(final int[] frequencies, final int[] voltages,
             final int lifecycleGeneration) {
+        final Context applicationContext = getActivity().getApplicationContext();
         HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
             @Override
             public void run() {
                 final SysfsResult<Boolean> result = AeroActivity.hardware.legacyOverclock()
                         .writeFrequencyTable(frequencies, voltages);
+                if (result.isSuccess()) {
+                    boolean saved = PreferenceManager.getDefaultSharedPreferences(
+                            applicationContext).edit()
+                            .putString(LegacyOverclockController.PREF_FREQUENCIES,
+                                    serializeIntegers(frequencies))
+                            .putString(LegacyOverclockController.PREF_VOLTAGES,
+                                    serializeIntegers(voltages))
+                            .remove("cpu_commands")
+                            .commit();
+                    if (!saved) {
+                        Log.e("Aero", "Failed to save the legacy overclock table");
+                    }
+                }
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -516,18 +531,6 @@ public class CPUFragment extends PlaceHolderFragment {
                             Toast.makeText(getActivity(), R.string.hardware_operation_failed,
                                     Toast.LENGTH_LONG).show();
                             return;
-                        }
-                        SharedPreferences preferences = PreferenceManager
-                                .getDefaultSharedPreferences(getActivity());
-                        boolean saved = preferences.edit()
-                                .putString(LegacyOverclockController.PREF_FREQUENCIES,
-                                        serializeIntegers(frequencies))
-                                .putString(LegacyOverclockController.PREF_VOLTAGES,
-                                        serializeIntegers(voltages))
-                                .remove("cpu_commands")
-                                .commit();
-                        if (!saved) {
-                            Log.e("Aero", "Failed to save the legacy overclock table");
                         }
                         mWantsMetricsPolling = true;
                         refreshCpuFrequencies();
