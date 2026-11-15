@@ -72,7 +72,7 @@ public class CPUFragment extends PlaceHolderFragment {
     /** Synchronizes access to ListPreference state (getValue, getEntryValues) between the serialized mirror executor and the main thread. */
     private final Object mPreferenceLock = new Object();
     /** Serializes mirrored max-frequency, min-frequency and governor operations so they observe each other's committed state and run in submission order. */
-    private final ExecutorService mMirrorExecutor = Executors.newSingleThreadExecutor();
+    private ExecutorService mMirrorExecutor;
     /** Monotonically increasing per-request sequence number for max-frequency requests, incremented at enqueue time to ensure each queued request gets a distinct ID. */
     private final AtomicInteger mMaxFreqRequestSequence = new AtomicInteger(0);
     /** Monotonically increasing per-request sequence number for min-frequency requests, incremented at enqueue time to ensure each queued request gets a distinct ID. */
@@ -136,6 +136,7 @@ public class CPUFragment extends PlaceHolderFragment {
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.mMirrorExecutor = Executors.newSingleThreadExecutor();
         final int lifecycleGeneration = this.mLifecycleGeneration.get();
         setHasOptionsMenu(true);
         addPreferencesFromResource(R.layout.cpu_fragment);

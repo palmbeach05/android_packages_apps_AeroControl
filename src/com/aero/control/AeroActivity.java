@@ -958,9 +958,11 @@ public final class AeroActivity extends Activity {
             if (settingsEntryCurrent) {
                 showSettingsHistoryEntry();
             } else if (mFragmentStack.size() > 1) {
+                Stack<Fragment> previousStack = new Stack<>();
+                previousStack.addAll(mFragmentStack);
                 mFragmentStack.pop();
                 Fragment previousFragment = mFragmentStack.peek();
-                switchContent(previousFragment, false);
+                postContentSwitch(previousFragment, previousStack);
                 // Restore title by finding which fragment we're returning to
                 String restoredTitle = getTitleForFragment(previousFragment);
                 if (restoredTitle != null) {
@@ -1144,14 +1146,22 @@ public final class AeroActivity extends Activity {
      */
     private void switchContent(final Fragment fragment, final boolean addToStack) {
         cancelPendingSwitch();
+        Stack<Fragment> previousStack = new Stack<>();
+        previousStack.addAll(this.mFragmentStack);
         if (addToStack) {
-            this.mPendingSwitchPreviousStack = new Stack<>();
-            this.mPendingSwitchPreviousStack.addAll(this.mFragmentStack);
             // Keep navigation history aligned with the latest requested destination,
             // even if its posted fragment transaction is canceled by a later action.
             mFragmentStack.remove(fragment);
             mFragmentStack.push(fragment);
         }
+        postContentSwitch(fragment, previousStack);
+    }
+
+    /** Posts a replacement and keeps its pre-navigation history available for rollback. */
+    private void postContentSwitch(final Fragment fragment,
+            Stack<Fragment> previousStack) {
+        this.mPendingSwitchPreviousStack = new Stack<>();
+        this.mPendingSwitchPreviousStack.addAll(previousStack);
         this.mPendingSwitch = new Runnable() { // from class: com.aero.control.AeroActivity.3
             @Override // java.lang.Runnable
             public void run() {
