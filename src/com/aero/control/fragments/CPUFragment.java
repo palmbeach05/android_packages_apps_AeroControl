@@ -133,6 +133,21 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
+    private static final class CpuCapabilities {
+        private final List<CpuClusterHelper.Cluster> clusters;
+        private final String hotplugPath;
+        private final boolean voltageAvailable;
+        private final boolean cpuBoostAvailable;
+
+        private CpuCapabilities(List<CpuClusterHelper.Cluster> clusters, String hotplugPath,
+                boolean voltageAvailable, boolean cpuBoostAvailable) {
+            this.clusters = clusters;
+            this.hotplugPath = hotplugPath;
+            this.voltageAvailable = voltageAvailable;
+            this.cpuBoostAvailable = cpuBoostAvailable;
+        }
+    }
+
     @Override // android.preference.PreferenceFragment, android.app.Fragment
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,9 +156,52 @@ public class CPUFragment extends PlaceHolderFragment {
         setHasOptionsMenu(true);
         addPreferencesFromResource(R.layout.cpu_fragment);
         this.root = getPreferenceScreen();
-        PreferenceCategory cpuCategory = (PreferenceCategory) findPreference("cpu_settings");
-        PreferenceCategory cpuGovernor = (PreferenceCategory) findPreference("cpu_governor");
-        List<CpuClusterHelper.Cluster> clusters = this.mClusterHelper.getClusters();
+        final PreferenceCategory cpuCategory =
+                (PreferenceCategory) findPreference("cpu_settings");
+        final PreferenceCategory cpuGovernor =
+                (PreferenceCategory) findPreference("cpu_governor");
+        cpuCategory.setEnabled(false);
+        cpuGovernor.setEnabled(false);
+        loadCpuCapabilities(cpuCategory, cpuGovernor, lifecycleGeneration);
+        if (this.PrefCat != null) {
+            this.root.removePreference(this.PrefCat);
+        }
+    }
+
+    private void loadCpuCapabilities(final PreferenceCategory cpuCategory,
+            final PreferenceCategory cpuGovernor, final int lifecycleGeneration) {
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
+            @Override
+            public void run() {
+                List<CpuClusterHelper.Cluster> clusters = mClusterHelper.getClusters();
+                String hotplugPath = null;
+                for (String path : FilePath.HOTPLUG_PATH) {
+                    if (AeroActivity.genHelper.doesExist(path)) {
+                        hotplugPath = path;
+                    }
+                }
+                final CpuCapabilities capabilities = new CpuCapabilities(clusters, hotplugPath,
+                        AeroActivity.genHelper.doesExist(FilePath.VOLTAGE_PATH),
+                        AeroActivity.genHelper.doesExist(FilePath.CPU_BOOST));
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()
+                                || lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        initializeCpuPreferences(cpuCategory, cpuGovernor, capabilities,
+                                lifecycleGeneration);
+                    }
+                });
+            }
+        });
+    }
+
+    private void initializeCpuPreferences(PreferenceCategory cpuCategory,
+            PreferenceCategory cpuGovernor, CpuCapabilities capabilities,
+            int lifecycleGeneration) {
+        List<CpuClusterHelper.Cluster> clusters = capabilities.clusters;
         boolean singleCluster = clusters.size() == 1;
         this.mClusterControls.clear();
         for (int i = 0; i < clusters.size(); i++) {
@@ -212,14 +270,9 @@ public class CPUFragment extends PlaceHolderFragment {
         }
         refreshCpuFrequencies();
         loadInitialCpuSettings(cpuCategory, lifecycleGeneration);
-        String[] arr$ = FilePath.HOTPLUG_PATH;
-        for (String s : arr$) {
-            if (AeroActivity.genHelper.doesExist(s)) {
-                this.mHotplugPath = s;
-            }
-        }
+        this.mHotplugPath = capabilities.hotplugPath;
         CustomPreference cpu_hotplug = (CustomPreference) this.root.findPreference("hotplug_control");
-        if (AeroActivity.genHelper.doesExist(this.mHotplugPath)) {
+        if (this.mHotplugPath != null) {
             cpu_hotplug.setHideOnBoot(true);
             cpu_hotplug.setOrder(10);
             cpu_hotplug.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.CPUFragment.1
@@ -248,7 +301,7 @@ public class CPUFragment extends PlaceHolderFragment {
             cpuCategory.removePreference(cpu_hotplug);
         }
         CustomPreference voltage_control = (CustomPreference) this.root.findPreference("voltage_values");
-        if (AeroActivity.genHelper.doesExist(FilePath.VOLTAGE_PATH)) {
+        if (capabilities.voltageAvailable) {
             voltage_control.setOrder(15);
             voltage_control.setLookUpDefault(FilePath.VOLTAGE_PATH);
             voltage_control.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.CPUFragment.2
@@ -277,7 +330,7 @@ public class CPUFragment extends PlaceHolderFragment {
             cpuCategory.removePreference(voltage_control);
         }
         CustomPreference cpu_boost_control = (CustomPreference) this.root.findPreference("cpu_boost_control");
-        if (AeroActivity.genHelper.doesExist(FilePath.CPU_BOOST)) {
+        if (capabilities.cpuBoostAvailable) {
             cpu_boost_control.setOrder(18);
             cpu_boost_control.setHideOnBoot(true);
             cpu_boost_control.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() { // from class: com.aero.control.fragments.CPUFragment.3
@@ -315,9 +368,8 @@ public class CPUFragment extends PlaceHolderFragment {
                 return true;
             }
         });
-        if (this.PrefCat != null) {
-            this.root.removePreference(this.PrefCat);
-        }
+        cpuCategory.setEnabled(true);
+        cpuGovernor.setEnabled(true);
     }
 
     private void loadInitialCpuSettings(final PreferenceCategory cpuCategory,
