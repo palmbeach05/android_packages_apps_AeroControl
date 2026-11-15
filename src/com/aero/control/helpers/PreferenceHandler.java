@@ -18,6 +18,7 @@ import com.aero.control.helpers.ProcfsDirectory;
 import com.aero.control.helpers.SysfsDirectory;
 import com.aero.control.helpers.SysfsResult;
 import android.widget.Toast;
+import java.util.Map;
 
 /**
  * Dynamically generates and manages preference UI elements from kernel sysfs files and
@@ -81,10 +82,31 @@ public class PreferenceHandler {
      * @param path the base directory path containing the files
      */
     public final void genPrefFromDictionary(String[] array, String path) {
+        genPrefFromDictionary(array, path, null);
+    }
+
+    /**
+     * Generates preferences using values read before the UI is updated.
+     *
+     * @param array the file names to create preferences for
+     * @param path the base directory path containing the files
+     * @param initialValues current values keyed by file name
+     */
+    public final void genPrefFromDictionary(String[] array, String path,
+            Map<String, SysfsResult<String>> initialValues) {
         int counter = array.length;
         int i = 0;
         for (String b : array) {
-            generateSettings(b, path, false);
+            if (initialValues == null) {
+                generateSettings(b, path, false);
+            } else {
+                SysfsResult<String> initialValue = initialValues.get(b);
+                if (initialValue == null) {
+                    initialValue = SysfsResult.failure(
+                            "Initial value was not provided for " + b);
+                }
+                generateSettings(b, path, false, initialValue);
+            }
             i++;
             if (i == counter) {
                 addInvisiblePreference();
@@ -145,9 +167,15 @@ public class PreferenceHandler {
      * @param flag if true, triggers haptic vibration feedback on value change
      */
     private void generateSettings(String parameter, String path, final boolean flag) {
+        generateSettings(parameter, path, flag, null);
+    }
+
+    private void generateSettings(String parameter, String path, final boolean flag,
+            SysfsResult<String> initialValue) {
         final CustomTextPreference prefload = new CustomTextPreference(this.mContext);
         final String parameterPath = path + "/" + parameter;
-        String summary = readParameterValue(parameterPath);
+        String summary = initialValue == null
+                ? readParameterValue(parameterPath) : readParameterValue(parameterPath, initialValue);
         if (!summary.equals(NO_DATA_FOUND) && !parameter.equals("uevent") && !parameter.equals("dev")) {
             Integer tmp = null;
             try {
@@ -244,7 +272,10 @@ public class PreferenceHandler {
     }
 
     private String readParameterValue(String path) {
-        SysfsResult<String> result = accessParameter(path, null, false);
+        return readParameterValue(path, accessParameter(path, null, false));
+    }
+
+    private String readParameterValue(String path, SysfsResult<String> result) {
         if (!result.isSuccess()) {
             Log.w("Aero", "Unable to read dynamic hardware parameter " + path + ": "
                     + result.getError());

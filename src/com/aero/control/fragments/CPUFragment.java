@@ -42,6 +42,7 @@ import com.github.amlcurran.showcaseview.targets.Target;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,7 @@ public class CPUFragment extends PlaceHolderFragment {
     private final AtomicInteger mMinFreqMirrorGeneration = new AtomicInteger(0);
     /** Incremented every time an apply-all governor mirror request is initiated; used to discard stale UI callbacks from superseded governor requests. */
     private final AtomicInteger mGovernorMirrorGeneration = new AtomicInteger(0);
+    private final AtomicInteger mGovernorSettingsRequestGeneration = new AtomicInteger(0);
     /** Incremented on fragment destruction to invalidate all pending mirror callbacks regardless of their setting type. */
     private final AtomicInteger mLifecycleGeneration = new AtomicInteger(0);
     private HardwareMetricsPoller.Subscription mMetricsSubscription;
@@ -1133,16 +1135,49 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     private void showGovernorSettings(ClusterControls controls) {
-        String complete_path = FilePath.CPU_GOV_BASE + controls.governor.getValue();
-        SysfsResult<String[]> listing;
-        try {
-            listing = AeroActivity.hardware.dynamicTunables().listSysfsParameters(
-                    new SysfsDirectory(complete_path));
-        } catch (IllegalArgumentException e) {
-            Log.w("Aero", "Rejected CPU governor parameter directory " + complete_path, e);
-            Toast.makeText(getActivity(), R.string.pref_gov_set_no_parameter, 1).show();
-            return;
-        }
+        final String completePath = FilePath.CPU_GOV_BASE + controls.governor.getValue();
+        final int lifecycleGeneration = this.mLifecycleGeneration.get();
+        final int requestGeneration = this.mGovernorSettingsRequestGeneration.incrementAndGet();
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
+            @Override
+            public void run() {
+                final Map<String, SysfsResult<String>> initialValues = new HashMap<>();
+                SysfsResult<String[]> listing;
+                try {
+                    SysfsDirectory directory = new SysfsDirectory(completePath);
+                    listing = AeroActivity.hardware.dynamicTunables()
+                            .listSysfsParameters(directory);
+                    if (listing.isSuccess()) {
+                        for (String parameter : listing.getValue()) {
+                            initialValues.put(parameter,
+                                    AeroActivity.hardware.dynamicTunables()
+                                            .readSysfsParameter(directory, parameter));
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    Log.w("Aero", "Rejected CPU governor parameter directory "
+                            + completePath, e);
+                    listing = SysfsResult.failure("CPU governor parameter directory is invalid");
+                }
+                final SysfsResult<String[]> result = listing;
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded() || !isResumed()
+                                || lifecycleGeneration != mLifecycleGeneration.get()
+                                || requestGeneration
+                                != mGovernorSettingsRequestGeneration.get()) {
+                            return;
+                        }
+                        showGovernorSettings(completePath, result, initialValues);
+                    }
+                });
+            }
+        });
+    }
+
+    private void showGovernorSettings(String completePath, SysfsResult<String[]> listing,
+            Map<String, SysfsResult<String>> initialValues) {
         if (!listing.isSuccess() || listing.getValue().length == 0) {
             String error = listing.isSuccess() ? "No parameters are available"
                     : listing.getError();
@@ -1157,7 +1192,7 @@ public class CPUFragment extends PlaceHolderFragment {
         this.PrefCat.setTitle(R.string.pref_gov_set);
         this.root.addPreference(this.PrefCat);
         PreferenceHandler h = new PreferenceHandler(getActivity(), this.PrefCat, getPreferenceManager());
-        h.genPrefFromDictionary(listing.getValue(), complete_path);
+        h.genPrefFromDictionary(listing.getValue(), completePath, initialValues);
     }
 
     /**
