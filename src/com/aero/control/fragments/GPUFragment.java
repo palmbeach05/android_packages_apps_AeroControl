@@ -56,6 +56,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
     private String mGPUGov;
     private CustomListPreference mGPUGovernor;
     private GPUGovernorFragment mGPUGovernorFragment;
+    private CustomPreference mGpuGovernorSettings;
     private CustomPreference mSweep2wake;
     private PreferenceScreen root;
     private final AtomicInteger mInitializationGeneration = new AtomicInteger();
@@ -147,15 +148,17 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         this.mGPUControlFrequencies.setOnPreferenceChangeListener(this);
         this.mGPUControlFrequencies.setOrder(21);
         this.mDisplayControl.setOnPreferenceChangeListener(this);
-        CustomPreference gpu_gov_settings = (CustomPreference) this.root.findPreference("gpu_gov_settings");
-        configureGpuGovernorNavigation(gpu_gov_settings);
-        gpu_gov_settings.setEnabled(false);
+        this.mGpuGovernorSettings =
+                (CustomPreference) this.root.findPreference("gpu_gov_settings");
+        configureGpuGovernorNavigation(this.mGpuGovernorSettings);
+        this.mGpuGovernorSettings.setEnabled(false);
         CharSequence[] display_entries = {getText(R.string.defy_red_colors), getText(R.string.defy_green_colors), getText(R.string.defy_energy_saver)};
         CharSequence[] display_values = {"31", "9", "0"};
         this.mDisplayControl.setEntries(display_entries);
         this.mDisplayControl.setEntryValues(display_values);
         this.mGPUControlFrequencies.setDialogIcon(R.drawable.gpu);
         setGpuControlsEnabled(false);
+        this.root.removePreference(gpuCategory);
         loadInitialHardwareState(gpuCategory, generation);
     }
 
@@ -268,6 +271,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             boolean enabled = state.sweepState.getValue();
             this.mSweep2wake.setClicked(enabled);
             this.mSweep2wake.setLookUpDefaultValue(enabled ? "1" : "0");
+            CustomPreference.recordVerifiedValue("sweeptowake", enabled ? "1" : "0");
         }
         if (!state.doubleTapState.isSuccess()) {
             gpuCategory.removePreference(this.mDoubletap2Wake);
@@ -275,6 +279,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             boolean enabled = state.doubleTapState.getValue();
             this.mDoubletap2Wake.setClicked(enabled);
             this.mDoubletap2Wake.setLookUpDefaultValue(enabled ? "1" : "0");
+            CustomPreference.recordVerifiedValue("doubletaptowake", enabled ? "1" : "0");
         }
         if (!state.controlState.isSuccess() || !state.controlAvailable.isSuccess()
                 || !state.controlAvailable.getValue()) {
@@ -283,6 +288,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             boolean enabled = state.controlState.getValue();
             this.mGPUControl.setClicked(enabled);
             this.mGPUControl.setLookUpDefaultValue(enabled ? "1" : "0");
+            CustomPreference.recordVerifiedValue("gpu_control_enable", enabled ? "1" : "0");
         }
         String frequencyError = null;
         if (!state.currentFrequency.isSuccess()) {
@@ -327,11 +333,10 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             this.mColorControl.setLookUpDefaultValue(state.colorValues.isSuccess()
                     ? joinValues(state.colorValues.getValue()) : NO_DATA_FOUND);
         }
-        Preference governorSettings = this.root.findPreference("gpu_gov_settings");
         if (!state.governorSettingsAvailable) {
-            gpuCategory.removePreference(governorSettings);
+            gpuCategory.removePreference(this.mGpuGovernorSettings);
         } else {
-            governorSettings.setEnabled(true);
+            this.mGpuGovernorSettings.setEnabled(true);
         }
         this.mGPUGov = state.governorPath;
         if (!state.availableGovernors.isSuccess() || !state.currentGovernor.isSuccess()) {
@@ -346,6 +351,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
         if (gpuCategory.getPreferenceCount() <= 0) {
             gpuCategory.setTitle(R.string.no_gpu_data);
         }
+        this.root.addPreference(gpuCategory);
         setGpuControlsEnabled(true);
         if (this.mGpuControlAvailable) {
             setGpuTuningEnabled(state.controlState.isSuccess()
@@ -808,6 +814,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
             return true;
         }
         this.mPendingToggles.add(toggle);
+        final int generation = this.mInitializationGeneration.get();
         final boolean previous = preference.isClicked().booleanValue();
         final boolean requested = !previous;
         final boolean wasEnabled = preference.isEnabled();
@@ -822,23 +829,26 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         AeroActivity.hardware.gpu().readToggle(toggle);
                 boolean applied = readbackResult.isSuccess()
                         && readbackResult.getValue().booleanValue() == requested;
-                boolean shouldPersist = applied && preference.isChecked().booleanValue();
-                boolean saved = true;
-                if (shouldPersist) {
-                    saved = PreferenceManager.getDefaultSharedPreferences(
-                            applicationContext).edit()
-                            .putString(preference.getName(),
-                                    readbackResult.getValue() ? "1" : "0")
-                            .commit();
-                    if (!saved) {
-                        Log.e("Aero", "Failed to save GPU toggle preference "
-                                + preference.getName());
-                    }
+                String verifiedValue = readbackResult.isSuccess()
+                        ? (readbackResult.getValue() ? "1" : "0") : null;
+                if (readbackResult.isSuccess() && !applied) {
+                    CustomPreference.recordVerifiedValue(
+                            preference.getName(), verifiedValue);
                 }
-                final boolean preferenceSaveFailed = shouldPersist && !saved;
+                boolean saved = !applied || CustomPreference.saveValueIfChecked(
+                        applicationContext, preference.getName(), verifiedValue);
+                if (!saved) {
+                    Log.e("Aero", "Failed to save GPU toggle preference "
+                            + preference.getName());
+                }
+                final boolean preferenceSaveFailed = applied && !saved;
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        mPendingToggles.remove(toggle);
+                        if (!isAdded() || generation != mInitializationGeneration.get()) {
+                            return;
+                        }
                         if (readbackResult.isSuccess()) {
                             preference.setClicked(readbackResult.getValue());
                             preference.setLookUpDefaultValue(
@@ -846,11 +856,7 @@ public class GPUFragment extends PlaceHolderFragment implements Preference.OnPre
                         } else {
                             preference.setClicked(Boolean.valueOf(previous));
                         }
-                        mPendingToggles.remove(toggle);
                         preference.setEnabled(wasEnabled);
-                        if (!isAdded()) {
-                            return;
-                        }
                         if (!readbackResult.isSuccess()
                                 || readbackResult.getValue().booleanValue() != requested) {
                             String error = !readbackResult.isSuccess()

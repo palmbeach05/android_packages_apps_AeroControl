@@ -20,6 +20,7 @@ import com.aero.control.helpers.HelpTextHolder;
 import com.aero.control.helpers.SysfsNode;
 import com.aero.control.helpers.SysfsResult;
 import com.aero.control.helpers.ReadMode;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,6 +30,9 @@ import java.util.Map;
  * theme-aware text colors.
  */
 public class CustomPreference extends Preference {
+    private static final Object BOOT_PREFERENCE_LOCK = new Object();
+    private static final Map<String, String> VERIFIED_VALUES = new HashMap<>();
+
     private CompoundButton mCheckBox;
     private Boolean mChecked;
     private Boolean mClicked;
@@ -528,35 +532,68 @@ public class CustomPreference extends Preference {
      * @param checked true if the checkbox is now checked, false otherwise
      */
     public void onCheck(boolean checked) {
-        SharedPreferences.Editor editor = this.mSharedPreference.edit();
-        String tmp = null;
-        Map<String, ?> allKeys = this.mSharedPreference.getAll();
-        for (Map.Entry<String, ?> entry : allKeys.entrySet()) {
-            String value = entry.getValue().toString();
-            String key = entry.getKey().toString();
-            if (key.equals(getName())) {
-                tmp = value;
+        synchronized (BOOT_PREFERENCE_LOCK) {
+            SharedPreferences.Editor editor = this.mSharedPreference.edit();
+            String tmp = null;
+            Map<String, ?> allKeys = this.mSharedPreference.getAll();
+            for (Map.Entry<String, ?> entry : allKeys.entrySet()) {
+                String value = entry.getValue().toString();
+                String key = entry.getKey().toString();
+                if (key.equals(getName())) {
+                    tmp = value;
+                }
             }
-        }
-        if (tmp == null) {
-            if (this.mLookUpDefaultValue != null) {
-                tmp = this.mLookUpDefaultValue;
-            } else if (this.mLookUpDefault != null) {
-                tmp = getLookUpDefault(getName());
-            }
-        }
-        if (checked) {
             if (tmp == null) {
-                setChecked(false);
-                notifyChanged();
-                return;
+                tmp = VERIFIED_VALUES.get(getName());
+                if (tmp == null && this.mLookUpDefaultValue != null) {
+                    tmp = this.mLookUpDefaultValue;
+                } else if (tmp == null && this.mLookUpDefault != null) {
+                    tmp = getLookUpDefault(getName());
+                }
             }
-            editor.putString(getName(), tmp);
-        } else {
-            editor.remove(getName());
+            if (checked) {
+                if (tmp == null) {
+                    setChecked(false);
+                    notifyChanged();
+                    return;
+                }
+                editor.putString(getName(), tmp);
+            } else {
+                editor.remove(getName());
+            }
+            editor.commit();
+            setChecked(Boolean.valueOf(checked));
+            notifyChanged();
         }
-        editor.commit();
-        setChecked(Boolean.valueOf(checked));
-        notifyChanged();
+    }
+
+    /**
+     * Saves a verified hardware value only if its set-on-boot preference remains enabled.
+     * Serializes the check and write with checkbox state changes.
+     */
+    public static boolean saveValueIfChecked(
+            Context context, String preferenceName, String value) {
+        if (context == null || preferenceName == null || value == null) {
+            throw new IllegalArgumentException("Context, preference name, and value are required");
+        }
+        synchronized (BOOT_PREFERENCE_LOCK) {
+            VERIFIED_VALUES.put(preferenceName, value);
+            SharedPreferences preferences =
+                    PreferenceManager.getDefaultSharedPreferences(context);
+            if (!preferences.contains(preferenceName)) {
+                return true;
+            }
+            return preferences.edit().putString(preferenceName, value).commit();
+        }
+    }
+
+    /** Records a verified value for a later set-on-boot selection in another view instance. */
+    public static void recordVerifiedValue(String preferenceName, String value) {
+        if (preferenceName == null || value == null) {
+            throw new IllegalArgumentException("Preference name and value are required");
+        }
+        synchronized (BOOT_PREFERENCE_LOCK) {
+            VERIFIED_VALUES.put(preferenceName, value);
+        }
     }
 }
