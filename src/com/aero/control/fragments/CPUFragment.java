@@ -99,6 +99,9 @@ public class CPUFragment extends PlaceHolderFragment {
         private final CustomListPreference maxFrequency;
         private final CustomListPreference minFrequency;
         private final CustomListPreference governor;
+        private boolean governorReady;
+        private boolean governorChangePending;
+        private int governorChangeGeneration;
         /** Last max/min frequency committed by a serialized mirror operation, ahead of the value reflected by the preference itself. Null until a mirror operation commits a value. */
         private String pendingMaxFrequency;
         private String pendingMinFrequency;
@@ -398,7 +401,6 @@ public class CPUFragment extends PlaceHolderFragment {
                                 || lifecycleGeneration != mLifecycleGeneration.get()) {
                             return;
                         }
-                        boolean allGovernorsReady = !state.governors.isEmpty();
                         for (GovernorInitialState governor : state.governors) {
                             if (!governor.available.isSuccess()
                                     || !governor.current.isSuccess()) {
@@ -407,14 +409,14 @@ public class CPUFragment extends PlaceHolderFragment {
                                         + (!governor.available.isSuccess()
                                         ? governor.available.getError()
                                         : governor.current.getError()));
-                                allGovernorsReady = false;
+                                governor.controls.governorReady = false;
                                 continue;
                             }
                             String[] availableValues = governor.available.getValue();
                             if (availableValues.length == 0) {
                                 Log.w("Aero", "No CPU governors available for cluster "
                                         + governor.controls.index);
-                                allGovernorsReady = false;
+                                governor.controls.governorReady = false;
                                 continue;
                             }
                             String currentGovernor = governor.current.getValue();
@@ -422,9 +424,10 @@ public class CPUFragment extends PlaceHolderFragment {
                                     || NO_DATA_FOUND.equals(currentGovernor)) {
                                 Log.w("Aero", "No current CPU governor available for cluster "
                                         + governor.controls.index);
-                                allGovernorsReady = false;
+                                governor.controls.governorReady = false;
                                 continue;
                             }
+                            governor.controls.governorReady = true;
                             governor.controls.governor.setEntries(availableValues);
                             governor.controls.governor.setEntryValues(availableValues);
                             governor.controls.governor.setValue(currentGovernor);
@@ -433,11 +436,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                     governor.controls.index == 0
                                             || !isApplyToAllClustersEnabled());
                         }
-                        mGovernorSettingsReady = allGovernorsReady;
-                        Activity activity = getActivity();
-                        if (activity != null) {
-                            activity.invalidateOptionsMenu();
-                        }
+                        updateGovernorSettingsAvailability();
                         Preference legacyControl = root.findPreference("cpu_commands");
                         if (state.voltageSelections.isSuccess()) {
                             legacyControl.setEnabled(true);
@@ -739,12 +738,18 @@ public class CPUFragment extends PlaceHolderFragment {
                         return false;
                     }
                 }
+                invalidateGovernorSettingsRequest();
                 if (CPUFragment.this.PrefCat != null) {
                     CPUFragment.this.root.removePreference(CPUFragment.this.PrefCat);
+                    CPUFragment.this.PrefCat = null;
                 }
                 if (controls.index == 0 && CPUFragment.this.isApplyToAllClustersEnabled()) {
                     return CPUFragment.this.applyGovernorToAllClusters(controls, a);
                 } else {
+                    controls.governorChangePending = true;
+                    final int governorChangeGeneration =
+                            ++controls.governorChangeGeneration;
+                    updateGovernorSettingsAvailability();
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
                         @Override
@@ -777,13 +782,22 @@ public class CPUFragment extends PlaceHolderFragment {
                                     if (lifecycleGeneration != mLifecycleGeneration.get()) {
                                         return;
                                     }
+                                    if (governorChangeGeneration
+                                            != controls.governorChangeGeneration) {
+                                        return;
+                                    }
+                                    controls.governorChangePending = false;
                                     // Only apply valid values (skip null or NO_DATA_FOUND)
                                     if (capturedGovernor != null && !NO_DATA_FOUND.equals(capturedGovernor)) {
                                         synchronized (mPreferenceLock) {
                                             controls.governor.setSummary(capturedGovernor);
                                             controls.governor.setValue(capturedGovernor);
                                         }
+                                        controls.governorReady = true;
+                                    } else {
+                                        controls.governorReady = false;
                                     }
+                                    updateGovernorSettingsAvailability();
                                 }
                             });
                         }
@@ -797,6 +811,28 @@ public class CPUFragment extends PlaceHolderFragment {
     /** Whether changes made through the first cluster's controls should be mirrored to every detected cluster. */
     private boolean isApplyToAllClustersEnabled() {
         return this.mApplyToAllClusters != null && this.mApplyToAllClusters.isChecked();
+    }
+
+    private void updateGovernorSettingsAvailability() {
+        this.mGovernorSettingsReady = false;
+        for (ClusterControls controls : this.mClusterControls) {
+            if (controls.governorReady && !controls.governorChangePending) {
+                this.mGovernorSettingsReady = true;
+                break;
+            }
+        }
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.invalidateOptionsMenu();
+        }
+    }
+
+    private void invalidateGovernorSettingsRequest() {
+        this.mGovernorSettingsRequestGeneration.incrementAndGet();
+        if (this.PrefCat != null) {
+            this.root.removePreference(this.PrefCat);
+            this.PrefCat = null;
+        }
     }
 
     /** Enables or disables the max-frequency, min-frequency and governor controls for every cluster after the first. */
@@ -1029,6 +1065,13 @@ public class CPUFragment extends PlaceHolderFragment {
             return false;
         }
 
+        final int[] changeGenerations = new int[this.mClusterControls.size()];
+        for (int i = 0; i < this.mClusterControls.size(); i++) {
+            ClusterControls controls = this.mClusterControls.get(i);
+            controls.governorChangePending = true;
+            changeGenerations[i] = ++controls.governorChangeGeneration;
+        }
+        updateGovernorSettingsAvailability();
         final int requestGeneration = mGovernorMirrorGeneration.incrementAndGet();
         final int lifecycleGeneration = mLifecycleGeneration.get();
         mMirrorExecutor.execute(new Runnable() {
@@ -1083,14 +1126,22 @@ public class CPUFragment extends PlaceHolderFragment {
                         synchronized (mPreferenceLock) {
                             for (int j = 0; j < CPUFragment.this.mClusterControls.size(); j++) {
                                 ClusterControls target = CPUFragment.this.mClusterControls.get(j);
+                                if (changeGenerations[j] != target.governorChangeGeneration) {
+                                    continue;
+                                }
                                 String currentGovernor = capturedGovernors[j];
+                                target.governorChangePending = false;
                                 // Only apply valid values (skip null or NO_DATA_FOUND)
                                 if (currentGovernor != null && !NO_DATA_FOUND.equals(currentGovernor)) {
                                     target.governor.setSummary(currentGovernor);
                                     target.governor.setValue(currentGovernor);
+                                    target.governorReady = true;
+                                } else {
+                                    target.governorReady = false;
                                 }
                             }
                         }
+                        updateGovernorSettingsAvailability();
                     }
                 });
             }
@@ -1141,9 +1192,14 @@ public class CPUFragment extends PlaceHolderFragment {
     }
 
     private void showClusterSelectionForGovernorSettings() {
-        final CharSequence[] clusterLabels = new CharSequence[this.mClusterControls.size()];
-        for (int i = 0; i < this.mClusterControls.size(); i++) {
-            ClusterControls controls = this.mClusterControls.get(i);
+        final List<ClusterControls> readyClusters = getReadyGovernorClusters();
+        if (readyClusters.size() == 1) {
+            showGovernorSettings(readyClusters.get(0));
+            return;
+        }
+        final CharSequence[] clusterLabels = new CharSequence[readyClusters.size()];
+        for (int i = 0; i < readyClusters.size(); i++) {
+            ClusterControls controls = readyClusters.get(i);
             String cpuRange = controls.cluster.getMemberRangeLabel();
             String governor = controls.governor.getValue();
             clusterLabels[i] = "CPU " + cpuRange + " (" + governor + ")";
@@ -1153,13 +1209,26 @@ public class CPUFragment extends PlaceHolderFragment {
         builder.setItems(clusterLabels, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                showGovernorSettings(CPUFragment.this.mClusterControls.get(which));
+                showGovernorSettings(readyClusters.get(which));
             }
         });
         builder.show();
     }
 
+    private List<ClusterControls> getReadyGovernorClusters() {
+        List<ClusterControls> readyClusters = new ArrayList<>();
+        for (ClusterControls controls : this.mClusterControls) {
+            if (controls.governorReady && !controls.governorChangePending) {
+                readyClusters.add(controls);
+            }
+        }
+        return readyClusters;
+    }
+
     private void showGovernorSettings(ClusterControls controls) {
+        if (!controls.governorReady || controls.governorChangePending) {
+            return;
+        }
         final String completePath = FilePath.CPU_GOV_BASE + controls.governor.getValue();
         final int lifecycleGeneration = this.mLifecycleGeneration.get();
         final int requestGeneration = this.mGovernorSettingsRequestGeneration.incrementAndGet();
@@ -1228,8 +1297,10 @@ public class CPUFragment extends PlaceHolderFragment {
     public void onPause() {
         super.onPause();
         stopMetricsPolling();
+        this.mGovernorSettingsRequestGeneration.incrementAndGet();
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
+            this.PrefCat = null;
         }
     }
 
