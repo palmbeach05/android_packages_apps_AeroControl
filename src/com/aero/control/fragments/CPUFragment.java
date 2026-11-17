@@ -67,6 +67,8 @@ public class CPUFragment extends PlaceHolderFragment {
     private ShowcaseView mShowCase;
     private VoltageFragment mVoltageFragment;
     private PreferenceScreen root;
+    private PreferenceCategory mCpuCategory;
+    private PreferenceCategory mCpuGovernorCategory;
     private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
     private final List<ClusterControls> mClusterControls = new ArrayList<>();
     private CheckBoxPreference mApplyToAllClusters;
@@ -90,6 +92,9 @@ public class CPUFragment extends PlaceHolderFragment {
     private HardwareMetricsPoller.Subscription mMetricsSubscription;
     private boolean mWantsMetricsPolling;
     private boolean mGovernorSettingsReady;
+    private boolean mInitialCpuFrequenciesReady;
+    private boolean mInitialCpuGovernorsReady;
+    private boolean mCpuPreferencesShown;
     private volatile boolean mTableUpdate;
 
     /** Holds the max-frequency, min-frequency and governor controls generated for a single cpufreq cluster. */
@@ -158,6 +163,9 @@ public class CPUFragment extends PlaceHolderFragment {
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.mGovernorSettingsReady = false;
+        this.mInitialCpuFrequenciesReady = false;
+        this.mInitialCpuGovernorsReady = false;
+        this.mCpuPreferencesShown = false;
         this.mMirrorExecutor = Executors.newSingleThreadExecutor();
         final int lifecycleGeneration = this.mLifecycleGeneration.get();
         setHasOptionsMenu(true);
@@ -167,8 +175,12 @@ public class CPUFragment extends PlaceHolderFragment {
                 (PreferenceCategory) findPreference("cpu_settings");
         final PreferenceCategory cpuGovernor =
                 (PreferenceCategory) findPreference("cpu_governor");
+        this.mCpuCategory = cpuCategory;
+        this.mCpuGovernorCategory = cpuGovernor;
         cpuCategory.setEnabled(false);
         cpuGovernor.setEnabled(false);
+        this.root.removePreference(cpuCategory);
+        this.root.removePreference(cpuGovernor);
         loadCpuCapabilities(cpuCategory, cpuGovernor, lifecycleGeneration);
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
@@ -278,7 +290,8 @@ public class CPUFragment extends PlaceHolderFragment {
         refreshCpuFrequencies();
         loadInitialCpuSettings(cpuCategory, lifecycleGeneration);
         this.mHotplugPath = capabilities.hotplugPath;
-        CustomPreference cpu_hotplug = (CustomPreference) this.root.findPreference("hotplug_control");
+        CustomPreference cpu_hotplug =
+                (CustomPreference) cpuCategory.findPreference("hotplug_control");
         if (this.mHotplugPath != null) {
             cpu_hotplug.setHideOnBoot(true);
             cpu_hotplug.setOrder(10);
@@ -307,7 +320,8 @@ public class CPUFragment extends PlaceHolderFragment {
         } else {
             cpuCategory.removePreference(cpu_hotplug);
         }
-        CustomPreference voltage_control = (CustomPreference) this.root.findPreference("voltage_values");
+        CustomPreference voltage_control =
+                (CustomPreference) cpuCategory.findPreference("voltage_values");
         if (capabilities.voltageAvailable) {
             voltage_control.setOrder(15);
             voltage_control.setLookUpDefault(FilePath.VOLTAGE_PATH);
@@ -336,7 +350,8 @@ public class CPUFragment extends PlaceHolderFragment {
         } else {
             cpuCategory.removePreference(voltage_control);
         }
-        CustomPreference cpu_boost_control = (CustomPreference) this.root.findPreference("cpu_boost_control");
+        CustomPreference cpu_boost_control =
+                (CustomPreference) cpuCategory.findPreference("cpu_boost_control");
         if (capabilities.cpuBoostAvailable) {
             cpu_boost_control.setOrder(18);
             cpu_boost_control.setHideOnBoot(true);
@@ -365,7 +380,7 @@ public class CPUFragment extends PlaceHolderFragment {
         } else {
             cpuCategory.removePreference(cpu_boost_control);
         }
-        Preference cpu_oc_uc = this.root.findPreference("cpu_commands");
+        Preference cpu_oc_uc = cpuCategory.findPreference("cpu_commands");
         cpu_oc_uc.setEnabled(false);
         cpu_oc_uc.setOrder(20);
         cpu_oc_uc.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -377,6 +392,17 @@ public class CPUFragment extends PlaceHolderFragment {
         });
         cpuCategory.setEnabled(true);
         cpuGovernor.setEnabled(true);
+    }
+
+    private void showCpuPreferencesWhenReady() {
+        if (this.mCpuPreferencesShown || !this.mInitialCpuFrequenciesReady
+                || !this.mInitialCpuGovernorsReady || this.root == null
+                || this.mCpuCategory == null || this.mCpuGovernorCategory == null) {
+            return;
+        }
+        this.root.addPreference(this.mCpuCategory);
+        this.root.addPreference(this.mCpuGovernorCategory);
+        this.mCpuPreferencesShown = true;
     }
 
     private void loadInitialCpuSettings(final PreferenceCategory cpuCategory,
@@ -437,7 +463,7 @@ public class CPUFragment extends PlaceHolderFragment {
                                             || !isApplyToAllClustersEnabled());
                         }
                         updateGovernorSettingsAvailability();
-                        Preference legacyControl = root.findPreference("cpu_commands");
+                        Preference legacyControl = cpuCategory.findPreference("cpu_commands");
                         if (state.voltageSelections.isSuccess()) {
                             legacyControl.setEnabled(true);
                         } else {
@@ -445,6 +471,8 @@ public class CPUFragment extends PlaceHolderFragment {
                             Log.i("Aero", "Legacy overclock controls unavailable: "
                                     + state.voltageSelections.getError());
                         }
+                        mInitialCpuGovernorsReady = true;
+                        showCpuPreferencesWhenReady();
                     }
                 });
             }
@@ -1355,6 +1383,8 @@ public class CPUFragment extends PlaceHolderFragment {
     private void refreshCpuFrequencies() {
         final List<ClusterControls> controls = new ArrayList<>(this.mClusterControls);
         if (controls.isEmpty()) {
+            this.mInitialCpuFrequenciesReady = true;
+            showCpuPreferencesWhenReady();
             return;
         }
         final String[] paths = getCpuFrequencyPaths(controls);
@@ -1364,6 +1394,8 @@ public class CPUFragment extends PlaceHolderFragment {
             public void onMetrics(Map<String, String> values) {
                 if (lifecycleGeneration == mLifecycleGeneration.get() && isAdded()) {
                     applyCpuFrequencies(controls, values);
+                    mInitialCpuFrequenciesReady = true;
+                    showCpuPreferencesWhenReady();
                 }
             }
         });
