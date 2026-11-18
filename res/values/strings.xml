@@ -31,6 +31,9 @@
     <string name="undo">Undo</string>
     <string name="usage_time">Usage time</string>
     <string name="warning">Warning!</string>
+    <string name="overview_loading">Loading overview</string>
+    <string name="overview_loading_summary">Collecting device information...</string>
+    <string name="overview_temperature_loading">Scanning temperature sensors...</string>
 
     <!-- ========================================================= -->
     <!-- Navigation / Slider Drawer                                -->

@@ -5,6 +5,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -17,9 +20,12 @@ import java.util.regex.Pattern;
 public final class TegraI2cInfo {
     static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = TegraI2cInfo.class.getName();
+    private static final String TEGRA_I2C_PLATFORM_PATH = "/sys/devices/platform";
 
+    private static final Pattern TEGRA_I2C_CONTROLLER_NAME_PATTERN =
+            Pattern.compile("tegra-i2c\\.\\d+");
     private static final Pattern TEGRA_I2C_DIRECTORY_PATTERN = Pattern.compile(
-            "/sys/devices/platform(?:/tegra-i2c\\.(\\d+)"
+            Pattern.quote(TEGRA_I2C_PLATFORM_PATH) + "(?:/tegra-i2c\\.(\\d+)"
                     + "(?:/i2c-\\1(?:/\\1-[0-9a-fA-F]{4})?)?)?");
     private static final Pattern TEGRA_I2C_DEVICE_DIRECTORY_PATTERN = Pattern.compile(
             "/sys/devices/platform/tegra-i2c\\.(\\d+)/i2c-\\1/"
@@ -52,7 +58,56 @@ public final class TegraI2cInfo {
         if (path == null || !TEGRA_I2C_DIRECTORY_PATTERN.matcher(path).matches()) {
             return new String[0];
         }
+        if (!files && TEGRA_I2C_PLATFORM_PATH.equals(path)) {
+            SysfsResult<String[]> result = listPlatformControllers();
+            if (!result.isSuccess()) {
+                Log.w(LOG_TAG, result.getError());
+                return new String[0];
+            }
+            return result.getValue();
+        }
         return RootAwareDirectory.list(path, files, TEGRA_I2C_DIRECTORY_PATTERN, session);
+    }
+
+    public SysfsResult<String[]> listRootAwareTegraI2cControllers() {
+        return listPlatformControllers();
+    }
+
+    private SysfsResult<String[]> listPlatformControllers() {
+        File[] entries = null;
+        try {
+            entries = new File(TEGRA_I2C_PLATFORM_PATH).listFiles();
+        } catch (SecurityException e) {
+            Log.d(LOG_TAG, "Direct Tegra I2C directory listing denied", e);
+        }
+        if (entries != null) {
+            List<String> controllers = new ArrayList<>();
+            for (File entry : entries) {
+                if (entry.isDirectory()
+                        && TEGRA_I2C_CONTROLLER_NAME_PATTERN.matcher(entry.getName()).matches()) {
+                    controllers.add(entry.getName());
+                }
+            }
+            Collections.sort(controllers);
+            return SysfsResult.success(controllers.toArray(new String[controllers.size()]));
+        }
+
+        String command = "for entry in " + TEGRA_I2C_PLATFORM_PATH
+                + "/tegra-i2c.*; do [ -d \"$entry\" ]"
+                + " && printf '%s\\n' \"${entry##*/}\"; done";
+        String output = this.session.execute(command);
+        if (output == null) {
+            return SysfsResult.failure("Unable to list Tegra I2C controllers under "
+                    + TEGRA_I2C_PLATFORM_PATH);
+        }
+        List<String> controllers = new ArrayList<>();
+        for (String controller : output.trim().split("\\r?\\n")) {
+            if (TEGRA_I2C_CONTROLLER_NAME_PATTERN.matcher(controller).matches()) {
+                controllers.add(controller);
+            }
+        }
+        Collections.sort(controllers);
+        return SysfsResult.success(controllers.toArray(new String[controllers.size()]));
     }
 
     /**

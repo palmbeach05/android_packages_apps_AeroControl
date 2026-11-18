@@ -66,8 +66,6 @@ public class AeroFragment extends Fragment {
     private static final String POWER_SUPPLY_CURRENT_AVG_FILE = "current_avg";
     private static final String POWER_SUPPLY_ONLINE_FILE = "online";
     private static final String TEGRA_I2C_PLATFORM_DIRECTORY = "/sys/devices/platform";
-    private static final Pattern TEGRA_I2C_CONTROLLER_PATTERN =
-            Pattern.compile("tegra-i2c\\.(\\d+)");
     private static final Pattern TEGRA_I2C_BUS_PATTERN = Pattern.compile("i2c-(\\d+)");
     private static final Pattern TEGRA_I2C_DEVICE_PATTERN =
             Pattern.compile("(\\d+)-[0-9a-fA-F]{4}");
@@ -77,6 +75,8 @@ public class AeroFragment extends Fragment {
     private static final String HWMON_TEMP_LABEL_SUFFIX = "_label";
     private static final double MIN_CPU_TEMPERATURE_CELSIUS = -100.0d;
     private static final double MAX_CPU_TEMPERATURE_CELSIUS = 250.0d;
+    private static final int MESSAGE_OVERVIEW_SNAPSHOT = 1;
+    private static final int MESSAGE_OVERVIEW_TEMPERATURES = 2;
     private String gpu_file;
     private AeroAdapter mAdapter;
     private AeroData mPerformanceData;
@@ -97,16 +97,25 @@ public class AeroFragment extends Fragment {
     private ShowcaseView mShowCase;
     private ViewGroup root;
     private List<AeroData> mOverviewData = new ArrayList<AeroData>();
+    private final TegraI2cControllerCache mTegraI2cControllerCache =
+            new TegraI2cControllerCache();
     private int mActionBarHeight = 0;
     private boolean mVisible = true;
     private RefreshThread mRefreshThread = new RefreshThread();
     private Handler mRefreshHandler = new Handler() {
         @Override // android.os.Handler
         public void handleMessage(Message msg) {
-            if (msg.what == 1
-                    && AeroFragment.this.isVisible()
+            if (!AeroFragment.this.isVisible()
+                    || !AeroFragment.this.isAdded()
+                    || AeroFragment.this.getView() == null) {
+                return;
+            }
+            if (msg.what == MESSAGE_OVERVIEW_SNAPSHOT
                     && msg.obj instanceof OverviewSnapshot) {
                 AeroFragment.this.applySnapshot((OverviewSnapshot) msg.obj);
+            } else if (msg.what == MESSAGE_OVERVIEW_TEMPERATURES
+                    && msg.obj instanceof TemperatureSnapshot) {
+                AeroFragment.this.applyTemperatureSnapshot((TemperatureSnapshot) msg.obj);
             }
         }
     };
@@ -156,8 +165,27 @@ public class AeroFragment extends Fragment {
                                 "Failed to collect overview data", e);
                         snapshot = AeroFragment.this.createFallbackOverviewSnapshot();
                     }
-                    Message message = AeroFragment.this.mRefreshHandler.obtainMessage(1, snapshot);
+                    Message message = AeroFragment.this.mRefreshHandler.obtainMessage(
+                            MESSAGE_OVERVIEW_SNAPSHOT, snapshot);
                     message.sendToTarget();
+                    try {
+                        List<RawTemperature> temperatures =
+                                AeroFragment.this.getTemperatures();
+                        Message temperatureMessage =
+                                AeroFragment.this.mRefreshHandler.obtainMessage(
+                                        MESSAGE_OVERVIEW_TEMPERATURES,
+                                        new TemperatureSnapshot(temperatures));
+                        temperatureMessage.sendToTarget();
+                    } catch (RuntimeException e) {
+                        Log.e(AeroFragment.class.getName(),
+                                "Failed to collect overview temperatures", e);
+                        Message temperatureMessage =
+                                AeroFragment.this.mRefreshHandler.obtainMessage(
+                                        MESSAGE_OVERVIEW_TEMPERATURES,
+                                        new TemperatureSnapshot(
+                                                new ArrayList<RawTemperature>()));
+                        temperatureMessage.sendToTarget();
+                    }
                     sleep(3000L);
                 } catch (InterruptedException e) {
                     return;
@@ -185,7 +213,8 @@ public class AeroFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         this.mRefreshThread.cancel();
-        this.mRefreshHandler.removeMessages(1);
+        this.mRefreshHandler.removeMessages(MESSAGE_OVERVIEW_SNAPSHOT);
+        this.mRefreshHandler.removeMessages(MESSAGE_OVERVIEW_TEMPERATURES);
         this.mRefreshHandler.removeCallbacks(this.mUptimeRefreshRunnable);
         this.mAdapter = null;
         this.mOverView = null;
@@ -196,6 +225,14 @@ public class AeroFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.root = (ViewGroup) inflater.inflate(R.layout.overviewlist_item, (ViewGroup) null);
         this.mOverView = (ListView) this.root.findViewById(R.id.listView1);
+        if (this.mOverviewData.isEmpty()) {
+            this.mOverviewData.add(AeroData.standardCard(
+                    getString(R.string.overview_loading),
+                    getString(R.string.overview_loading_summary)));
+        }
+        this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item,
+                this.mOverviewData);
+        this.mOverView.setAdapter(this.mAdapter);
         String[] arr$ = FilePath.GPU_FILES_RATE;
         int len$ = arr$.length;
         int i$ = 0;
@@ -394,20 +431,22 @@ public class AeroFragment extends Fragment {
 
     private List<RawTemperature> getTegraI2cTemperatures() {
         List<RawTemperature> readings = new ArrayList<>();
-        String[] controllers = listSysfsDirectory(
-                TEGRA_I2C_PLATFORM_DIRECTORY, DirectoryEntryType.DIRECTORIES);
+        List<TegraI2cControllerCache.Controller> controllers =
+                this.mTegraI2cControllerCache.getControllers();
         if (controllers == null) {
-            return readings;
-        }
-        for (String controller : controllers) {
-            Matcher controllerMatcher = TEGRA_I2C_CONTROLLER_PATTERN.matcher(controller);
-            String controllerPath = TEGRA_I2C_PLATFORM_DIRECTORY + "/" + controller;
-            if (!controllerMatcher.matches()) {
-                Log.d(AeroFragment.class.getName(),
-                        "Rejected Tegra I2C node path: " + controllerPath);
-                continue;
+            SysfsResult<String[]> result =
+                    AeroActivity.hardware.tegraI2c().listRootAwareTegraI2cControllers();
+            if (!result.isSuccess()) {
+                Log.w(AeroFragment.class.getName(), "Unable to list "
+                        + TEGRA_I2C_PLATFORM_DIRECTORY + ": " + result.getError());
             }
-            String busNumber = controllerMatcher.group(1);
+            controllers = this.mTegraI2cControllerCache.discover(
+                    TEGRA_I2C_PLATFORM_DIRECTORY,
+                    result.isSuccess() ? result.getValue() : null);
+        }
+        for (TegraI2cControllerCache.Controller controller : controllers) {
+            String busNumber = controller.busNumber;
+            String controllerPath = controller.path;
             String[] buses = AeroActivity.hardware.tegraI2c().getRootAwareTegraI2cDirInfo(
                     controllerPath, false);
             for (String bus : buses) {
@@ -579,22 +618,22 @@ public class AeroFragment extends Fragment {
         private final String status;
         private final String voltage;
         private final String current;
-        private final String powerSource;
+        private final int powerSourceResource;
 
         private RawBattery(String level, String status, String voltage, String current,
-                String powerSource) {
+                int powerSourceResource) {
             this.level = level;
             this.status = status;
             this.voltage = voltage;
             this.current = current;
-            this.powerSource = powerSource;
+            this.powerSourceResource = powerSourceResource;
         }
     }
 
     private RawBattery getBattery() {
         String[] powerSupplies = listSysfsDirectory(POWER_SUPPLY_DIRECTORY, DirectoryEntryType.DIRECTORIES);
         if (powerSupplies == null) {
-            return new RawBattery(null, null, null, null, null);
+            return new RawBattery(null, null, null, null, 0);
         }
         String level = null;
         String status = null;
@@ -643,15 +682,15 @@ public class AeroFragment extends Fragment {
                         100000000L, 1000L, " mA", true);
             }
         }
-        String powerSource = null;
+        int powerSourceResource = 0;
         if (mainsOnline) {
-            powerSource = getString(R.string.battery_power_source_ac);
+            powerSourceResource = R.string.battery_power_source_ac;
         } else if (usbOnline) {
-            powerSource = getString(R.string.battery_power_source_usb);
+            powerSourceResource = R.string.battery_power_source_usb;
         } else if (sourceReadable) {
-            powerSource = getString(R.string.battery_power_source_battery);
+            powerSourceResource = R.string.battery_power_source_battery;
         }
-        return new RawBattery(level, status, voltage, current, powerSource);
+        return new RawBattery(level, status, voltage, current, powerSourceResource);
     }
 
     private String formatBatteryLevel(String rawLevel) {
@@ -697,13 +736,21 @@ public class AeroFragment extends Fragment {
         private List<String> coreFrequencies;
         private String gpuFrequency;
         private MemorySnapshot memory;
-        private List<RawTemperature> temperatures;
         private RawBattery battery;
         private String uptime;
     }
 
+    private static final class TemperatureSnapshot {
+        private final List<RawTemperature> temperatures;
+
+        private TemperatureSnapshot(List<RawTemperature> temperatures) {
+            this.temperatures = temperatures;
+        }
+    }
+
     /**
-     * Collects the current system values used to populate the overview screen.
+     * Collects non-temperature values first so the Overview can render before
+     * sensor discovery completes.
      *
      * @return a snapshot of the available system readings
      */
@@ -757,7 +804,6 @@ public class AeroFragment extends Fragment {
                     + memory.getError());
             snapshot.memory = MemorySnapshot.unavailable();
         }
-        snapshot.temperatures = getTemperatures();
         snapshot.battery = getBattery();
         snapshot.uptime = getUptime();
         return snapshot;
@@ -845,8 +891,7 @@ public class AeroFragment extends Fragment {
         snapshot.coreFrequencies = null;
         snapshot.gpuFrequency = NO_DATA_FOUND;
         snapshot.memory = MemorySnapshot.unavailable();
-        snapshot.temperatures = new ArrayList<>();
-        snapshot.battery = new RawBattery(null, null, null, null, null);
+        snapshot.battery = new RawBattery(null, null, null, null, 0);
         snapshot.uptime = NO_DATA_FOUND;
         return snapshot;
     }
@@ -885,6 +930,37 @@ public class AeroFragment extends Fragment {
         } else {
             this.mRAMData.content = formatMemorySnapshot(snapshot.memory);
         }
+        if (this.mTemperatureData == null) {
+            List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
+            temperatures.add(new AeroData.TemperatureReading(
+                    getString(R.string.temperature_status),
+                    getString(R.string.overview_temperature_loading)));
+            this.mTemperatureData = AeroData.temperatureCard(
+                    getString(R.string.overview_section_temperatures), temperatures);
+        }
+        AeroData.BatteryReading battery = new AeroData.BatteryReading(
+                getOverviewDisplayValue(snapshot.battery == null ? null : snapshot.battery.level),
+                getOverviewDisplayValue(snapshot.battery == null ? null : snapshot.battery.status),
+                snapshot.battery == null ? null : snapshot.battery.voltage,
+                snapshot.battery == null ? null : snapshot.battery.current,
+                snapshot.battery == null || snapshot.battery.powerSourceResource == 0
+                        ? null : getString(snapshot.battery.powerSourceResource));
+        if (this.mBatteryData == null) {
+            this.mBatteryData = AeroData.batteryCard(battery);
+        } else {
+            this.mBatteryData.batteryReading = battery;
+        }
+
+        rebuildOrderedOverview();
+        if (this.mAdapter == null) {
+            this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item, this.mOverviewData);
+            this.mOverView.setAdapter((ListAdapter) this.mAdapter);
+        } else {
+            this.mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void applyTemperatureSnapshot(TemperatureSnapshot snapshot) {
         List<AeroData.TemperatureReading> temperatures = new ArrayList<>();
         for (int i = 0; i < snapshot.temperatures.size(); i++) {
             RawTemperature reading = snapshot.temperatures.get(i);
@@ -905,23 +981,7 @@ public class AeroFragment extends Fragment {
         } else {
             this.mTemperatureData.temperatures = temperatures;
         }
-        AeroData.BatteryReading battery = new AeroData.BatteryReading(
-                getOverviewDisplayValue(snapshot.battery == null ? null : snapshot.battery.level),
-                getOverviewDisplayValue(snapshot.battery == null ? null : snapshot.battery.status),
-                snapshot.battery == null ? null : snapshot.battery.voltage,
-                snapshot.battery == null ? null : snapshot.battery.current,
-                snapshot.battery == null ? null : snapshot.battery.powerSource);
-        if (this.mBatteryData == null) {
-            this.mBatteryData = AeroData.batteryCard(battery);
-        } else {
-            this.mBatteryData.batteryReading = battery;
-        }
-
-        rebuildOrderedOverview();
-        if (this.mAdapter == null) {
-            this.mAdapter = new AeroAdapter(getActivity(), R.layout.overviewlist_item, this.mOverviewData);
-            this.mOverView.setAdapter((ListAdapter) this.mAdapter);
-        } else {
+        if (this.mAdapter != null) {
             this.mAdapter.notifyDataSetChanged();
         }
     }
