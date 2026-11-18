@@ -67,6 +67,7 @@ public class CPUFragment extends PlaceHolderFragment {
     private ShowcaseView mShowCase;
     private VoltageFragment mVoltageFragment;
     private PreferenceScreen root;
+    private Preference mCpuLoadingPreference;
     private PreferenceCategory mCpuCategory;
     private PreferenceCategory mCpuGovernorCategory;
     private final CpuClusterHelper mClusterHelper = new CpuClusterHelper();
@@ -92,8 +93,6 @@ public class CPUFragment extends PlaceHolderFragment {
     private HardwareMetricsPoller.Subscription mMetricsSubscription;
     private boolean mWantsMetricsPolling;
     private boolean mGovernorSettingsReady;
-    private boolean mInitialCpuFrequenciesReady;
-    private boolean mInitialCpuGovernorsReady;
     private boolean mCpuPreferencesShown;
     private volatile boolean mTableUpdate;
 
@@ -104,19 +103,28 @@ public class CPUFragment extends PlaceHolderFragment {
         private final CustomListPreference maxFrequency;
         private final CustomListPreference minFrequency;
         private final CustomListPreference governor;
+        private final Preference governorRetry;
+        private boolean governorRetryShown;
+        private boolean maxFrequencyReady;
+        private boolean minFrequencyReady;
         private boolean governorReady;
         private boolean governorChangePending;
+        private boolean governorReadPending;
+        private int governorReadGeneration;
         private int governorChangeGeneration;
         /** Last max/min frequency committed by a serialized mirror operation, ahead of the value reflected by the preference itself. Null until a mirror operation commits a value. */
         private String pendingMaxFrequency;
         private String pendingMinFrequency;
 
-        private ClusterControls(int index, CpuClusterHelper.Cluster cluster, CustomListPreference maxFrequency, CustomListPreference minFrequency, CustomListPreference governor) {
+        private ClusterControls(int index, CpuClusterHelper.Cluster cluster,
+                CustomListPreference maxFrequency, CustomListPreference minFrequency,
+                CustomListPreference governor, Preference governorRetry) {
             this.index = index;
             this.cluster = cluster;
             this.maxFrequency = maxFrequency;
             this.minFrequency = minFrequency;
             this.governor = governor;
+            this.governorRetry = governorRetry;
         }
     }
 
@@ -124,23 +132,14 @@ public class CPUFragment extends PlaceHolderFragment {
         private final ClusterControls controls;
         private final SysfsResult<String[]> available;
         private final SysfsResult<String> current;
+        private final int requestGeneration;
 
         private GovernorInitialState(ClusterControls controls, SysfsResult<String[]> available,
-                SysfsResult<String> current) {
+                SysfsResult<String> current, int requestGeneration) {
             this.controls = controls;
             this.available = available;
             this.current = current;
-        }
-    }
-
-    private static final class CpuInitialState {
-        private final List<GovernorInitialState> governors;
-        private final SysfsResult<int[]> voltageSelections;
-
-        private CpuInitialState(List<GovernorInitialState> governors,
-                SysfsResult<int[]> voltageSelections) {
-            this.governors = governors;
-            this.voltageSelections = voltageSelections;
+            this.requestGeneration = requestGeneration;
         }
     }
 
@@ -163,8 +162,6 @@ public class CPUFragment extends PlaceHolderFragment {
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.mGovernorSettingsReady = false;
-        this.mInitialCpuFrequenciesReady = false;
-        this.mInitialCpuGovernorsReady = false;
         this.mCpuPreferencesShown = false;
         this.mMirrorExecutor = Executors.newSingleThreadExecutor();
         final int lifecycleGeneration = this.mLifecycleGeneration.get();
@@ -181,6 +178,11 @@ public class CPUFragment extends PlaceHolderFragment {
         cpuGovernor.setEnabled(false);
         this.root.removePreference(cpuCategory);
         this.root.removePreference(cpuGovernor);
+        this.mCpuLoadingPreference = new Preference(getActivity());
+        this.mCpuLoadingPreference.setTitle(R.string.pref_cpu_detection_loading);
+        this.mCpuLoadingPreference.setSummary(R.string.pref_cpu_detection_loading_summary);
+        this.mCpuLoadingPreference.setSelectable(false);
+        this.root.addPreference(this.mCpuLoadingPreference);
         loadCpuCapabilities(cpuCategory, cpuGovernor, lifecycleGeneration);
         if (this.PrefCat != null) {
             this.root.removePreference(this.PrefCat);
@@ -232,9 +234,10 @@ public class CPUFragment extends PlaceHolderFragment {
             CharSequence maxFrequencyTitle = singleCluster ? getString(R.string.pref_max_freq_cpu) : getString(R.string.pref_max_freq_cpu_cluster, cpuRange);
             maxFrequency.setTitle(maxFrequencyTitle);
             maxFrequency.setDialogTitle(maxFrequencyTitle);
-            maxFrequency.setSummary(maxFrequencyTitle);
+            maxFrequency.setSummary(R.string.pref_cpu_control_loading);
             maxFrequency.setDialogIcon(R.drawable.lightning);
             maxFrequency.setOrder(i * 2);
+            maxFrequency.setEnabled(false);
             cpuCategory.addPreference(maxFrequency);
 
             CustomListPreference minFrequency = new CustomListPreference(getActivity());
@@ -242,9 +245,10 @@ public class CPUFragment extends PlaceHolderFragment {
             CharSequence minFrequencyTitle = singleCluster ? getString(R.string.pref_min_freq_cpu) : getString(R.string.pref_min_freq_cpu_cluster, cpuRange);
             minFrequency.setTitle(minFrequencyTitle);
             minFrequency.setDialogTitle(minFrequencyTitle);
-            minFrequency.setSummary(minFrequencyTitle);
+            minFrequency.setSummary(R.string.pref_cpu_control_loading);
             minFrequency.setDialogIcon(R.drawable.lightning);
             minFrequency.setOrder((i * 2) + 1);
+            minFrequency.setEnabled(false);
             cpuCategory.addPreference(minFrequency);
 
             CustomListPreference governor = new CustomListPreference(getActivity());
@@ -256,13 +260,26 @@ public class CPUFragment extends PlaceHolderFragment {
             governor.setEntries(availableGovernors);
             governor.setEntryValues(availableGovernors);
             governor.setValue(NO_DATA_FOUND);
-            governor.setSummary(NO_DATA_FOUND);
+            governor.setSummary(R.string.pref_cpu_governor_loading);
             governor.setEnabled(false);
             governor.setDialogIcon(R.drawable.cpu);
             governor.setOrder(i);
             cpuGovernor.addPreference(governor);
 
-            ClusterControls controls = new ClusterControls(i, cluster, maxFrequency, minFrequency, governor);
+            final ClusterControls controls = new ClusterControls(i, cluster, maxFrequency,
+                    minFrequency, governor, new Preference(getActivity()));
+            controls.governorRetry.setTitle(getString(R.string.pref_cpu_governor_retry,
+                    cluster.getMemberRangeLabel()));
+            controls.governorRetry.setSummary(R.string.pref_cpu_governor_retry_summary);
+            controls.governorRetry.setOrder(clusters.size() + i);
+            controls.governorRetry.setOnPreferenceClickListener(
+                    new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            retryGovernorInitialization(controls);
+                            return true;
+                        }
+                    });
             this.mClusterControls.add(controls);
             attachFrequencyListeners(controls);
             attachGovernorListener(controls);
@@ -382,6 +399,7 @@ public class CPUFragment extends PlaceHolderFragment {
         }
         Preference cpu_oc_uc = cpuCategory.findPreference("cpu_commands");
         cpu_oc_uc.setEnabled(false);
+        cpu_oc_uc.setSummary(R.string.pref_cpu_legacy_loading);
         cpu_oc_uc.setOrder(20);
         cpu_oc_uc.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override // android.preference.Preference.OnPreferenceClickListener
@@ -392,34 +410,40 @@ public class CPUFragment extends PlaceHolderFragment {
         });
         cpuCategory.setEnabled(true);
         cpuGovernor.setEnabled(true);
+        showCpuPreferencesWhenReady();
     }
 
     private void showCpuPreferencesWhenReady() {
-        if (this.mCpuPreferencesShown || !this.mInitialCpuFrequenciesReady
-                || !this.mInitialCpuGovernorsReady || this.root == null
-                || this.mCpuCategory == null || this.mCpuGovernorCategory == null) {
+        if (this.mCpuPreferencesShown || this.root == null || this.mCpuCategory == null
+                || this.mCpuGovernorCategory == null) {
             return;
         }
         this.root.addPreference(this.mCpuCategory);
         this.root.addPreference(this.mCpuGovernorCategory);
+        this.root.removePreference(this.mCpuLoadingPreference);
         this.mCpuPreferencesShown = true;
     }
 
     private void loadInitialCpuSettings(final PreferenceCategory cpuCategory,
             final int lifecycleGeneration) {
+        final List<Integer> requestGenerations = new ArrayList<>();
+        for (ClusterControls controls : this.mClusterControls) {
+            controls.governorReadPending = true;
+            requestGenerations.add(Integer.valueOf(++controls.governorReadGeneration));
+        }
         HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
             @Override
             public void run() {
                 final List<GovernorInitialState> governors = new ArrayList<>();
-                for (ClusterControls controls : mClusterControls) {
+                for (int i = 0; i < mClusterControls.size(); i++) {
+                    ClusterControls controls = mClusterControls.get(i);
                     SysfsResult<String[]> available = AeroActivity.hardware.cpu()
                             .readAvailableGovernors(controls.cluster);
                     SysfsResult<String> current = AeroActivity.hardware.cpu()
                             .readGovernor(controls.cluster);
-                    governors.add(new GovernorInitialState(controls, available, current));
+                    governors.add(new GovernorInitialState(controls, available, current,
+                            requestGenerations.get(i).intValue()));
                 }
-                final CpuInitialState state = new CpuInitialState(governors,
-                        AeroActivity.hardware.legacyOverclock().readVoltageSelections());
                 AeroActivity.mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -427,52 +451,119 @@ public class CPUFragment extends PlaceHolderFragment {
                                 || lifecycleGeneration != mLifecycleGeneration.get()) {
                             return;
                         }
-                        for (GovernorInitialState governor : state.governors) {
-                            if (!governor.available.isSuccess()
-                                    || !governor.current.isSuccess()) {
-                                Log.w("Aero", "Unable to initialize CPU governor for cluster "
-                                        + governor.controls.index + ": "
-                                        + (!governor.available.isSuccess()
-                                        ? governor.available.getError()
-                                        : governor.current.getError()));
-                                governor.controls.governorReady = false;
-                                continue;
-                            }
-                            String[] availableValues = governor.available.getValue();
-                            if (availableValues.length == 0) {
-                                Log.w("Aero", "No CPU governors available for cluster "
-                                        + governor.controls.index);
-                                governor.controls.governorReady = false;
-                                continue;
-                            }
-                            String currentGovernor = governor.current.getValue();
-                            if (currentGovernor == null || currentGovernor.length() == 0
-                                    || NO_DATA_FOUND.equals(currentGovernor)) {
-                                Log.w("Aero", "No current CPU governor available for cluster "
-                                        + governor.controls.index);
-                                governor.controls.governorReady = false;
-                                continue;
-                            }
-                            governor.controls.governorReady = true;
-                            governor.controls.governor.setEntries(availableValues);
-                            governor.controls.governor.setEntryValues(availableValues);
-                            governor.controls.governor.setValue(currentGovernor);
-                            governor.controls.governor.setSummary(currentGovernor);
-                            governor.controls.governor.setEnabled(
-                                    governor.controls.index == 0
-                                            || !isApplyToAllClustersEnabled());
+                        for (GovernorInitialState governor : governors) {
+                            applyGovernorInitialState(governor);
                         }
                         updateGovernorSettingsAvailability();
+                    }
+                });
+                final SysfsResult<int[]> voltageSelections =
+                        AeroActivity.hardware.legacyOverclock().readVoltageSelections();
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()
+                                || lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
                         Preference legacyControl = cpuCategory.findPreference("cpu_commands");
-                        if (state.voltageSelections.isSuccess()) {
+                        if (voltageSelections.isSuccess()) {
                             legacyControl.setEnabled(true);
+                            legacyControl.setSummary(R.string.perf_live_oc_uc_summary);
                         } else {
                             cpuCategory.removePreference(legacyControl);
                             Log.i("Aero", "Legacy overclock controls unavailable: "
-                                    + state.voltageSelections.getError());
+                                    + voltageSelections.getError());
                         }
-                        mInitialCpuGovernorsReady = true;
-                        showCpuPreferencesWhenReady();
+                    }
+                });
+            }
+        });
+    }
+
+    private void applyGovernorInitialState(GovernorInitialState state) {
+        ClusterControls controls = state.controls;
+        if (state.requestGeneration != controls.governorReadGeneration) {
+            return;
+        }
+        controls.governorReadPending = false;
+        String failure = null;
+        if (!state.available.isSuccess()) {
+            failure = state.available.getError();
+        } else if (!state.current.isSuccess()) {
+            failure = state.current.getError();
+        } else if (state.available.getValue().length == 0) {
+            failure = "No CPU governors available";
+        } else {
+            String currentGovernor = state.current.getValue();
+            if (currentGovernor == null || currentGovernor.length() == 0
+                    || NO_DATA_FOUND.equals(currentGovernor)) {
+                failure = "No current CPU governor available";
+            } else {
+                controls.governorReady = true;
+                controls.governor.setEntries(state.available.getValue());
+                controls.governor.setEntryValues(state.available.getValue());
+                controls.governor.setValue(currentGovernor);
+                controls.governor.setSummary(currentGovernor);
+                controls.governor.setEnabled(controls.index == 0
+                        || !isApplyToAllClustersEnabled());
+                clearGovernorRetry(controls);
+                return;
+            }
+        }
+        showGovernorRetry(controls);
+        Log.w("Aero", "Unable to initialize CPU governor for cluster "
+                + controls.index + ": " + failure);
+        updateClusterControlsEnabled(isApplyToAllClustersEnabled());
+    }
+
+    private void showGovernorRetry(ClusterControls controls) {
+        controls.governorReady = false;
+        controls.governor.setValue(NO_DATA_FOUND);
+        controls.governor.setSummary(R.string.unavailable);
+        controls.governor.setEnabled(false);
+        controls.governorRetry.setEnabled(true);
+        if (!controls.governorRetryShown) {
+            this.mCpuGovernorCategory.addPreference(controls.governorRetry);
+            controls.governorRetryShown = true;
+        }
+    }
+
+    private void clearGovernorRetry(ClusterControls controls) {
+        if (controls.governorRetryShown) {
+            this.mCpuGovernorCategory.removePreference(controls.governorRetry);
+            controls.governorRetryShown = false;
+        }
+    }
+
+    private void retryGovernorInitialization(final ClusterControls controls) {
+        if (controls.governorReadPending) {
+            return;
+        }
+        controls.governorReadPending = true;
+        final int requestGeneration = ++controls.governorReadGeneration;
+        final int lifecycleGeneration = this.mLifecycleGeneration.get();
+        controls.governor.setEnabled(false);
+        controls.governor.setSummary(R.string.pref_cpu_governor_loading);
+        controls.governorRetry.setEnabled(false);
+        HardwareMetricsPoller.instance().executeOnWorker(new Runnable() {
+            @Override
+            public void run() {
+                SysfsResult<String[]> available = AeroActivity.hardware.cpu()
+                        .readAvailableGovernors(controls.cluster);
+                SysfsResult<String> current = AeroActivity.hardware.cpu()
+                        .readGovernor(controls.cluster);
+                final GovernorInitialState state = new GovernorInitialState(controls,
+                        available, current, requestGeneration);
+                AeroActivity.mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()
+                                || lifecycleGeneration != mLifecycleGeneration.get()) {
+                            return;
+                        }
+                        applyGovernorInitialState(state);
+                        updateGovernorSettingsAvailability();
                     }
                 });
             }
@@ -777,6 +868,8 @@ public class CPUFragment extends PlaceHolderFragment {
                     controls.governorChangePending = true;
                     final int governorChangeGeneration =
                             ++controls.governorChangeGeneration;
+                    updateClusterControlsEnabled(
+                            isApplyToAllClustersEnabled());
                     updateGovernorSettingsAvailability();
                     final int lifecycleGeneration = mLifecycleGeneration.get();
                     mMirrorExecutor.execute(new Runnable() {
@@ -822,9 +915,12 @@ public class CPUFragment extends PlaceHolderFragment {
                                             controls.governor.setValue(capturedGovernor);
                                         }
                                         controls.governorReady = true;
+                                        clearGovernorRetry(controls);
                                     } else {
-                                        controls.governorReady = false;
+                                        showGovernorRetry(controls);
                                     }
+                                    updateClusterControlsEnabled(
+                                            isApplyToAllClustersEnabled());
                                     updateGovernorSettingsAvailability();
                                 }
                             });
@@ -863,13 +959,17 @@ public class CPUFragment extends PlaceHolderFragment {
         }
     }
 
-    /** Enables or disables the max-frequency, min-frequency and governor controls for every cluster after the first. */
+    /** Applies readiness and apply-to-all state to each cluster's controls. */
     private void updateClusterControlsEnabled(boolean applyToAll) {
-        for (int i = 1; i < this.mClusterControls.size(); i++) {
-            ClusterControls controls = this.mClusterControls.get(i);
-            controls.maxFrequency.setEnabled(!applyToAll);
-            controls.minFrequency.setEnabled(!applyToAll);
-            controls.governor.setEnabled(!applyToAll);
+        for (ClusterControls controls : this.mClusterControls) {
+            boolean clusterEnabled = controls.index == 0 || !applyToAll;
+            controls.maxFrequency.setEnabled(
+                    controls.maxFrequencyReady && clusterEnabled);
+            controls.minFrequency.setEnabled(
+                    controls.minFrequencyReady && clusterEnabled);
+            controls.governor.setEnabled(controls.governorReady
+                    && !controls.governorChangePending && !controls.governorReadPending
+                    && clusterEnabled);
         }
     }
 
@@ -1099,6 +1199,7 @@ public class CPUFragment extends PlaceHolderFragment {
             controls.governorChangePending = true;
             changeGenerations[i] = ++controls.governorChangeGeneration;
         }
+        updateClusterControlsEnabled(isApplyToAllClustersEnabled());
         updateGovernorSettingsAvailability();
         final int requestGeneration = mGovernorMirrorGeneration.incrementAndGet();
         final int lifecycleGeneration = mLifecycleGeneration.get();
@@ -1164,11 +1265,13 @@ public class CPUFragment extends PlaceHolderFragment {
                                     target.governor.setSummary(currentGovernor);
                                     target.governor.setValue(currentGovernor);
                                     target.governorReady = true;
+                                    clearGovernorRetry(target);
                                 } else {
-                                    target.governorReady = false;
+                                    showGovernorRetry(target);
                                 }
                             }
                         }
+                        updateClusterControlsEnabled(isApplyToAllClustersEnabled());
                         updateGovernorSettingsAvailability();
                     }
                 });
@@ -1383,8 +1486,6 @@ public class CPUFragment extends PlaceHolderFragment {
     private void refreshCpuFrequencies() {
         final List<ClusterControls> controls = new ArrayList<>(this.mClusterControls);
         if (controls.isEmpty()) {
-            this.mInitialCpuFrequenciesReady = true;
-            showCpuPreferencesWhenReady();
             return;
         }
         final String[] paths = getCpuFrequencyPaths(controls);
@@ -1394,8 +1495,6 @@ public class CPUFragment extends PlaceHolderFragment {
             public void onMetrics(Map<String, String> values) {
                 if (lifecycleGeneration == mLifecycleGeneration.get() && isAdded()) {
                     applyCpuFrequencies(controls, values);
-                    mInitialCpuFrequenciesReady = true;
-                    showCpuPreferencesWhenReady();
                 }
             }
         });
@@ -1488,6 +1587,10 @@ public class CPUFragment extends PlaceHolderFragment {
             String[] maxEntries = formatFrequencyEntries(maxEntryValues);
 
             synchronized (this.mPreferenceLock) {
+                cluster.minFrequencyReady = minValue != null
+                        && !NO_DATA_FOUND.equals(minValue);
+                cluster.maxFrequencyReady = maxValue != null
+                        && !NO_DATA_FOUND.equals(maxValue);
                 cluster.minFrequency.setEntries(minEntries);
                 cluster.minFrequency.setEntryValues(minEntryValues);
                 cluster.maxFrequency.setEntries(maxEntries);
@@ -1512,6 +1615,7 @@ public class CPUFragment extends PlaceHolderFragment {
                 }
             }
         }
+        updateClusterControlsEnabled(isApplyToAllClustersEnabled());
     }
 
     private String[] formatFrequencyEntries(String[] frequencies) {
