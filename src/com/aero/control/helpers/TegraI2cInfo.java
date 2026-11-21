@@ -21,7 +21,9 @@ public final class TegraI2cInfo {
     static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = TegraI2cInfo.class.getName();
     private static final String TEGRA_I2C_PLATFORM_PATH = "/sys/devices/platform";
-    private static final String TEGRA_I2C_LIST_MARKER = "__AERO_TEGRA_I2C_LIST__";
+    static final String TEGRA_I2C_LIST_START_MARKER = "__AERO_TEGRA_I2C_LIST_START__";
+    static final String TEGRA_I2C_LIST_END_MARKER = "__AERO_TEGRA_I2C_LIST_END__";
+    static final String TEGRA_I2C_LIST_FAILURE_MARKER = "__AERO_TEGRA_I2C_LIST_FAILED__";
 
     private static final Pattern TEGRA_I2C_CONTROLLER_NAME_PATTERN =
             Pattern.compile("tegra-i2c\\.\\d+");
@@ -93,28 +95,55 @@ public final class TegraI2cInfo {
             return SysfsResult.success(controllers.toArray(new String[controllers.size()]));
         }
 
-        String command = "if [ -d " + escapePlatformPath(TEGRA_I2C_PLATFORM_PATH)
-                + " ]; then printf '%s\\n' " + TEGRA_I2C_LIST_MARKER
-                + "; for entry in " + TEGRA_I2C_PLATFORM_PATH
-                + "/tegra-i2c.*; do [ -d \"$entry\" ]"
-                + " && printf '%s\\n' \"${entry##*/}\"; done; fi";
+        String path = escapePlatformPath(TEGRA_I2C_PLATFORM_PATH);
+        String command = "listing=$(ls " + path + " 2>/dev/null); status=$?; "
+                + "if [ \"$status\" -eq 0 ]; then printf '%s\\n' "
+                + TEGRA_I2C_LIST_START_MARKER + "; printf '%s\\n' \"$listing\"; "
+                + "printf '%s\\n' " + TEGRA_I2C_LIST_END_MARKER
+                + "; else printf '%s\\n' " + TEGRA_I2C_LIST_FAILURE_MARKER + "; fi";
         String output = this.session.execute(command);
         if (output == null) {
             return SysfsResult.failure("Unable to list Tegra I2C controllers under "
                     + TEGRA_I2C_PLATFORM_PATH);
         }
-        if (!output.contains(TEGRA_I2C_LIST_MARKER)) {
-            return SysfsResult.failure("Unable to enumerate "
-                    + TEGRA_I2C_PLATFORM_PATH);
+        return parseRootControllerListing(output);
+    }
+
+    static SysfsResult<String[]> parseRootControllerListing(String output) {
+        if (output == null) {
+            return SysfsResult.failure("Tegra I2C controller listing returned no result");
         }
         List<String> controllers = new ArrayList<>();
-        for (String controller : output.trim().split("\\r?\\n")) {
-            if (TEGRA_I2C_LIST_MARKER.equals(controller)) {
+        boolean listingStarted = false;
+        boolean listingCompleted = false;
+        String[] lines = output.split("\\r?\\n");
+        for (String line : lines) {
+            if (TEGRA_I2C_LIST_FAILURE_MARKER.equals(line)) {
+                return SysfsResult.failure("Unable to enumerate "
+                        + TEGRA_I2C_PLATFORM_PATH);
+            }
+            if (TEGRA_I2C_LIST_START_MARKER.equals(line)) {
+                if (listingStarted) {
+                    return SysfsResult.failure("Invalid Tegra I2C controller listing");
+                }
+                listingStarted = true;
                 continue;
             }
-            if (TEGRA_I2C_CONTROLLER_NAME_PATTERN.matcher(controller).matches()) {
-                controllers.add(controller);
+            if (TEGRA_I2C_LIST_END_MARKER.equals(line)) {
+                if (!listingStarted) {
+                    return SysfsResult.failure("Invalid Tegra I2C controller listing");
+                }
+                listingCompleted = true;
+                break;
             }
+            if (listingStarted
+                    && TEGRA_I2C_CONTROLLER_NAME_PATTERN.matcher(line).matches()) {
+                controllers.add(line);
+            }
+        }
+        if (!listingStarted || !listingCompleted) {
+            return SysfsResult.failure("Unable to enumerate "
+                    + TEGRA_I2C_PLATFORM_PATH);
         }
         Collections.sort(controllers);
         return SysfsResult.success(controllers.toArray(new String[controllers.size()]));
