@@ -65,4 +65,28 @@ public class TegraI2cControllerCacheTest {
         assertTrue(first == second);
         assertEquals("4", second.get(0).busNumber);
     }
+
+    @Test
+    public void failedDiscoveryUsesBoundedRetryBackoff() {
+        TegraI2cControllerCache cache = new TegraI2cControllerCache();
+
+        assertTrue(cache.canRetry(0L));
+        assertTrue(cache.discover(PLATFORM_DIRECTORY, null, 0L).isEmpty());
+        assertFalse(cache.canRetry(4999L));
+        assertTrue(cache.canRetry(5000L));
+
+        assertTrue(cache.discover(PLATFORM_DIRECTORY, null, 5000L).isEmpty());
+        assertFalse(cache.canRetry(14999L));
+        assertTrue(cache.canRetry(15000L));
+    }
+
+    @Test
+    public void successfulEmptyDiscoveryIsCached() {
+        TegraI2cControllerCache cache = new TegraI2cControllerCache();
+
+        assertTrue(cache.discover(
+                PLATFORM_DIRECTORY, new String[] {"serial8250"}, 1000L).isEmpty());
+        assertTrue(cache.isInitialized());
+        assertFalse(cache.canRetry(60000L));
+    }
 }

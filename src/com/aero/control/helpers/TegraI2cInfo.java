@@ -21,6 +21,7 @@ public final class TegraI2cInfo {
     static final String NO_DATA_FOUND = "Unavailable";
     private static final String LOG_TAG = TegraI2cInfo.class.getName();
     private static final String TEGRA_I2C_PLATFORM_PATH = "/sys/devices/platform";
+    private static final String TEGRA_I2C_LIST_MARKER = "__AERO_TEGRA_I2C_LIST__";
 
     private static final Pattern TEGRA_I2C_CONTROLLER_NAME_PATTERN =
             Pattern.compile("tegra-i2c\\.\\d+");
@@ -92,22 +93,35 @@ public final class TegraI2cInfo {
             return SysfsResult.success(controllers.toArray(new String[controllers.size()]));
         }
 
-        String command = "for entry in " + TEGRA_I2C_PLATFORM_PATH
+        String command = "if [ -d " + escapePlatformPath(TEGRA_I2C_PLATFORM_PATH)
+                + " ]; then printf '%s\\n' " + TEGRA_I2C_LIST_MARKER
+                + "; for entry in " + TEGRA_I2C_PLATFORM_PATH
                 + "/tegra-i2c.*; do [ -d \"$entry\" ]"
-                + " && printf '%s\\n' \"${entry##*/}\"; done";
+                + " && printf '%s\\n' \"${entry##*/}\"; done; fi";
         String output = this.session.execute(command);
         if (output == null) {
             return SysfsResult.failure("Unable to list Tegra I2C controllers under "
                     + TEGRA_I2C_PLATFORM_PATH);
         }
+        if (!output.contains(TEGRA_I2C_LIST_MARKER)) {
+            return SysfsResult.failure("Unable to enumerate "
+                    + TEGRA_I2C_PLATFORM_PATH);
+        }
         List<String> controllers = new ArrayList<>();
         for (String controller : output.trim().split("\\r?\\n")) {
+            if (TEGRA_I2C_LIST_MARKER.equals(controller)) {
+                continue;
+            }
             if (TEGRA_I2C_CONTROLLER_NAME_PATTERN.matcher(controller).matches()) {
                 controllers.add(controller);
             }
         }
         Collections.sort(controllers);
         return SysfsResult.success(controllers.toArray(new String[controllers.size()]));
+    }
+
+    private static String escapePlatformPath(String path) {
+        return RootShellSession.escapeShellArg(path);
     }
 
     /**

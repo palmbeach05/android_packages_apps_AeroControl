@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -99,6 +100,7 @@ public class AeroFragment extends Fragment {
     private List<AeroData> mOverviewData = new ArrayList<AeroData>();
     private final TegraI2cControllerCache mTegraI2cControllerCache =
             new TegraI2cControllerCache();
+    private int mViewGeneration;
     private int mActionBarHeight = 0;
     private boolean mVisible = true;
     private RefreshThread mRefreshThread = new RefreshThread();
@@ -108,6 +110,9 @@ public class AeroFragment extends Fragment {
             if (!AeroFragment.this.isVisible()
                     || !AeroFragment.this.isAdded()
                     || AeroFragment.this.getView() == null) {
+                return;
+            }
+            if (msg.arg1 != AeroFragment.this.mViewGeneration) {
                 return;
             }
             if (msg.what == MESSAGE_OVERVIEW_SNAPSHOT
@@ -157,6 +162,7 @@ public class AeroFragment extends Fragment {
         public void run() {
             while (!this.mInterrupt) {
                 try {
+                    int viewGeneration = AeroFragment.this.mViewGeneration;
                     OverviewSnapshot snapshot;
                     try {
                         snapshot = AeroFragment.this.collectOverviewData();
@@ -165,23 +171,37 @@ public class AeroFragment extends Fragment {
                                 "Failed to collect overview data", e);
                         snapshot = AeroFragment.this.createFallbackOverviewSnapshot();
                     }
+                    if (this.mInterrupt
+                            || viewGeneration != AeroFragment.this.mViewGeneration) {
+                        return;
+                    }
                     Message message = AeroFragment.this.mRefreshHandler.obtainMessage(
-                            MESSAGE_OVERVIEW_SNAPSHOT, snapshot);
+                            MESSAGE_OVERVIEW_SNAPSHOT, viewGeneration, 0, snapshot);
                     message.sendToTarget();
                     try {
                         List<RawTemperature> temperatures =
                                 AeroFragment.this.getTemperatures();
+                        if (this.mInterrupt
+                                || viewGeneration != AeroFragment.this.mViewGeneration) {
+                            return;
+                        }
                         Message temperatureMessage =
                                 AeroFragment.this.mRefreshHandler.obtainMessage(
                                         MESSAGE_OVERVIEW_TEMPERATURES,
+                                        viewGeneration, 0,
                                         new TemperatureSnapshot(temperatures));
                         temperatureMessage.sendToTarget();
                     } catch (RuntimeException e) {
                         Log.e(AeroFragment.class.getName(),
                                 "Failed to collect overview temperatures", e);
+                        if (this.mInterrupt
+                                || viewGeneration != AeroFragment.this.mViewGeneration) {
+                            return;
+                        }
                         Message temperatureMessage =
                                 AeroFragment.this.mRefreshHandler.obtainMessage(
                                         MESSAGE_OVERVIEW_TEMPERATURES,
+                                        viewGeneration, 0,
                                         new TemperatureSnapshot(
                                                 new ArrayList<RawTemperature>()));
                         temperatureMessage.sendToTarget();
@@ -212,6 +232,7 @@ public class AeroFragment extends Fragment {
     @Override // android.app.Fragment
     public void onDestroyView() {
         super.onDestroyView();
+        this.mViewGeneration++;
         this.mRefreshThread.cancel();
         this.mRefreshHandler.removeMessages(MESSAGE_OVERVIEW_SNAPSHOT);
         this.mRefreshHandler.removeMessages(MESSAGE_OVERVIEW_TEMPERATURES);
@@ -223,6 +244,7 @@ public class AeroFragment extends Fragment {
 
     @Override // android.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.mViewGeneration++;
         this.root = (ViewGroup) inflater.inflate(R.layout.overviewlist_item, (ViewGroup) null);
         this.mOverView = (ListView) this.root.findViewById(R.id.listView1);
         if (this.mOverviewData.isEmpty()) {
@@ -434,6 +456,10 @@ public class AeroFragment extends Fragment {
         List<TegraI2cControllerCache.Controller> controllers =
                 this.mTegraI2cControllerCache.getControllers();
         if (controllers == null) {
+            long nowElapsedRealtimeMs = SystemClock.elapsedRealtime();
+            if (!this.mTegraI2cControllerCache.canRetry(nowElapsedRealtimeMs)) {
+                return readings;
+            }
             SysfsResult<String[]> result =
                     AeroActivity.hardware.tegraI2c().listRootAwareTegraI2cControllers();
             if (!result.isSuccess()) {
@@ -442,7 +468,8 @@ public class AeroFragment extends Fragment {
             }
             controllers = this.mTegraI2cControllerCache.discover(
                     TEGRA_I2C_PLATFORM_DIRECTORY,
-                    result.isSuccess() ? result.getValue() : null);
+                    result.isSuccess() ? result.getValue() : null,
+                    nowElapsedRealtimeMs);
         }
         for (TegraI2cControllerCache.Controller controller : controllers) {
             String busNumber = controller.busNumber;
