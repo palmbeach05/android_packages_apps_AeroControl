@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -19,6 +20,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class RootShellSession {
     private static final int MAX_RESULT_LEN = 65536;
     private static final long DEFAULT_COMMAND_TIMEOUT_MS = 5000L;
+    private static final long INITIAL_RECOVERY_DELAY_MS = 1000L;
+    private static final long MAX_RECOVERY_DELAY_MS = 30000L;
+    private static final long SLOW_OPERATION_LOG_THRESHOLD_MS = 250L;
     private static final String LOG_TAG = RootShellSession.class.getName();
     private static final AtomicLong COMMAND_SEQUENCE = new AtomicLong();
 
@@ -28,6 +32,8 @@ public final class RootShellSession {
     private DataOutputStream mShellOutput = null;
     private BufferedReader mOutput = null;
     private boolean mShellLoaded = false;
+    private int mConsecutiveFailures;
+    private long mRetryAtNanos;
 
     public RootShellSession() {
         this(DEFAULT_COMMAND_TIMEOUT_MS);
@@ -47,9 +53,16 @@ public final class RootShellSession {
         if (this.mCommands == null) {
             this.mCommands = new ArrayList<>();
         }
+        if (Thread.currentThread().isInterrupted()) {
+            return;
+        }
+        if (this.mRetryAtNanos != 0L && System.nanoTime() < this.mRetryAtNanos) {
+            return;
+        }
         try {
             if (this.mProcess == null) {
                 this.mProcess = Runtime.getRuntime().exec("su");
+                Log.i(LOG_TAG, "Root shell started");
             }
             if (this.mShellOutput == null) {
                 this.mShellOutput = new DataOutputStream(this.mProcess.getOutputStream());
@@ -59,15 +72,18 @@ public final class RootShellSession {
             }
             this.mShellLoaded = true;
         } catch (IOException e) {
-            Log.e(LOG_TAG, "We were not able to create a shell!", e);
+            Log.e(LOG_TAG, "Root shell startup failed", e);
             this.mShellLoaded = false;
+            closeShell("startup_failure");
         }
     }
 
     /**
      * Closes the root shell session and cleans up resources.
      */
-    synchronized void closeShell() {
+    private synchronized void closeShell(String reason) {
+        boolean wasActive = this.mProcess != null || this.mShellOutput != null
+                || this.mOutput != null || this.mShellLoaded;
         if (this.mProcess != null) {
             this.mProcess.destroy();
             this.mProcess = null;
@@ -89,6 +105,18 @@ public final class RootShellSession {
             this.mOutput = null;
         }
         this.mShellLoaded = false;
+        if (wasActive) {
+            Log.i(LOG_TAG, "Root shell closed; reason=" + reason);
+        }
+        if (isRecoverableFailure(reason)) {
+            this.mConsecutiveFailures++;
+            long multiplier = 1L << Math.min(this.mConsecutiveFailures - 1, 5);
+            long delayMs = Math.min(
+                    INITIAL_RECOVERY_DELAY_MS * multiplier, MAX_RECOVERY_DELAY_MS);
+            this.mRetryAtNanos = System.nanoTime() + delayMs * 1000000L;
+            Log.w(LOG_TAG, "Root shell recovery deferred for " + delayMs
+                    + "ms; reason=" + reason);
+        }
     }
 
     synchronized boolean isLoaded() {
@@ -197,20 +225,26 @@ public final class RootShellSession {
     }
 
     private String executeCommands(final List<String> commands, long timeoutMs) {
-        openShell();
-        if (!this.mShellLoaded) {
+        if (Thread.currentThread().isInterrupted()) {
             return null;
         }
-        final String marker = "__AERO_COMMAND_" + COMMAND_SEQUENCE.incrementAndGet()
-                + "_" + System.nanoTime() + "__";
+        final long operationId = COMMAND_SEQUENCE.incrementAndGet();
+        final long startedAtNanos = System.nanoTime();
+        openShell();
+        if (Thread.currentThread().isInterrupted() || !this.mShellLoaded) {
+            return null;
+        }
+        final String marker = "__AERO_COMMAND_" + operationId + "_" + startedAtNanos + "__";
         final String terminator = "\n" + marker + "\n";
         final DataOutputStream output = this.mShellOutput;
         final BufferedReader input = this.mOutput;
-        final String[] result = new String[1];
+        final AtomicBoolean cancelled = new AtomicBoolean(false);
+        final CommandExecution[] result = new CommandExecution[1];
         Thread commandThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                result[0] = executeAndRead(commands, output, input, marker, terminator);
+                result[0] = executeAndRead(
+                        commands, output, input, marker, terminator, cancelled);
             }
         }, "AeroRootShellCommand");
         commandThread.setDaemon(true);
@@ -219,28 +253,77 @@ public final class RootShellSession {
             commandThread.join(timeoutMs);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            closeShell();
+            cancelled.set(true);
+            closeShell("caller_interrupted");
+            commandThread.interrupt();
+            Log.i(LOG_TAG, "Root shell operation " + operationId
+                    + " interrupted by caller; elapsed="
+                    + elapsedMillis(startedAtNanos) + "ms");
             return null;
         }
         if (commandThread.isAlive()) {
-            Log.e(LOG_TAG, "Root shell command timed out after " + timeoutMs + "ms");
-            closeShell();
+            Log.e(LOG_TAG, "Root shell operation " + operationId + " timed out after "
+                    + timeoutMs + "ms; elapsed="
+                    + elapsedMillis(startedAtNanos) + "ms");
+            cancelled.set(true);
+            closeShell("command_timeout");
             commandThread.interrupt();
             return null;
         }
-        return result[0];
+        CommandExecution execution = result[0];
+        if (execution == null) {
+            closeShell("command_worker_failed");
+            Log.e(LOG_TAG, "Root shell operation " + operationId
+                    + " ended without a result; elapsed="
+                    + elapsedMillis(startedAtNanos) + "ms");
+            return null;
+        }
+        if (execution.failureReason != null) {
+            closeShell(execution.failureReason);
+            if (execution.error != null && !cancelled.get()) {
+                Log.e(LOG_TAG, "Root shell operation " + operationId
+                        + " failed; reason=" + execution.failureReason
+                        + "; elapsed=" + elapsedMillis(startedAtNanos) + "ms",
+                        execution.error);
+            } else {
+                Log.w(LOG_TAG, "Root shell operation " + operationId
+                        + " failed; reason=" + execution.failureReason
+                        + "; elapsed=" + elapsedMillis(startedAtNanos) + "ms");
+            }
+            return null;
+        }
+        this.mConsecutiveFailures = 0;
+        this.mRetryAtNanos = 0L;
+        long elapsedMs = elapsedMillis(startedAtNanos);
+        if (elapsedMs >= SLOW_OPERATION_LOG_THRESHOLD_MS) {
+            Log.i(LOG_TAG, "Root shell operation " + operationId
+                    + " completed slowly; elapsed=" + elapsedMs + "ms");
+        } else {
+            Log.d(LOG_TAG, "Root shell operation " + operationId
+                    + " completed; elapsed=" + elapsedMs + "ms");
+        }
+        return execution.output;
     }
 
-    private String executeAndRead(List<String> commands, DataOutputStream output,
-            BufferedReader input, String marker, String terminator) {
+    private static boolean isRecoverableFailure(String reason) {
+        return "startup_failure".equals(reason)
+                || "command_timeout".equals(reason)
+                || "command_worker_failed".equals(reason)
+                || "stream_closed".equals(reason)
+                || "io_failure".equals(reason);
+    }
+
+    private CommandExecution executeAndRead(List<String> commands, DataOutputStream output,
+            BufferedReader input, String marker, String terminator,
+            AtomicBoolean cancelled) {
         char[] buf = new char[8192];
         StringBuilder response = new StringBuilder();
         StringBuilder tail = new StringBuilder();
         try {
             StringBuilder script = new StringBuilder();
             for (String cmd : commands) {
-                if (Thread.currentThread().isInterrupted()) {
-                    return null;
+                if (Thread.currentThread().isInterrupted() || cancelled.get()) {
+                    return CommandExecution.failure("caller_interrupted", null);
                 }
                 script.append(cmd).append('\n');
             }
@@ -251,8 +334,8 @@ public final class RootShellSession {
 
             int read;
             while ((read = input.read(buf)) != -1) {
-                if (Thread.currentThread().isInterrupted()) {
-                    return null;
+                if (Thread.currentThread().isInterrupted() || cancelled.get()) {
+                    return CommandExecution.failure("caller_interrupted", null);
                 }
                 for (int i = 0; i < read; i++) {
                     char value = buf[i];
@@ -272,14 +355,39 @@ public final class RootShellSession {
                             }
                             response.setLength(outputEnd);
                         }
-                        return response.toString().trim();
+                        return CommandExecution.success(response.toString().trim());
                     }
                 }
             }
-            return null;
+            return CommandExecution.failure("stream_closed", null);
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Root shell command failed", e);
-            return null;
+            return CommandExecution.failure(
+                    cancelled.get() ? "caller_interrupted" : "io_failure",
+                    cancelled.get() ? null : e);
+        }
+    }
+
+    private static long elapsedMillis(long startedAtNanos) {
+        return (System.nanoTime() - startedAtNanos) / 1000000L;
+    }
+
+    private static final class CommandExecution {
+        private final String output;
+        private final String failureReason;
+        private final IOException error;
+
+        private CommandExecution(String output, String failureReason, IOException error) {
+            this.output = output;
+            this.failureReason = failureReason;
+            this.error = error;
+        }
+
+        private static CommandExecution success(String output) {
+            return new CommandExecution(output, null, null);
+        }
+
+        private static CommandExecution failure(String reason, IOException error) {
+            return new CommandExecution(null, reason, error);
         }
     }
 
