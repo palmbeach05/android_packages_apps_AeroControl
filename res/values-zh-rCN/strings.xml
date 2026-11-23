@@ -4,415 +4,458 @@
     <!-- ========================================================= -->
     <!-- Application / Brand / Global UI Actions                    -->
     <!-- ========================================================= -->
-    <string name="add">Add</string>
-    <string name="aero_continue">Continue</string>
-    <string name="app_name">Aero Control</string>
-    <string name="apply">Apply</string>
-    <string name="average">Avg.</string>
-    <string name="back_for_close">Press Back again to close the App.</string>
-    <string name="cancel">Cancel</string>
-    <string name="disabled">Disabled</string>
-    <string name="dont_show_again">Don\'t show this again</string>
-    <string name="enabled">Enabled</string>
-    <string name="folder_empty">Folder is empty</string>
-    <string name="got_it">Got it</string>
-    <string name="maybe_later">Maybe later</string>
-    <string name="minute">Minute</string>
-    <string name="minutes">Minutes</string>
-    <string name="need_reboot">This may require a reboot.</string>
-    <string name="proceed_with_reset">Are you sure you want to proceed?</string>
-    <string name="refresh">Refresh</string>
-    <string name="reload">Reset</string>
-    <string name="retry">Retry</string>
-    <string name="save">Save</string>
-    <string name="skip_splash">Skip</string>
-    <string name="successful">Successful!</string>
-    <string name="unavailable">Unavailable</string>
-    <string name="undo">Undo</string>
-    <string name="usage_time">Usage time</string>
-    <string name="warning">Warning!</string>
+    <string name="add">视需要增加填充棉。</string>
+    <string name="aero_continue">继续</string>
+    <string name="app_name">空气动力控制</string>
+    <string name="apply">确认</string>
+    <string name="average">平均</string>
+    <string name="back_for_close">再次按下“返回”以关闭应用。</string>
+    <string name="cancel">取消</string>
+    <string name="disabled">已禁用</string>
+    <string name="dont_show_again">不再显示</string>
+    <string name="enabled">已启用</string>
+    <string name="folder_empty">文件夹为空</string>
+    <string name="got_it">明白</string>
+    <string name="maybe_later">以后再说</string>
+    <string name="minute">分鐘</string>
+    <string name="minutes">分钟</string>
+    <string name="need_reboot">这可能需要重启。</string>
+    <string name="proceed_with_reset">是否确认分解此配件？</string>
+    <string name="refresh">重新整理</string>
+    <string name="reload">一键复原</string>
+    <string name="retry">再次挑战</string>
+    <string name="save">保存</string>
+    <string name="skip_splash">跳过</string>
+    <string name="successful">成功！</string>
+    <string name="unavailable">尚未开始</string>
+    <string name="undo">撤销</string>
+    <string name="usage_time">使用時間</string>
+    <string name="warning">警示！</string>
+    <string name="overview_loading">正在加载概览</string>
+    <string name="overview_loading_summary">正在收集设备信息……</string>
+    <string name="overview_temperature_loading">正在扫描温度传感器……</string>
 
     <!-- ========================================================= -->
     <!-- Navigation / Slider Drawer                                -->
     <!-- ========================================================= -->
-    <string name="drawer_close">Close navigation drawer</string>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="slider_app_monitor">App Monitor</string>
-    <string name="slider_backup_restore">Backup/Restore</string>
-    <string name="slider_cpu_settings">CPU Performance</string>
-    <string name="slider_defy_parts">Defy/Droid X Parts</string>
-    <string name="slider_gpu_settings">GPU Control</string>
-    <string name="slider_memory_settings">Memory Tuning</string>
-    <string name="slider_misc_settings">Misc. Settings</string>
-    <string name="slider_overview">Overview</string>
-    <string name="slider_profile">Profiles</string>
-    <string name="slider_statistics">CPU Statistics</string>
+    <string name="drawer_close">关闭导航抽屉</string>
+    <string name="drawer_open">打开导航栏</string>
+    <string name="slider_app_monitor">应用程序监视器</string>
+    <string name="slider_backup_restore">备份/恢复</string>
+    <string name="slider_cpu_settings">CPU 性能</string>
+    <string name="slider_defy_parts">Defy/Droid X部件</string>
+    <string name="slider_gpu_settings">GPU 控制</string>
+    <string name="slider_memory_settings">内存调优</string>
+    <string name="slider_misc_settings">杂项设置</string>
+    <string name="slider_overview">概述</string>
+    <string name="overview_section_system">系统设置</string>
+    <string name="overview_section_performance">性能参数</string>
+    <string name="overview_section_temperatures">温度</string>
+    <string name="overview_section_battery">电池</string>
+    <string name="overview_section_memory">内存</string>
+    <string name="overview_section_configuration">Configuration</string>
+    <string name="overview_device">装置</string>
+    <string name="overview_uptime">运行时间</string>
+    <string name="overview_android_version">Android版</string>
+    <string name="overview_android_security_update">Android 安全更新</string>
+    <string name="overview_api_level">API 级别</string>
+    <string name="overview_architecture">建筑</string>
+    <string name="overview_kernel">核</string>
+    <string name="overview_cpu_governor">CPU调速器：</string>
+    <string name="temperature_source_cpu">CPU</string>
+    <string name="temperature_source_battery">电池</string>
+    <string name="temperature_source_gpu">GPU</string>
+    <string name="temperature_source_soc">系统集成</string>
+    <string name="temperature_source_other">%1$s</string>
+    <string name="temperature_source_fallback">Sensor Térmico %1$d</string>
+    <string name="temperature_status">状态</string>
+    <string name="battery_level">强化等级</string>
+    <string name="battery_status">状态</string>
+    <string name="battery_voltage">电压</string>
+    <string name="battery_current">当前</string>
+    <string name="battery_power_source">电源</string>
+    <string name="battery_power_source_battery">电池</string>
+    <string name="battery_power_source_usb">USB 端口</string>
+    <string name="battery_power_source_ac">交流充电器</string>
+    <string name="slider_profile">剖面</string>
+    <string name="slider_statistics">CPU 统计信息</string>
     <string name="slider_test_suite_settings">Test Suite</string>
-    <string name="testsuite_linpack_test_title">Linpack Test</string>
-    <string name="testsuite_linpack_test_summary">Runs the linpack test.</string>
-    <string name="testsuite_linpack_running">Running Linpack</string>
-    <string name="testsuite_linpack_running_summary">Burning your CPUs...</string>
-    <string name="testsuite_use_all_cpus_title">Use All CPUs</string>
-    <string name="testsuite_use_all_cpus_summary">Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness.</string>
+    <string name="testsuite_linpack_test_title">Linpack 测试</string>
+    <string name="testsuite_linpack_test_summary">运行 Linpack 测试。</string>
+    <string name="testsuite_linpack_running">正在运行 Linpack</string>
+    <string name="testsuite_linpack_running_summary">正在让您的 CPU 超负荷运行……</string>
+    <string name="testsuite_use_all_cpus_title">使用所有 CPU</string>
+    <string name="testsuite_use_all_cpus_summary">使用所有检测到的 CPU 进行基准测试，而不是留出一个空闲的 CPU。这可能会降低设备的响应速度。</string>
 
     <!-- ========================================================= -->
     <!-- Overview & Live Hardware Information                      -->
     <!-- ========================================================= -->
-    <string name="available_memory">Total Memory:</string>
-    <string name="current_cpu_speed">CPU Frequency:</string>
-    <string name="current_governor">Governor:</string>
-    <string name="current_governor_cluster">Governor (CPU %1$s):</string>
-    <string name="current_gpu_speed">GPU Frequency:</string>
-    <string name="current_io_governor">I/O-Scheduler:</string>
-    <string name="kernel_version">Kernel:</string>
+    <string name="available_memory">内存:</string>
+    <string name="storage_permission_required">此操作需要存储权限。</string>
+    <string name="storage_operation_failed">无法访问共享存储。</string>
+    <string name="hardware_operation_failed">无法应用硬件设置。</string>
+    <string name="current_cpu_speed">CPU 频率 ：</string>
+    <string name="current_governor">Governor</string>
+    <string name="current_governor_index">Governador %1$d:</string>
+    <string name="current_governor_cluster">Governador (CPU %1$s):</string>
+    <string name="current_gpu_speed">GPU频率：</string>
+    <string name="current_io_governor">I/ O 调度器</string>
+    <string name="kernel_version">内核：		</string>
 
     <!-- ========================================================= -->
     <!-- Profile & Per-App Control                                  -->
     <!-- ========================================================= -->
-    <string name="add_a_name">Profile name</string>
-    <string name="apply_profile">Applying Per-App Profile:</string>
-    <string name="define_a_name">Define a name for this profile.</string>
-    <string name="nothing_added_yet">Whoops! You haven\'t added any profiles yet.</string>
-    <string name="per_app_active">Per-App: Active</string>
-    <string name="per_app_not_active">Per-App: Not active</string>
-    <string name="profile_assign_to_apps">Assign to apps</string>
-    <string name="profile_remove">Remove this profile</string>
-    <string name="profile_remove_confirmation">This profile will be permanently deleted.</string>
-    <string name="delete">Delete</string>
-    <string name="return_to_normal">Returning to normal usage</string>
+    <string name="add_a_name">档案名称</string>
+    <string name="apply_profile">应用按应用配置文件：</string>
+    <string name="define_a_name">为此个人资料定义一个名称。</string>
+    <string name="nothing_added_yet">哎呀！您尚未添加任何个人资料。</string>
+    <string name="per_app_active">按应用：已启用</string>
+    <string name="per_app_not_active">按应用：未激活</string>
+    <string name="profile_assign_to_apps">分配给</string>
+    <string name="profile_remove">移除此账户</string>
+    <string name="profile_remove_confirmation">这个文件将会被永久删除</string>
+    <string name="delete">删除</string>
+    <string name="return_to_normal">恢复正常使用</string>
 
     <!-- ========================================================= -->
     <!-- CPU & Hotplug Configuration Strings                       -->
     <!-- ========================================================= -->
-    <string name="perf_cpu_boost_control">CPU Boost</string>
-    <string name="perf_cpu_boost_control_summary">Adjust the CPU boost tunables of your CPU here</string>
-    <string name="perf_cpu_hotplug">Hotplug Settings</string>
-    <string name="perf_cpu_hotplug_driver">Hotplug Driver</string>
-    <string name="perf_cpu_hotplug_summary">Adjust the hotplug driver here</string>
-    <string name="perf_live_oc_uc">Live OC/UC</string>
-    <string name="perf_live_oc_uc_summary">Control Frequencies and Voltage in realtime!</string>
-    <string name="perf_voltage_control">Voltage Control</string>
-    <string name="perf_voltage_control_summary">Adjust the voltage of your CPU here</string>
-    <string name="pref_cpu_freq">Frequencies</string>
-    <string name="pref_max_freq_cpu">Max. Frequency</string>
-    <string name="pref_min_freq_cpu">Min. Frequency</string>
-    <string name="pref_cpu_governor">Governor Settings</string>
-    <string name="pref_max_freq_cpu_cluster">Max. Frequency (CPU %1$s)</string>
-    <string name="pref_min_freq_cpu_cluster">Min. Frequency (CPU %1$s)</string>
-    <string name="pref_cpu_governor_cluster">Governor Settings (CPU %1$s)</string>
-    <string name="pref_apply_to_all_cpu_clusters">Apply to all clusters</string>
-    <string name="pref_apply_to_all_cpu_clusters_summary">Applies changes from the first cluster\'s controls to every detected CPU cluster.</string>
-    <string name="pref_gov_set">Governor Specific Settings</string>
-    <string name="pref_gov_set_no_parameter">Looks like there are no parameter for this governor?</string>
+    <string name="perf_cpu_boost_control">CPU 增强</string>
+    <string name="perf_cpu_boost_control_summary">在此处调整 CPU 的加速可调参数</string>
+    <string name="perf_cpu_hotplug">热插拔设置</string>
+    <string name="perf_cpu_hotplug_driver">热插拔驱动程序</string>
+    <string name="perf_cpu_hotplug_summary">在此处调整热插拔驱动程序</string>
+    <string name="perf_live_oc_uc">实时 OC/UC</string>
+    <string name="perf_live_oc_uc_summary">实时控制频率和电压！</string>
+    <string name="perf_voltage_control">电压控制</string>
+    <string name="perf_voltage_control_summary">在此处调整您的 CPU 电压</string>
+    <string name="pref_cpu_freq">频率</string>
+    <string name="pref_max_freq_cpu">最大频率</string>
+    <string name="pref_min_freq_cpu">最低频率</string>
+    <string name="pref_cpu_governor">调速器设置</string>
+    <string name="pref_max_freq_cpu_cluster">Máx. Frequência (CPU %1$s)</string>
+    <string name="pref_min_freq_cpu_cluster">Min. Frequência (CPU %1$s)</string>
+    <string name="pref_cpu_governor_cluster">Configurações do Governador (CPU %1$s)</string>
+    <string name="pref_cpu_detection_loading">正在检测 CPU 功能……</string>
+    <string name="pref_cpu_detection_loading_summary">检测完成后，将显示可用的控件。</string>
+    <string name="pref_cpu_control_loading">正在加载 CPU 控制……</string>
+    <string name="pref_cpu_governor_loading">正在加载可用的调速器……</string>
+    <string name="pref_cpu_governor_retry">Tentar novamente a detecção do governador (CPU %1$s)</string>
+    <string name="pref_cpu_governor_retry_summary">重试读取此集群的可用控制器。</string>
+    <string name="pref_cpu_legacy_loading">正在检查旧版 CPU 超频支持……</string>
+    <string name="pref_apply_to_all_cpu_clusters">应用于所有集群</string>
+    <string name="pref_apply_to_all_cpu_clusters_summary">将第一个集群的控件所做的更改应用于每个检测到的 CPU 集群。</string>
+    <string name="pref_gov_set">调速器专用设置</string>
+    <string name="pref_gov_set_no_parameter">似乎该调速器没有参数？</string>
     <string name="mv_minus">-25 mV</string>
     <string name="mv_plus">+25 mV</string>
 
     <!-- ========================================================= -->
     <!-- GPU Control Strings                                       -->
     <!-- ========================================================= -->
-    <string name="perf_gpu_gov">GPU Governor</string>
-    <string name="perf_gpu_gov_settings">GPU Governor Settings</string>
-    <string name="perf_gpu_gov_settings_summary">Tweak the governor parameters of your GPU.</string>
-    <string name="pref_gpu_control_enable">GPU Control</string>
-    <string name="pref_gpu_control_enable_summary">This will enable the GPU Control driver. It manages overclocking/undervolting as well as some basic scheduling for the GPU.</string>
-    <string name="pref_max_freq_gpu">Max. Frequency</string>
-    <string name="pref_max_freq_gpu_summary">This will set the maximum GPU Frequency. Default is 200 MHz.</string>
+    <string name="perf_gpu_gov">GPU调速器</string>
+    <string name="perf_gpu_gov_settings">GPU调速器设置</string>
+    <string name="perf_gpu_gov_settings_summary">调整 GPU 的调速器参数。</string>
+    <string name="pref_gpu_control_enable">GPU 控制</string>
+    <string name="pref_gpu_control_enable_summary">这将启用 GPU 控制驱动程序。它管理超频/降压以及 GPU 的一些基本调度。</string>
+    <string name="pref_max_freq_gpu">最大频率</string>
+    <string name="pref_max_freq_gpu_summary">这将设置最大 GPU 频率。默认值为 200 MHz。</string>
 
     <!-- ========================================================= -->
     <!-- Memory & Virtual Machine Settings                        -->
     <!-- ========================================================= -->
-    <string name="io_scheduler">IO Scheduler</string>
-    <string name="pref_dalvik_settings">VM Settings</string>
-    <string name="pref_dalvik_settings_heading">Virtual Machine</string>
-    <string name="pref_dalvik_settings_summary">Change parameters of the virtual machine.</string>
-    <string name="pref_dynamic_fsync">Dynamic FSync</string>
-    <string name="pref_dynamic_fsync_summary">Dynamic FSync enables fsync only while the screen is off.</string>
-    <string name="pref_dynamic_writeback">Writeback Control</string>
-    <string name="pref_dynamic_writeback_summary">Enable or Disable the writeback control here.</string>
+    <string name="io_scheduler">IO 调度器</string>
+    <string name="pref_dalvik_settings">虚拟机设置</string>
+    <string name="pref_dalvik_settings_heading">虚拟机</string>
+    <string name="pref_dalvik_settings_summary">更改虚拟机的参数。</string>
+    <string name="pref_dynamic_fsync">动态 FSync</string>
+    <string name="pref_dynamic_fsync_summary">动态 FSync 仅在屏幕关闭时启用 fsync。</string>
+    <string name="pref_dynamic_writeback">写回控制</string>
+    <string name="pref_dynamic_writeback_summary">在此处启用或禁用写回控件。</string>
     <string name="pref_entropy_settings">Entropy</string>
-    <string name="pref_entropy_settings_summary">Change the read and write threshold for the entropy pool.</string>
-    <string name="pref_fsync">FSync</string>
-    <string name="pref_fsync_summary">Enables or disabled FSync completely.</string>
-    <string name="pref_fstrim">Trim Option</string>
-    <string name="pref_fstrim_no_busybox">BusyBox is required for this operation!</string>
-    <string name="pref_fstrim_summary">Trim several parts of your system! This might take a while.</string>
-    <string name="pref_io_scheduler">IO Scheduler Parameter</string>
-    <string name="pref_io_scheduler_no_parameter">Looks like there are no parameter for this scheduler?</string>
+    <string name="pref_entropy_settings_summary">更改熵池的读写阈值。</string>
+    <string name="pref_fsync">FSYNC</string>
+    <string name="pref_fsync_summary">完全启用或禁用 FSync。</string>
+    <string name="pref_fstrim">装饰选项</string>
+    <string name="pref_fstrim_no_busybox">此操作需要BusyBox！</string>
+    <string name="pref_fstrim_summary">清理系统的多个部分！这可能需要一些时间。</string>
+    <string name="pref_io_scheduler">IO 调度器参数</string>
+    <string name="pref_io_scheduler_no_parameter">该调度器似乎没有参数？</string>
     <string name="pref_ksm">KSM</string>
-    <string name="pref_ksm_summary">Enables or disabled the KSM daemon completely.</string>
-    <string name="pref_low_memory">Low Memory</string>
-    <string name="pref_low_memory_summary">Current ro.config.low_ram value: %1$s</string>
-    <string name="pref_memory_settings">Memory Settings</string>
-    <string name="pref_readahead">Readahead size</string>
-    <string name="pref_readahead_dialog">Readahead size in kB</string>
+    <string name="pref_ksm_summary">完全启用或禁用 KSM 守护进程。</string>
+    <string name="pref_low_memory">内存不足</string>
+    <string name="pref_low_memory_summary">Valor atual de ro.config.low_ram: %1$s</string>
+    <string name="pref_memory_settings">内存设置</string>
+    <string name="pref_readahead">预读大小</string>
+    <string name="pref_readahead_dialog">预读大小（kB）</string>
 
     <!-- ========================================================= -->
     <!-- Custom Device Tweaks (Defy Parts / Screen Options)       -->
     <!-- ========================================================= -->
-    <string name="defy_energy_saver">Energy Saver</string>
-    <string name="defy_green_colors">Defy Green Colors</string>
-    <string name="defy_red_colors">Defy Red Colors</string>
-    <string name="pref_button_brightness">Button Brightness</string>
-    <string name="pref_charging_led">Charging LED Color</string>
-    <string name="pref_charging_led_summary">Color of your LED while charging</string>
-    <string name="pref_charge_led_mode_white">White LED</string>
-    <string name="pref_charge_led_mode_green">Green LED</string>
-    <string name="pref_charge_led_mode_rgb">Mixed LED (red/green)</string>
-    <string name="pref_charge_led_mode_off">Off</string>
-    <string name="pref_display_color">Display Color</string>
-    <string name="pref_display_color_summary">Adjust the display color here.</string>
-    <string name="pref_doubletaptowake">Doubletap2Wake</string>
-    <string name="pref_doubletaptowake_summary">Wake your device with a doubletap gesture.</string>
-    <string name="pref_general_settings_defy">General Settings</string>
-    <string name="pref_multitouch">Multitouch-Points</string>
-    <string name="pref_multitouch_summary">Number of multitouch points.</string>
-    <string name="pref_sweeptowake">Sweep2Wake</string>
-    <string name="pref_sweeptowake_summary">May drain your battery a bit more than usual.</string>
+    <string name="defy_energy_saver">节电器</string>
+    <string name="defy_green_colors">绿色的颜色</string>
+    <string name="defy_red_colors">红颜色</string>
+    <string name="pref_button_brightness">按钮亮度</string>
+    <string name="pref_charging_led">充电 LED 指示灯颜色</string>
+    <string name="pref_charging_led_summary">充电时 LED 指示灯的颜色</string>
+    <string name="pref_charge_led_mode_white">白色LED</string>
+    <string name="pref_charge_led_mode_green">绿色 LED 灯</string>
+    <string name="pref_charge_led_mode_rgb">混合LED（红/绿）</string>
+    <string name="pref_charge_led_mode_off">关闭</string>
+    <string name="pref_display_color">显示颜色</string>
+    <string name="pref_display_color_summary">在此处调整显示颜色。</string>
+    <string name="pref_doubletaptowake">双击唤醒</string>
+    <string name="pref_doubletaptowake_summary">通过双击手势唤醒您的设备。</string>
+    <string name="pref_general_settings_defy">常规设置</string>
+    <string name="pref_multitouch">多点触控</string>
+    <string name="pref_multitouch_summary">多点触控点数。</string>
+    <string name="pref_sweeptowake">扫动唤醒</string>
+    <string name="pref_sweeptowake_summary">可能会比平时多消耗一些电量。</string>
 
     <!-- ========================================================= -->
     <!-- Accessibility / Content Descriptions                      -->
     <!-- ========================================================= -->
-    <string name="info_button_description">Show help information</string>
+    <string name="info_button_description">說明資訊</string>
 
     <!-- ========================================================= -->
     <!-- Settings Screen Configuration Elements                     -->
     <!-- ========================================================= -->
-    <string name="aero_settings">Settings</string>
-    <string name="app_theme_dark">Dark - Dark background with black action bar</string>
-    <string name="app_theme_light">Light - Light Holo with blue accent</string>
-    <string name="app_theme_system">System - Uses your device\'s Material theme</string>
-    <string name="pref_category_application">Application</string>
-    <string name="pref_category_per_app_profiles">Per-App Profiles</string>
-    <string name="pref_app_theme">App Theme</string>
-    <string name="pref_app_theme_summary">Defines the default app theme.</string>
-    <string name="pref_boot_delay">Boot Timer Delay</string>
-    <string name="pref_boot_delay_dialog">Delay in minutes</string>
-    <string name="pref_finishing_settings">finished settings.</string>
-    <string name="pref_lollipop_usage_warning">Please notice that Google changed the way to check for the current foreground app for Lollipop(+). In order to make PerApp Service work on your device, you have to go into settings and enable usage statistics access for Aero Control. You can revoke this right at any point of time. If you are feeling ready, click continue.</string>
-    <string name="pref_misc_settings">Misc. Settings</string>
-    <string name="pref_misc_tcp_congestion">TCP Congestion Algorithm</string>
-    <string name="pref_misc_delete_misc">Delete your settings</string>
-    <string name="pref_misc_your_settings">Your Settings</string>
-    <string name="pref_misc_no_settings">You haven\'t added any settings yet!</string>
-    <string name="pref_per_app_service">Per-App Profile Service</string>
-    <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
-    <string name="pref_perapp_monitor">Per-App Monitor</string>
-    <string name="pref_perapp_monitor_summary">Enable or disable the App Monitor.</string>
-    <string name="pref_perapp_toasts">Per-App Toasts</string>
-    <string name="pref_perapp_toasts_summary">Enable or disable toast notifications.</string>
-    <string name="pref_profile_change_name">Set another name</string>
-    <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
-    <string name="pref_profile_deleted">Deleted</string>
-    <string name="pref_profile_not_deleted">Could not delete profile</string>
-    <string name="pref_profile_export">Export</string>
-    <string name="pref_profile_import">Import</string>
-    <string name="pref_profile_import_select">Select profiles for import</string>
-    <string name="pref_profile_invalid_name">Use 1–64 letters, numbers, spaces, underscores, or hyphens.</string>
-    <string name="pref_profile_name_exists">This name already exists.</string>
-    <string name="pref_profile_no_import">I couldn\'t find anything to import.</string>
-    <string name="pref_profile_per_app">Choose your apps</string>
-    <string name="pref_profile_reset">Reset your current profile</string>
-    <string name="pref_profile_reset_summary">This will completely reset your current profile. Just like if you freshly installed Aero Control.</string>
-    <string name="pref_profile_service_not_running">Per-App Service not running, but you have associated apps to profiles!</string>
-    <string name="pref_profile_show_system">System Apps</string>
-    <string name="pref_reboot_check">Random Reboot Checker</string>
-    <string name="pref_reboot_check_summary">It will inform you if your device had a sudden reboot.</string>
-    <string name="pref_reset_tutorials">Reset Tutorials</string>
-    <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
-    <string name="pref_reset_tutorials_title">There is no way back</string>
-    <string name="pref_screen_rotation">Screen Rotation</string>
-    <string name="pref_screen_rotation_summary">Allow screen rotation when the device is rotated.</string>
-    <string name="pref_set_on_boot_settings">set-on-boot settings.</string>
+    <string name="aero_settings">设置</string>
+    <string name="app_theme_dark">深色 - 深色背景，黑色操作栏</string>
+    <string name="app_theme_light">浅色 - 浅色全息，蓝色点缀</string>
+    <string name="app_theme_system">系统 - 使用您设备的 Material 主题</string>
+    <string name="pref_category_application">应用程序</string>
+    <string name="pref_category_per_app_profiles">按应用配置文件</string>
+    <string name="pref_app_theme">应用主题</string>
+    <string name="pref_app_theme_summary">定义默认应用主题。</string>
+    <string name="pref_boot_delay">启动计时器延迟</string>
+    <string name="pref_boot_delay_dialog">延误时间（分钟）</string>
+    <string name="pref_finishing_settings">已完成设置。</string>
+    <string name="pref_lollipop_usage_warning">请注意，Google 更改了检查 Lollipop(+) 当前前台应用程序的方式。为了使 PerApp 服务在您的设备上正常工作，您必须进入设置，并为 Aero Control 启用使用情况统计信息访问权限。您可以随时撤销此权限。如果您已准备就绪，请点击“继续”。</string>
+    <string name="pref_misc_settings">杂项设置</string>
+    <string name="pref_misc_tcp_congestion">TCP 拥塞算法</string>
+    <string name="pref_misc_delete_misc">删除您的设置</string>
+    <string name="pref_misc_your_settings">你的设置</string>
+    <string name="pref_misc_no_settings">您尚未添加任何设置！</string>
+    <string name="pref_per_app_service">按应用配置文件服务</string>
+    <string name="pref_per_app_service_summary">启用或禁用按应用配置文件服务。</string>
+    <string name="pref_perapp_monitor">按应用监控</string>
+    <string name="pref_perapp_monitor_summary">启用或禁用应用监控。</string>
+    <string name="pref_perapp_toasts">按应用程序的吐司通知</string>
+    <string name="pref_perapp_toasts_summary">启用或停用通知</string>
+    <string name="pref_profile_change_name">设置另一个名称</string>
+    <string name="pref_profile_change_name_summary">更改您的个人资料名称。</string>
+    <string name="pref_profile_deleted">已删除</string>
+    <string name="pref_profile_not_deleted">不能删除配置文件</string>
+    <string name="pref_profile_export">导出</string>
+    <string name="pref_profile_import">进口</string>
+    <string name="pref_profile_import_select">选择要导入的配置文件</string>
+    <string name="pref_profile_invalid_name">请使用 1–64 个字母、数字、空格、下划线或连字符。</string>
+    <string name="pref_profile_name_exists">名称已存在。</string>
+    <string name="pref_profile_no_import">我找不到任何可导入的内容。</string>
+    <string name="pref_profile_per_app">选择</string>
+    <string name="pref_profile_reset">重置您当前的个人资料</string>
+    <string name="pref_profile_reset_summary">这将完全重置您当前的配置文件。就像您刚刚安装了Aero Control一样。</string>
+    <string name="pref_profile_service_not_running">“按应用”服务未运行，但您已将应用关联到配置文件！</string>
+    <string name="pref_profile_show_system">系统应用</string>
+    <string name="pref_reboot_check">随机重启检查器</string>
+    <string name="pref_reboot_check_summary">如果您的设备突然重启，它会通知您。</string>
+    <string name="pref_reset_tutorials">重置教程</string>
+    <string name="pref_reset_tutorials_dialog">您将重置教程。</string>
+    <string name="pref_reset_tutorials_title">沒有 辦法 回家</string>
+    <string name="pref_screen_rotation">画面旋转</string>
+    <string name="pref_screen_rotation_summary">允许在旋转设备时旋转屏幕。</string>
+    <string name="pref_set_on_boot_settings">开机启动设置。</string>
 
     <!-- ========================================================= -->
     <!-- App Monitor & CPU Statistics Tracker                      -->
     <!-- ========================================================= -->
-    <string name="delete_statistics">This will reset your current usage statistics. It\'s like you just rebooted your phone.</string>
-    <string name="select_cluster_title">Select cluster</string>
+    <string name="delete_statistics">这将重置您当前的使用统计数据。这就像您刚刚重启了手机一样。</string>
+    <string name="select_cluster_title">选择群集类型:</string>
     <string name="select_cluster_cpu_label">CPU %1$s</string>
-    <string name="notify_app_monitor_data">We collected enough data, check them out in the App Monitor section!</string>
-    <string name="pref_cpu_frequency">CPU frequency</string>
-    <string name="pref_cpu_number">CPU cores</string>
-    <string name="pref_gpu_frequency">GPU frequency</string>
-    <string name="pref_no_app_monitor_data">No data is found yet, check back in a few minutes.</string>
-    <string name="pref_app_monitor_disabled">App Monitor is disabled, please enable it in the settings to display data.</string>
-    <string name="pref_ram_usage">Free RAM</string>
-    <string name="pref_reset_stats_for_app">Are you sure you want to reset the statistics for this app?</string>
+    <string name="notify_app_monitor_data">我们收集了足够的数据，请在“应用监控”部分查看！</string>
+    <string name="pref_cpu_frequency">CPU 频率 ：</string>
+    <string name="pref_cpu_number">CPU内核</string>
+    <string name="pref_gpu_frequency">GPU 频率</string>
+    <string name="pref_no_app_monitor_data">尚未找到数据，请在几分钟后返回查看。</string>
+    <string name="pref_app_monitor_disabled">应用监控已禁用，请在设置中启用以显示数据。</string>
+    <string name="pref_ram_usage">可用内存</string>
+    <string name="pref_reset_stats_for_app">您确定要重置此应用的统计数据吗？</string>
     <string name="pref_app_monitor_average_summary">%1$s %2$s - %3$s</string>
-    <string name="pref_temp_usage">Temperature</string>
+    <string name="pref_temp_usage">温度</string>
 
     <!-- ========================================================= -->
     <!-- Flasher / Kernel Backup Elements                          -->
     <!-- ========================================================= -->
-    <string name="backup_from">Backup from</string>
-    <string name="last_backup_from">Last Backup from</string>
-    <string name="pref_backup_kernel">Backup your Kernel</string>
-    <string name="pref_backup_kernel_summary">This will save a copy of your current kernel.</string>
-    <string name="pref_restore">Restore Backup</string>
-    <string name="pref_restore_kernel">Restore</string>
-    <string name="pref_updater">Kernel Updater and Backup</string>
-    <string name="proceed_backup">Proceed with backup? This will backup your current kernel.</string>
-    <string name="restore_from_backup">Do you want to restore the backup from</string>
+    <string name="backup_from">备份来源：</string>
+    <string name="last_backup_from">上次备份</string>
+    <string name="pref_backup_kernel">备份您的内核</string>
+    <string name="pref_backup_kernel_summary">这将保存您当前内核的副本。</string>
+    <string name="pref_restore">还原备份</string>
+    <string name="pref_restore_kernel">恢复</string>
+    <string name="pref_updater">内核更新程序和备份</string>
+    <string name="proceed_backup">是否继续备份？这将备份您当前的内核。</string>
+    <string name="restore_from_backup">您是否要从以下位置恢复备份：</string>
 
     <!-- ========================================================= -->
     <!-- Dialog Frameworks, Alerts, System Stability Errors        -->
     <!-- ========================================================= -->
-    <string name="error_detected">Error ?</string>
-    <string name="has_journal_dialog">Looks like your /data partition doesn\'t have the has_journal Feature enabled. Please reboot into recovery and run the following command via adb shell:    tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
-    <string name="has_journal_dialog_header">Problem detected</string>
-    <string name="no_cpu_data">Couldn\'t find any CPU data.</string>
-    <string name="no_data_found">I couldn\'t find any relevant data :(</string>
-    <string name="no_gpu_data">Couldn\'t find any GPU related data</string>
-    <string name="not_rooted">No Root?</string>
-    <string name="reboot_notifier">Looks like the kernel crashed. Be sure to check out \n/proc/last_kmsg  \nand send this file to your favorite developer. Seriously, send it! \n We apologize for any inconvenience!</string>
-    <string name="reboot_notifier_header">Oops, this shouldn\'t happen</string>
-    <string name="root_required">It looks like your device is not rooted. This app won\'t work correctly without root. If you think this is a mistake, please let me know and send me an email!</string>
+    <string name="error_detected">错误</string>
+    <string name="has_journal_dialog">您的/data分区似乎未启用has_journal功能。请重启进入恢复模式，并通过 adb shell 运行以下命令：    tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
+    <string name="has_journal_dialog_header">发现问题！</string>
+    <string name="no_cpu_data">找不到任何 CPU 数据。</string>
+    <string name="no_data_found">我找不到任何相关数据 :(</string>
+    <string name="no_gpu_data">找不到任何与 GPU 相关的数据</string>
+    <string name="not_rooted">没有 Root 权限？</string>
+    <string name="reboot_notifier">内核似乎崩溃了。请务必查看\n/proc/last_kmsg  \n并将此文件发送给您喜爱的开发者。说真的，请务必发送！\n对于给您带来的不便，我们深表歉意！</string>
+    <string name="reboot_notifier_header">哎呀，不该发生这种情况</string>
+    <string name="root_required">您的设备似乎未获得Root权限。如果没有Root权限，此应用将无法正常工作。如果您认为这是个错误，请告知我并给我发电子邮件！</string>
 
     <!-- ========================================================= -->
     <!-- About Screen & Social / Legal Open-Source Notice Items    -->
     <!-- ========================================================= -->
-    <string name="about">About</string>
-    <string name="about_version_label">Version:</string>
-    <string name="about_build_label">Build:</string>
-    <string name="about_dialog">Aero Control was originally created by Alexander Christ (Blechd0se) while assisting Quarx and other developers with the Motorola Defy. It is open-source and compatible with a variety of devices.</string>
-    <string name="github">GitHub</string>
-    <string name="legal">Legal Notices</string>
-    <string name="legal_dialog">This App is licensed under the Apache license. A copy of this can be downloaded here:\n http://www.apache.org/licenses/LICENSE-2.0\n ShowCase Library by Alex Curran is licensed under the Apache 2.0 License.\n HoloGraph Library by Daniel Nadeau is licensed under the Apache 2.0 License. </string>
-    <string name="send_email">Send an Email</string>
-    <string name="xda">XDA Thread</string>
-    <string name="no_activity_for_link">No app available to open this link</string>
+    <string name="about">软件简介</string>
+    <string name="about_version_label">版  本：</string>
+    <string name="about_build_label">建造:</string>
+    <string name="about_dialog">Aero Control 最初由 Alexander Christ (Blechd0se) 在协助 Quarx 和其他开发者开发摩托罗拉 Defy 时创建。它是一款开源软件，兼容各种设备。</string>
+    <string name="github">GitHub 代码库</string>
+    <string name="legal">法律声明</string>
+    <string name="legal_dialog">此应用程序根据Apache许可证授权。您可在此处下载其副本：\n http://www.apache.org/licenses/LICENSE-2.0\n Alex Curran 的 ShowCase 库根据 Apache 2.0 许可证授权。\n Daniel Nadeau 的 HoloGraph 库根据 Apache 2.0 许可证授权。 </string>
+    <string name="send_email">发送邮件</string>
+    <string name="xda">XDA 帖子</string>
+    <string name="no_activity_for_link">没有可用于打开此链接的应用程序</string>
 
     <!-- ========================================================= -->
     <!-- Introduction Guide System Walkthrough                     -->
     <!-- ========================================================= -->
-    <string name="introduction_perapp_check">Do you want to enable this service?</string>
-    <string name="introduction_perapp_heading">Per-App Profiles</string>
-    <string name="introduction_perapp_content">Choose your preferences for individual apps automatically. Therefore, a service checks the foreground app every now and then and applies your desired profile automatically.\n This might save you some extra juice for your battery or give you a full performance boost on your favorite app.</string>
-    <string name="introduction_set_on_boot_heading">Set at boot!</string>
-    <string name="introduction_set_on_boot_content">With the little checkbox besides each settings you can set your values at boot individually. Just check it and your settings will be saved. This also defines your current profile values.</string>
-    <string name="introduction_tutorial_check">Do you want to enable tutorials?</string>
-    <string name="introduction_tutorial_content">Tutorials pop up during your usage of Aero Control. They might give you some insights. If you are an advanced user, it is unlikely that you need them.</string>
-    <string name="introduction_tutorial_heading">Tutorials</string>
-    <string name="introduction_welcome_content">We are just about to get started. If you are feeling ready, just swipe from the right to the left. You can change any settings from this assistant later.</string>
-    <string name="introduction_welcome_heading">Welcome to \nAero Control</string>
+    <string name="introduction_perapp_check">您想启用此服务吗？</string>
+    <string name="introduction_perapp_heading">按应用配置文件</string>
+    <string name="introduction_perapp_content">自动选择您对各个应用的偏好设置。因此，一项服务会不时检查前台应用，并自动应用您所需的配置文件。\n这可能会为您节省一些额外的电量，或者为您喜爱的应用带来全面的性能提升。</string>
+    <string name="introduction_set_on_boot_heading">在启动时设置！</string>
+    <string name="introduction_set_on_boot_content">通过每个设置旁的小复选框，您可以单独设置启动时的值。只需勾选，您的设置就会被保存。这也将定义您当前的配置文件值。</string>
+    <string name="introduction_tutorial_check">您想启用教程吗？</string>
+    <string name="introduction_tutorial_content">在使用Aero Control期间，会弹出教程。它们可能会为您提供一些见解。如果您是高级用户，则不太可能需要这些教程。</string>
+    <string name="introduction_tutorial_heading">教程</string>
+    <string name="introduction_welcome_content">我们马上就要开始了。如果您已准备就绪，只需从右向左滑动即可。您稍后可以从此助手更改任何设置。</string>
+    <string name="introduction_welcome_heading">欢迎使用\nAero Control</string>
 
     <!-- ========================================================= -->
     <!-- Interactive App Tutorials (Showcase Views)               -->
     <!-- ========================================================= -->
-    <string name="showcase_aero_fragment">Welcome to Aero Control!</string>
-    <string name="showcase_aero_fragment_summary">Swipe from the left to the right to show the navigation drawer. The page you are currently looking at is the main overview panel. There is a small summary of some kernel settings. They are live, you don\'t have to refresh anything!</string>
-    <string name="showcase_app_monitor_fragment">Monitor your Apps!</string>
-    <string name="showcase_app_monitor_fragment_summary">App Monitor displays you useful information about your used apps. You will be informed once we collected enough data to show you something. Your data belongs to you, no information will be send to someone else.</string>
-    <string name="showcase_cpu_fragment_governor">CPU Governor</string>
-    <string name="showcase_cpu_fragment_governor_summary">Click this symbol to get the full access of governor control! You can tweak every parameter for every governor out there to gain performance.</string>
-    <string name="showcase_memory_fragment_trim">Trim Options</string>
-    <string name="showcase_memory_fragment_trim_summary">In order to maintain the device performance, you can trim several parts of your Operating System. This can take a while, especially when you stored lots of data.</string>
-    <string name="showcase_perapp_profiles">Assign profiles to your apps!</string>
-    <string name="showcase_perapp_profiles_summary">Want a certain profile only apply to certain apps? No problem, click to the right on the small icon and assign your profile to your favorite apps. Be sure to enable the service in the settings.</string>
-    <string name="showcase_profile_fragment">Add Profiles!</string>
-    <string name="showcase_profile_fragment_summary">Just click on this little button and add a profile. All your current settings will be saved into this new Profile. If you have added multiple Profiles you can simply load them by clicking on them.</string>
-    <string name="showcase_statistics_fragment">Refresh your Statistics</string>
-    <string name="showcase_statistics_fragment_summary">This panel will show you your current CPU Time consuming statistics. It displays how long your device has spend time in each CPU frequency. You might to want to check this later and see if your device performs as it should.</string>
-    <string name="showcase_your_settings">Your Settings</string>
-    <string name="showcase_your_settings_summary">Click this symbol to get a simple file manager. You can choose any file you wish and add your very own tunables. With the left icon you can delete those settings.</string>
+    <string name="showcase_aero_fragment">欢迎来到Aero Control！</string>
+    <string name="showcase_aero_fragment_summary">从左向右滑动以显示导航抽屉。您当前正在查看的页面是主概览面板。这里简要概括了一些内核设置。它们是实时的，您无需刷新任何内容！</string>
+    <string name="showcase_app_monitor_fragment">监控您的应用程序！</string>
+    <string name="showcase_app_monitor_fragment_summary">应用监控器会向您显示有关您所使用应用的有益信息。一旦我们收集到足够的数据可以向您展示一些内容，您将收到通知。您的数据属于您，不会将任何信息发送给其他人。</string>
+    <string name="showcase_cpu_fragment_governor">CPU调速器</string>
+    <string name="showcase_cpu_fragment_governor_summary">点击此符号，即可获得调速器控制的完全访问权限！您可以调整每个调速器的每个参数，以提高性能。</string>
+    <string name="showcase_memory_fragment_trim">装饰选项</string>
+    <string name="showcase_memory_fragment_trim_summary">为了保持设备的性能，您可以清理操作系统的几个部分。这可能需要一段时间，尤其是在您存储了大量数据的情况下。</string>
+    <string name="showcase_perapp_profiles">为您的应用程序分配配置文件！</string>
+    <string name="showcase_perapp_profiles_summary">希望某个配置文件仅适用于某些应用？没问题，点击右侧的小图标，将您的配置文件分配给您喜爱的应用程序。请务必在设置中启用该服务。</string>
+    <string name="showcase_profile_fragment">添加个人资料！</string>
+    <string name="showcase_profile_fragment_summary">只需点击这个小按钮，即可添加一个配置文件。您当前的所有设置都将保存到此新配置文件中。如果您添加了多个配置文件，只需点击即可加载。</string>
+    <string name="showcase_statistics_fragment">刷新您的统计数据</string>
+    <string name="showcase_statistics_fragment_summary">此面板将向您显示当前的 CPU 时间消耗统计信息。它显示您的设备在每个 CPU 频率下所花费的时间。您可能希望稍后检查一下，看看您的设备是否运行正常。</string>
+    <string name="showcase_your_settings">你的设置</string>
+    <string name="showcase_your_settings_summary">点击此符号即可打开一个简单的文件管理器。您可以选择任何您想要的文件，并添加您自己的可调参数。使用左侧图标，您可以删除这些设置。</string>
 
     <!-- ========================================================= -->
     <!-- Easter Egg Loading Jokes                                   -->
     <!-- ========================================================= -->
-    <string name="random_data_somewhere">Hang on a second, I know your data is somewhere...</string>
-    <string name="random_nsa_loading">Sending all data to the NSA...</string>
-    <string name="random_prepare_awesomeness">Prepare for awesomeness!</string>
-    <string name="random_programming_flux">Programming the flux capacitor...</string>
-    <string name="random_shovelling_coal">Shoveling coal into CPU...</string>
-    <string name="random_testing_patience">Testing your patience...</string>
-    <string name="random_working_you_know">Working... well... you know...</string>
+    <string name="random_data_somewhere">稍等一下，我知道您的数据就在某处……</string>
+    <string name="random_nsa_loading">正在将所有数据发送给美国国家安全局……</string>
+    <string name="random_prepare_awesomeness">准备好迎接精彩体验吧！</string>
+    <string name="random_programming_flux">正在对通量电容器进行编程……</string>
+    <string name="random_shovelling_coal">正在将煤炭铲入 CPU……</string>
+    <string name="random_testing_patience">正在测试你的耐心</string>
+    <string name="random_working_you_know">工作……嗯……你知道的……</string>
 
 	<!-- ========================================================= -->
     <!-- Tooltip & Advanced Tuning Help Documentation             -->
     <!-- ========================================================= -->
-    <string name="help_text_above_hispeed_delay">Wait this long before raising speed above hispeed, by default a single timer interval.</string>
-    <string name="help_text_align_windows">Whether to align timer windows across all CPUs. When use_sched_load is true, this flag is ignored and windows will always be aligned.</string>
-    <string name="help_text_all_cpus_threshold">The threshold for the average load of all CPUs currently online to online the next core. If you lower this value, cores can get more easily online.</string>
-    <string name="help_text_amp">This value lets you increase or decrease the strength of the vibration module. Usually 100 is the max.</string>
-    <string name="help_text_battery_saver">If enabled (1), only one core will stay active as soon as you turn off your screen. If you are getting strange audio quality while the screen is off, try switching it off via 0. This will let both cores stay active during suspend.</string>
-    <string name="help_text_block_dump">block_dump enables block I/O debugging when set to a nonzero value.</string>
-    <string name="help_text_button_brightness">Sets the backlight brightness level for the capacitive buttons.</string>
-    <string name="help_text_boostpulse_duration">The duration of the input boost.</string>
-    <string name="help_text_dalvik_settings">This submenu lets you interact with the virtual machine of your device. Mostly there are memory related options.</string>
-    <string name="help_text_debug">A debug flag intended for the developer. Nothing to do here!</string>
-    <string name="help_text_dirty_background_bytes">Contains the amount of dirty memory at which the background kernel flusher threads will start writeback.\n Note: dirty_background_bytes is the counterpart of dirty_background_ratio. Only one of them may be specified at a time. When a sysctl is written, it is immediately considered to evaluate the dirty memory limits and the other appears as 0 when read.</string>
-    <string name="help_text_dirty_background_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which the background kernel flusher threads will start writing out dirty data.</string>
-    <string name="help_text_dirty_bytes">Contains the amount of dirty memory at which a process generating disk writes will itself start writeback.\nNote: the minimum value allowed for dirty_bytes is two pages (in bytes); any value lower than this limit will be ignored and the old configuration will be retained.</string>
-    <string name="help_text_dirty_expire_centisecs">This tunable is used to define when dirty data is old enough to be eligible for writeout by the kernel flusher threads. It is expressed in 100ths of a second. Data which has been dirty in-memory for longer than this interval will be written out next time a flusher thread wakes up.</string>
-    <string name="help_text_dirty_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which a process which is generating disk writes will itself start writing out dirty data.</string>
-    <string name="help_text_dirty_writeback_centisecs">The kernel flusher threads will periodically wake up and write \'old\' data out to disk. This tunable expresses the interval between those wakeups, in 100ths of a second.\nSetting this to zero disables periodic writeback altogether.</string>
-    <string name="help_text_display_control">Adjusts the display color profile. Available modes and their effects depend on the device and kernel.</string>
-    <string name="help_text_drop_caches">Writing to this will cause the kernel to drop clean caches, as well as reclaimable slab objects like dentries and inodes. Once dropped, their memory becomes free. (1 = free page cache, 2 = free reclaimable slab objects, 3 = free slab objects and page cache)</string>
-    <string name="help_text_doubletaptowake">Wakes the device when you double-tap the screen while it is off. Availability depends on kernel support.</string>
-    <string name="help_text_dyn_fsync">Dynamically disables fsync while the screen is on and restores it when the screen turns off. This may improve performance, but can increase the risk of data loss after a crash.</string>
-    <string name="help_text_entropy_settings">The entropy pool stores random numbers for various applications. Higher values for read/write can help in some cases, but can also increase the battery drain. In general, your pool should be always above 200 at any point of time.</string>
-    <string name="help_text_extfrag_threshold">This parameter affects whether the kernel will compact memory or direct reclaim to satisfy a high-order allocation. Values tending towards 0 imply allocations would fail due to lack of memory, values towards 1000 imply failures are due to fragmentation and -1 implies that the allocation will succeed as long as watermarks are met.</string>
-    <string name="help_text_extra_free_kbytes">This parameter tells the VM to keep extra free memory between the threshold where background reclaim (kswapd) kicks in, and the threshold where direct reclaim (by allocating processes) kicks in.</string>
-    <string name="help_text_fifo_batch">Controls the maximum number of requests per batch. This parameter tunes the balance between per-request latency and aggregate throughput. When low latency is the primary concern, smaller is better. Increasing fifo_batch generally improves throughput, at the cost of latency variation.</string>
-    <string name="help_text_front_merges">This tunable takes either 0 (=off) or 1 (=on). Sometimes it happens that a request enters the io scheduler that is contiguous with a request that is already on the queue. Either it fits in the back of that request, or it fits at the front.</string>
-    <string name="help_text_fstrim_toggle">Trims various parts of your system to free up unused blocks on your storage. This requires BusyBox and might take a while to complete.</string>
-    <string name="help_text_fsync">The fsync() call forces a physical write of data from the buffer cache. Disabling this feature may give a performance boost, but at the cost of data loss if your system crashes.</string>
-    <string name="help_text_go_hispeed_load">Go to hispeed when CPU load at or above this value.</string>
-    <string name="help_text_gpu_control_enable">Enables the kernel interface used to change GPU frequencies and governors. Availability depends on kernel support.</string>
-    <string name="help_text_gpu_gov_settings">Your GPU governor has some special tunables to fine-tune its behavior. This is very similar to a CPU governor.</string>
-    <string name="help_text_gpu_max_freq">This tunable lets you change the maximum GPU frequency. Lowering this value can save battery power at the cost of performance.</string>
-    <string name="help_text_highmem_is_dirtyable">This defaults to 0 (false), meaning that the dirty_ratio and dirty_background_ratio ratios are calculated as a percentage of low memory only. This protects against excessive scanning in page reclaim, swapping and general VM distress.</string>
-    <string name="help_text_hispeed_freq">Hispeed to bump to from any smaller frequency when under heavy load.</string>
-    <string name="help_text_hotplug_control">A tap on this element allows you to change various values of your hotplug driver. The hotplug driver decides when a CPU core should be online or offline.</string>
-    <string name="help_text_hotplug_sampling">The sampling rate of the hotplug driver. Lowering this value causes faster decisions in regards if a core should be brought online or not.</string>
-    <string name="help_text_ignore_nice_load">This parameter takes a value of \'0\' or \'1\'. When set to \'0\' (it\'s default), all processes are counted towards the \'CPU utilization\' value. When set to \'1\', the processes that are run with a \'nice\' value will not count (and thus be ignored) in the overall usage calculation.</string>
-    <string name="help_text_input_boost_freq">The frequency the CPU will go to when a touch on the display is registered.</string>
-    <string name="help_text_io_is_busy">This is a flag that determines if waiting for various IO should increase the CPU utilization in bump up the CPU frequency. Setting this to 0 will mean the governor will increase the frequency less often.</string>
-    <string name="help_text_io_scheduler_list">The IO scheduler manages IO requests for a specific device to allow an efficient handling. Changing this value has a rather small impact on most android systems.</string>
-    <string name="help_text_ksm">Kernel Samepage Merging (KSM) allows to deduplicate memory. It\’s a very useful feature on Android that can save some RAM at the cost of CPU performance.</string>
-    <string name="help_text_laptop_mode">laptop_mode is a knob that controls laptop mode.</string>
-    <string name="help_text_legacy_va_layout">If non-zero, this sysctl disables the new 32-bit mmap layout - the kernel will use the legacy (2.4) layout for all processes.</string>
-    <string name="help_text_live_oc_uc">Be careful with this option. You can overclock/underclock the listed frequency steps and set the correct voltage for it. Those values won\'t be applied to per-app profiles for your own safety.</string>
-    <string name="help_text_low_latency" formatted="false">If enabled (1) it let\'s the hotplug driver react really quickly to short load spikes (100% CPU load) and brings CPUs online accordingly.</string>
-    <string name="help_text_lowmem_reserve_ratio">For some specialized workloads on highmem machines it is dangerous for the kernel to allow process memory to be allocated from the lowmem zone. This is because that memory could then be pinned via the mlock() system call, or by unavailability of swap space.</string>
-    <string name="help_text_max_freq_cpu">This tunable lets you adjust the maximum CPU frequency. Lowering this value can save you power at the cost of performance.</string>
-    <string name="help_text_max_freq_hysteresis">Stay at the max frequency for at least this value before dropping frequency again.</string>
-    <string name="help_text_max_map_count">This file contains the maximum number of memory map areas a process may have. Memory map areas are used as a side-effect of calling malloc, directly by mmap and mprotect, and also when loading shared libraries.</string>
-    <string name="help_text_min_free_kbytes">This is used to force the Linux VM to keep a minimum number of kilobytes free.</string>
-    <string name="help_text_min_freq_cpu">This tunable lets you adjust the minimum CPU frequency. Increasing this value can give a better performance at the cost of battery usage.</string>
-    <string name="help_text_min_online_time">To prevent core off-/onlining when they are near the threshold. This is the minimum online time in seconds for a core.</string>
-    <string name="help_text_min_sample_time">The minimum amount of time to spend at a frequency before we can ramp down.</string>
-    <string name="help_text_no_data_found">There is no information available about this item.</string>
-    <string name="help_text_oom_dump_tasks">Enables a system-wide task dump (excluding kernel threads) to be produced when the kernel performs an OOM-killing and includes such information as pid, uid, tgid, vm size, rss, nr_ptes, nr_pmds, swapents, oom_score_adj score, and name. This is helpful to determine why the OOM killer was invoked, to identify the rogue task that caused it, and to determine why the OOM killer chose the task it did to kill.</string>
-    <string name="help_text_oom_kill_allocating_task">This enables or disables killing the OOM-triggering task in out-of-memory situations. The default value is 0.</string>
-    <string name="help_text_overcommit_memory">This value contains a flag that enables memory overcommitment.\nWhen this flag is 0, the kernel attempts to estimate the amount of free memory left when userspace requests more memory.\nWhen this flag is 1, the kernel pretends there is always enough memory until it actually runs out.\nWhen this flag is 2, the kernel uses a never overcommit policy that attempts to prevent any overcommit of memory.</string>
-    <string name="help_text_overcommit_ratio">When overcommit_memory is set to 2, the committed address space is not permitted to exceed swap plus this percentage of physical RAM.</string>
-    <string name="help_text_panic_on_oom">This enables or disables panic on out-of-memory feature.</string>
-    <string name="help_text_percpu_pagelist_fraction">This is the fraction of pages at most (high mark pcp-&gt;high) in each zone that are allocated for each per CPU page list. The min value for this is 8. It means that we don\'t allow more than 1/8th of pages in each zone to be allocated in any single per_cpu_pagelist.</string>
-    <string name="help_text_powersave_bias" formatted="false">This parameter takes a value between 0 to 1000. It defines the percentage (times 10) value of the target frequency that will be shaved off of the target. For example, when set to 100 -&gt; 10%, when ondemand governor would have targeted 1000 MHz, it will target 1000 MHz - (10% of 1000 MHz) = 900 MHz instead. This is set to 0 (disabled) by default.</string>
-    <string name="help_text_read_ahead">The kernel tries to readahead past requested data blocks and stores them in the cache to save potential disk I/O. The default value is 128 kB. A higher value can increase app loadtime.</string>
-    <string name="help_text_read_expire">When a read request first enters the io scheduler, it is assigned a deadline that is the current time + the read_expire value in units of milliseconds.</string>
-    <string name="help_text_rgb_values">Lets you change the RGB (= red, green, blue) colors of your display to calibrate it.</string>
-    <string name="help_text_sampling_down_factor">This parameter controls the rate at which the kernel makes a decision on when to decrease the frequency while running at top speed. When set to 1 (the default) decisions to reevaluate load are made at the same interval regardless of current clock speed. But when set to greater than 1 (e.g., 100) it acts as a multiplier for the scheduling interval for reevaluating load when the CPU is at its top speed due to high load.</string>
-    <string name="help_text_sampling_rate">Measured in uS (10^-6 seconds), this is how often you want the kernel to look at the CPU usage and to make decisions on what to do about the frequency.</string>
-    <string name="help_text_set_governor">The CPU governor manages how your CPU scales its frequency. Choosing a different governor can significantly affect performance and battery life.</string>
-    <string name="help_text_set_gpu_governor">Allows you to change the GPU governor. It manages the frequency scaling of your GPU and might have a big impact on the GPU performance.</string>
-    <string name="help_text_single_core_threshold" formatted="false">The threshold for a single core to online another one. For example, if core 1 is at 100% and the average load is above 60% core 3 will get online.</string>
-    <string name="help_text_stat_interval">The time interval between which vm statistics are updated. The default is 1 second.</string>
-    <string name="help_text_swappiness">This control is used to define how aggressive the kernel will swap memory pages. Higher values will increase aggressiveness, while lower values will decrease the amount of swap. A value of 0 instructs the kernel not to initiate swap until the amount of free and file-backed pages is less than the high-water mark in a zone.</string>
-    <string name="help_text_sweeptowake">Wakes the device when you swipe across the screen while it is off. Availability depends on kernel support.</string>
-    <string name="help_text_target_loads">At or above this value, the governor will ramp up the frequency. Lower values result in higher CPU speeds. An example would be \'85 1200000:80 1500000:95\'. This means the overall target load is 85, but if the frequency is higher than 1.2 GHz its 80. The same applies for 1.5 GHz but with 95.</string>
-    <string name="help_text_tcp_congestion">Choose the algorithm behind your network congestion control. Usually the default is \'cubic\' or \'reno\'.</string>
-    <string name="help_text_temp_threshold">The temperature threshold when your CPU starts to throttle to save it from overheating. This value is usually in °C.</string>
-    <string name="help_text_timer_rate">The sample rate of the timer used to increase frequency</string>
-    <string name="help_text_timer_slack">Max additional time to wait in idle, beyond timer_rate, at speeds above minimum before wakeup to reduce speed, or -1 if unnecessary.</string>
-    <string name="help_text_up_frequency">The minimum CPU frequency to start hotplug operations. If the current frequency is below this value, no hotplug operations will perform. Default is the maximum frequency.</string>
-    <string name="help_text_up_threshold">Defines what the average CPU usage between the samplings of \'sampling_rate\' needs to be for the kernel to decide on whether it should increase the frequency.</string>
-    <string name="help_text_vfs_cache_pressure">This percentage value controls the tendency of the kernel to reclaim the memory which is used for caching of directory and inode objects.</string>
-    <string name="help_text_voltage_values">In this submenu you can change the voltage values of your CPU. This might increase your battery life or allows your CPU to run on higher frequencies. However, this can cause massive issues if overdone too much.</string>
-    <string name="help_text_volume_boost">This value gives your speakers or your headphones a boost to get them a little louder.</string>
-    <string name="help_text_write_expire">Similar to read_expire, but for writes.</string>
-    <string name="help_text_writeback">Dynamically controls delayed writeback of cached data. This may improve performance or battery life, but can increase the risk of data loss after a crash.</string>
-    <string name="help_text_writes_starved">So writes_starved controls how many times we give preference to reads over writes. When that has been done writes_starved number of times, we dispatch some writes based on the same criteria as reads.</string>
-    <string name="help_text_vtg_level">This tunable controls the vibration module of your phone. A lower value usually means a softer vibration.</string>
+    <string name="help_text_above_hispeed_delay">在将速度提高到高速之前等待这么长时间，默认情况下为一个计时器间隔。</string>
+    <string name="help_text_align_windows">是否在所有 CPU 上对齐计时器窗口。当 use_sched_load 为 true 时，此标志将被忽略，并且窗口将始终对齐。</string>
+    <string name="help_text_all_cpus_threshold">当前所有在线 CPU 的平均负载阈值，用于使下一个核心上线。如果降低此值，核心可以更轻松地上线。</string>
+    <string name="help_text_amp">此值可让您增加或减小振动模块的强度。通常最大值为100。</string>
+    <string name="help_text_battery_saver">如果启用（1），则在您关闭屏幕后，将仅有一个核心保持活动状态。如果屏幕关闭时音频质量异常，请尝试通过0将其关闭。这将使两个核心在挂起期间保持活动状态。</string>
+    <string name="help_text_block_dump">当设置为非零值时，block_dump 会启用块 I/O 调试。</string>
+    <string name="help_text_button_brightness">设置电容式按钮的背光亮度级别。</string>
+    <string name="help_text_boostpulse_duration">输入增益的持续时间。</string>
+    <string name="help_text_dalvik_settings">此子菜单让您能够与设备的虚拟机进行交互。其中大多是与内存相关的选项。</string>
+    <string name="help_text_debug">面向开发人员的调试标志。这里没什么可做的！</string>
+    <string name="help_text_dirty_background_bytes">包含后台内核刷新器线程将开始回写的脏内存量。\n 注意：dirty_background_bytes 是 dirty_background_ratio 的对应项。一次只能指定其中一个。写入 sysctl 时，会立即认为其用于评估脏内存限制，而读取时另一个则显示为 0。</string>
+    <string name="help_text_dirty_background_ratio">包含后台内核刷新线程将开始写入脏数据的页数，以包含空闲页和可回收页的总可用内存的百分比表示。</string>
+    <string name="help_text_dirty_bytes">包含生成磁盘写入的进程本身将开始回写的脏内存量。\n注意：允许的 dirty_bytes 最小值是两个页面（以字节为单位）；任何低于此限制的值都将被忽略，并将保留旧配置。</string>
+    <string name="help_text_dirty_expire_centisecs">此可调参数用于定义脏数据何时足够旧，从而有资格由内核刷新器线程写出。它以百分之一秒为单位表示。在内存中处于脏状态的时间超过此间隔的数据将在刷新器线程下次唤醒时被写出。</string>
+    <string name="help_text_dirty_ratio">包含正在生成磁盘写入的进程本身开始写入脏数据的页数，以包含空闲页和可回收页的总可用内存的百分比表示。</string>
+    <string name="help_text_dirty_writeback_centisecs">内核刷新器线程将定期唤醒并将“旧”数据写入磁盘。此可调参数表示这些唤醒之间的间隔，以百分之一秒为单位。\n将其设置为零将完全禁用定期回写。</string>
+    <string name="help_text_display_control">调整显示器色彩配置文件。可用模式及其效果取决于设备和内核。</string>
+    <string name="help_text_drop_caches">写入此项将导致内核丢弃干净的缓存，以及可回收的slab对象，如dentry和inode。一旦被丢弃，它们的内存就会被释放。（1 = 释放页面缓存，2 = 释放可回收的slab对象，3 = 释放slab对象和页面缓存）</string>
+    <string name="help_text_doubletaptowake">当您在屏幕关闭时双击屏幕时，唤醒设备。可用性取决于内核支持。</string>
+    <string name="help_text_dyn_fsync">在屏幕亮起时动态禁用 fsync，并在屏幕熄灭时恢复。这可能会提高性能，但可能会增加发生崩溃后数据丢失的风险。</string>
+    <string name="help_text_entropy_settings">熵池存储用于各种应用程序的随机数。在某些情况下，较高的读/写值会有所帮助，但也会增加电池电量的消耗。一般来说，您的池在任何时候都应始终高于200。</string>
+    <string name="help_text_extfrag_threshold">此参数会影响内核是否会压缩内存或直接回收内存，以满足高阶分配。接近 0 的值表示分配将因内存不足而失败，接近 1000 的值表示失败是由于碎片化，而 -1 表示只要达到水位线，分配就会成功。</string>
+    <string name="help_text_extra_free_kbytes">此参数指示 VM 在后台回收（kswapd）启动的阈值与直接回收（通过分配进程）启动的阈值之间保留额外的可用内存。</string>
+    <string name="help_text_fifo_batch">控制每批请求的最大数量。此参数可调整每个请求的延迟与总吞吐量之间的平衡。当低延迟是主要考虑因素时，值越小越好。增加 fifo_batch 通常会提高吞吐量，但会牺牲延迟的稳定性。</string>
+    <string name="help_text_front_merges">此可调参数取值为 0（=关闭）或 1（=开启）。有时会出现这样的情况：一个请求进入 IO 调度器，该调度器与已在队列中的请求是连续的。它要么位于该请求的后面，要么位于该请求的前面。</string>
+    <string name="help_text_fstrim_toggle">修剪系统的各个部分，以释放存储空间中未使用的区块。这需要 BusyBox，并且可能需要一段时间才能完成。</string>
+    <string name="help_text_fsync">fsync() 调用强制从缓冲区缓存中进行数据的物理写入。禁用此功能可能会提升性能，但如果系统崩溃，则可能会导致数据丢失。</string>
+    <string name="help_text_go_hispeed_load">当 CPU 负载达到或超过此值时，切换到高速模式。</string>
+    <string name="help_text_gpu_control_enable">启用用于更改 GPU 频率和调速器的内核接口。可用性取决于内核支持。</string>
+    <string name="help_text_gpu_gov_settings">您的 GPU 调速器有一些特殊的调谐参数，可用于微调其行为。这与 CPU 调速器非常相似。</string>
+    <string name="help_text_gpu_max_freq">此可调参数让您可以更改 GPU 的最高频率。降低此值可以节省电池电量，但会牺牲性能。</string>
+    <string name="help_text_highmem_is_dirtyable">其默认值为 0（假），这意味着 dirty_ratio 和 dirty_background_ratio 比率仅按低内存的百分比计算。这可以防止在页面回收、交换和一般的 VM 故障中进行过多的扫描。</string>
+    <string name="help_text_hispeed_freq">在高负载下，高速会从任何较低的频率提升。</string>
+    <string name="help_text_hotplug_control">轻触此元素，即可更改热插拔驱动程序的各种值。热插拔驱动程序决定何时应将 CPU 内核置于在线或离线状态。</string>
+    <string name="help_text_hotplug_sampling">热插拔驱动程序的采样率。降低此值会导致更快地决定是否应将核心上线。</string>
+    <string name="help_text_ignore_nice_load">此参数取值为“0”或“1”。当设置为“0”（这是默认值）时，所有进程都计入“CPU利用率”值。当设置为“1”时，以“nice”值运行的进程将不计入总体使用率计算（因此将被忽略）。</string>
+    <string name="help_text_input_boost_freq">当检测到触摸显示屏时，CPU 将达到的频率。</string>
+    <string name="help_text_io_is_busy">这是一个标志，用于确定在等待各种 IO 时是否应提高 CPU 利用率，以提升 CPU 频率。将此值设置为 0 将意味着调速器将不那么频繁地提高频率。</string>
+    <string name="help_text_io_scheduler_list">IO 调度器管理特定设备的 IO 请求，以实现高效处理。更改此值对大多数安卓系统的影响相当小。</string>
+    <string name="help_text_ksm">内核同页合并（KSM）允许对内存进行重复数据删除。这是Android上一个非常实用的功能，可以在牺牲CPU性能的前提下节省一些RAM。</string>
+    <string name="help_text_laptop_mode">laptop_mode是一个控制笔记本电脑模式的旋钮。</string>
+    <string name="help_text_legacy_va_layout">如果非零，此 sysctl 将禁用新的 32 位 mmap 布局 - 内核将对所有进程使用旧版 (2.4) 布局。</string>
+    <string name="help_text_live_oc_uc">使用此选项时请谨慎。您可以对列出的频率步进进行超频/降频，并为其设置正确的电压。为了您的安全，这些值不会应用于每个应用程序的配置文件。</string>
+    <string name="help_text_low_latency" formatted="false">如果启用（1），它将使热插拔驱动程序对短时负载峰值（100% CPU 负载）做出非常快速的反应，并相应地使 CPU 上线。</string>
+    <string name="help_text_lowmem_reserve_ratio">对于高内存机器上的一些特殊工作负载，如果内核允许从低内存区域分配进程内存，则存在风险。这是因为该内存随后可能通过 mlock() 系统调用被锁定，或者由于交换空间不可用而被锁定。</string>
+    <string name="help_text_max_freq_cpu">此可调参数让您可以调整最大 CPU 频率。降低此值可以节省功耗，但会牺牲性能。</string>
+    <string name="help_text_max_freq_hysteresis">在再次降低频率之前，至少保持此值的最大频率。</string>
+    <string name="help_text_max_map_count">此文件包含一个进程可能拥有的最大内存映射区域数。内存映射区域用作调用 malloc 的副作用，直接由 mmap 和 mprotect 使用，在加载共享库时也会使用。</string>
+    <string name="help_text_min_free_kbytes">这用于强制 Linux VM 保留最少数量的可用千字节。</string>
+    <string name="help_text_min_freq_cpu">此可调参数让您可以调整最低 CPU 频率。增加此值可以提高性能，但会增加电池的能耗。</string>
+    <string name="help_text_min_online_time">用于防止核心在接近阈值时离线/上线。这是核心的最小在线时间（以秒为单位）。</string>
+    <string name="help_text_min_sample_time">在我们可以降低频率之前，在某个频率上所要花费的最短时间。</string>
+    <string name="help_text_no_data_found">没有关于此项目的可用信息。</string>
+    <string name="help_text_oom_dump_tasks">使内核执行 OOM 终止时能够生成全系统任务转储（不包括内核线程），并包含诸如 pid、uid、tgid、vm 大小、rss、nr_ptes、nr_pmds、swapents、oom_score_adj 分数和名称等信息。这有助于确定调用 OOM Killer 的原因，识别导致该情况的异常任务，并确定 OOM Killer 选择终止该任务的原因。</string>
+    <string name="help_text_oom_kill_allocating_task">此选项用于启用或禁用在内存不足的情况下终止触发 OOM 的任务。默认值为 0。</string>
+    <string name="help_text_overcommit_memory">此值包含一个启用内存超额分配的标志。\n当此标志为 0 时，内核会在用户空间请求更多内存时尝试估算剩余的可用内存量。\n当此标志为 1 时，内核会假装始终有足够的内存，直到内存实际用完为止。\n当此标志为 2 时，内核会使用“永不超额分配”策略，该策略会尝试防止任何内存超额分配。</string>
+    <string name="help_text_overcommit_ratio">当 overcommit_memory 设置为 2 时，已分配的地址空间不允许超过交换空间加上物理 RAM 的此百分比。</string>
+    <string name="help_text_panic_on_oom">此选项可启用或禁用内存不足时的死机功能。</string>
+    <string name="help_text_percpu_pagelist_fraction">这是每个区域中最多（高标记 pcp-&gt;high）为每个每 CPU 页面列表分配的页面比例。其最小值是 8。这意味着我们不允许在任何单个 per_cpu_pagelist 中分配超过每个区域 1/8 的页面。</string>
+    <string name="help_text_powersave_bias" formatted="false">此参数取值为 0 到 1000 之间。它定义了将从目标频率中削减的目标频率的百分比（乘以 10）值。例如，当设置为 100 -&gt; 10% 时，当按需调速器将目标频率设定为 1000 MHz 时，它将改为将目标频率设定为 1000 MHz - (1000 MHz 的 10%) = 900 MHz。默认情况下，此参数设置为 0（禁用）。</string>
+    <string name="help_text_read_ahead">内核尝试预读已请求的数据块，并将其存储在缓存中，以节省潜在的磁盘 I/O。默认值为 128 kB。较高的值可能会增加应用程序的加载时间。</string>
+    <string name="help_text_read_expire">当读取请求首次进入 IO 调度器时，它会被分配一个截止时间，即当前时间 + read_expire 值（以毫秒为单位）。</string>
+    <string name="help_text_rgb_values">允许您更改显示器的 RGB（即红、绿、蓝）颜色，以便进行校准。</string>
+    <string name="help_text_sampling_down_factor">此参数控制内核在以最高速度运行时决定何时降低频率的速率。当设置为 1（默认值）时，无论当前时钟速度如何，都会以相同的间隔做出重新评估负载的决定。但当设置为大于 1（例如 100）时，它在 CPU 由于高负载而以最高速度运行时，充当重新评估负载的调度间隔的乘数。</string>
+    <string name="help_text_sampling_rate">以微秒（10^-6 秒）为单位，这是您希望内核检查 CPU 使用率并就频率采取何种措施做出决策的频率。</string>
+    <string name="help_text_set_governor">CPU调速器管理CPU如何调整其频率。选择不同的调速器可能会显著影响性能和电池续航时间。</string>
+    <string name="help_text_set_gpu_governor">允许您更改 GPU 调速器。它管理 GPU 的频率缩放，可能会对 GPU 性能产生重大影响。</string>
+    <string name="help_text_single_core_threshold" formatted="false">单个核心使另一个核心上线的阈值。例如，如果核心 1 的负载为 100%，且平均负载高于 60%，则核心 3 将上线。</string>
+    <string name="help_text_stat_interval">更新虚拟机统计信息的时间间隔。默认值为 1 秒。</string>
+    <string name="help_text_swappiness">此控件用于定义内核交换内存页面的积极程度。较高的值将增加积极性，而较低的值将减少交换量。值为 0 表示指示内核在空闲和文件支持的页面数量小于区域中的高水位线之前不启动交换。</string>
+    <string name="help_text_sweeptowake">当您在屏幕关闭时滑动屏幕时，唤醒设备。是否可用取决于内核支持。</string>
+    <string name="help_text_target_loads">达到或超过此值时，调速器将提高频率。值越低，CPU 速度越高。例如“85 1200000:80 1500000:95”。这意味着总体目标负载为 85，但如果频率高于 1.2 GHz，则为 80。1.5 GHz 也适用同样的情况，但目标负载为 95。</string>
+    <string name="help_text_tcp_congestion">选择网络拥塞控制背后的算法。通常，默认值为“cubic”或“reno”。</string>
+    <string name="help_text_temp_threshold">CPU 开始降频以避免过热时的温度阈值。此值通常以°C为单位。</string>
+    <string name="help_text_timer_rate">用于提高频率的定时器采样率</string>
+    <string name="help_text_timer_slack">在唤醒以降低速度之前，以高于最低速度运行时，超出 timer_rate 的最长额外空闲等待时间，如果不需要，则为 -1。</string>
+    <string name="help_text_up_frequency">启动热插拔操作的最低 CPU 频率。如果当前频率低于此值，则不会执行热插拔操作。默认值为最高频率。</string>
+    <string name="help_text_up_threshold">定义“sampling_rate”的采样之间平均 CPU 使用率需要达到多少，内核才能决定是否应提高频率。</string>
+    <string name="help_text_vfs_cache_pressure">此百分比值控制内核回收用于缓存目录和 inode 对象的内存的倾向。</string>
+    <string name="help_text_voltage_values">在此子菜单中，您可以更改CPU的电压值。这可能会延长电池续航时间，或使您的CPU以更高的频率运行。但是，如果过度操作，可能会导致重大问题。</string>
+    <string name="help_text_volume_boost">此值可增强扬声器或耳机的音量，使其声音稍大一些。</string>
+    <string name="help_text_write_expire">与 read_expire 类似，但适用于写入。</string>
+    <string name="help_text_writeback">动态控制缓存数据的延迟写回。这可能会提高性能或延长电池续航时间，但可能会增加发生崩溃后数据丢失的风险。</string>
+    <string name="help_text_writes_starved">因此，writes_starved 控制我们优先考虑读取而不是写入的次数。当这种情况发生 writes_starved 次时，我们会根据与读取相同的标准来分派一些写入。</string>
+    <string name="help_text_vtg_level">此可调参数控制您手机的振动模块。较低的值通常意味着更柔和的振动。</string>
 </resources>

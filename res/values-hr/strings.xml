@@ -4,415 +4,458 @@
     <!-- ========================================================= -->
     <!-- Application / Brand / Global UI Actions                    -->
     <!-- ========================================================= -->
-    <string name="add">Add</string>
-    <string name="aero_continue">Continue</string>
-    <string name="app_name">Aero Control</string>
-    <string name="apply">Apply</string>
-    <string name="average">Avg.</string>
-    <string name="back_for_close">Press Back again to close the App.</string>
-    <string name="cancel">Cancel</string>
-    <string name="disabled">Disabled</string>
-    <string name="dont_show_again">Don\'t show this again</string>
-    <string name="enabled">Enabled</string>
-    <string name="folder_empty">Folder is empty</string>
-    <string name="got_it">Got it</string>
-    <string name="maybe_later">Maybe later</string>
-    <string name="minute">Minute</string>
-    <string name="minutes">Minutes</string>
-    <string name="need_reboot">This may require a reboot.</string>
-    <string name="proceed_with_reset">Are you sure you want to proceed?</string>
-    <string name="refresh">Refresh</string>
-    <string name="reload">Reset</string>
-    <string name="retry">Retry</string>
-    <string name="save">Save</string>
-    <string name="skip_splash">Skip</string>
-    <string name="successful">Successful!</string>
-    <string name="unavailable">Unavailable</string>
-    <string name="undo">Undo</string>
-    <string name="usage_time">Usage time</string>
-    <string name="warning">Warning!</string>
+    <string name="add">Dodati</string>
+    <string name="aero_continue">Nastaviti</string>
+    <string name="app_name">Zračna kontrola</string>
+    <string name="apply">primijeniti</string>
+    <string name="average">Prosj.</string>
+    <string name="back_for_close">Ponovno pritisnite Natrag za zatvaranje aplikacije.</string>
+    <string name="cancel">Otkazati</string>
+    <string name="disabled">Onesposobljeno</string>
+    <string name="dont_show_again">Ne prikazuj ovo više</string>
+    <string name="enabled">Omogućeno</string>
+    <string name="folder_empty">Mapa je prazna</string>
+    <string name="got_it">shvaćam</string>
+    <string name="maybe_later">Možda kasnije</string>
+    <string name="minute">Minuta</string>
+    <string name="minutes">minuta</string>
+    <string name="need_reboot">Ovo može zahtijevati ponovno pokretanje.</string>
+    <string name="proceed_with_reset">Jeste li sigurni da želite nastaviti?</string>
+    <string name="refresh">Osvježiti</string>
+    <string name="reload">Resetiraj</string>
+    <string name="retry">Pokušaj ponovo</string>
+    <string name="save">Uštedjeti</string>
+    <string name="skip_splash">Preskočiti</string>
+    <string name="successful">Uspješno!</string>
+    <string name="unavailable">Nedostupan</string>
+    <string name="undo">Poništi</string>
+    <string name="usage_time">Vrijeme korištenja</string>
+    <string name="warning">Upozorenje!</string>
+    <string name="overview_loading">Pregled učitavanja</string>
+    <string name="overview_loading_summary">Prikupljanje informacija o uređaju...</string>
+    <string name="overview_temperature_loading">Skeniranje temperaturnih senzora...</string>
 
     <!-- ========================================================= -->
     <!-- Navigation / Slider Drawer                                -->
     <!-- ========================================================= -->
-    <string name="drawer_close">Close navigation drawer</string>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="slider_app_monitor">App Monitor</string>
-    <string name="slider_backup_restore">Backup/Restore</string>
-    <string name="slider_cpu_settings">CPU Performance</string>
-    <string name="slider_defy_parts">Defy/Droid X Parts</string>
-    <string name="slider_gpu_settings">GPU Control</string>
-    <string name="slider_memory_settings">Memory Tuning</string>
-    <string name="slider_misc_settings">Misc. Settings</string>
-    <string name="slider_overview">Overview</string>
-    <string name="slider_profile">Profiles</string>
-    <string name="slider_statistics">CPU Statistics</string>
-    <string name="slider_test_suite_settings">Test Suite</string>
-    <string name="testsuite_linpack_test_title">Linpack Test</string>
-    <string name="testsuite_linpack_test_summary">Runs the linpack test.</string>
-    <string name="testsuite_linpack_running">Running Linpack</string>
-    <string name="testsuite_linpack_running_summary">Burning your CPUs...</string>
-    <string name="testsuite_use_all_cpus_title">Use All CPUs</string>
-    <string name="testsuite_use_all_cpus_summary">Uses all detected CPUs for the benchmark instead of leaving one free. This can reduce device responsiveness.</string>
+    <string name="drawer_close">Zatvori ladicu za navigaciju</string>
+    <string name="drawer_open">Otvori ladicu za navigaciju</string>
+    <string name="slider_app_monitor">Monitor aplikacija</string>
+    <string name="slider_backup_restore">Sigurnosno kopiranje/vraćanje</string>
+    <string name="slider_cpu_settings">CPU performanse</string>
+    <string name="slider_defy_parts">Dijelovi Defy/Droid X</string>
+    <string name="slider_gpu_settings">GPU kontrola</string>
+    <string name="slider_memory_settings">Podešavanje memorije</string>
+    <string name="slider_misc_settings">razno postavke</string>
+    <string name="slider_overview">Pregled</string>
+    <string name="overview_section_system">sustav</string>
+    <string name="overview_section_performance">Performanse</string>
+    <string name="overview_section_temperatures">Temperature</string>
+    <string name="overview_section_battery">Baterija</string>
+    <string name="overview_section_memory">Memorija</string>
+    <string name="overview_section_configuration">Konfiguracija</string>
+    <string name="overview_device">Uređaj</string>
+    <string name="overview_uptime">Vrijeme rada</string>
+    <string name="overview_android_version">Android verzija</string>
+    <string name="overview_android_security_update">Sigurnosno ažuriranje Androida</string>
+    <string name="overview_api_level">API razina</string>
+    <string name="overview_architecture">Arhitektura</string>
+    <string name="overview_kernel">Kernel</string>
+    <string name="overview_cpu_governor">CPU guverner:</string>
+    <string name="temperature_source_cpu">CPU</string>
+    <string name="temperature_source_battery">Baterija</string>
+    <string name="temperature_source_gpu">GPU</string>
+    <string name="temperature_source_soc">SoC</string>
+    <string name="temperature_source_other">%1$s</string>
+    <string name="temperature_source_fallback">Termalni senzor %1$d</string>
+    <string name="temperature_status">Status</string>
+    <string name="battery_level">Razina</string>
+    <string name="battery_status">Status</string>
+    <string name="battery_voltage">Napon</string>
+    <string name="battery_current">Trenutni</string>
+    <string name="battery_power_source">Izvor energije</string>
+    <string name="battery_power_source_battery">Baterija</string>
+    <string name="battery_power_source_usb">USB priključak</string>
+    <string name="battery_power_source_ac">AC punjač</string>
+    <string name="slider_profile">Profili</string>
+    <string name="slider_statistics">CPU statistika</string>
+    <string name="slider_test_suite_settings">Komplet za testiranje</string>
+    <string name="testsuite_linpack_test_title">Linpack test</string>
+    <string name="testsuite_linpack_test_summary">Pokreće linpack test.</string>
+    <string name="testsuite_linpack_running">Pokretanje Linpacka</string>
+    <string name="testsuite_linpack_running_summary">Spaljivanje vaših CPU-a...</string>
+    <string name="testsuite_use_all_cpus_title">Koristite sve procesore</string>
+    <string name="testsuite_use_all_cpus_summary">Koristi sve otkrivene procesore za referentnu vrijednost umjesto da jedan ostavi slobodnim. To može smanjiti odziv uređaja.</string>
 
     <!-- ========================================================= -->
     <!-- Overview & Live Hardware Information                      -->
     <!-- ========================================================= -->
-    <string name="available_memory">Memory:</string>
-    <string name="current_cpu_speed">CPU Frequency:</string>
-    <string name="current_governor">Governor:</string>
-    <string name="current_governor_cluster">Governor (CPU %1$s):</string>
-    <string name="current_gpu_speed">GPU Frequency:</string>
-    <string name="current_io_governor">I/O-Scheduler:</string>
+    <string name="available_memory">Memorija:</string>
+    <string name="storage_permission_required">Za ovu operaciju potrebna je dozvola za pohranu.</string>
+    <string name="storage_operation_failed">Nije moguće pristupiti zajedničkoj pohrani.</string>
+    <string name="hardware_operation_failed">Nije moguće primijeniti hardversku postavku.</string>
+    <string name="current_cpu_speed">CPU frekvencija:</string>
+    <string name="current_governor">Upravitelj:</string>
+    <string name="current_governor_index">Guverner %1$d:</string>
+    <string name="current_governor_cluster">Guverner (CPU %1$s):</string>
+    <string name="current_gpu_speed">Frekvencija GPU-a:</string>
+    <string name="current_io_governor">U/I-planer:</string>
     <string name="kernel_version">Kernel:</string>
 
     <!-- ========================================================= -->
     <!-- Profile & Per-App Control                                  -->
     <!-- ========================================================= -->
-    <string name="add_a_name">Profile name</string>
-    <string name="apply_profile">Applying Per-App Profile:</string>
-    <string name="define_a_name">Define a name for this profile.</string>
-    <string name="nothing_added_yet">Whoops! You haven\'t added any profiles yet.</string>
-    <string name="per_app_active">Per-App: Active</string>
-    <string name="per_app_not_active">Per-App: Not active</string>
-    <string name="profile_assign_to_apps">Assign to apps</string>
-    <string name="profile_remove">Remove this profile</string>
-    <string name="profile_remove_confirmation">This profile will be permanently deleted.</string>
-    <string name="delete">Delete</string>
-    <string name="return_to_normal">Returning to normal usage</string>
+    <string name="add_a_name">Naziv profila</string>
+    <string name="apply_profile">Primjena profila po aplikaciji:</string>
+    <string name="define_a_name">Definirajte naziv za ovaj profil.</string>
+    <string name="nothing_added_yet">Ups! Još niste dodali nijedan profil.</string>
+    <string name="per_app_active">Po aplikaciji: aktivno</string>
+    <string name="per_app_not_active">Po aplikaciji: nije aktivno</string>
+    <string name="profile_assign_to_apps">Dodijelite aplikacijama</string>
+    <string name="profile_remove">Ukloni ovaj profil</string>
+    <string name="profile_remove_confirmation">Ovaj će profil biti trajno izbrisan.</string>
+    <string name="delete">Izbrisati</string>
+    <string name="return_to_normal">Povratak na normalnu upotrebu</string>
 
     <!-- ========================================================= -->
     <!-- CPU & Hotplug Configuration Strings                       -->
     <!-- ========================================================= -->
-    <string name="perf_cpu_boost_control">CPU Boost</string>
-    <string name="perf_cpu_boost_control_summary">Adjust the CPU boost tunables of your CPU here</string>
-    <string name="perf_cpu_hotplug">Hotplug Settings</string>
+    <string name="perf_cpu_boost_control">Pojačanje CPU-a</string>
+    <string name="perf_cpu_boost_control_summary">Ovdje prilagodite CPU pojačanje vašeg CPU-a</string>
+    <string name="perf_cpu_hotplug">Postavke Hotpluga</string>
     <string name="perf_cpu_hotplug_driver">Hotplug Driver</string>
-    <string name="perf_cpu_hotplug_summary">Adjust the hotplug driver here</string>
-    <string name="perf_live_oc_uc">Live OC/UC</string>
-    <string name="perf_live_oc_uc_summary">Control Frequencies and Voltage in realtime!</string>
-    <string name="perf_voltage_control">Voltage Control</string>
-    <string name="perf_voltage_control_summary">Adjust the voltage of your CPU here</string>
-    <string name="pref_cpu_freq">Frequencies</string>
-    <string name="pref_max_freq_cpu">Max. Frequency</string>
-    <string name="pref_min_freq_cpu">Min. Frequency</string>
-    <string name="pref_cpu_governor">Governor Settings</string>
-    <string name="pref_max_freq_cpu_cluster">Max. Frequency (CPU %1$s)</string>
-    <string name="pref_min_freq_cpu_cluster">Min. Frequency (CPU %1$s)</string>
-    <string name="pref_cpu_governor_cluster">Governor Settings (CPU %1$s)</string>
-    <string name="pref_apply_to_all_cpu_clusters">Apply to all clusters</string>
-    <string name="pref_apply_to_all_cpu_clusters_summary">Applies changes from the first cluster\'s controls to every detected CPU cluster.</string>
-    <string name="pref_gov_set">Governor Specific Settings</string>
-    <string name="pref_gov_set_no_parameter">Looks like there are no parameter for this governor?</string>
+    <string name="perf_cpu_hotplug_summary">Ovdje podesite upravljački program za vruću utičnicu</string>
+    <string name="perf_live_oc_uc">OC/UC uživo</string>
+    <string name="perf_live_oc_uc_summary">Kontrolirajte frekvencije i napon u stvarnom vremenu!</string>
+    <string name="perf_voltage_control">Kontrola napona</string>
+    <string name="perf_voltage_control_summary">Ovdje namjestite napon CPU-a</string>
+    <string name="pref_cpu_freq">Frekvencije</string>
+    <string name="pref_max_freq_cpu">Maks. Frekvencija</string>
+    <string name="pref_min_freq_cpu">Min. Frekvencija</string>
+    <string name="pref_cpu_governor">Postavke guvernera</string>
+    <string name="pref_max_freq_cpu_cluster">Maks. Frekvencija (CPU %1$s)</string>
+    <string name="pref_min_freq_cpu_cluster">Min. Frekvencija (CPU %1$s)</string>
+    <string name="pref_cpu_governor_cluster">Postavke regulatora (CPU %1$s)</string>
+    <string name="pref_cpu_detection_loading">Otkrivanje CPU mogućnosti...</string>
+    <string name="pref_cpu_detection_loading_summary">Dostupne kontrole pojavit će se kada detekcija završi.</string>
+    <string name="pref_cpu_control_loading">Učitavanje CPU kontrole...</string>
+    <string name="pref_cpu_governor_loading">Učitavanje dostupnih regulatora...</string>
+    <string name="pref_cpu_governor_retry">Ponovno pokušaj otkrivanje regulatora (CPU %1$s)</string>
+    <string name="pref_cpu_governor_retry_summary">Pokušajte ponovo pročitati dostupne regulatore ovog klastera.</string>
+    <string name="pref_cpu_legacy_loading">Provjera podrške za overklok naslijeđenog procesora...</string>
+    <string name="pref_apply_to_all_cpu_clusters">Primijeni na sve klastere</string>
+    <string name="pref_apply_to_all_cpu_clusters_summary">Primjenjuje promjene iz kontrola prvog klastera na svaki otkriveni CPU klaster.</string>
+    <string name="pref_gov_set">Postavke specifične za guvernera</string>
+    <string name="pref_gov_set_no_parameter">Čini se da nema parametara za ovog regulatora?</string>
     <string name="mv_minus">-25 mV</string>
     <string name="mv_plus">+25 mV</string>
 
     <!-- ========================================================= -->
     <!-- GPU Control Strings                                       -->
     <!-- ========================================================= -->
-    <string name="perf_gpu_gov">GPU Governor</string>
-    <string name="perf_gpu_gov_settings">GPU Governor Settings</string>
-    <string name="perf_gpu_gov_settings_summary">Tweak the governor parameters of your GPU.</string>
-    <string name="pref_gpu_control_enable">GPU Control</string>
-    <string name="pref_gpu_control_enable_summary">This will enable the GPU Control driver. It manages overclocking/undervolting as well as some basic scheduling for the GPU.</string>
-    <string name="pref_max_freq_gpu">Max. Frequency</string>
-    <string name="pref_max_freq_gpu_summary">This will set the maximum GPU Frequency. Default is 200 MHz.</string>
+    <string name="perf_gpu_gov">Guverner GPU-a</string>
+    <string name="perf_gpu_gov_settings">Postavke GPU regulatora</string>
+    <string name="perf_gpu_gov_settings_summary">Podesite regulatorne parametre svog GPU-a.</string>
+    <string name="pref_gpu_control_enable">GPU kontrola</string>
+    <string name="pref_gpu_control_enable_summary">Ovo će omogućiti upravljački program GPU Control. Upravlja overclockingom/undervoltingom kao i nekim osnovnim rasporedom za GPU.</string>
+    <string name="pref_max_freq_gpu">Maks. Frekvencija</string>
+    <string name="pref_max_freq_gpu_summary">Ovo će postaviti maksimalnu GPU frekvenciju. Zadana vrijednost je 200 MHz.</string>
 
     <!-- ========================================================= -->
     <!-- Memory & Virtual Machine Settings                        -->
     <!-- ========================================================= -->
-    <string name="io_scheduler">IO Scheduler</string>
-    <string name="pref_dalvik_settings">VM Settings</string>
-    <string name="pref_dalvik_settings_heading">Virtual Machine</string>
-    <string name="pref_dalvik_settings_summary">Change parameters of the virtual machine.</string>
-    <string name="pref_dynamic_fsync">Dynamic FSync</string>
-    <string name="pref_dynamic_fsync_summary">Dynamic FSync enables fsync only while the screen is off.</string>
-    <string name="pref_dynamic_writeback">Writeback Control</string>
-    <string name="pref_dynamic_writeback_summary">Enable or Disable the writeback control here.</string>
-    <string name="pref_entropy_settings">Entropy</string>
-    <string name="pref_entropy_settings_summary">Change the read and write threshold for the entropy pool.</string>
+    <string name="io_scheduler">IO planer</string>
+    <string name="pref_dalvik_settings">VM postavke</string>
+    <string name="pref_dalvik_settings_heading">Virtualni stroj</string>
+    <string name="pref_dalvik_settings_summary">Promijenite parametre virtualnog stroja.</string>
+    <string name="pref_dynamic_fsync">Dinamički FSync</string>
+    <string name="pref_dynamic_fsync_summary">Dynamic FSync omogućuje fsync samo dok je zaslon isključen.</string>
+    <string name="pref_dynamic_writeback">Kontrola povratnog pisanja</string>
+    <string name="pref_dynamic_writeback_summary">Ovdje omogućite ili onemogućite kontrolu povratnog pisanja.</string>
+    <string name="pref_entropy_settings">Entropija</string>
+    <string name="pref_entropy_settings_summary">Promijenite prag čitanja i pisanja za skup entropije.</string>
     <string name="pref_fsync">FSync</string>
-    <string name="pref_fsync_summary">Enables or disabled FSync completely.</string>
-    <string name="pref_fstrim">Trim Option</string>
-    <string name="pref_fstrim_no_busybox">BusyBox is required for this operation!</string>
-    <string name="pref_fstrim_summary">Trim several parts of your system! This might take a while.</string>
-    <string name="pref_io_scheduler">IO Scheduler Parameter</string>
-    <string name="pref_io_scheduler_no_parameter">Looks like there are no parameter for this scheduler?</string>
+    <string name="pref_fsync_summary">Omogućuje ili potpuno onemogućuje FSync.</string>
+    <string name="pref_fstrim">Opcija trima</string>
+    <string name="pref_fstrim_no_busybox">BusyBox je potreban za ovu operaciju!</string>
+    <string name="pref_fstrim_summary">Izrežite nekoliko dijelova vašeg sustava! Ovo bi moglo potrajati.</string>
+    <string name="pref_io_scheduler">Parametar IO planera</string>
+    <string name="pref_io_scheduler_no_parameter">Čini se da nema parametara za ovaj planer?</string>
     <string name="pref_ksm">KSM</string>
-    <string name="pref_ksm_summary">Enables or disabled the KSM daemon completely.</string>
-    <string name="pref_low_memory">Low Memory</string>
-    <string name="pref_low_memory_summary">Current ro.config.low_ram value: %1$s</string>
-    <string name="pref_memory_settings">Memory Settings</string>
-    <string name="pref_readahead">Readahead size</string>
-    <string name="pref_readahead_dialog">Readahead size in kB</string>
+    <string name="pref_ksm_summary">Omogućuje ili potpuno onemogućuje KSM demon.</string>
+    <string name="pref_low_memory">Malo memorije</string>
+    <string name="pref_low_memory_summary">Trenutna vrijednost ro.config.low_ram: %1$s</string>
+    <string name="pref_memory_settings">Postavke memorije</string>
+    <string name="pref_readahead">Veličina za čitanje unaprijed</string>
+    <string name="pref_readahead_dialog">Veličina čitanja unaprijed u kB</string>
 
     <!-- ========================================================= -->
     <!-- Custom Device Tweaks (Defy Parts / Screen Options)       -->
     <!-- ========================================================= -->
-    <string name="defy_energy_saver">Energy Saver</string>
-    <string name="defy_green_colors">Defy Green Colors</string>
-    <string name="defy_red_colors">Defy Red Colors</string>
-    <string name="pref_button_brightness">Button Brightness</string>
-    <string name="pref_charging_led">Charging LED Color</string>
-    <string name="pref_charging_led_summary">Color of your LED while charging</string>
-    <string name="pref_charge_led_mode_white">White LED</string>
-    <string name="pref_charge_led_mode_green">Green LED</string>
-    <string name="pref_charge_led_mode_rgb">Mixed LED (red/green)</string>
-    <string name="pref_charge_led_mode_off">Off</string>
-    <string name="pref_display_color">Display Color</string>
-    <string name="pref_display_color_summary">Adjust the display color here.</string>
+    <string name="defy_energy_saver">Ušteda energije</string>
+    <string name="defy_green_colors">Prkosi zelenim bojama</string>
+    <string name="defy_red_colors">Prkosi crvenim bojama</string>
+    <string name="pref_button_brightness">Svjetlina gumba</string>
+    <string name="pref_charging_led">LED boja za punjenje</string>
+    <string name="pref_charging_led_summary">Boja vašeg LED-a tijekom punjenja</string>
+    <string name="pref_charge_led_mode_white">Bijeli LED</string>
+    <string name="pref_charge_led_mode_green">Zeleni LED</string>
+    <string name="pref_charge_led_mode_rgb">Mješoviti LED (crveno/zeleno)</string>
+    <string name="pref_charge_led_mode_off">Isključeno</string>
+    <string name="pref_display_color">Boja zaslona</string>
+    <string name="pref_display_color_summary">Ovdje prilagodite boju zaslona.</string>
     <string name="pref_doubletaptowake">Doubletap2Wake</string>
-    <string name="pref_doubletaptowake_summary">Wake your device with a doubletap gesture.</string>
-    <string name="pref_general_settings_defy">General Settings</string>
-    <string name="pref_multitouch">Multitouch-Points</string>
-    <string name="pref_multitouch_summary">Number of multitouch points.</string>
+    <string name="pref_doubletaptowake_summary">Probudite uređaj dvostrukim dodirom.</string>
+    <string name="pref_general_settings_defy">Opće postavke</string>
+    <string name="pref_multitouch">Višedodirne točke</string>
+    <string name="pref_multitouch_summary">Broj višedodirnih točaka.</string>
     <string name="pref_sweeptowake">Sweep2Wake</string>
-    <string name="pref_sweeptowake_summary">May drain your battery a bit more than usual.</string>
+    <string name="pref_sweeptowake_summary">Može isprazniti bateriju malo više nego inače.</string>
 
     <!-- ========================================================= -->
     <!-- Accessibility / Content Descriptions                      -->
     <!-- ========================================================= -->
-    <string name="info_button_description">Show help information</string>
+    <string name="info_button_description">Prikaži informacije za pomoć</string>
 
     <!-- ========================================================= -->
     <!-- Settings Screen Configuration Elements                     -->
     <!-- ========================================================= -->
-    <string name="aero_settings">Settings</string>
-    <string name="app_theme_dark">Dark - Dark background with black action bar</string>
-    <string name="app_theme_light">Light - Light Holo with blue accent</string>
-    <string name="app_theme_system">System - Uses your device\'s Material theme</string>
-    <string name="pref_category_application">Application</string>
-    <string name="pref_category_per_app_profiles">Per-App Profiles</string>
-    <string name="pref_app_theme">App Theme</string>
-    <string name="pref_app_theme_summary">Defines the default app theme.</string>
-    <string name="pref_boot_delay">Boot Timer Delay</string>
-    <string name="pref_boot_delay_dialog">Delay in minutes</string>
-    <string name="pref_finishing_settings">finished settings.</string>
-    <string name="pref_lollipop_usage_warning">Please notice that Google changed the way to check for the current foreground app for Lollipop(+). In order to make PerApp Service work on your device, you have to go into settings and enable usage statistics access for Aero Control. You can revoke this right at any point of time. If you are feeling ready, click continue.</string>
-    <string name="pref_misc_settings">Misc. Settings</string>
-    <string name="pref_misc_tcp_congestion">TCP Congestion Algorithm</string>
-    <string name="pref_misc_delete_misc">Delete your settings</string>
-    <string name="pref_misc_your_settings">Your Settings</string>
-    <string name="pref_misc_no_settings">You haven\'t added any settings yet!</string>
-    <string name="pref_per_app_service">Per-App Profile Service</string>
-    <string name="pref_per_app_service_summary">Enable or disable the Per-App profile service.</string>
-    <string name="pref_perapp_monitor">Per-App Monitor</string>
-    <string name="pref_perapp_monitor_summary">Enable or disable the App Monitor.</string>
-    <string name="pref_perapp_toasts">Per-App Toasts</string>
-    <string name="pref_perapp_toasts_summary">Enable or disable toast notifications.</string>
-    <string name="pref_profile_change_name">Set another name</string>
-    <string name="pref_profile_change_name_summary">Change the name of your profile.</string>
-    <string name="pref_profile_deleted">Deleted</string>
-    <string name="pref_profile_not_deleted">Could not delete profile</string>
-    <string name="pref_profile_export">Export</string>
-    <string name="pref_profile_import">Import</string>
-    <string name="pref_profile_import_select">Select profiles for import</string>
-    <string name="pref_profile_invalid_name">Use 1–64 letters, numbers, spaces, underscores, or hyphens.</string>
-    <string name="pref_profile_name_exists">This name already exists.</string>
-    <string name="pref_profile_no_import">I couldn\'t find anything to import.</string>
-    <string name="pref_profile_per_app">Choose your apps</string>
-    <string name="pref_profile_reset">Reset your current profile</string>
-    <string name="pref_profile_reset_summary">This will completely reset your current profile. Just like if you freshly installed Aero Control.</string>
-    <string name="pref_profile_service_not_running">Per-App Service not running, but you have associated apps to profiles!</string>
-    <string name="pref_profile_show_system">System Apps</string>
-    <string name="pref_reboot_check">Random Reboot Checker</string>
-    <string name="pref_reboot_check_summary">It will inform you if your device had a sudden reboot.</string>
-    <string name="pref_reset_tutorials">Reset Tutorials</string>
-    <string name="pref_reset_tutorials_dialog">You are going to reset the tutorials.</string>
-    <string name="pref_reset_tutorials_title">There is no way back</string>
-    <string name="pref_screen_rotation">Screen Rotation</string>
-    <string name="pref_screen_rotation_summary">Allow screen rotation when the device is rotated.</string>
-    <string name="pref_set_on_boot_settings">set-on-boot settings.</string>
+    <string name="aero_settings">postavke</string>
+    <string name="app_theme_dark">Tamno - tamna pozadina s crnom akcijskom trakom</string>
+    <string name="app_theme_light">Svijetlo - svijetlo Holo s plavim naglaskom</string>
+    <string name="app_theme_system">Sustav - koristi materijalnu temu vašeg uređaja</string>
+    <string name="pref_category_application">Primjena</string>
+    <string name="pref_category_per_app_profiles">Profili po aplikaciji</string>
+    <string name="pref_app_theme">Tema aplikacije</string>
+    <string name="pref_app_theme_summary">Definira zadanu temu aplikacije.</string>
+    <string name="pref_boot_delay">Odgoda mjerača vremena pokretanja</string>
+    <string name="pref_boot_delay_dialog">Odgoda u minutama</string>
+    <string name="pref_finishing_settings">gotove postavke.</string>
+    <string name="pref_lollipop_usage_warning">Imajte na umu da je Google promijenio način provjere trenutne aplikacije u prvom planu za Lollipop(+). Kako bi PerApp usluga radila na vašem uređaju, morate otići u postavke i omogućiti pristup statistici korištenja za Aero Control. Ovo pravo možete opozvati u bilo kojem trenutku. Ako se osjećate spremni, kliknite Nastavi.</string>
+    <string name="pref_misc_settings">razno postavke</string>
+    <string name="pref_misc_tcp_congestion">TCP algoritam zagušenja</string>
+    <string name="pref_misc_delete_misc">Izbrišite svoje postavke</string>
+    <string name="pref_misc_your_settings">Vaše postavke</string>
+    <string name="pref_misc_no_settings">Još niste dodali nijednu postavku!</string>
+    <string name="pref_per_app_service">Usluga profila po aplikaciji</string>
+    <string name="pref_per_app_service_summary">Omogućite ili onemogućite uslugu profila po aplikaciji.</string>
+    <string name="pref_perapp_monitor">Monitor po aplikaciji</string>
+    <string name="pref_perapp_monitor_summary">Omogućite ili onemogućite App Monitor.</string>
+    <string name="pref_perapp_toasts">Tostovi po aplikaciji</string>
+    <string name="pref_perapp_toasts_summary">Omogućite ili onemogućite tost obavijesti.</string>
+    <string name="pref_profile_change_name">Postavite drugo ime</string>
+    <string name="pref_profile_change_name_summary">Promijenite naziv svog profila.</string>
+    <string name="pref_profile_deleted">Izbrisano</string>
+    <string name="pref_profile_not_deleted">Nije moguće izbrisati profil</string>
+    <string name="pref_profile_export">Izvoz</string>
+    <string name="pref_profile_import">Uvoz</string>
+    <string name="pref_profile_import_select">Odaberite profile za uvoz</string>
+    <string name="pref_profile_invalid_name">Koristite 1-64 slova, brojke, razmake, podvlake ili crtice.</string>
+    <string name="pref_profile_name_exists">Ovo ime već postoji.</string>
+    <string name="pref_profile_no_import">Nisam mogao pronaći ništa za uvoz.</string>
+    <string name="pref_profile_per_app">Odaberite svoje aplikacije</string>
+    <string name="pref_profile_reset">Resetirajte svoj trenutni profil</string>
+    <string name="pref_profile_reset_summary">Ovo će potpuno resetirati vaš trenutni profil. Baš kao da ste svježe instalirali Aero Control.</string>
+    <string name="pref_profile_service_not_running">Usluga po aplikaciji nije pokrenuta, ali ste povezali aplikacije s profilima!</string>
+    <string name="pref_profile_show_system">Aplikacije sustava</string>
+    <string name="pref_reboot_check">Provjera slučajnog ponovnog pokretanja</string>
+    <string name="pref_reboot_check_summary">Obavijestit će vas ako se vaš uređaj iznenada ponovno pokrene.</string>
+    <string name="pref_reset_tutorials">Poništi vodiče</string>
+    <string name="pref_reset_tutorials_dialog">Ponovno ćete postaviti tutorijale.</string>
+    <string name="pref_reset_tutorials_title">Nema povratka</string>
+    <string name="pref_screen_rotation">Rotacija zaslona</string>
+    <string name="pref_screen_rotation_summary">Dopusti rotaciju zaslona kada se uređaj okrene.</string>
+    <string name="pref_set_on_boot_settings">set-on-boot postavke.</string>
 
     <!-- ========================================================= -->
     <!-- App Monitor & CPU Statistics Tracker                      -->
     <!-- ========================================================= -->
-    <string name="delete_statistics">This will reset your current usage statistics. It\'s like you just rebooted your phone.</string>
-    <string name="select_cluster_title">Select cluster</string>
+    <string name="delete_statistics">Ovo će poništiti vašu trenutnu statistiku korištenja. Kao da ste upravo ponovno pokrenuli telefon.</string>
+    <string name="select_cluster_title">Odaberite klaster</string>
     <string name="select_cluster_cpu_label">CPU %1$s</string>
-    <string name="notify_app_monitor_data">We collected enough data, check them out in the App Monitor section!</string>
-    <string name="pref_cpu_frequency">CPU frequency</string>
-    <string name="pref_cpu_number">CPU cores</string>
-    <string name="pref_gpu_frequency">GPU frequency</string>
-    <string name="pref_no_app_monitor_data">No data is found yet, check back in a few minutes.</string>
-    <string name="pref_app_monitor_disabled">App Monitor is disabled, please enable it in the settings to display data.</string>
-    <string name="pref_ram_usage">Free RAM</string>
-    <string name="pref_reset_stats_for_app">Are you sure you want to reset the statistics for this app?</string>
+    <string name="notify_app_monitor_data">Prikupili smo dovoljno podataka, pogledajte ih u rubrici App Monitor!</string>
+    <string name="pref_cpu_frequency">CPU frekvencija</string>
+    <string name="pref_cpu_number">CPU jezgre</string>
+    <string name="pref_gpu_frequency">GPU frekvencija</string>
+    <string name="pref_no_app_monitor_data">Još nisu pronađeni podaci, provjerite ponovno za nekoliko minuta.</string>
+    <string name="pref_app_monitor_disabled">App Monitor je onemogućen, omogućite ga u postavkama za prikaz podataka.</string>
+    <string name="pref_ram_usage">Besplatan RAM</string>
+    <string name="pref_reset_stats_for_app">Jeste li sigurni da želite poništiti statistiku za ovu aplikaciju?</string>
     <string name="pref_app_monitor_average_summary">%1$s %2$s - %3$s</string>
-    <string name="pref_temp_usage">Temperature</string>
+    <string name="pref_temp_usage">Temperatura</string>
 
     <!-- ========================================================= -->
     <!-- Flasher / Kernel Backup Elements                          -->
     <!-- ========================================================= -->
-    <string name="backup_from">Backup from</string>
-    <string name="last_backup_from">Last Backup from</string>
-    <string name="pref_backup_kernel">Backup your Kernel</string>
-    <string name="pref_backup_kernel_summary">This will save a copy of your current kernel.</string>
-    <string name="pref_restore">Restore Backup</string>
-    <string name="pref_restore_kernel">Restore</string>
-    <string name="pref_updater">Kernel Updater and Backup</string>
-    <string name="proceed_backup">Proceed with backup? This will backup your current kernel.</string>
-    <string name="restore_from_backup">Do you want to restore the backup from</string>
+    <string name="backup_from">Sigurnosna kopija od</string>
+    <string name="last_backup_from">Zadnja sigurnosna kopija od</string>
+    <string name="pref_backup_kernel">Sigurnosno kopirajte svoj kernel</string>
+    <string name="pref_backup_kernel_summary">Ovo će spremiti kopiju vašeg trenutnog kernela.</string>
+    <string name="pref_restore">Vrati sigurnosnu kopiju</string>
+    <string name="pref_restore_kernel">Vratiti</string>
+    <string name="pref_updater">Program za ažuriranje i sigurnosno kopiranje kernela</string>
+    <string name="proceed_backup">Nastaviti sa sigurnosnom kopijom? Ovo će sigurnosno kopirati vaš trenutni kernel.</string>
+    <string name="restore_from_backup">Želite li vratiti sigurnosnu kopiju iz</string>
 
     <!-- ========================================================= -->
     <!-- Dialog Frameworks, Alerts, System Stability Errors        -->
     <!-- ========================================================= -->
-    <string name="error_detected">Error ?</string>
-    <string name="has_journal_dialog">Looks like your /data partition doesn\'t have the has_journal Feature enabled. Please reboot into recovery and run the following command via adb shell:    tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
-    <string name="has_journal_dialog_header">Problem detected</string>
-    <string name="no_cpu_data">Couldn\'t find any CPU data.</string>
-    <string name="no_data_found">I couldn\'t find any relevant data :(</string>
-    <string name="no_gpu_data">Couldn\'t find any GPU related data</string>
-    <string name="not_rooted">No Root?</string>
-    <string name="reboot_notifier">Looks like the kernel crashed. Be sure to check out \n/proc/last_kmsg  \nand send this file to your favorite developer. Seriously, send it! \n We apologize for any inconvenience!</string>
-    <string name="reboot_notifier_header">Oops, this shouldn\'t happen</string>
-    <string name="root_required">It looks like your device is not rooted. This app won\'t work correctly without root. If you think this is a mistake, please let me know and send me an email!</string>
+    <string name="error_detected">Greška?</string>
+    <string name="has_journal_dialog">Čini se da vaša /data particija nema omogućenu značajku has_journal. Ponovo pokrenite sustav za oporavak i pokrenite sljedeću naredbu putem adb ljuske: tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
+    <string name="has_journal_dialog_header">Otkriven problem</string>
+    <string name="no_cpu_data">Nisam mogao pronaći nikakve CPU podatke.</string>
+    <string name="no_data_found">Nisam mogao pronaći nikakve relevantne podatke :(</string>
+    <string name="no_gpu_data">Nisam mogao pronaći nikakve podatke povezane s GPU-om</string>
+    <string name="not_rooted">Nemate Root?</string>
+    <string name="reboot_notifier">Izgleda da se kernel srušio. Svakako pogledajte \n/proc/last_kmsg \ni pošaljite ovu datoteku svom omiljenom programeru. Ozbiljno, pošalji! \n Ispričavamo se zbog neugodnosti!</string>
+    <string name="reboot_notifier_header">Ups, ovo se ne bi trebalo dogoditi</string>
+    <string name="root_required">Čini se da vaš uređaj nije rootan. Ova aplikacija neće ispravno raditi bez roota. Ako mislite da je ovo pogreška, javite mi i pošaljite mi e-mail!</string>
 
     <!-- ========================================================= -->
     <!-- About Screen & Social / Legal Open-Source Notice Items    -->
     <!-- ========================================================= -->
-    <string name="about">About</string>
-    <string name="about_version_label">Version:</string>
-    <string name="about_build_label">Build:</string>
-    <string name="about_dialog">Aero Control was originally created by Alexander Christ (Blechd0se) while assisting Quarx and other developers with the Motorola Defy. It is open-source and compatible with a variety of devices.</string>
+    <string name="about">Oko</string>
+    <string name="about_version_label">Verzija:</string>
+    <string name="about_build_label">Izgraditi:</string>
+    <string name="about_dialog">Aero Control je izvorno stvorio Alexander Christ (Blechd0se) dok je pomagao Quarxu i drugim programerima s Motorola Defy. Otvorenog je koda i kompatibilan s raznim uređajima.</string>
     <string name="github">GitHub</string>
-    <string name="legal">Legal Notices</string>
-    <string name="legal_dialog">This App is licensed under the Apache license. A copy of this can be downloaded here:\n http://www.apache.org/licenses/LICENSE-2.0\n ShowCase Library by Alex Curran is licensed under the Apache 2.0 License.\n HoloGraph Library by Daniel Nadeau is licensed under the Apache 2.0 License. </string>
-    <string name="send_email">Send an Email</string>
-    <string name="xda">XDA Thread</string>
-    <string name="no_activity_for_link">No app available to open this link</string>
+    <string name="legal">Pravne obavijesti</string>
+    <string name="legal_dialog">Ova je aplikacija licencirana pod licencom Apache. Kopiju toga možete preuzeti ovdje:\n http://www.apache.org/licenses/LICENSE-2.0\n Knjižnica ShowCase autora Alexa Currana licencirana je pod licencom Apache 2.0.\n Biblioteka HoloGraph autora Daniela Nadeaua licencirana je pod licencom Apache 2.0. </string>
+    <string name="send_email">Pošalji e-mail</string>
+    <string name="xda">XDA tema</string>
+    <string name="no_activity_for_link">Nema dostupne aplikacije za otvaranje ove veze</string>
 
     <!-- ========================================================= -->
     <!-- Introduction Guide System Walkthrough                     -->
     <!-- ========================================================= -->
-    <string name="introduction_perapp_check">Do you want to enable this service?</string>
-    <string name="introduction_perapp_heading">Per-App Profiles</string>
-    <string name="introduction_perapp_content">Choose your preferences for individual apps automatically. Therefore, a service checks the foreground app every now and then and applies your desired profile automatically.\n This might save you some extra juice for your battery or give you a full performance boost on your favorite app.</string>
-    <string name="introduction_set_on_boot_heading">Set at boot!</string>
-    <string name="introduction_set_on_boot_content">With the little checkbox besides each settings you can set your values at boot individually. Just check it and your settings will be saved. This also defines your current profile values.</string>
-    <string name="introduction_tutorial_check">Do you want to enable tutorials?</string>
-    <string name="introduction_tutorial_content">Tutorials pop up during your usage of Aero Control. They might give you some insights. If you are an advanced user, it is unlikely that you need them.</string>
-    <string name="introduction_tutorial_heading">Tutorials</string>
-    <string name="introduction_welcome_content">We are just about to get started. If you are feeling ready, just swipe from the right to the left. You can change any settings from this assistant later.</string>
-    <string name="introduction_welcome_heading">Welcome to \nAero Control</string>
+    <string name="introduction_perapp_check">Želite li omogućiti ovu uslugu?</string>
+    <string name="introduction_perapp_heading">Profili po aplikaciji</string>
+    <string name="introduction_perapp_content">Automatski odaberite svoje postavke za pojedinačne aplikacije. Stoga usluga s vremena na vrijeme provjerava aplikaciju u prvom planu i automatski primjenjuje vaš željeni profil.\n To vam može uštedjeti dodatnu energiju za bateriju ili vam dati potpuno povećanje performansi vaše omiljene aplikacije.</string>
+    <string name="introduction_set_on_boot_heading">Postavite pri dizanju!</string>
+    <string name="introduction_set_on_boot_content">Pomoću malog potvrdnog okvira pored svake postavke možete pojedinačno postaviti svoje vrijednosti prilikom pokretanja. Samo provjerite i vaše postavke će biti spremljene. Ovo također definira vaše trenutne vrijednosti profila.</string>
+    <string name="introduction_tutorial_check">Želite li omogućiti poduke?</string>
+    <string name="introduction_tutorial_content">Vodiči se pojavljuju tijekom vaše upotrebe Aero Controla. Mogli bi vam dati neke uvide. Ako ste napredni korisnik, malo je vjerojatno da vam trebaju.</string>
+    <string name="introduction_tutorial_heading">Tutorijali</string>
+    <string name="introduction_welcome_content">Upravo ćemo započeti. Ako se osjećate spremni, samo povucite s desna na lijevo. Sve postavke iz ovog pomoćnika možete promijeniti kasnije.</string>
+    <string name="introduction_welcome_heading">Dobro došli u \nAero Control</string>
 
     <!-- ========================================================= -->
     <!-- Interactive App Tutorials (Showcase Views)               -->
     <!-- ========================================================= -->
-    <string name="showcase_aero_fragment">Welcome to Aero Control!</string>
-    <string name="showcase_aero_fragment_summary">Swipe from the left to the right to show the navigation drawer. The page you are currently looking at is the main overview panel. There is a small summary of some kernel settings. They are live, you don\'t have to refresh anything!</string>
-    <string name="showcase_app_monitor_fragment">Monitor your Apps!</string>
-    <string name="showcase_app_monitor_fragment_summary">App Monitor displays you useful information about your used apps. You will be informed once we collected enough data to show you something. Your data belongs to you, no information will be send to someone else.</string>
-    <string name="showcase_cpu_fragment_governor">CPU Governor</string>
-    <string name="showcase_cpu_fragment_governor_summary">Click this symbol to get the full access of governor control! You can tweak every parameter for every governor out there to gain performance.</string>
-    <string name="showcase_memory_fragment_trim">Trim Options</string>
-    <string name="showcase_memory_fragment_trim_summary">In order to maintain the device performance, you can trim several parts of your Operating System. This can take a while, especially when you stored lots of data.</string>
-    <string name="showcase_perapp_profiles">Assign profiles to your apps!</string>
-    <string name="showcase_perapp_profiles_summary">Want a certain profile only apply to certain apps? No problem, click to the right on the small icon and assign your profile to your favorite apps. Be sure to enable the service in the settings.</string>
-    <string name="showcase_profile_fragment">Add Profiles!</string>
-    <string name="showcase_profile_fragment_summary">Just click on this little button and add a profile. All your current settings will be saved into this new Profile. If you have added multiple Profiles you can simply load them by clicking on them.</string>
-    <string name="showcase_statistics_fragment">Refresh your Statistics</string>
-    <string name="showcase_statistics_fragment_summary">This panel will show you your current CPU Time consuming statistics. It displays how long your device has spend time in each CPU frequency. You might to want to check this later and see if your device performs as it should.</string>
-    <string name="showcase_your_settings">Your Settings</string>
-    <string name="showcase_your_settings_summary">Click this symbol to get a simple file manager. You can choose any file you wish and add your very own tunables. With the left icon you can delete those settings.</string>
+    <string name="showcase_aero_fragment">Dobrodošli u Aero Control!</string>
+    <string name="showcase_aero_fragment_summary">Prijeđite prstom slijeva nadesno da biste prikazali ladicu za navigaciju. Stranica koju trenutno gledate glavna je ploča pregleda. Postoji mali sažetak nekih postavki jezgre. Uživo su, ne morate ništa osvježavati!</string>
+    <string name="showcase_app_monitor_fragment">Pratite svoje aplikacije!</string>
+    <string name="showcase_app_monitor_fragment_summary">App Monitor vam prikazuje korisne informacije o vašim korištenim aplikacijama. Bit ćete obaviješteni kada prikupimo dovoljno podataka da vam nešto pokažemo. Vaši podaci pripadaju vama, nikakve informacije neće biti poslane nekom drugom.</string>
+    <string name="showcase_cpu_fragment_governor">CPU guverner</string>
+    <string name="showcase_cpu_fragment_governor_summary">Kliknite ovaj simbol da biste dobili potpuni pristup upravljačkoj kontroli! Možete podesiti svaki parametar za svaki regulator kako biste dobili performanse.</string>
+    <string name="showcase_memory_fragment_trim">Mogućnosti obrezivanja</string>
+    <string name="showcase_memory_fragment_trim_summary">Kako biste održali performanse uređaja, možete smanjiti nekoliko dijelova vašeg operativnog sustava. To može potrajati, osobito ako ste pohranili mnogo podataka.</string>
+    <string name="showcase_perapp_profiles">Dodijelite profile svojim aplikacijama!</string>
+    <string name="showcase_perapp_profiles_summary">Želite li da se određeni profil primjenjuje samo na određene aplikacije? Nema problema, kliknite s desne strane na malu ikonu i dodijelite svoj profil svojim omiljenim aplikacijama. Obavezno omogućite uslugu u postavkama.</string>
+    <string name="showcase_profile_fragment">Dodajte profile!</string>
+    <string name="showcase_profile_fragment_summary">Samo kliknite na ovaj mali gumb i dodajte profil. Sve vaše trenutne postavke bit će spremljene u ovaj novi profil. Ako ste dodali više profila, možete ih jednostavno učitati klikom na njih.</string>
+    <string name="showcase_statistics_fragment">Osvježite svoju statistiku</string>
+    <string name="showcase_statistics_fragment_summary">Ova ploča će vam pokazati trenutnu statistiku potrošnje CPU vremena. Prikazuje koliko dugo je vaš uređaj proveo na svakoj CPU frekvenciji. Možda biste to trebali provjeriti kasnije i provjeriti radi li vaš uređaj kako treba.</string>
+    <string name="showcase_your_settings">Vaše postavke</string>
+    <string name="showcase_your_settings_summary">Pritisnite ovaj simbol da dobijete jednostavan upravitelj datotekama. Možete odabrati bilo koju datoteku koju želite i dodati svoje vlastite mogućnosti podešavanja. Pomoću lijeve ikone možete izbrisati te postavke.</string>
 
     <!-- ========================================================= -->
     <!-- Easter Egg Loading Jokes                                   -->
     <!-- ========================================================= -->
-    <string name="random_data_somewhere">Hang on a second, I know your data is somewhere...</string>
-    <string name="random_nsa_loading">Sending all data to the NSA...</string>
-    <string name="random_prepare_awesomeness">Prepare for awesomeness!</string>
-    <string name="random_programming_flux">Programming the flux capacitor...</string>
-    <string name="random_shovelling_coal">Shoveling coal into CPU...</string>
-    <string name="random_testing_patience">Testing your patience...</string>
-    <string name="random_working_you_know">Working... well... you know...</string>
+    <string name="random_data_somewhere">Čekaj malo, znam da su ti podaci negdje...</string>
+    <string name="random_nsa_loading">Slanje svih podataka NSA-i...</string>
+    <string name="random_prepare_awesomeness">Pripremite se za nevjerojatno!</string>
+    <string name="random_programming_flux">Programiranje kondenzatora fluksa...</string>
+    <string name="random_shovelling_coal">Ubacivanje ugljena u CPU...</string>
+    <string name="random_testing_patience">Iskušavam vaše strpljenje...</string>
+    <string name="random_working_you_know">Radi... pa... znaš...</string>
 
 	<!-- ========================================================= -->
     <!-- Tooltip & Advanced Tuning Help Documentation             -->
     <!-- ========================================================= -->
-    <string name="help_text_above_hispeed_delay">Wait this long before raising speed above hispeed, by default a single timer interval.</string>
-    <string name="help_text_align_windows">Whether to align timer windows across all CPUs. When use_sched_load is true, this flag is ignored and windows will always be aligned.</string>
-    <string name="help_text_all_cpus_threshold">The threshold for the average load of all CPUs currently online to online the next core. If you lower this value, cores can get more easily online.</string>
-    <string name="help_text_amp">This value lets you increase or decrease the strength of the vibration module. Usually 100 is the max.</string>
-    <string name="help_text_battery_saver">If enabled (1), only one core will stay active as soon as you turn off your screen. If you are getting strange audio quality while the screen is off, try switching it off via 0. This will let both cores stay active during suspend.</string>
-    <string name="help_text_block_dump">block_dump enables block I/O debugging when set to a nonzero value.</string>
-    <string name="help_text_button_brightness">Sets the backlight brightness level for the capacitive buttons.</string>
-    <string name="help_text_boostpulse_duration">The duration of the input boost.</string>
-    <string name="help_text_dalvik_settings">This submenu lets you interact with the virtual machine of your device. Mostly there are memory related options.</string>
-    <string name="help_text_debug">A debug flag intended for the developer. Nothing to do here!</string>
-    <string name="help_text_dirty_background_bytes">Contains the amount of dirty memory at which the background kernel flusher threads will start writeback.\n Note: dirty_background_bytes is the counterpart of dirty_background_ratio. Only one of them may be specified at a time. When a sysctl is written, it is immediately considered to evaluate the dirty memory limits and the other appears as 0 when read.</string>
-    <string name="help_text_dirty_background_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which the background kernel flusher threads will start writing out dirty data.</string>
-    <string name="help_text_dirty_bytes">Contains the amount of dirty memory at which a process generating disk writes will itself start writeback.\nNote: the minimum value allowed for dirty_bytes is two pages (in bytes); any value lower than this limit will be ignored and the old configuration will be retained.</string>
-    <string name="help_text_dirty_expire_centisecs">This tunable is used to define when dirty data is old enough to be eligible for writeout by the kernel flusher threads. It is expressed in 100ths of a second. Data which has been dirty in-memory for longer than this interval will be written out next time a flusher thread wakes up.</string>
-    <string name="help_text_dirty_ratio">Contains, as a percentage of total available memory that contains free pages and reclaimable pages, the number of pages at which a process which is generating disk writes will itself start writing out dirty data.</string>
-    <string name="help_text_dirty_writeback_centisecs">The kernel flusher threads will periodically wake up and write \'old\' data out to disk. This tunable expresses the interval between those wakeups, in 100ths of a second.\nSetting this to zero disables periodic writeback altogether.</string>
-    <string name="help_text_display_control">Adjusts the display color profile. Available modes and their effects depend on the device and kernel.</string>
-    <string name="help_text_drop_caches">Writing to this will cause the kernel to drop clean caches, as well as reclaimable slab objects like dentries and inodes. Once dropped, their memory becomes free. (1 = free page cache, 2 = free reclaimable slab objects, 3 = free slab objects and page cache)</string>
-    <string name="help_text_doubletaptowake">Wakes the device when you double-tap the screen while it is off. Availability depends on kernel support.</string>
-    <string name="help_text_dyn_fsync">Dynamically disables fsync while the screen is on and restores it when the screen turns off. This may improve performance, but can increase the risk of data loss after a crash.</string>
-    <string name="help_text_entropy_settings">The entropy pool stores random numbers for various applications. Higher values for read/write can help in some cases, but can also increase the battery drain. In general, your pool should be always above 200 at any point of time.</string>
-    <string name="help_text_extfrag_threshold">This parameter affects whether the kernel will compact memory or direct reclaim to satisfy a high-order allocation. Values tending towards 0 imply allocations would fail due to lack of memory, values towards 1000 imply failures are due to fragmentation and -1 implies that the allocation will succeed as long as watermarks are met.</string>
-    <string name="help_text_extra_free_kbytes">This parameter tells the VM to keep extra free memory between the threshold where background reclaim (kswapd) kicks in, and the threshold where direct reclaim (by allocating processes) kicks in.</string>
-    <string name="help_text_fifo_batch">Controls the maximum number of requests per batch. This parameter tunes the balance between per-request latency and aggregate throughput. When low latency is the primary concern, smaller is better. Increasing fifo_batch generally improves throughput, at the cost of latency variation.</string>
-    <string name="help_text_front_merges">This tunable takes either 0 (=off) or 1 (=on). Sometimes it happens that a request enters the io scheduler that is contiguous with a request that is already on the queue. Either it fits in the back of that request, or it fits at the front.</string>
-    <string name="help_text_fstrim_toggle">Trims various parts of your system to free up unused blocks on your storage. This requires BusyBox and might take a while to complete.</string>
-    <string name="help_text_fsync">The fsync() call forces a physical write of data from the buffer cache. Disabling this feature may give a performance boost, but at the cost of data loss if your system crashes.</string>
-    <string name="help_text_go_hispeed_load">Go to hispeed when CPU load at or above this value.</string>
-    <string name="help_text_gpu_control_enable">Enables the kernel interface used to change GPU frequencies and governors. Availability depends on kernel support.</string>
-    <string name="help_text_gpu_gov_settings">Your GPU governor has some special tunables to fine-tune its behavior. This is very similar to a CPU governor.</string>
-    <string name="help_text_gpu_max_freq">This tunable lets you change the maximum GPU frequency. Lowering this value can save battery power at the cost of performance.</string>
-    <string name="help_text_highmem_is_dirtyable">This defaults to 0 (false), meaning that the dirty_ratio and dirty_background_ratio ratios are calculated as a percentage of low memory only. This protects against excessive scanning in page reclaim, swapping and general VM distress.</string>
-    <string name="help_text_hispeed_freq">Hispeed to bump to from any smaller frequency when under heavy load.</string>
-    <string name="help_text_hotplug_control">A tap on this element allows you to change various values of your hotplug driver. The hotplug driver decides when a CPU core should be online or offline.</string>
-    <string name="help_text_hotplug_sampling">The sampling rate of the hotplug driver. Lowering this value causes faster decisions in regards if a core should be brought online or not.</string>
-    <string name="help_text_ignore_nice_load">This parameter takes a value of \'0\' or \'1\'. When set to \'0\' (it\'s default), all processes are counted towards the \'CPU utilization\' value. When set to \'1\', the processes that are run with a \'nice\' value will not count (and thus be ignored) in the overall usage calculation.</string>
-    <string name="help_text_input_boost_freq">The frequency the CPU will go to when a touch on the display is registered.</string>
-    <string name="help_text_io_is_busy">This is a flag that determines if waiting for various IO should increase the CPU utilization in bump up the CPU frequency. Setting this to 0 will mean the governor will increase the frequency less often.</string>
-    <string name="help_text_io_scheduler_list">The IO scheduler manages IO requests for a specific device to allow an efficient handling. Changing this value has a rather small impact on most android systems.</string>
-    <string name="help_text_ksm">Kernel Samepage Merging (KSM) allows to deduplicate memory. It\’s a very useful feature on Android that can save some RAM at the cost of CPU performance.</string>
-    <string name="help_text_laptop_mode">laptop_mode is a knob that controls laptop mode.</string>
-    <string name="help_text_legacy_va_layout">If non-zero, this sysctl disables the new 32-bit mmap layout - the kernel will use the legacy (2.4) layout for all processes.</string>
-    <string name="help_text_live_oc_uc">Be careful with this option. You can overclock/underclock the listed frequency steps and set the correct voltage for it. Those values won\'t be applied to per-app profiles for your own safety.</string>
-    <string name="help_text_low_latency" formatted="false">If enabled (1) it let\'s the hotplug driver react really quickly to short load spikes (100% CPU load) and brings CPUs online accordingly.</string>
-    <string name="help_text_lowmem_reserve_ratio">For some specialized workloads on highmem machines it is dangerous for the kernel to allow process memory to be allocated from the lowmem zone. This is because that memory could then be pinned via the mlock() system call, or by unavailability of swap space.</string>
-    <string name="help_text_max_freq_cpu">This tunable lets you adjust the maximum CPU frequency. Lowering this value can save you power at the cost of performance.</string>
-    <string name="help_text_max_freq_hysteresis">Stay at the max frequency for at least this value before dropping frequency again.</string>
-    <string name="help_text_max_map_count">This file contains the maximum number of memory map areas a process may have. Memory map areas are used as a side-effect of calling malloc, directly by mmap and mprotect, and also when loading shared libraries.</string>
-    <string name="help_text_min_free_kbytes">This is used to force the Linux VM to keep a minimum number of kilobytes free.</string>
-    <string name="help_text_min_freq_cpu">This tunable lets you adjust the minimum CPU frequency. Increasing this value can give a better performance at the cost of battery usage.</string>
-    <string name="help_text_min_online_time">To prevent core off-/onlining when they are near the threshold. This is the minimum online time in seconds for a core.</string>
-    <string name="help_text_min_sample_time">The minimum amount of time to spend at a frequency before we can ramp down.</string>
-    <string name="help_text_no_data_found">There is no information available about this item.</string>
-    <string name="help_text_oom_dump_tasks">Enables a system-wide task dump (excluding kernel threads) to be produced when the kernel performs an OOM-killing and includes such information as pid, uid, tgid, vm size, rss, nr_ptes, nr_pmds, swapents, oom_score_adj score, and name. This is helpful to determine why the OOM killer was invoked, to identify the rogue task that caused it, and to determine why the OOM killer chose the task it did to kill.</string>
-    <string name="help_text_oom_kill_allocating_task">This enables or disables killing the OOM-triggering task in out-of-memory situations. The default value is 0.</string>
-    <string name="help_text_overcommit_memory">This value contains a flag that enables memory overcommitment.\nWhen this flag is 0, the kernel attempts to estimate the amount of free memory left when userspace requests more memory.\nWhen this flag is 1, the kernel pretends there is always enough memory until it actually runs out.\nWhen this flag is 2, the kernel uses a never overcommit policy that attempts to prevent any overcommit of memory.</string>
-    <string name="help_text_overcommit_ratio">When overcommit_memory is set to 2, the committed address space is not permitted to exceed swap plus this percentage of physical RAM.</string>
-    <string name="help_text_panic_on_oom">This enables or disables panic on out-of-memory feature.</string>
-    <string name="help_text_percpu_pagelist_fraction">This is the fraction of pages at most (high mark pcp-&gt;high) in each zone that are allocated for each per CPU page list. The min value for this is 8. It means that we don\'t allow more than 1/8th of pages in each zone to be allocated in any single per_cpu_pagelist.</string>
-    <string name="help_text_powersave_bias" formatted="false">This parameter takes a value between 0 to 1000. It defines the percentage (times 10) value of the target frequency that will be shaved off of the target. For example, when set to 100 -&gt; 10%, when ondemand governor would have targeted 1000 MHz, it will target 1000 MHz - (10% of 1000 MHz) = 900 MHz instead. This is set to 0 (disabled) by default.</string>
-    <string name="help_text_read_ahead">The kernel tries to readahead past requested data blocks and stores them in the cache to save potential disk I/O. The default value is 128 kB. A higher value can increase app loadtime.</string>
-    <string name="help_text_read_expire">When a read request first enters the io scheduler, it is assigned a deadline that is the current time + the read_expire value in units of milliseconds.</string>
-    <string name="help_text_rgb_values">Lets you change the RGB (= red, green, blue) colors of your display to calibrate it.</string>
-    <string name="help_text_sampling_down_factor">This parameter controls the rate at which the kernel makes a decision on when to decrease the frequency while running at top speed. When set to 1 (the default) decisions to reevaluate load are made at the same interval regardless of current clock speed. But when set to greater than 1 (e.g., 100) it acts as a multiplier for the scheduling interval for reevaluating load when the CPU is at its top speed due to high load.</string>
-    <string name="help_text_sampling_rate">Measured in uS (10^-6 seconds), this is how often you want the kernel to look at the CPU usage and to make decisions on what to do about the frequency.</string>
-    <string name="help_text_set_governor">The CPU governor manages how your CPU scales its frequency. Choosing a different governor can significantly affect performance and battery life.</string>
-    <string name="help_text_set_gpu_governor">Allows you to change the GPU governor. It manages the frequency scaling of your GPU and might have a big impact on the GPU performance.</string>
-    <string name="help_text_single_core_threshold" formatted="false">The threshold for a single core to online another one. For example, if core 1 is at 100% and the average load is above 60% core 3 will get online.</string>
-    <string name="help_text_stat_interval">The time interval between which vm statistics are updated. The default is 1 second.</string>
-    <string name="help_text_swappiness">This control is used to define how aggressive the kernel will swap memory pages. Higher values will increase aggressiveness, while lower values will decrease the amount of swap. A value of 0 instructs the kernel not to initiate swap until the amount of free and file-backed pages is less than the high-water mark in a zone.</string>
-    <string name="help_text_sweeptowake">Wakes the device when you swipe across the screen while it is off. Availability depends on kernel support.</string>
-    <string name="help_text_target_loads">At or above this value, the governor will ramp up the frequency. Lower values result in higher CPU speeds. An example would be \'85 1200000:80 1500000:95\'. This means the overall target load is 85, but if the frequency is higher than 1.2 GHz its 80. The same applies for 1.5 GHz but with 95.</string>
-    <string name="help_text_tcp_congestion">Choose the algorithm behind your network congestion control. Usually the default is \'cubic\' or \'reno\'.</string>
-    <string name="help_text_temp_threshold">The temperature threshold when your CPU starts to throttle to save it from overheating. This value is usually in °C.</string>
-    <string name="help_text_timer_rate">The sample rate of the timer used to increase frequency</string>
-    <string name="help_text_timer_slack">Max additional time to wait in idle, beyond timer_rate, at speeds above minimum before wakeup to reduce speed, or -1 if unnecessary.</string>
-    <string name="help_text_up_frequency">The minimum CPU frequency to start hotplug operations. If the current frequency is below this value, no hotplug operations will perform. Default is the maximum frequency.</string>
-    <string name="help_text_up_threshold">Defines what the average CPU usage between the samplings of \'sampling_rate\' needs to be for the kernel to decide on whether it should increase the frequency.</string>
-    <string name="help_text_vfs_cache_pressure">This percentage value controls the tendency of the kernel to reclaim the memory which is used for caching of directory and inode objects.</string>
-    <string name="help_text_voltage_values">In this submenu you can change the voltage values of your CPU. This might increase your battery life or allows your CPU to run on higher frequencies. However, this can cause massive issues if overdone too much.</string>
-    <string name="help_text_volume_boost">This value gives your speakers or your headphones a boost to get them a little louder.</string>
-    <string name="help_text_write_expire">Similar to read_expire, but for writes.</string>
-    <string name="help_text_writeback">Dynamically controls delayed writeback of cached data. This may improve performance or battery life, but can increase the risk of data loss after a crash.</string>
-    <string name="help_text_writes_starved">So writes_starved controls how many times we give preference to reads over writes. When that has been done writes_starved number of times, we dispatch some writes based on the same criteria as reads.</string>
-    <string name="help_text_vtg_level">This tunable controls the vibration module of your phone. A lower value usually means a softer vibration.</string>
+    <string name="help_text_above_hispeed_delay">Pričekajte ovoliko dugo prije podizanja brzine iznad njegove brzine, prema zadanim postavkama jedan vremenski interval.</string>
+    <string name="help_text_align_windows">Treba li uskladiti prozore mjerača vremena na svim CPU-ima. Kada je use_sched_load istinito, ova se zastavica zanemaruje i prozori će uvijek biti poravnati.</string>
+    <string name="help_text_all_cpus_threshold">Prag za prosječno opterećenje svih CPU-ova koji su trenutno na mreži do sljedeće jezgre. Ako smanjite ovu vrijednost, jezgre mogu lakše doći na mrežu.</string>
+    <string name="help_text_amp">Ova vrijednost vam omogućuje povećanje ili smanjenje jačine vibracijskog modula. Obično je 100 maks.</string>
+    <string name="help_text_battery_saver">Ako je omogućeno (1), samo će jedna jezgra ostati aktivna čim isključite zaslon. Ako dobivate čudnu kvalitetu zvuka dok je zaslon isključen, pokušajte ga isključiti putem 0. To će omogućiti objema jezgrama da ostanu aktivne tijekom suspenzije.</string>
+    <string name="help_text_block_dump">block_dump omogućuje blok I/O debugging kada je postavljen na vrijednost različitu od nule.</string>
+    <string name="help_text_button_brightness">Postavlja razinu svjetline pozadinskog osvjetljenja za kapacitivne tipke.</string>
+    <string name="help_text_boostpulse_duration">Trajanje pojačanja unosa.</string>
+    <string name="help_text_dalvik_settings">Ovaj podizbornik vam omogućuje interakciju s virtualnim strojem vašeg uređaja. Uglavnom postoje opcije vezane uz memoriju.</string>
+    <string name="help_text_debug">Oznaka za otklanjanje pogrešaka namijenjena razvojnom programeru. Ovdje se nema što raditi!</string>
+    <string name="help_text_dirty_background_bytes">Sadrži količinu prljave memorije pri kojoj će pozadinske niti za brisanje jezgre započeti povratno upisivanje.\n Napomena: dirty_background_bytes je pandan dirty_background_ratio. Samo jedan od njih može biti naveden u jednom trenutku. Kada se napiše sysctl, odmah se smatra da procjenjuje ograničenja prljave memorije, a drugi se pojavljuje kao 0 kada se pročita.</string>
+    <string name="help_text_dirty_background_ratio">Sadrži, kao postotak ukupne dostupne memorije koja sadrži slobodne stranice i stranice koje se mogu povratiti, broj stranica na kojima će pozadinske niti za brisanje kernela početi ispisivati ​​prljave podatke.</string>
+    <string name="help_text_dirty_bytes">Sadrži količinu prljave memorije pri kojoj će proces koji generira zapise na disk sam započeti povratno pisanje.\nNapomena: minimalna dopuštena vrijednost za dirty_bytes je dvije stranice (u bajtovima); svaka vrijednost niža od ove granice bit će zanemarena i stara konfiguracija će se zadržati.</string>
+    <string name="help_text_dirty_expire_centisecs">Ovaj podesivi se koristi za definiranje kada su prljavi podaci dovoljno stari da budu podobni za ispisivanje od strane niti za ispiranje jezgre. Izražava se u stotinkama sekunde. Podaci koji su bili prljavi u memoriji dulje od ovog intervala bit će ispisani sljedeći put kada se nit za ispiranje probudi.</string>
+    <string name="help_text_dirty_ratio">Sadrži, kao postotak ukupne dostupne memorije koja sadrži slobodne stranice i stranice koje se mogu povratiti, broj stranica na kojima će proces koji generira zapisivanje na disk sam početi ispisivati ​​prljave podatke.</string>
+    <string name="help_text_dirty_writeback_centisecs">Niti za ispiranje jezgre povremeno će se probuditi i ispisati \'stare\' podatke na disk. Ova podesiva vrijednost izražava interval između tih buđenja, u stotinkama sekunde.\nPostavljanje na nulu potpuno onemogućuje periodično ponovno upisivanje.</string>
+    <string name="help_text_display_control">Podešava profil boja zaslona. Dostupni načini rada i njihovi učinci ovise o uređaju i kernelu.</string>
+    <string name="help_text_drop_caches">Zapisivanje u ovo uzrokovat će da kernel ispusti čiste predmemorije, kao i povratne slabe objekte kao što su dentries i inode. Jednom ispušteni, njihova memorija postaje slobodna. (1 = besplatna predmemorija stranice, 2 = besplatni objekti ploče koji se mogu povratiti, 3 = slobodni objekti ploče i predmemorija stranice)</string>
+    <string name="help_text_doubletaptowake">Budi uređaj kada dvaput dodirnete zaslon dok je isključen. Dostupnost ovisi o podršci kernela.</string>
+    <string name="help_text_dyn_fsync">Dinamički onemogućuje fsync dok je zaslon uključen i vraća ga kad se zaslon isključi. To može poboljšati performanse, ali može povećati rizik od gubitka podataka nakon pada.</string>
+    <string name="help_text_entropy_settings">Skup entropije pohranjuje nasumične brojeve za različite primjene. Više vrijednosti za čitanje/pisanje mogu pomoći u nekim slučajevima, ali također mogu povećati potrošnju baterije. Općenito, vaš bi bazen uvijek trebao biti iznad 200 u bilo kojem trenutku.</string>
+    <string name="help_text_extfrag_threshold">Ovaj parametar utječe na to hoće li kernel sažimati memoriju ili izravno tražiti kako bi zadovoljio dodjelu višeg reda. Vrijednosti koje teže prema 0 impliciraju da dodjele ne bi uspjele zbog nedostatka memorije, vrijednosti prema 1000 impliciraju da su neuspjesi uzrokovani fragmentacijom, a -1 implicira da će dodjela uspjeti sve dok su ispunjeni vodeni žigovi.</string>
+    <string name="help_text_extra_free_kbytes">Ovaj parametar govori VM-u da zadrži dodatnu slobodnu memoriju između praga na kojem počinje vraćanje u pozadini (kswapd) i praga na kojem počinje izravno vraćanje (dodjelom procesa).</string>
+    <string name="help_text_fifo_batch">Kontrolira najveći broj zahtjeva po skupini. Ovaj parametar podešava ravnotežu između latencije po zahtjevu i ukupne propusnosti. Kada je primarna briga mala latencija, manja je bolja. Povećanje fifo_batch općenito poboljšava propusnost, po cijenu varijacije latencije.</string>
+    <string name="help_text_front_merges">Ovaj podesivi ima 0 (=isključeno) ili 1 (=uključeno). Ponekad se dogodi da zahtjev uđe u io planer koji je susjedan zahtjevu koji je već u redu čekanja. Ili stane na stražnju stranu tog zahtjeva ili stane na prednju stranu.</string>
+    <string name="help_text_fstrim_toggle">Skraćuje različite dijelove vašeg sustava kako bi oslobodio neiskorištene blokove u vašoj pohrani. Ovo zahtijeva BusyBox i može potrajati neko vrijeme da se završi.</string>
+    <string name="help_text_fsync">Poziv fsync() prisiljava fizičko pisanje podataka iz međuspremnika. Onemogućavanje ove značajke može poboljšati performanse, ali po cijenu gubitka podataka ako se vaš sustav sruši.</string>
+    <string name="help_text_go_hispeed_load">Idi na hisspeed kada CPU opterećenje bude na ili iznad ove vrijednosti.</string>
+    <string name="help_text_gpu_control_enable">Omogućuje sučelje kernela koje se koristi za promjenu GPU frekvencija i regulatora. Dostupnost ovisi o podršci kernela.</string>
+    <string name="help_text_gpu_gov_settings">Vaš GPU regulator ima neke posebne mogućnosti za fino podešavanje svog ponašanja. Ovo je vrlo slično CPU regulatoru.</string>
+    <string name="help_text_gpu_max_freq">Ovaj podesivi vam omogućuje promjenu maksimalne frekvencije GPU-a. Smanjenje ove vrijednosti može uštedjeti energiju baterije po cijenu performansi.</string>
+    <string name="help_text_highmem_is_dirtyable">Zadana vrijednost je 0 (false), što znači da se omjeri dirty_ratio i dirty_background_ratio izračunavaju samo kao postotak niske memorije. Ovo štiti od pretjeranog skeniranja pri ponovnom preuzimanju stranice, zamjeni i općenitom problemu VM-a.</string>
+    <string name="help_text_hispeed_freq">Hisbrzina za skok s bilo koje niže frekvencije kada je pod velikim opterećenjem.</string>
+    <string name="help_text_hotplug_control">Dodir na ovaj element omogućuje vam promjenu različitih vrijednosti vašeg hotplug upravljačkog programa. Hotplug upravljački program odlučuje kada CPU jezgra treba biti online ili offline.</string>
+    <string name="help_text_hotplug_sampling">Stopa uzorkovanja pokretačkog programa za uključivanje u rad. Smanjenje ove vrijednosti uzrokuje brže odluke o tome treba li jezgru staviti na mrežu ili ne.</string>
+    <string name="help_text_ignore_nice_load">Ovaj parametar ima vrijednost \'0\' ili \'1\'. Kada je postavljeno na \'0\' (zadano), svi se procesi ubrajaju u vrijednost \'Iskorištenje CPU-a\'. Kada se postavi na \'1\', procesi koji se izvode s \'lijepom\' vrijednošću neće se računati (i stoga će biti zanemareni) u ukupnom izračunu upotrebe.</string>
+    <string name="help_text_input_boost_freq">Frekvencija na koju će CPU prijeći kada se registrira dodir na zaslonu.</string>
+    <string name="help_text_io_is_busy">Ovo je oznaka koja određuje treba li čekanje na različite IO povećati iskorištenost CPU-a u povećanju frekvencije CPU-a. Postavljanje na 0 značit će da će regulator rjeđe povećavati frekvenciju.</string>
+    <string name="help_text_io_scheduler_list">IO planer upravlja IO zahtjevima za određeni uređaj kako bi omogućio učinkovito rukovanje. Promjena ove vrijednosti ima prilično mali utjecaj na većinu android sustava.</string>
+    <string name="help_text_ksm">Kernel Samepage Merging (KSM) omogućuje dedupliciranje memorije. To je vrlo korisna značajka na Androidu koja može uštedjeti nešto RAM-a po cijenu performansi CPU-a.</string>
+    <string name="help_text_laptop_mode">laptop_mode je gumb koji kontrolira način rada laptopa.</string>
+    <string name="help_text_legacy_va_layout">Ako nije nula, ovaj sysctl onemogućuje novi 32-bitni mmap raspored - kernel će koristiti naslijeđeni (2.4) raspored za sve procese.</string>
+    <string name="help_text_live_oc_uc">Budite oprezni s ovom opcijom. Možete overclockati/underclockati navedene korake frekvencije i postaviti točan napon za to. Te se vrijednosti neće primijeniti na profile po aplikaciji radi vaše vlastite sigurnosti.</string>
+    <string name="help_text_low_latency" formatted="false">Ako je omogućeno (1), dopušta da pokretač hotplug-a stvarno brzo reagira na kratke skokove opterećenja (100% opterećenja CPU-a) i u skladu s tim dovodi CPU-e u mrežu.</string>
+    <string name="help_text_lowmem_reserve_ratio">Za neka specijalizirana radna opterećenja na highmem strojevima opasno je za kernel dopustiti da se procesna memorija dodjeljuje iz lowmem zone. To je zato što bi ta memorija tada mogla biti prikvačena putem sistemskog poziva mlock() ili nedostupnošću swap prostora.</string>
+    <string name="help_text_max_freq_cpu">Ovaj podesivi vam omogućuje podešavanje maksimalne frekvencije CPU-a. Smanjenje ove vrijednosti može uštedjeti energiju po cijenu performansi.</string>
+    <string name="help_text_max_freq_hysteresis">Ostanite na maksimalnoj frekvenciji barem za ovu vrijednost prije ponovnog pada frekvencije.</string>
+    <string name="help_text_max_map_count">Ova datoteka sadrži najveći broj područja mape memorije koji proces može imati. Područja memorijskih mapa koriste se kao nuspojava pozivanja malloc-a, izravno od mmap-a i mprotect-a, a također i prilikom učitavanja zajedničkih biblioteka.</string>
+    <string name="help_text_min_free_kbytes">Ovo se koristi za prisiljavanje Linux VM-a da zadrži minimalni broj kilobajta slobodnim.</string>
+    <string name="help_text_min_freq_cpu">Ovaj podesivi vam omogućuje podešavanje minimalne frekvencije procesora. Povećanje ove vrijednosti može dati bolje performanse po cijenu potrošnje baterije.</string>
+    <string name="help_text_min_online_time">Za sprječavanje isključenja/uključenja jezgre kada su blizu praga. Ovo je minimalno online vrijeme u sekundama za jezgru.</string>
+    <string name="help_text_min_sample_time">Minimalna količina vremena koju treba provesti na frekvenciji prije nego što se smanjimo.</string>
+    <string name="help_text_no_data_found">Nema dostupnih informacija o ovoj stavci.</string>
+    <string name="help_text_oom_dump_tasks">Omogućuje izradu dumpa zadatka za cijeli sustav (isključujući niti kernela) kada kernel izvrši OOM-ubijanje i uključuje informacije kao što su pid, uid, tgid, vm veličina, rss, nr_ptes, nr_pmds, swapents, oom_score_adj rezultat i ime. Ovo je korisno za utvrđivanje zašto je OOM ubojica pozvan, za identificiranje lažnog zadatka koji ga je uzrokovao i za određivanje zašto je OOM ubojica odabrao zadatak koji je učinio za ubijanje.</string>
+    <string name="help_text_oom_kill_allocating_task">Ovo omogućuje ili onemogućuje zaustavljanje zadatka koji pokreće OOM u situacijama nedostatka memorije. Zadana vrijednost je 0.</string>
+    <string name="help_text_overcommit_memory">Ova vrijednost sadrži oznaku koja omogućuje prekomjerno izdvajanje memorije.\nKada je ova oznaka 0, kernel pokušava procijeniti količinu slobodne memorije koja je ostala kada korisnički prostor zahtijeva više memorije.\nKada je ova oznaka 1, kernel se pretvara da uvijek ima dovoljno memorije dok je zapravo ne ponestane.\nKada je ova oznaka 2, kernel koristi pravilo nikad prekomjernog izdvajanja koje pokušava spriječiti bilo kakvo prekomjerno izdvajanje memorije.</string>
+    <string name="help_text_overcommit_ratio">Kada je overcommit_memory postavljen na 2, predani adresni prostor ne smije premašiti swap plus ovaj postotak fizičkog RAM-a.</string>
+    <string name="help_text_panic_on_oom">Ovo omogućuje ili onemogućuje značajku panike zbog nedostatka memorije.</string>
+    <string name="help_text_percpu_pagelist_fraction">Ovo je najviše udio stranica (visoka oznaka pcp-&gt;visoka) u svakoj zoni koje su dodijeljene za svaki popis stranica po CPU-u. Minimalna vrijednost za ovo je 8. To znači da ne dopuštamo da se više od 1/8 stranica u svakoj zoni dodjeljuje u bilo kojem pojedinačnom per_cpu_pagelistu.</string>
+    <string name="help_text_powersave_bias" formatted="false">Ovaj parametar ima vrijednost između 0 i 1000. On definira postotak (pomnožen s 10) vrijednosti ciljne frekvencije koja će biti smanjena u odnosu na cilj. Na primjer, kada je postavljeno na 100 -&gt; 10%, kada bi regulator na zahtjev ciljao 1000 MHz, umjesto toga će ciljati 1000 MHz - (10% od 1000 MHz) = 900 MHz. Ovo je prema zadanim postavkama postavljeno na 0 (onemogućeno).</string>
+    <string name="help_text_read_ahead">Kernel pokušava unaprijed čitati iza traženih podatkovnih blokova i pohranjuje ih u predmemoriju kako bi spasio potencijalni I/O diska. Zadana vrijednost je 128 kB. Viša vrijednost može povećati vrijeme učitavanja aplikacije.</string>
+    <string name="help_text_read_expire">Kada zahtjev za čitanje prvi put uđe u io planer, dodjeljuje mu se rok koji je trenutno vrijeme + vrijednost read_expire u jedinicama milisekundi.</string>
+    <string name="help_text_rgb_values">Omogućuje vam promjenu RGB (= crvena, zelena, plava) boja vašeg zaslona kako biste ga kalibrirali.</string>
+    <string name="help_text_sampling_down_factor">Ovaj parametar kontrolira brzinu kojom kernel donosi odluku o tome kada treba smanjiti frekvenciju dok radi pri najvećoj brzini. Kada je postavljeno na 1 (zadano), odluke o ponovnoj procjeni opterećenja donose se u istom intervalu bez obzira na trenutnu brzinu takta. Ali kada se postavi na više od 1 (npr. 100), djeluje kao množitelj za interval raspoređivanja za ponovnu procjenu opterećenja kada je CPU na najvećoj brzini zbog velikog opterećenja.</string>
+    <string name="help_text_sampling_rate">Mjereno u SAD-u (10^-6 sekundi), ovo je koliko često želite da kernel gleda korištenje CPU-a i donosi odluke o tome što učiniti u vezi s frekvencijom.</string>
+    <string name="help_text_set_governor">CPU regulator upravlja načinom na koji vaš CPU skalira svoju frekvenciju. Odabir drugog regulatora može značajno utjecati na performanse i trajanje baterije.</string>
+    <string name="help_text_set_gpu_governor">Omogućuje promjenu GPU regulatora. Upravlja skaliranjem frekvencije vašeg GPU-a i može imati veliki utjecaj na performanse GPU-a.</string>
+    <string name="help_text_single_core_threshold" formatted="false">Prag za jednu jezgru za online drugu. Na primjer, ako je jezgra 1 na 100%, a prosječno opterećenje iznad 60%, jezgra 3 će biti online.</string>
+    <string name="help_text_stat_interval">Vremenski interval između kojeg se vm statistika ažurira. Zadana je 1 sekunda.</string>
+    <string name="help_text_swappiness">Ova se kontrola koristi za definiranje koliko će agresivno kernel mijenjati memorijske stranice. Više vrijednosti će povećati agresivnost, dok će niže vrijednosti smanjiti količinu zamjene. Vrijednost 0 upućuje kernel da ne pokreće swap sve dok količina slobodnih stranica i stranica s podlogom datoteka ne bude manja od oznake visoke vode u zoni.</string>
+    <string name="help_text_sweeptowake">Budi uređaj kada prijeđete preko zaslona dok je isključen. Dostupnost ovisi o podršci kernela.</string>
+    <string name="help_text_target_loads">Na ili iznad ove vrijednosti, regulator će povećati frekvenciju. Niže vrijednosti rezultiraju višim brzinama procesora. Primjer bi bio \'85 1200000:80 1500000:95\'. To znači da je sveukupno ciljno opterećenje 85, ali ako je frekvencija viša od 1,2 GHz onda je 80. Isto vrijedi za 1,5 GHz, ali s 95.</string>
+    <string name="help_text_tcp_congestion">Odaberite algoritam koji stoji iza vaše kontrole zagušenja mreže. Obično je zadana postavka \'cubic\' ili \'reno\'.</string>
+    <string name="help_text_temp_threshold">Temperaturni prag kada se vaš CPU počne smanjivati ​​kako bi se zaštitio od pregrijavanja. Ova vrijednost je obično u °C.</string>
+    <string name="help_text_timer_rate">Brzina uzorkovanja mjerača vremena koja se koristi za povećanje frekvencije</string>
+    <string name="help_text_timer_slack">Maksimalno dodatno vrijeme čekanja u mirovanju, izvan timer_rate, pri brzinama iznad minimuma prije buđenja za smanjenje brzine ili -1 ako nije potrebno.</string>
+    <string name="help_text_up_frequency">Minimalna frekvencija CPU-a za pokretanje operacija hotpluga. Ako je trenutna frekvencija ispod ove vrijednosti, neće se izvoditi operacije uključivanja u radnom stanju. Zadana je najveća frekvencija.</string>
+    <string name="help_text_up_threshold">Definira kolika prosječna upotreba CPU-a između uzorkovanja \'sampling_rate\' treba biti da bi kernel odlučio treba li povećati frekvenciju.</string>
+    <string name="help_text_vfs_cache_pressure">Ova postotna vrijednost kontrolira tendenciju kernela da povrati memoriju koja se koristi za predmemoriju direktorija i inode objekata.</string>
+    <string name="help_text_voltage_values">U ovom podizborniku možete promijeniti vrijednosti napona vašeg CPU-a. To može produžiti trajanje vaše baterije ili omogućiti vašem CPU-u da radi na višim frekvencijama. Međutim, to može uzrokovati velike probleme ako se previše pretjeruje.</string>
+    <string name="help_text_volume_boost">Ova vrijednost pojačava vaše zvučnike ili slušalice kako bi bili malo glasniji.</string>
+    <string name="help_text_write_expire">Slično read_expire, ali za pisanje.</string>
+    <string name="help_text_writeback">Dinamički kontrolira odgođeno ponovno upisivanje podataka u predmemoriju. To može poboljšati performanse ili trajanje baterije, ali može povećati rizik od gubitka podataka nakon pada.</string>
+    <string name="help_text_writes_starved">Dakle, writes_starved kontrolira koliko puta dajemo prednost čitanju nad pisanjem. Kada je to učinjeno writes_starved nekoliko puta, otpremamo neka pisanja na temelju istih kriterija kao i čitanja.</string>
+    <string name="help_text_vtg_level">Ovaj podesivi kontrolira modul vibracije vašeg telefona. Niža vrijednost obično znači blaže vibracije.</string>
 </resources>
