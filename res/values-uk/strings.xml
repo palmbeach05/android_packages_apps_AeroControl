@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ========================================================= -->
+    <!-- Application / Brand / Global UI Actions                    -->
+    <!-- ========================================================= -->
+    <string name="add">додати</string>
+    <string name="aero_continue">Продовжити</string>
+    <string name="app_name">Аероконтроль</string>
+    <string name="apply">Застосувати</string>
+    <string name="average">Середнє</string>
+    <string name="back_for_close">Натисніть «Назад» ще раз, щоб закрити програму.</string>
+    <string name="cancel">Скасувати</string>
+    <string name="disabled">Вимкнено</string>
+    <string name="dont_show_again">Не показувати це знову</string>
+    <string name="enabled">Увімкнено</string>
+    <string name="folder_empty">Папка порожня</string>
+    <string name="got_it">зрозумів</string>
+    <string name="maybe_later">Можливо пізніше</string>
+    <string name="minute">хвилина</string>
+    <string name="minutes">хвилин</string>
+    <string name="need_reboot">Для цього може знадобитися перезавантаження.</string>
+    <string name="proceed_with_reset">Ви впевнені, що бажаєте продовжити?</string>
+    <string name="refresh">Оновити</string>
+    <string name="reload">Скинути</string>
+    <string name="retry">Повторіть спробу</string>
+    <string name="save">зберегти</string>
+    <string name="skip_splash">Пропустити</string>
+    <string name="successful">успішно!</string>
+    <string name="unavailable">Недоступний</string>
+    <string name="undo">Скасувати</string>
+    <string name="usage_time">Час використання</string>
+    <string name="warning">УВАГА!</string>
+    <string name="overview_loading">Огляд завантаження</string>
+    <string name="overview_loading_summary">Збір інформації про пристрій...</string>
+    <string name="overview_temperature_loading">Сканування датчиків температури...</string>
+
+    <!-- ========================================================= -->
+    <!-- Navigation / Slider Drawer                                -->
+    <!-- ========================================================= -->
+    <string name="drawer_close">Закрити панель навігації</string>
+    <string name="drawer_open">Відкрити панель навігації</string>
+    <string name="slider_app_monitor">Монітор додатків</string>
+    <string name="slider_backup_restore">Резервне копіювання/відновлення</string>
+    <string name="slider_cpu_settings">Продуктивність ЦП</string>
+    <string name="slider_defy_parts">Частини Defy/Droid X</string>
+    <string name="slider_gpu_settings">Керування GPU</string>
+    <string name="slider_memory_settings">Налаштування пам'яті</string>
+    <string name="slider_misc_settings">Різне Налаштування</string>
+    <string name="slider_overview">Огляд</string>
+    <string name="overview_section_system">система</string>
+    <string name="overview_section_performance">Продуктивність</string>
+    <string name="overview_section_temperatures">температури</string>
+    <string name="overview_section_battery">Акумулятор</string>
+    <string name="overview_section_memory">Пам'ять</string>
+    <string name="overview_section_configuration">Конфігурація</string>
+    <string name="overview_device">пристрій</string>
+    <string name="overview_uptime">Час роботи</string>
+    <string name="overview_android_version">Версія Android</string>
+    <string name="overview_android_security_update">Оновлення безпеки Android</string>
+    <string name="overview_api_level">Рівень API</string>
+    <string name="overview_architecture">Архітектура</string>
+    <string name="overview_kernel">Ядро</string>
+    <string name="overview_cpu_governor">Губернатор ЦП:</string>
+    <string name="temperature_source_cpu">ЦП</string>
+    <string name="temperature_source_battery">Акумулятор</string>
+    <string name="temperature_source_gpu">GPU</string>
+    <string name="temperature_source_soc">SoC</string>
+    <string name="temperature_source_other">%1$s</string>
+    <string name="temperature_source_fallback">Термодатчик %1$d</string>
+    <string name="temperature_status">Статус</string>
+    <string name="battery_level">Рівень</string>
+    <string name="battery_status">Статус</string>
+    <string name="battery_voltage">Напруга</string>
+    <string name="battery_current">поточний</string>
+    <string name="battery_power_source">Джерело живлення</string>
+    <string name="battery_power_source_battery">Акумулятор</string>
+    <string name="battery_power_source_usb">порт USB</string>
+    <string name="battery_power_source_ac">Зарядний пристрій змінного струму</string>
+    <string name="slider_profile">Профілі</string>
+    <string name="slider_statistics">Статистика ЦП</string>
+    <string name="slider_test_suite_settings">Набір тестів</string>
+    <string name="testsuite_linpack_test_title">Тест Linpack</string>
+    <string name="testsuite_linpack_test_summary">Запускає тест linpack.</string>
+    <string name="testsuite_linpack_running">Запуск Linpack</string>
+    <string name="testsuite_linpack_running_summary">Спалювання ваших процесорів...</string>
+    <string name="testsuite_use_all_cpus_title">Використовуйте всі процесори</string>
+    <string name="testsuite_use_all_cpus_summary">Використовує всі виявлені процесори для порівняння замість того, щоб залишити один вільним. Це може зменшити швидкість реакції пристрою.</string>
+
+    <!-- ========================================================= -->
+    <!-- Overview & Live Hardware Information                      -->
+    <!-- ========================================================= -->
+    <string name="available_memory">Пам'ять:</string>
+    <string name="storage_permission_required">Для цієї операції потрібен дозвіл на зберігання.</string>
+    <string name="storage_operation_failed">Неможливо отримати доступ до спільного сховища.</string>
+    <string name="hardware_operation_failed">Неможливо застосувати налаштування апаратного забезпечення.</string>
+    <string name="current_cpu_speed">Частота ЦП:</string>
+    <string name="current_governor">Губернатор:</string>
+    <string name="current_governor_index">Губернатор %1$d:</string>
+    <string name="current_governor_cluster">Губернатор (CPU %1$s):</string>
+    <string name="current_gpu_speed">Частота GPU:</string>
+    <string name="current_io_governor">Планувальник введення/виведення:</string>
+    <string name="kernel_version">Ядро:</string>
+
+    <!-- ========================================================= -->
+    <!-- Profile & Per-App Control                                  -->
+    <!-- ========================================================= -->
+    <string name="add_a_name">Ім'я профілю</string>
+    <string name="apply_profile">Застосування профілю окремого додатка:</string>
+    <string name="define_a_name">Визначте назву для цього профілю.</string>
+    <string name="nothing_added_yet">Ой! Ви ще не додали жодного профілю.</string>
+    <string name="per_app_active">Для кожної програми: активна</string>
+    <string name="per_app_not_active">За додатком: неактивний</string>
+    <string name="profile_assign_to_apps">Призначити додаткам</string>
+    <string name="profile_remove">Видалити цей профіль</string>
+    <string name="profile_remove_confirmation">Цей профіль буде остаточно видалено.</string>
+    <string name="delete">Видалити</string>
+    <string name="return_to_normal">Повернення до нормального використання</string>
+
+    <!-- ========================================================= -->
+    <!-- CPU & Hotplug Configuration Strings                       -->
+    <!-- ========================================================= -->
+    <string name="perf_cpu_boost_control">Розгін ЦП</string>
+    <string name="perf_cpu_boost_control_summary">Налаштуйте параметри підвищення ЦП тут</string>
+    <string name="perf_cpu_hotplug">Налаштування Hotplug</string>
+    <string name="perf_cpu_hotplug_driver">Драйвер гарячого підключення</string>
+    <string name="perf_cpu_hotplug_summary">Налаштуйте драйвер гарячого підключення тут</string>
+    <string name="perf_live_oc_uc">Живий OC/UC</string>
+    <string name="perf_live_oc_uc_summary">Контролюйте частоти та напругу в реальному часі!</string>
+    <string name="perf_voltage_control">Контроль напруги</string>
+    <string name="perf_voltage_control_summary">Налаштуйте напругу вашого ЦП тут</string>
+    <string name="pref_cpu_freq">Частоти</string>
+    <string name="pref_max_freq_cpu">Макс. Частота</string>
+    <string name="pref_min_freq_cpu">Хв. Частота</string>
+    <string name="pref_cpu_governor">Налаштування губернатора</string>
+    <string name="pref_max_freq_cpu_cluster">Макс. Частота (CPU %1$s)</string>
+    <string name="pref_min_freq_cpu_cluster">Хв. Частота (CPU %1$s)</string>
+    <string name="pref_cpu_governor_cluster">Налаштування регулятора (CPU %1$s)</string>
+    <string name="pref_cpu_detection_loading">Виявлення можливостей ЦП...</string>
+    <string name="pref_cpu_detection_loading_summary">Після завершення виявлення з’являться доступні елементи керування.</string>
+    <string name="pref_cpu_control_loading">Завантаження керування ЦП...</string>
+    <string name="pref_cpu_governor_loading">Завантаження доступних регуляторів...</string>
+    <string name="pref_cpu_governor_retry">Повторити виявлення регулятора (CPU %1$s)</string>
+    <string name="pref_cpu_governor_retry_summary">Повторіть спробу прочитати доступні регулятори цього кластера.</string>
+    <string name="pref_cpu_legacy_loading">Перевірка підтримки розгону застарілого процесора...</string>
+    <string name="pref_apply_to_all_cpu_clusters">Застосувати до всіх кластерів</string>
+    <string name="pref_apply_to_all_cpu_clusters_summary">Застосовує зміни з елементів керування першого кластера до кожного виявленого кластера ЦП.</string>
+    <string name="pref_gov_set">Спеціальні налаштування губернатора</string>
+    <string name="pref_gov_set_no_parameter">Схоже, для цього губернатора немає параметрів?</string>
+    <string name="mv_minus">-25 мВ</string>
+    <string name="mv_plus">+25 мВ</string>
+
+    <!-- ========================================================= -->
+    <!-- GPU Control Strings                                       -->
+    <!-- ========================================================= -->
+    <string name="perf_gpu_gov">Губернатор ГПУ</string>
+    <string name="perf_gpu_gov_settings">Налаштування GPU Governor</string>
+    <string name="perf_gpu_gov_settings_summary">Налаштуйте параметри регулятора вашого GPU.</string>
+    <string name="pref_gpu_control_enable">Керування GPU</string>
+    <string name="pref_gpu_control_enable_summary">Це дозволить увімкнути драйвер GPU Control. Він керує розгоном/заниженням напруги, а також основним плануванням для GPU.</string>
+    <string name="pref_max_freq_gpu">Макс. Частота</string>
+    <string name="pref_max_freq_gpu_summary">Це встановить максимальну частоту GPU. За замовчуванням 200 МГц.</string>
+
+    <!-- ========================================================= -->
+    <!-- Memory & Virtual Machine Settings                        -->
+    <!-- ========================================================= -->
+    <string name="io_scheduler">Планувальник IO</string>
+    <string name="pref_dalvik_settings">Налаштування віртуальної машини</string>
+    <string name="pref_dalvik_settings_heading">Віртуальна машина</string>
+    <string name="pref_dalvik_settings_summary">Зміна параметрів віртуальної машини.</string>
+    <string name="pref_dynamic_fsync">Динамічний FSync</string>
+    <string name="pref_dynamic_fsync_summary">Dynamic FSync вмикає fsync лише тоді, коли екран вимкнено.</string>
+    <string name="pref_dynamic_writeback">Контроль зворотного запису</string>
+    <string name="pref_dynamic_writeback_summary">Увімкніть або вимкніть контроль зворотного запису тут.</string>
+    <string name="pref_entropy_settings">Ентропія</string>
+    <string name="pref_entropy_settings_summary">Змініть поріг читання та запису для пулу ентропії.</string>
+    <string name="pref_fsync">FSync</string>
+    <string name="pref_fsync_summary">Повністю вмикає або вимикає FSync.</string>
+    <string name="pref_fstrim">Опція обрізки</string>
+    <string name="pref_fstrim_no_busybox">Для цієї операції потрібен BusyBox!</string>
+    <string name="pref_fstrim_summary">Обріжте кілька частин вашої системи! Це може зайняти деякий час.</string>
+    <string name="pref_io_scheduler">Параметр планувальника IO</string>
+    <string name="pref_io_scheduler_no_parameter">Схоже, для цього планувальника немає параметрів?</string>
+    <string name="pref_ksm">КСМ</string>
+    <string name="pref_ksm_summary">Повністю вмикає або вимикає демон KSM.</string>
+    <string name="pref_low_memory">Мало пам'яті</string>
+    <string name="pref_low_memory_summary">Поточне значення ro.config.low_ram: %1$s</string>
+    <string name="pref_memory_settings">Налаштування пам'яті</string>
+    <string name="pref_readahead">Розмір читання наперед</string>
+    <string name="pref_readahead_dialog">Розмір попереднього читання в кБ</string>
+
+    <!-- ========================================================= -->
+    <!-- Custom Device Tweaks (Defy Parts / Screen Options)       -->
+    <!-- ========================================================= -->
+    <string name="defy_energy_saver">Економія енергії</string>
+    <string name="defy_green_colors">Defy Green Colours</string>
+    <string name="defy_red_colors">Боротьба з червоними кольорами</string>
+    <string name="pref_button_brightness">Яскравість кнопки</string>
+    <string name="pref_charging_led">Колір світлодіода зарядки</string>
+    <string name="pref_charging_led_summary">Колір світлодіода під час зарядки</string>
+    <string name="pref_charge_led_mode_white">Білий світлодіод</string>
+    <string name="pref_charge_led_mode_green">Зелений світлодіод</string>
+    <string name="pref_charge_led_mode_rgb">Змішаний світлодіод (червоний/зелений)</string>
+    <string name="pref_charge_led_mode_off">Вимкнено</string>
+    <string name="pref_display_color">Колір дисплея</string>
+    <string name="pref_display_color_summary">Налаштуйте колір дисплея тут.</string>
+    <string name="pref_doubletaptowake">Doubletap2Wake</string>
+    <string name="pref_doubletaptowake_summary">Розбудіть пристрій подвійним дотиком.</string>
+    <string name="pref_general_settings_defy">Загальні налаштування</string>
+    <string name="pref_multitouch">Мультитач-точки</string>
+    <string name="pref_multitouch_summary">Кількість точок мультитач.</string>
+    <string name="pref_sweeptowake">Sweep2Wake</string>
+    <string name="pref_sweeptowake_summary">Може розряджати акумулятор трохи більше, ніж зазвичай.</string>
+
+    <!-- ========================================================= -->
+    <!-- Accessibility / Content Descriptions                      -->
+    <!-- ========================================================= -->
+    <string name="info_button_description">Показати довідкову інформацію</string>
+
+    <!-- ========================================================= -->
+    <!-- Settings Screen Configuration Elements                     -->
+    <!-- ========================================================= -->
+    <string name="aero_settings">Налаштування</string>
+    <string name="app_theme_dark">Темний – темний фон із чорною панеллю дій</string>
+    <string name="app_theme_light">Light - світлий голографічний з синім акцентом</string>
+    <string name="app_theme_system">Система – використовує матеріальну тему вашого пристрою</string>
+    <string name="pref_category_application">застосування</string>
+    <string name="pref_category_per_app_profiles">Профілі для кожної програми</string>
+    <string name="pref_app_theme">Тема програми</string>
+    <string name="pref_app_theme_summary">Визначає тему програми за умовчанням.</string>
+    <string name="pref_boot_delay">Затримка таймера завантаження</string>
+    <string name="pref_boot_delay_dialog">Затримка в хвилинах</string>
+    <string name="pref_finishing_settings">готові налаштування.</string>
+    <string name="pref_lollipop_usage_warning">Зверніть увагу, що Google змінив спосіб перевірки поточної програми на передньому плані для Lollipop(+). Щоб служба PerApp працювала на вашому пристрої, вам потрібно зайти в налаштування та ввімкнути доступ до статистики використання для Aero Control. Ви можете скасувати це право в будь-який момент часу. Якщо ви відчуваєте, що готові, натисніть «Продовжити».</string>
+    <string name="pref_misc_settings">Різне Налаштування</string>
+    <string name="pref_misc_tcp_congestion">Алгоритм перевантаження TCP</string>
+    <string name="pref_misc_delete_misc">Видалити налаштування</string>
+    <string name="pref_misc_your_settings">Ваші налаштування</string>
+    <string name="pref_misc_no_settings">Ви ще не додали жодних налаштувань!</string>
+    <string name="pref_per_app_service">Сервіс профілю програми</string>
+    <string name="pref_per_app_service_summary">Увімкніть або вимкніть службу профілю за програмою.</string>
+    <string name="pref_perapp_monitor">Монітор кожного додатка</string>
+    <string name="pref_perapp_monitor_summary">Увімкніть або вимкніть App Monitor.</string>
+    <string name="pref_perapp_toasts">Тости для кожної програми</string>
+    <string name="pref_perapp_toasts_summary">Увімкніть або вимкніть сповіщення про тости.</string>
+    <string name="pref_profile_change_name">Встановіть інше ім'я</string>
+    <string name="pref_profile_change_name_summary">Змініть назву свого профілю.</string>
+    <string name="pref_profile_deleted">Видалено</string>
+    <string name="pref_profile_not_deleted">Не вдалося видалити профіль</string>
+    <string name="pref_profile_export">Експорт</string>
+    <string name="pref_profile_import">Імпорт</string>
+    <string name="pref_profile_import_select">Виберіть профілі для імпорту</string>
+    <string name="pref_profile_invalid_name">Використовуйте 1–64 літери, цифри, пробіли, підкреслення або дефіси.</string>
+    <string name="pref_profile_name_exists">Це ім'я вже існує.</string>
+    <string name="pref_profile_no_import">Я не міг знайти нічого для імпорту.</string>
+    <string name="pref_profile_per_app">Виберіть свої програми</string>
+    <string name="pref_profile_reset">Скинути поточний профіль</string>
+    <string name="pref_profile_reset_summary">Це повністю скине ваш поточний профіль. Так само, як якщо б ви щойно встановили Aero Control.</string>
+    <string name="pref_profile_service_not_running">Служба окремих програм не працює, але ви пов’язали програми з профілями!</string>
+    <string name="pref_profile_show_system">Системні програми</string>
+    <string name="pref_reboot_check">Перевірка випадкового перезавантаження</string>
+    <string name="pref_reboot_check_summary">Він повідомить вам, якщо ваш пристрій раптово перезавантажиться.</string>
+    <string name="pref_reset_tutorials">Скинути навчальні посібники</string>
+    <string name="pref_reset_tutorials_dialog">Ви збираєтеся скинути підручники.</string>
+    <string name="pref_reset_tutorials_title">Шляху назад немає</string>
+    <string name="pref_screen_rotation">Обертання екрана</string>
+    <string name="pref_screen_rotation_summary">Дозволити обертання екрана під час обертання пристрою.</string>
+    <string name="pref_set_on_boot_settings">налаштування під час завантаження.</string>
+
+    <!-- ========================================================= -->
+    <!-- App Monitor & CPU Statistics Tracker                      -->
+    <!-- ========================================================= -->
+    <string name="delete_statistics">Це скине поточну статистику використання. Ви ніби щойно перезавантажили телефон.</string>
+    <string name="select_cluster_title">Виберіть кластер</string>
+    <string name="select_cluster_cpu_label">ЦП %1$s</string>
+    <string name="notify_app_monitor_data">Ми зібрали достатньо даних, перевірте їх у розділі App Monitor!</string>
+    <string name="pref_cpu_frequency">Частота процесора</string>
+    <string name="pref_cpu_number">Ядра ЦП</string>
+    <string name="pref_gpu_frequency">Частота GPU</string>
+    <string name="pref_no_app_monitor_data">Дані ще не знайдено, перевірте через кілька хвилин.</string>
+    <string name="pref_app_monitor_disabled">App Monitor вимкнено, увімкніть його в налаштуваннях, щоб відображати дані.</string>
+    <string name="pref_ram_usage">Вільна оперативна пам'ять</string>
+    <string name="pref_reset_stats_for_app">Ви впевнені, що бажаєте скинути статистику для цієї програми?</string>
+    <string name="pref_app_monitor_average_summary">%1$s %2$s - %3$s</string>
+    <string name="pref_temp_usage">температура</string>
+
+    <!-- ========================================================= -->
+    <!-- Flasher / Kernel Backup Elements                          -->
+    <!-- ========================================================= -->
+    <string name="backup_from">Резервне копіювання з</string>
+    <string name="last_backup_from">Остання резервна копія з</string>
+    <string name="pref_backup_kernel">Резервне копіювання ядра</string>
+    <string name="pref_backup_kernel_summary">Це збереже копію вашого поточного ядра.</string>
+    <string name="pref_restore">Відновити резервну копію</string>
+    <string name="pref_restore_kernel">Відновити</string>
+    <string name="pref_updater">Оновлення та резервне копіювання ядра</string>
+    <string name="proceed_backup">Продовжити резервне копіювання? Це створить резервну копію поточного ядра.</string>
+    <string name="restore_from_backup">Бажаєте відновити резервну копію з</string>
+
+    <!-- ========================================================= -->
+    <!-- Dialog Frameworks, Alerts, System Stability Errors        -->
+    <!-- ========================================================= -->
+    <string name="error_detected">Помилка?</string>
+    <string name="has_journal_dialog">Схоже, у вашому розділі /data не ввімкнено функцію has_journal. Будь ласка, перезавантажтеся у режим відновлення та запустіть таку команду через оболонку adb: tune2fs -O has_journal /dev/block/mmcblk1p25 </string>
+    <string name="has_journal_dialog_header">Проблема виявлена</string>
+    <string name="no_cpu_data">Не вдалося знайти дані ЦП.</string>
+    <string name="no_data_found">Я не міг знайти відповідних даних :(</string>
+    <string name="no_gpu_data">Не вдалося знайти дані, пов’язані з GPU</string>
+    <string name="not_rooted">Немає Root?</string>
+    <string name="reboot_notifier">Схоже, ядро ​​вийшло з ладу. Перегляньте \n/proc/last_kmsg \nі надішліть цей файл своєму улюбленому розробнику. Серйозно, надішліть! \n Приносимо вибачення за можливі незручності!</string>
+    <string name="reboot_notifier_header">На жаль, цього не повинно статися</string>
+    <string name="root_required">Схоже, ваш пристрій не рутиноване. Ця програма не працюватиме належним чином без root-права. Якщо ви вважаєте, що це помилка, повідомте мене та надішліть мені електронний лист!</string>
+
+    <!-- ========================================================= -->
+    <!-- About Screen & Social / Legal Open-Source Notice Items    -->
+    <!-- ========================================================= -->
+    <string name="about">про</string>
+    <string name="about_version_label">Версія:</string>
+    <string name="about_build_label">збірка:</string>
+    <string name="about_dialog">Aero Control спочатку створив Олександр Кріст (Blechd0se), допомагаючи Quarx та іншим розробникам із Motorola Defy. Він має відкритий код і сумісний з різними пристроями.</string>
+    <string name="github">GitHub</string>
+    <string name="legal">Юридичні повідомлення</string>
+    <string name="legal_dialog">Ця програма ліцензована згідно з ліцензією Apache. Копію цього можна завантажити тут:\n http://www.apache.org/licenses/LICENSE-2.0\n Бібліотека ShowCase від Alex Curran ліцензована згідно з ліцензією Apache 2.0.\n Бібліотека HoloGraph від Daniel Nadeau ліцензована згідно з ліцензією Apache 2.0. </string>
+    <string name="send_email">Надіслати електронний лист</string>
+    <string name="xda">Тема XDA</string>
+    <string name="no_activity_for_link">Немає доступної програми для відкриття цього посилання</string>
+
+    <!-- ========================================================= -->
+    <!-- Introduction Guide System Walkthrough                     -->
+    <!-- ========================================================= -->
+    <string name="introduction_perapp_check">Бажаєте ввімкнути цю послугу?</string>
+    <string name="introduction_perapp_heading">Профілі для кожної програми</string>
+    <string name="introduction_perapp_content">Автоматично вибирайте свої параметри для окремих програм. Тому служба час від часу перевіряє активну програму й автоматично застосовує потрібний профіль.\n Це може заощадити заряд акумулятора або повністю підвищити продуктивність улюбленої програми.</string>
+    <string name="introduction_set_on_boot_heading">Встановити при завантаженні!</string>
+    <string name="introduction_set_on_boot_content">За допомогою маленького прапорця біля кожного параметра ви можете встановити свої значення під час завантаження окремо. Просто перевірте, і ваші налаштування будуть збережені. Це також визначає поточні значення вашого профілю.</string>
+    <string name="introduction_tutorial_check">Бажаєте ввімкнути підручники?</string>
+    <string name="introduction_tutorial_content">Навчальні посібники з’являються під час використання Aero Control. Вони можуть дати вам певну інформацію. Якщо ви досвідчений користувач, навряд чи вони вам знадобляться.</string>
+    <string name="introduction_tutorial_heading">Підручники</string>
+    <string name="introduction_welcome_content">Ми тільки починаємо. Якщо ви готові, просто проведіть пальцем справа наліво. Ви можете змінити будь-які налаштування з цього помічника пізніше.</string>
+    <string name="introduction_welcome_heading">Ласкаво просимо до \nAero Control</string>
+
+    <!-- ========================================================= -->
+    <!-- Interactive App Tutorials (Showcase Views)               -->
+    <!-- ========================================================= -->
+    <string name="showcase_aero_fragment">Ласкаво просимо до Aero Control!</string>
+    <string name="showcase_aero_fragment_summary">Проведіть пальцем зліва направо, щоб відкрити панель навігації. Сторінка, яку ви зараз переглядаєте, є головною панеллю огляду. Є невеликий підсумок деяких налаштувань ядра. Вони живі, вам не потрібно нічого оновлювати!</string>
+    <string name="showcase_app_monitor_fragment">Слідкуйте за своїми програмами!</string>
+    <string name="showcase_app_monitor_fragment_summary">App Monitor відображає корисну інформацію про програми, які ви використовуєте. Ви будете проінформовані, коли ми зберемо достатньо даних, щоб показати вам щось. Ваші дані належать вам, жодна інформація не буде надіслана комусь іншому.</string>
+    <string name="showcase_cpu_fragment_governor">Губернатор КПУ</string>
+    <string name="showcase_cpu_fragment_governor_summary">Клацніть цей символ, щоб отримати повний доступ до керування регулятором! Ви можете налаштувати кожен параметр для кожного регулятора, щоб підвищити продуктивність.</string>
+    <string name="showcase_memory_fragment_trim">Параметри обрізки</string>
+    <string name="showcase_memory_fragment_trim_summary">Щоб підтримувати продуктивність пристрою, ви можете скоротити кілька частин вашої операційної системи. Це може зайняти деякий час, особливо якщо ви зберегли багато даних.</string>
+    <string name="showcase_perapp_profiles">Призначте профілі своїм програмам!</string>
+    <string name="showcase_perapp_profiles_summary">Хочете, щоб певний профіль застосовувався лише до певних програм? Не проблема, клацніть праворуч на маленькій піктограмі та призначте свій профіль улюбленим програмам. Обов'язково ввімкніть послугу в налаштуваннях.</string>
+    <string name="showcase_profile_fragment">Додайте профілі!</string>
+    <string name="showcase_profile_fragment_summary">Просто натисніть цю маленьку кнопку та додайте профіль. Усі ваші поточні налаштування будуть збережені в цьому новому профілі. Якщо ви додали кілька профілів, ви можете просто завантажити їх, натиснувши на них.</string>
+    <string name="showcase_statistics_fragment">Оновіть свою статистику</string>
+    <string name="showcase_statistics_fragment_summary">На цій панелі буде показано поточну статистику споживання часу ЦП. Він показує, скільки часу ваш пристрій проводить на кожній частоті ЦП. Можливо, ви захочете перевірити це пізніше та перевірити, чи ваш пристрій працює належним чином.</string>
+    <string name="showcase_your_settings">Ваші налаштування</string>
+    <string name="showcase_your_settings_summary">Натисніть цей символ, щоб отримати простий файловий менеджер. Ви можете вибрати будь-який файл і додати власні параметри. За допомогою піктограми зліва ви можете видалити ці налаштування.</string>
+
+    <!-- ========================================================= -->
+    <!-- Easter Egg Loading Jokes                                   -->
+    <!-- ========================================================= -->
+    <string name="random_data_somewhere">Зачекайте секундочку, я знаю, що ваші дані десь...</string>
+    <string name="random_nsa_loading">Надсилання всіх даних до АНБ...</string>
+    <string name="random_prepare_awesomeness">Приготуйтеся до неймовірного!</string>
+    <string name="random_programming_flux">Програмування конденсатора потоку...</string>
+    <string name="random_shovelling_coal">Закидати вугілля в ЦП...</string>
+    <string name="random_testing_patience">Перевірка вашого терпіння...</string>
+    <string name="random_working_you_know">Працює... ну... ти знаєш...</string>
+
+	<!-- ========================================================= -->
+    <!-- Tooltip & Advanced Tuning Help Documentation             -->
+    <!-- ========================================================= -->
+    <string name="help_text_above_hispeed_delay">Зачекайте стільки часу, перш ніж підвищувати швидкість вище його швидкості, за замовчуванням один інтервал таймера.</string>
+    <string name="help_text_align_windows">Чи вирівнювати вікна таймерів між усіма процесорами. Якщо use_sched_load має значення true, цей прапорець ігнорується, і вікна завжди будуть вирівняні.</string>
+    <string name="help_text_all_cpus_threshold">Порогове значення для середнього навантаження всіх центральних процесорів, які зараз знаходяться в мережі, до наступного ядра. Якщо ви зменшите це значення, ядра зможуть легше вийти в Інтернет.</string>
+    <string name="help_text_amp">Це значення дозволяє збільшити або зменшити силу вібраційного модуля. Зазвичай 100 – це максимум.</string>
+    <string name="help_text_battery_saver">Якщо ввімкнено (1), лише одне ядро ​​залишатиметься активним, щойно ви вимкнете екран. Якщо ви отримуєте дивну якість звуку, коли екран вимкнено, спробуйте вимкнути його за допомогою 0. Це дозволить обом ядрам залишатися активними під час призупинення.</string>
+    <string name="help_text_block_dump">block_dump вмикає налагодження блоку вводу/виводу, якщо встановлено ненульове значення.</string>
+    <string name="help_text_button_brightness">Встановлює рівень яскравості підсвічування для ємнісних кнопок.</string>
+    <string name="help_text_boostpulse_duration">Тривалість посилення вхідного сигналу.</string>
+    <string name="help_text_dalvik_settings">Це підменю дозволяє вам взаємодіяти з віртуальною машиною вашого пристрою. В основному є варіанти, пов'язані з пам'яттю.</string>
+    <string name="help_text_debug">Прапор налагодження, призначений для розробника. Тут нічого робити!</string>
+    <string name="help_text_dirty_background_bytes">Містить обсяг брудної пам’яті, з якого фонові потоки очищення ядра почнуть зворотний запис.\n Примітка: dirty_background_bytes є аналогом dirty_background_ratio. Одночасно можна вказати лише один із них. Коли записується sysctl, він негайно розглядається як оцінка обмежень брудної пам’яті, а інший відображається як 0 під час читання.</string>
+    <string name="help_text_dirty_background_ratio">Містить у відсотках від загальної доступної пам’яті, яка містить вільні сторінки та сторінки, які можна відновити, кількість сторінок, на яких фонові потоки очищення ядра почнуть записувати брудні дані.</string>
+    <string name="help_text_dirty_bytes">Містить обсяг брудної пам’яті, при якому процес, що генерує записи на диск, сам розпочне зворотний запис.\nПримітка: мінімальне дозволене значення для dirty_bytes становить дві сторінки (у байтах); будь-яке значення, нижче за це обмеження, буде проігноровано, а стара конфігурація буде збережена.</string>
+    <string name="help_text_dirty_expire_centisecs">Цей параметр використовується для визначення того, коли брудні дані є достатньо старими, щоб бути придатними для запису потоками очищення ядра. Виражається в сотих частках секунди. Дані, які були забруднені в пам’яті довше цього інтервалу, будуть записані наступного разу, коли потік очисника виведеться з режиму сну.</string>
+    <string name="help_text_dirty_ratio">Містить, як відсоток від загальної доступної пам’яті, яка містить вільні сторінки та сторінки, які можна відновити, кількість сторінок, на якій процес, який генерує записи на диск, сам почне записувати брудні дані.</string>
+    <string name="help_text_dirty_writeback_centisecs">Потоки очищення ядра періодично прокидаються та записують \'старі\' дані на диск. Цей параметр виражає інтервал між цими пробудженнями в сотих частках секунди.\nУстановлення цього значення на нуль повністю вимикає періодичний зворотний запис.</string>
+    <string name="help_text_display_control">Регулює колірний профіль дисплея. Доступні режими та їхні ефекти залежать від пристрою та ядра.</string>
+    <string name="help_text_drop_caches">Запис у це призведе до того, що ядро ​​видалить чисті кеші, а також відновлені об’єкти, такі як dentries та inode. Після падіння їх пам'ять стає вільною. (1 = вільний кеш сторінки, 2 = вільні об’єкти плити, які можна відновити, 3 = вільні об’єкти плити та кеш сторінки)</string>
+    <string name="help_text_doubletaptowake">Виводить пристрій з режиму сну, коли ви двічі торкаєтеся вимкненого екрана. Доступність залежить від підтримки ядра.</string>
+    <string name="help_text_dyn_fsync">Динамічно вимикає fsync, коли екран увімкнено, і відновлює його, коли екран вимикається. Це може покращити продуктивність, але може збільшити ризик втрати даних після збою.</string>
+    <string name="help_text_entropy_settings">Пул ентропії зберігає випадкові числа для різних програм. Вищі значення для читання/запису можуть допомогти в деяких випадках, але також можуть збільшити розряд батареї. Загалом ваш пул завжди має бути вище 200 у будь-який момент часу.</string>
+    <string name="help_text_extfrag_threshold">Цей параметр впливає на те, чи буде ядро ​​стискати пам’ять чи здійснювати пряме повернення, щоб задовольнити розподіл високого порядку. Значення, що прагнуть до 0, означають, що розподіл буде невдалим через брак пам’яті, значення, наближені до 1000, означають, що збої спричинені фрагментацією, а -1 означає, що розподіл буде успішним, доки зустрічаються водяні знаки.</string>
+    <string name="help_text_extra_free_kbytes">Цей параметр вказує віртуальній машині зберігати додаткову вільну пам’ять між порогом, коли починається фонове відновлення (kswapd), і порогом, коли починається пряме повернення (шляхом розподілу процесів).</string>
+    <string name="help_text_fifo_batch">Контролює максимальну кількість запитів на пакет. Цей параметр налаштовує баланс між затримкою кожного запиту та сукупною пропускною здатністю. Якщо головною проблемою є низька затримка, краще менше. Збільшення fifo_batch загалом покращує пропускну здатність за рахунок зміни затримки.</string>
+    <string name="help_text_front_merges">Цей параметр приймає 0 (=вимкнено) або 1 (=увімкнено). Іноді буває так, що в планувальник io надходить запит, який суміжний із запитом, який уже стоїть у черзі. Або він поміщається в задній частині цього запиту, або він підходить в передній частині.</string>
+    <string name="help_text_fstrim_toggle">Обрізає різні частини вашої системи, щоб звільнити невикористані блоки у вашому сховищі. Для цього потрібен BusyBox, і це може зайняти деякий час.</string>
+    <string name="help_text_fsync">Виклик fsync() змушує фізично записувати дані з буферного кешу. Вимкнення цієї функції може підвищити продуктивність, але ціною втрати даних у разі збою системи.</string>
+    <string name="help_text_go_hispeed_load">Перейти до hisspeed, коли навантаження ЦП досягає або перевищує це значення.</string>
+    <string name="help_text_gpu_control_enable">Вмикає інтерфейс ядра, який використовується для зміни частот і регуляторів GPU. Доступність залежить від підтримки ядра.</string>
+    <string name="help_text_gpu_gov_settings">Ваш регулятор графічного процесора має деякі спеціальні параметри для точного налаштування його поведінки. Це дуже схоже на регулятор ЦП.</string>
+    <string name="help_text_gpu_max_freq">Цей параметр дозволяє змінювати максимальну частоту GPU. Зниження цього значення може заощадити заряд акумулятора за рахунок продуктивності.</string>
+    <string name="help_text_highmem_is_dirtyable">За замовчуванням значення 0 (false), що означає, що коефіцієнти dirty_ratio і dirty_background_ratio обчислюються лише як відсоток малої пам’яті. Це захищає від надмірного сканування під час повернення сторінок, заміни та загального руйнування віртуальної машини.</string>
+    <string name="help_text_hispeed_freq">Його швидкість, до якої можна піднятися з будь-якої меншої частоти під час сильного навантаження.</string>
+    <string name="help_text_hotplug_control">Торкніться цього елемента, щоб змінити різні значення драйвера гарячого підключення. Драйвер гарячого підключення вирішує, коли ядро ​​ЦП має бути онлайн чи офлайн.</string>
+    <string name="help_text_hotplug_sampling">Частота дискретизації драйвера гарячого підключення. Зменшення цього значення призводить до швидшого прийняття рішень щодо того, чи потрібно перевести ядро ​​в режим онлайн чи ні.</string>
+    <string name="help_text_ignore_nice_load">Цей параметр приймає значення \'0\' або \'1\'. Якщо встановлено \'0\' (це за замовчуванням), усі процеси зараховуються до значення \'використання ЦП\'. Якщо встановлено значення \'1\', процеси, які виконуються зі значенням \'приємно\', не враховуватимуться (і, отже, ігноруватимуться) у загальному обчисленні використання.</string>
+    <string name="help_text_input_boost_freq">Частота, на яку переходить ЦП, коли реєструється дотик до дисплея.</string>
+    <string name="help_text_io_is_busy">Це прапорець, який визначає, чи має очікування різних вводів-виводів збільшити використання ЦП у підйомі частоти ЦП. Встановлення значення 0 означатиме, що регулятор буде збільшувати частоту рідше.</string>
+    <string name="help_text_io_scheduler_list">Планувальник вводу-виводу керує запитами вводу-виводу для певного пристрою, щоб забезпечити ефективну обробку. Зміна цього значення має досить незначний вплив на більшість систем Android.</string>
+    <string name="help_text_ksm">Kernel Samepage Merging (KSM) дозволяє дедуплікати пам’ять. Це дуже корисна функція на Android, яка може заощадити оперативну пам’ять за рахунок продуктивності ЦП.</string>
+    <string name="help_text_laptop_mode">laptop_mode – це ручка, яка керує режимом ноутбука.</string>
+    <string name="help_text_legacy_va_layout">Якщо значення відмінне від нуля, цей sysctl вимикає нову 32-розрядну розкладку mmap - ядро ​​використовуватиме застарілу (2.4) розкладку для всіх процесів.</string>
+    <string name="help_text_live_oc_uc">Будьте обережні з цим варіантом. Ви можете розігнати/занижувати частоту, наведену в списку, і встановити правильну напругу для цього. Ці значення не будуть застосовані до профілів окремої програми для вашої власної безпеки.</string>
+    <string name="help_text_low_latency" formatted="false">Якщо ввімкнути (1), це дозволяє драйверу гарячого підключення дуже швидко реагувати на короткі стрибки навантаження (100% навантаження ЦП) і відповідним чином переводити ЦП в режим онлайн.</string>
+    <string name="help_text_lowmem_reserve_ratio">Для деяких спеціалізованих робочих навантажень на машинах highmem небезпечно для ядра дозволяти виділення пам’яті процесу із зони lowmem. Це пояснюється тим, що ця пам’ять може бути закріплена за допомогою системного виклику mlock() або через відсутність місця підкачки.</string>
+    <string name="help_text_max_freq_cpu">Цей параметр дозволяє регулювати максимальну частоту ЦП. Зниження цього значення може заощадити енергію за рахунок продуктивності.</string>
+    <string name="help_text_max_freq_hysteresis">Залишайтеся на максимальній частоті принаймні для цього значення перед тим, як знову знизити частоту.</string>
+    <string name="help_text_max_map_count">Цей файл містить максимальну кількість областей карти пам’яті, які може мати процес. Області карти пам’яті використовуються як побічний ефект виклику malloc безпосередньо mmap і mprotect, а також під час завантаження спільних бібліотек.</string>
+    <string name="help_text_min_free_kbytes">Це використовується, щоб змусити віртуальну машину Linux зберігати мінімальну кількість вільних кілобайт.</string>
+    <string name="help_text_min_freq_cpu">Цей параметр дозволяє регулювати мінімальну частоту ЦП. Збільшення цього значення може забезпечити кращу продуктивність за рахунок використання акумулятора.</string>
+    <string name="help_text_min_online_time">Щоб запобігти вимкненню/ввімкненню ядра, коли вони знаходяться поблизу порогового значення. Це мінімальний онлайн-час у секундах для ядра.</string>
+    <string name="help_text_min_sample_time">Мінімальна кількість часу, яку потрібно витратити на частоту, перш ніж ми зможемо зменшити частоту.</string>
+    <string name="help_text_no_data_found">Інформація про цей товар відсутня.</string>
+    <string name="help_text_oom_dump_tasks">Дозволяє створювати загальносистемний дамп завдання (за винятком потоків ядра), коли ядро ​​виконує OOM-killing, і включає таку інформацію, як pid, uid, tgid, розмір vm, rss, nr_ptes, nr_pmds, swapents, oom_score_adj score та ім’я. Це корисно, щоб визначити, чому було викликано OOM killer, визначити шахрайське завдання, яке спричинило це, і визначити, чому OOM killer вибрав завдання, яке він зробив для знищення.</string>
+    <string name="help_text_oom_kill_allocating_task">Це вмикає або вимикає припинення завдання, що запускає OOM, у ситуаціях браку пам’яті. Значення за замовчуванням 0.</string>
+    <string name="help_text_overcommit_memory">Це значення містить прапорець, який вмикає надмірне виділення пам’яті.\nЯкщо цей прапорець дорівнює 0, ядро ​​намагається оцінити обсяг вільної пам’яті, що залишився, коли простір користувача запитує більше пам’яті.\nЯкщо цей прапорець дорівнює 1, ядро ​​вдає, що пам’яті завжди достатньо, доки її фактично не закінчиться.\nЯкщо цей прапорець дорівнює 2, ядро ​​використовує політику ніколи не перевиділяти пам’ять, яка намагається запобігти будь-якому надмірному виділенню пам’яті.</string>
+    <string name="help_text_overcommit_ratio">Якщо для параметра overcommit_memory встановлено значення 2, зареєстрований адресний простір не може перевищувати swap плюс цей відсоток фізичної оперативної пам’яті.</string>
+    <string name="help_text_panic_on_oom">Це вмикає або вимикає функцію паніки через брак пам’яті.</string>
+    <string name="help_text_percpu_pagelist_fraction">Це щонайбільше частка сторінок (висока позначка pcp-&gt;high) у кожній зоні, яка виділена для кожного списку сторінок ЦП. Мінімальне значення для цього становить 8. Це означає, що ми не дозволяємо виділяти більше 1/8 сторінки в кожній зоні в будь-якому окремому per_cpu_pagelist.</string>
+    <string name="help_text_powersave_bias" formatted="false">Цей параметр приймає значення від 0 до 1000. Він визначає відсоткове (помножене на 10) значення цільової частоти, яке буде зменшено від цільової. Наприклад, якщо встановлено значення 100 -&gt; 10%, коли регулятор ondemand націлив би 1000 МГц, він замість цього націлить 1000 МГц - (10% від 1000 МГц) = 900 МГц. За замовчуванням встановлено значення 0 (вимкнено).</string>
+    <string name="help_text_read_ahead">Ядро намагається прочитати попередні блоки даних, що запитуються, і зберігає їх у кеші, щоб заощадити потенційний дисковий ввід/вивід. Стандартне значення становить 128 КБ. Більше значення може збільшити час завантаження програми.</string>
+    <string name="help_text_read_expire">Коли запит на читання вперше надходить у планувальник io, йому призначається кінцевий термін, який є поточним часом + значення read_expire у мілісекундах.</string>
+    <string name="help_text_rgb_values">Дозволяє змінювати кольори RGB (= червоний, зелений, синій) вашого дисплея, щоб відкалібрувати його.</string>
+    <string name="help_text_sampling_down_factor">Цей параметр контролює швидкість, з якою ядро ​​приймає рішення про те, коли зменшити частоту під час роботи на максимальній швидкості. Якщо встановлено значення 1 (за замовчуванням), рішення про переоцінку навантаження приймаються з однаковим інтервалом незалежно від поточної тактової частоти. Але якщо значення більше 1 (наприклад, 100), воно діє як множник для інтервалу планування для переоцінки навантаження, коли ЦП працює на максимальній швидкості через високе навантаження.</string>
+    <string name="help_text_sampling_rate">Вимірюється в США (10^-6 секунд), це те, як часто ви хочете, щоб ядро ​​дивилося на використання ЦП і приймало рішення про те, що робити з частотою.</string>
+    <string name="help_text_set_governor">Регулятор ЦП керує тим, як ваш ЦП масштабує свою частоту. Вибір іншого регулятора може значно вплинути на продуктивність і термін служби батареї.</string>
+    <string name="help_text_set_gpu_governor">Дозволяє змінювати регулятор GPU. Він керує масштабуванням частоти графічного процесора та може мати великий вплив на продуктивність графічного процесора.</string>
+    <string name="help_text_single_core_threshold" formatted="false">Поріг для підключення одного ядра до іншого. Наприклад, якщо ядро ​​1 на 100%, а середнє навантаження перевищує 60%, ядро ​​3 підключиться до мережі.</string>
+    <string name="help_text_stat_interval">Інтервал часу, між яким оновлюється статистика віртуальної машини. За замовчуванням 1 секунда.</string>
+    <string name="help_text_swappiness">Цей елемент керування використовується для визначення того, наскільки агресивно ядро ​​буде замінювати сторінки пам’яті. Вищі значення підвищать агресивність, тоді як нижчі значення зменшать кількість обміну. Значення 0 вказує ядру не ініціювати обмін, доки кількість вільних сторінок і сторінок із файловою підтримкою не стане меншою за верхню позначку в зоні.</string>
+    <string name="help_text_sweeptowake">Виводить пристрій з режиму сну, коли ви проводите по екрану, коли він вимкнений. Доступність залежить від підтримки ядра.</string>
+    <string name="help_text_target_loads">При або вище цього значення регулятор буде збільшувати частоту. Менші значення призводять до вищої швидкості ЦП. Прикладом може бути \'85 1200000:80 1500000:95\'. Це означає, що загальне цільове навантаження становить 85, але якщо частота вища за 1,2 ГГц, це 80. Те саме стосується 1,5 ГГц, але з 95.</string>
+    <string name="help_text_tcp_congestion">Виберіть алгоритм контролю перевантаження мережі. Зазвичай за умовчанням використовується \'cubic\' або \'reno\'.</string>
+    <string name="help_text_temp_threshold">Температурний поріг, коли ваш процесор починає гальмувати, щоб захистити його від перегріву. Зазвичай це значення в °C.</string>
+    <string name="help_text_timer_rate">Частота дискретизації таймера, яка використовується для збільшення частоти</string>
+    <string name="help_text_timer_slack">Максимальний додатковий час очікування в режимі очікування, поза timer_rate, на швидкостях, вищих за мінімальні, перед пробудженням, щоб зменшити швидкість, або -1, якщо це непотрібно.</string>
+    <string name="help_text_up_frequency">Мінімальна частота ЦП для запуску операцій гарячого підключення. Якщо поточна частота нижча за це значення, операції гарячого підключення виконуватися не будуть. За замовчуванням встановлено максимальну частоту.</string>
+    <string name="help_text_up_threshold">Визначає, яким має бути середнє використання ЦП між вибірками \'sampling_rate\', щоб ядро ​​вирішило, чи слід збільшувати частоту.</string>
+    <string name="help_text_vfs_cache_pressure">Це відсоткове значення контролює тенденцію ядра звільняти пам’ять, яка використовується для кешування об’єктів каталогу та inode.</string>
+    <string name="help_text_voltage_values">У цьому підменю ви можете змінити значення напруги вашого ЦП. Це може збільшити термін служби батареї або дозволить процесору працювати на вищих частотах. Однак це може спричинити серйозні проблеми, якщо перестаратися.</string>
+    <string name="help_text_volume_boost">Це значення посилює гучність динаміків або навушників.</string>
+    <string name="help_text_write_expire">Подібно до read_expire, але для запису.</string>
+    <string name="help_text_writeback">Динамічно контролює затримку зворотного запису кешованих даних. Це може підвищити продуктивність або час автономної роботи, але може збільшити ризик втрати даних після збою.</string>
+    <string name="help_text_writes_starved">Тож writes_starved контролює, скільки разів ми надаємо перевагу читанню над записом. Коли це було зроблено writes_starved кілька разів, ми відправляємо деякі записи на основі тих самих критеріїв, що й читання.</string>
+    <string name="help_text_vtg_level">Цей параметр контролює вібраційний модуль вашого телефону. Менше значення зазвичай означає більш м’яку вібрацію.</string>
+</resources>
