@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,9 +22,11 @@ import android.widget.Toast;
 import com.aero.control.AeroActivity;
 import com.aero.control.R;
 import com.aero.control.helpers.Android.CustomListPreference;
+import com.aero.control.helpers.Android.CustomTextPreference;
 import com.aero.control.helpers.FileManager.FileManager;
 import com.aero.control.helpers.FileManager.FileManagerListener;
 import com.aero.control.helpers.FilePath;
+import com.aero.control.helpers.LedController;
 import com.aero.control.helpers.PreferenceHandler;
 import com.aero.control.helpers.SysfsResult;
 import com.github.amlcurran.showcaseview.ShowcaseView;
@@ -32,16 +36,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Fragment for miscellaneous system settings including TCP congestion control,
- * vibrator strength, thermal throttling, and headset volume boost. Provides
- * save/apply functionality for boot and profile persistence.
+ * vibrator strength, thermal throttling, headset volume boost, and Motorola Defy
+ * hardware controls. Provides save/apply functionality for boot and profile persistence.
  */
 public class MiscSettingsFragment extends PlaceHolderFragment implements FileManagerListener {
     public static final String FILENAME_MISC = "firstrun_misc";
     private static final String MISC_SETTINGS_STORAGE = "miscSettingsStorage";
+    // Only allow characters that legitimate property/sysfs values contain to prevent
+    // shell metacharacter injection in root commands.
+    private static final Pattern SAFE_PROP_VALUE = Pattern.compile("^[a-zA-Z0-9_.:-]{1,64}$");
+
     private PreferenceCategory PrefCat;
+    private PreferenceCategory mDefyPartsCat;
+    private CustomTextPreference button_brightness;
+    private CustomListPreference led_charging;
+    private CustomListPreference multi_touch;
+
     private Context mContext;
     private Dialog mFileDialog;
     private PreferenceHandler mHandler;
@@ -60,11 +74,212 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         addPreferencesFromResource(R.layout.empty_preference);
         this.root = getPreferenceScreen();
         this.mContext = getActivity();
-        Context context = this.mContext;
-        Context context2 = this.mContext;
-        this.mMiscSettings = context.getSharedPreferences(MISC_SETTINGS_STORAGE, 0);
+        this.mMiscSettings = this.mContext.getSharedPreferences(MISC_SETTINGS_STORAGE, 0);
         loadParalist();
         loadSettings();
+		if ("MB525".equals(Build.MODEL)
+				|| "MB526".equals(Build.MODEL)
+				|| "DROIDX".equals(Build.MODEL)) {
+	        initDefyParts();
+		}
+    }
+
+    /**
+     * Builds and populates the Defy/Droid X hardware preferences category and loads current
+     * sysfs values off the UI thread.
+     */
+    private void initDefyParts() {
+        if (this.mContext == null || this.root == null) {
+            return;
+        }
+        if (this.mDefyPartsCat != null) {
+            this.root.removePreference(this.mDefyPartsCat);
+        }
+
+        this.mDefyPartsCat = new PreferenceCategory(this.mContext);
+        this.mDefyPartsCat.setKey("defy_parts");
+        this.mDefyPartsCat.setTitle("Defy/Droid X Parts");
+        this.root.addPreference(this.mDefyPartsCat);
+
+        this.led_charging = new CustomListPreference(this.mContext);
+        this.led_charging.setName("led_charging");
+        this.led_charging.setTitle(R.string.pref_charging_led);
+        this.led_charging.setDialogTitle(R.string.pref_charging_led);
+        this.led_charging.setOrder(1);
+        this.led_charging.setEnabled(false);
+        this.mDefyPartsCat.addPreference(this.led_charging);
+
+        this.button_brightness = new CustomTextPreference(this.mContext);
+        this.button_brightness.setName("button_brightness");
+        this.button_brightness.setHelpLookupKey("button_brightness");
+        this.button_brightness.setPrefText(this.mContext.getText(R.string.pref_button_brightness).toString());
+        this.button_brightness.setDialogTitle(this.mContext.getText(R.string.pref_button_brightness).toString());
+        this.button_brightness.setTitle(this.mContext.getText(R.string.pref_button_brightness).toString());
+        this.button_brightness.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
+        this.button_brightness.setOrder(5);
+        this.button_brightness.setEnabled(false);
+        this.mDefyPartsCat.addPreference(this.button_brightness);
+
+        this.multi_touch = new CustomListPreference(this.mContext);
+        this.multi_touch.setName("multi_touch");
+        this.multi_touch.setTitle(R.string.pref_multitouch);
+        this.multi_touch.setDialogTitle(R.string.pref_multitouch);
+        this.multi_touch.setOrder(10);
+        this.multi_touch.setEnabled(false);
+        this.mDefyPartsCat.addPreference(this.multi_touch);
+
+        if ("DROIDX".equals(Build.MODEL)) {
+            this.led_charging.setEntryValues(R.array.charge_led_mode_values_droidx);
+            this.led_charging.setEntries(R.array.charge_led_mode_entries_droidx);
+        } else {
+            this.led_charging.setEntryValues(R.array.charge_led_mode_values);
+            this.led_charging.setEntries(R.array.charge_led_mode_entries);
+        }
+        this.multi_touch.setEntryValues(R.array.touch_point_values);
+        this.multi_touch.setEntries(R.array.touch_point_values);
+
+        this.led_charging.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                if (o == null) {
+                    return false;
+                }
+                String value = o.toString();
+                if (!changeDefyPreference(preference, value, LedController.Property.CHARGING_MODE)) {
+                    return false;
+                }
+                led_charging.setValue(value);
+                led_charging.setSummary(value);
+                return true;
+            }
+        });
+
+        this.multi_touch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                if (o == null) {
+                    return false;
+                }
+                String value = o.toString();
+                if (!changeDefyPreference(preference, value, LedController.Property.MULTI_TOUCH_POINTS)) {
+                    return false;
+                }
+                multi_touch.setValue(value);
+                multi_touch.setSummary(value);
+                return true;
+            }
+        });
+
+        this.button_brightness.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                if (o == null) {
+                    return false;
+                }
+                String value = o.toString();
+                if (!changeDefyPreference(preference, value, LedController.Property.BUTTON_BRIGHTNESS)) {
+                    return false;
+                }
+                button_brightness.setText(value);
+                button_brightness.setPrefSummary(value);
+                return true;
+            }
+        });
+
+        final String unavailableMarker = this.mContext.getText(R.string.unavailable).toString();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (AeroActivity.hardware == null || AeroActivity.hardware.led() == null) {
+                    return;
+                }
+                final SysfsResult<String> charger =
+                        AeroActivity.hardware.led().read(LedController.Property.CHARGING_MODE);
+                final SysfsResult<String> multitouch =
+                        AeroActivity.hardware.led().read(LedController.Property.MULTI_TOUCH_POINTS);
+                final SysfsResult<String> brightness =
+                        AeroActivity.hardware.led().read(LedController.Property.BUTTON_BRIGHTNESS);
+
+                if (!isAdded() || getActivity() == null) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded()) {
+                            return;
+                        }
+                        if (charger.isSuccess()) {
+                            led_charging.setEnabled(true);
+                            led_charging.setValue(charger.getValue());
+                            led_charging.setSummary(charger.getValue());
+                        } else {
+                            led_charging.setEnabled(false);
+                            led_charging.setSummary(unavailableMarker);
+                        }
+
+                        if (multitouch.isSuccess()) {
+                            multi_touch.setEnabled(true);
+                            multi_touch.setValue(multitouch.getValue());
+                            multi_touch.setSummary(multitouch.getValue());
+                        } else {
+                            multi_touch.setEnabled(false);
+                            multi_touch.setSummary(unavailableMarker);
+                        }
+
+                        if (brightness.isSuccess()) {
+                            button_brightness.setEnabled(true);
+                            button_brightness.setText(brightness.getValue());
+                            button_brightness.setPrefSummary(brightness.getValue());
+                            button_brightness.setSummary(brightness.getValue());
+                        } else {
+                            button_brightness.setEnabled(false);
+                            button_brightness.setSummary(unavailableMarker);
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * Validates and writes a Defy hardware property through the LED controller.
+     */
+    private boolean changeDefyPreference(final Preference preference, final Object o,
+            final LedController.Property property) {
+        final String value = o == null ? null : o.toString();
+        if (value == null || !SAFE_PROP_VALUE.matcher(value).matches() || property == null) {
+            if (isAdded() && getActivity() != null) {
+                Toast.makeText(getActivity(), R.string.error_detected, Toast.LENGTH_SHORT).show();
+            }
+            return false;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (AeroActivity.hardware == null || AeroActivity.hardware.led() == null) {
+                    return;
+                }
+                final SysfsResult<String> result = AeroActivity.hardware.led().write(property, value);
+                if (!isAdded() || getActivity() == null) {
+                    return;
+                }
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isAdded() || getActivity() == null) {
+                            return;
+                        }
+                        if (!result.isSuccess()) {
+                            Toast.makeText(getActivity(), R.string.storage_operation_failed, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        Toast.makeText(getActivity(), R.string.need_reboot, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
+        return true;
     }
 
     @Override // android.app.Fragment
@@ -86,33 +301,27 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
                         allMiscSettings.add(this.mMiscCat.getPreference(i).getTitle().toString());
                     }
                     if (allMiscSettings.size() == 0) {
-                        Toast.makeText(this.mContext, R.string.pref_misc_no_settings, 1).show();
+                        Toast.makeText(this.mContext, R.string.pref_misc_no_settings, Toast.LENGTH_LONG).show();
                     } else {
-                        for (String str : allMiscSettings) {
+                        for (int idx = 0; idx < allMiscSettings.size(); idx++) {
                             miscSettingsDelete.add(false);
                         }
-                        final String[] preferenceData = (String[]) allMiscSettings.toArray(new String[0]);
+                        final String[] preferenceData = allMiscSettings.toArray(new String[0]);
                         dialog.setTitle(R.string.pref_misc_delete_misc);
                         dialog.setIcon(R.drawable.warning);
-                        dialog.setMultiChoiceItems(preferenceData, (boolean[]) null, new DialogInterface.OnMultiChoiceClickListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.3
-                            @Override // android.content.DialogInterface.OnMultiChoiceClickListener
+                        dialog.setMultiChoiceItems(preferenceData, (boolean[]) null, new DialogInterface.OnMultiChoiceClickListener() {
+                            @Override
                             public void onClick(DialogInterface dialogInterface, int i2, boolean b) {
-                                if (b) {
-                                    miscSettingsDelete.add(i2, true);
-                                } else {
-                                    miscSettingsDelete.add(i2, false);
-                                }
+                                miscSettingsDelete.set(i2, b);
                             }
-                        }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.2
-                            @Override // android.content.DialogInterface.OnClickListener
+                        }).setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+                            @Override
                             public void onClick(DialogInterface dialog2, int id) {
                                 SharedPreferences.Editor editor = MiscSettingsFragment.this.mMiscSettings.edit();
                                 SharedPreferences.Editor aero_editor = MiscSettingsFragment.this.mPrefs.edit();
                                 Map<String, ?> keys = MiscSettingsFragment.this.mMiscSettings.getAll();
-                                int i2 = 0;
-                                String[] arr$ = preferenceData;
-                                for (String str2 : arr$) {
-                                    if (((Boolean) miscSettingsDelete.get(i2)).booleanValue()) {
+                                for (int i2 = 0; i2 < preferenceData.length; i2++) {
+                                    if (miscSettingsDelete.get(i2).booleanValue()) {
                                         for (Map.Entry<String, ?> entry : keys.entrySet()) {
                                             String key = entry.getKey();
                                             String value = entry.getValue().toString();
@@ -122,14 +331,13 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
                                             }
                                         }
                                     }
-                                    i2++;
                                 }
                                 MiscSettingsFragment.this.root.removePreference(MiscSettingsFragment.this.mMiscCat);
                                 MiscSettingsFragment.this.mMiscCat = null;
                                 MiscSettingsFragment.this.initMisc();
                             }
-                        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.1
-                            @Override // android.content.DialogInterface.OnClickListener
+                        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
                             public void onClick(DialogInterface dialog2, int id) {
                             }
                         });
@@ -180,8 +388,8 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
         } catch (IOException e) {
             Log.e("Aero", "Could not save file. ", e);
         }
-        Target homeTarget = new Target() { // from class: com.aero.control.fragments.MiscSettingsFragment.4
-            @Override // com.github.amlcurran.showcaseview.targets.Target
+        Target homeTarget = new Target() {
+            @Override
             public Point getPoint() {
                 int actionBarSize = 96;
                 try {
@@ -207,7 +415,7 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
     public void OnFileClicked(File file) {
         for (int i = 0; i < this.mMiscCat.getPreferenceCount(); i++) {
             if (file.toString().contains(this.mMiscCat.getPreference(i).getTitle().toString())) {
-                Toast.makeText(this.mContext, "This tunable was already added!", 1).show();
+                Toast.makeText(this.mContext, "This tunable was already added!", Toast.LENGTH_LONG).show();
                 this.mFileDialog.dismiss();
                 return;
             }
@@ -233,7 +441,6 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
      */
     public void initMisc() {
         Map<String, ?> keys = this.mMiscSettings.getAll();
-        int i = 0;
         if (this.mMiscCat == null) {
             this.mMiscCat = new PreferenceCategory(this.mContext);
             this.mMiscCat.setTitle(R.string.pref_misc_your_settings);
@@ -242,7 +449,6 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
             for (Map.Entry<String, ?> entry : keys.entrySet()) {
                 String key = entry.getKey();
                 this.mHandler.genPrefFromSingleFile(key);
-                i++;
             }
         } else {
             this.root.addPreference(this.mMiscCat);
@@ -306,8 +512,8 @@ public class MiscSettingsFragment extends PlaceHolderFragment implements FileMan
                     + (!currentControl.isSuccess()
                     ? currentControl.getError() : availableControls.getError()));
         }
-        tcpPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() { // from class: com.aero.control.fragments.MiscSettingsFragment.5
-            @Override // android.preference.Preference.OnPreferenceChangeListener
+        tcpPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 final String a = (String) o;
                 final String previousValue = tcpPreference.getValue();
