@@ -45,14 +45,14 @@
     <string name="slider_cpu_settings">Продуктивність ЦП</string>
     <string name="slider_defy_parts">Частини Defy/Droid X</string>
     <string name="slider_gpu_settings">Керування GPU</string>
-    <string name="slider_memory_settings">Налаштування пам'яті</string>
+    <string name="slider_memory_settings">Налаштування пам\'яті</string>
     <string name="slider_misc_settings">Різне Налаштування</string>
     <string name="slider_overview">Огляд</string>
     <string name="overview_section_system">система</string>
     <string name="overview_section_performance">Продуктивність</string>
     <string name="overview_section_temperatures">температури</string>
     <string name="overview_section_battery">Акумулятор</string>
-    <string name="overview_section_memory">Пам'ять</string>
+    <string name="overview_section_memory">Пам\'ять</string>
     <string name="overview_section_configuration">Конфігурація</string>
     <string name="overview_device">пристрій</string>
     <string name="overview_uptime">Час роботи</string>
@@ -90,7 +90,7 @@
     <!-- ========================================================= -->
     <!-- Overview & Live Hardware Information                      -->
     <!-- ========================================================= -->
-    <string name="available_memory">Пам'ять:</string>
+    <string name="available_memory">Пам\'ять:</string>
     <string name="storage_permission_required">Для цієї операції потрібен дозвіл на зберігання.</string>
     <string name="storage_operation_failed">Неможливо отримати доступ до спільного сховища.</string>
     <string name="hardware_operation_failed">Неможливо застосувати налаштування апаратного забезпечення.</string>
@@ -105,7 +105,7 @@
     <!-- ========================================================= -->
     <!-- Profile & Per-App Control                                  -->
     <!-- ========================================================= -->
-    <string name="add_a_name">Ім'я профілю</string>
+    <string name="add_a_name">Ім\'я профілю</string>
     <string name="apply_profile">Застосування профілю окремого додатка:</string>
     <string name="define_a_name">Визначте назву для цього профілю.</string>
     <string name="nothing_added_yet">Ой! Ви ще не додали жодного профілю.</string>
@@ -183,9 +183,9 @@
     <string name="pref_io_scheduler_no_parameter">Схоже, для цього планувальника немає параметрів?</string>
     <string name="pref_ksm">КСМ</string>
     <string name="pref_ksm_summary">Повністю вмикає або вимикає демон KSM.</string>
-    <string name="pref_low_memory">Мало пам'яті</string>
+    <string name="pref_low_memory">Мало пам\'яті</string>
     <string name="pref_low_memory_summary">Поточне значення ro.config.low_ram: %1$s</string>
-    <string name="pref_memory_settings">Налаштування пам'яті</string>
+    <string name="pref_memory_settings">Налаштування пам\'яті</string>
     <string name="pref_readahead">Розмір читання наперед</string>
     <string name="pref_readahead_dialog">Розмір попереднього читання в кБ</string>
 
@@ -243,7 +243,7 @@
     <string name="pref_perapp_monitor_summary">Увімкніть або вимкніть App Monitor.</string>
     <string name="pref_perapp_toasts">Тости для кожної програми</string>
     <string name="pref_perapp_toasts_summary">Увімкніть або вимкніть сповіщення про тости.</string>
-    <string name="pref_profile_change_name">Встановіть інше ім'я</string>
+    <string name="pref_profile_change_name">Встановіть інше ім\'я</string>
     <string name="pref_profile_change_name_summary">Змініть назву свого профілю.</string>
     <string name="pref_profile_deleted">Видалено</string>
     <string name="pref_profile_not_deleted">Не вдалося видалити профіль</string>
@@ -251,7 +251,7 @@
     <string name="pref_profile_import">Імпорт</string>
     <string name="pref_profile_import_select">Виберіть профілі для імпорту</string>
     <string name="pref_profile_invalid_name">Використовуйте 1–64 літери, цифри, пробіли, підкреслення або дефіси.</string>
-    <string name="pref_profile_name_exists">Це ім'я вже існує.</string>
+    <string name="pref_profile_name_exists">Це ім\'я вже існує.</string>
     <string name="pref_profile_no_import">Я не міг знайти нічого для імпорту.</string>
     <string name="pref_profile_per_app">Виберіть свої програми</string>
     <string name="pref_profile_reset">Скинути поточний профіль</string>
@@ -279,7 +279,7 @@
     <string name="pref_gpu_frequency">Частота GPU</string>
     <string name="pref_no_app_monitor_data">Дані ще не знайдено, перевірте через кілька хвилин.</string>
     <string name="pref_app_monitor_disabled">App Monitor вимкнено, увімкніть його в налаштуваннях, щоб відображати дані.</string>
-    <string name="pref_ram_usage">Вільна оперативна пам'ять</string>
+    <string name="pref_ram_usage">Вільна оперативна пам\'ять</string>
     <string name="pref_reset_stats_for_app">Ви впевнені, що бажаєте скинути статистику для цієї програми?</string>
     <string name="pref_app_monitor_average_summary">%1$s %2$s - %3$s</string>
     <string name="pref_temp_usage">температура</string>
@@ -351,7 +351,7 @@
     <string name="showcase_memory_fragment_trim">Параметри обрізки</string>
     <string name="showcase_memory_fragment_trim_summary">Щоб підтримувати продуктивність пристрою, ви можете скоротити кілька частин вашої операційної системи. Це може зайняти деякий час, особливо якщо ви зберегли багато даних.</string>
     <string name="showcase_perapp_profiles">Призначте профілі своїм програмам!</string>
-    <string name="showcase_perapp_profiles_summary">Хочете, щоб певний профіль застосовувався лише до певних програм? Не проблема, клацніть праворуч на маленькій піктограмі та призначте свій профіль улюбленим програмам. Обов'язково ввімкніть послугу в налаштуваннях.</string>
+    <string name="showcase_perapp_profiles_summary">Хочете, щоб певний профіль застосовувався лише до певних програм? Не проблема, клацніть праворуч на маленькій піктограмі та призначте свій профіль улюбленим програмам. Обов\'язково ввімкніть послугу в налаштуваннях.</string>
     <string name="showcase_profile_fragment">Додайте профілі!</string>
     <string name="showcase_profile_fragment_summary">Просто натисніть цю маленьку кнопку та додайте профіль. Усі ваші поточні налаштування будуть збережені в цьому новому профілі. Якщо ви додали кілька профілів, ви можете просто завантажити їх, натиснувши на них.</string>
     <string name="showcase_statistics_fragment">Оновіть свою статистику</string>
@@ -381,7 +381,7 @@
     <string name="help_text_block_dump">block_dump вмикає налагодження блоку вводу/виводу, якщо встановлено ненульове значення.</string>
     <string name="help_text_button_brightness">Встановлює рівень яскравості підсвічування для ємнісних кнопок.</string>
     <string name="help_text_boostpulse_duration">Тривалість посилення вхідного сигналу.</string>
-    <string name="help_text_dalvik_settings">Це підменю дозволяє вам взаємодіяти з віртуальною машиною вашого пристрою. В основному є варіанти, пов'язані з пам'яттю.</string>
+    <string name="help_text_dalvik_settings">Це підменю дозволяє вам взаємодіяти з віртуальною машиною вашого пристрою. В основному є варіанти, пов\'язані з пам\'яттю.</string>
     <string name="help_text_debug">Прапор налагодження, призначений для розробника. Тут нічого робити!</string>
     <string name="help_text_dirty_background_bytes">Містить обсяг брудної пам’яті, з якого фонові потоки очищення ядра почнуть зворотний запис.\n Примітка: dirty_background_bytes є аналогом dirty_background_ratio. Одночасно можна вказати лише один із них. Коли записується sysctl, він негайно розглядається як оцінка обмежень брудної пам’яті, а інший відображається як 0 під час читання.</string>
     <string name="help_text_dirty_background_ratio">Містить у відсотках від загальної доступної пам’яті, яка містить вільні сторінки та сторінки, які можна відновити, кількість сторінок, на яких фонові потоки очищення ядра почнуть записувати брудні дані.</string>
@@ -390,7 +390,7 @@
     <string name="help_text_dirty_ratio">Містить, як відсоток від загальної доступної пам’яті, яка містить вільні сторінки та сторінки, які можна відновити, кількість сторінок, на якій процес, який генерує записи на диск, сам почне записувати брудні дані.</string>
     <string name="help_text_dirty_writeback_centisecs">Потоки очищення ядра періодично прокидаються та записують \'старі\' дані на диск. Цей параметр виражає інтервал між цими пробудженнями в сотих частках секунди.\nУстановлення цього значення на нуль повністю вимикає періодичний зворотний запис.</string>
     <string name="help_text_display_control">Регулює колірний профіль дисплея. Доступні режими та їхні ефекти залежать від пристрою та ядра.</string>
-    <string name="help_text_drop_caches">Запис у це призведе до того, що ядро ​​видалить чисті кеші, а також відновлені об’єкти, такі як dentries та inode. Після падіння їх пам'ять стає вільною. (1 = вільний кеш сторінки, 2 = вільні об’єкти плити, які можна відновити, 3 = вільні об’єкти плити та кеш сторінки)</string>
+    <string name="help_text_drop_caches">Запис у це призведе до того, що ядро ​​видалить чисті кеші, а також відновлені об’єкти, такі як dentries та inode. Після падіння їх пам\'ять стає вільною. (1 = вільний кеш сторінки, 2 = вільні об’єкти плити, які можна відновити, 3 = вільні об’єкти плити та кеш сторінки)</string>
     <string name="help_text_doubletaptowake">Виводить пристрій з режиму сну, коли ви двічі торкаєтеся вимкненого екрана. Доступність залежить від підтримки ядра.</string>
     <string name="help_text_dyn_fsync">Динамічно вимикає fsync, коли екран увімкнено, і відновлює його, коли екран вимикається. Це може покращити продуктивність, але може збільшити ризик втрати даних після збою.</string>
     <string name="help_text_entropy_settings">Пул ентропії зберігає випадкові числа для різних програм. Вищі значення для читання/запису можуть допомогти в деяких випадках, але також можуть збільшити розряд батареї. Загалом ваш пул завжди має бути вище 200 у будь-який момент часу.</string>

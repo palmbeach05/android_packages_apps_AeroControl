@@ -9,7 +9,7 @@
     <string name="app_name">Controllo aerodinamico</string>
     <string name="apply">Fare domanda a</string>
     <string name="average">Media</string>
-    <string name="back_for_close">Premi nuovamente Indietro per chiudere l'app.</string>
+    <string name="back_for_close">Premi nuovamente Indietro per chiudere l\'app.</string>
     <string name="cancel">Cancellare</string>
     <string name="disabled">Disabilitato</string>
     <string name="dont_show_again">Non mostrarlo più</string>
@@ -40,7 +40,7 @@
     <!-- ========================================================= -->
     <string name="drawer_close">Chiudi il cassetto di navigazione</string>
     <string name="drawer_open">Apri il cassetto di navigazione</string>
-    <string name="slider_app_monitor">Monitoraggio dell'app</string>
+    <string name="slider_app_monitor">Monitoraggio dell\'app</string>
     <string name="slider_backup_restore">Backup/Ripristino</string>
     <string name="slider_cpu_settings">Prestazioni della CPU</string>
     <string name="slider_defy_parts">Parti di Defy/Droid X</string>
@@ -91,9 +91,9 @@
     <!-- Overview & Live Hardware Information                      -->
     <!-- ========================================================= -->
     <string name="available_memory">Memoria:</string>
-    <string name="storage_permission_required">Per questa operazione è necessaria l'autorizzazione di archiviazione.</string>
+    <string name="storage_permission_required">Per questa operazione è necessaria l\'autorizzazione di archiviazione.</string>
     <string name="storage_operation_failed">Impossibile accedere allo spazio di archiviazione condiviso.</string>
-    <string name="hardware_operation_failed">Impossibile applicare l'impostazione hardware.</string>
+    <string name="hardware_operation_failed">Impossibile applicare l\'impostazione hardware.</string>
     <string name="current_cpu_speed">Frequenza della CPU:</string>
     <string name="current_governor">Governatore:</string>
     <string name="current_governor_index">Governatore %1$d:</string>
@@ -115,14 +115,14 @@
     <string name="profile_remove">Rimuovi questo profilo</string>
     <string name="profile_remove_confirmation">Questo profilo verrà eliminato definitivamente.</string>
     <string name="delete">Eliminare</string>
-    <string name="return_to_normal">Ritorno all'utilizzo normale</string>
+    <string name="return_to_normal">Ritorno all\'utilizzo normale</string>
 
     <!-- ========================================================= -->
     <!-- CPU & Hotplug Configuration Strings                       -->
     <!-- ========================================================= -->
     <string name="perf_cpu_boost_control">Potenziamento della CPU</string>
     <string name="perf_cpu_boost_control_summary">Regola qui i parametri sintonizzabili di potenziamento della CPU</string>
-    <string name="perf_cpu_hotplug">Impostazioni dell'hotplug</string>
+    <string name="perf_cpu_hotplug">Impostazioni dell\'hotplug</string>
     <string name="perf_cpu_hotplug_driver">Driver hotplug</string>
     <string name="perf_cpu_hotplug_summary">Regolare qui il driver hotplug</string>
     <string name="perf_live_oc_uc">OC/UC in diretta</string>
@@ -142,7 +142,7 @@
     <string name="pref_cpu_governor_loading">Caricamento governatori disponibili...</string>
     <string name="pref_cpu_governor_retry">Riprovare il rilevamento del regolatore (CPU %1$s)</string>
     <string name="pref_cpu_governor_retry_summary">Riprova a leggere i governatori disponibili di questo cluster.</string>
-    <string name="pref_cpu_legacy_loading">Verifica del supporto per l'overclock della CPU legacy in corso...</string>
+    <string name="pref_cpu_legacy_loading">Verifica del supporto per l\'overclock della CPU legacy in corso...</string>
     <string name="pref_apply_to_all_cpu_clusters">Applica a tutti i cluster</string>
     <string name="pref_apply_to_all_cpu_clusters_summary">Applica le modifiche apportate ai controlli del primo cluster a ogni cluster CPU rilevato.</string>
     <string name="pref_gov_set">Impostazioni specifiche del governatore</string>
@@ -157,9 +157,9 @@
     <string name="perf_gpu_gov_settings">Impostazioni del governatore GPU</string>
     <string name="perf_gpu_gov_settings_summary">Modifica i parametri del governatore della tua GPU.</string>
     <string name="pref_gpu_control_enable">Controllo GPU</string>
-    <string name="pref_gpu_control_enable_summary">Ciò abiliterà il driver di controllo GPU. Gestisce l'overclocking/undervolting nonché alcune pianificazioni di base per la GPU.</string>
+    <string name="pref_gpu_control_enable_summary">Ciò abiliterà il driver di controllo GPU. Gestisce l\'overclocking/undervolting nonché alcune pianificazioni di base per la GPU.</string>
     <string name="pref_max_freq_gpu">Massimo. Frequenza</string>
-    <string name="pref_max_freq_gpu_summary">Ciò imposterà la frequenza massima della GPU. L'impostazione predefinita è 200 MHz.</string>
+    <string name="pref_max_freq_gpu_summary">Ciò imposterà la frequenza massima della GPU. L\'impostazione predefinita è 200 MHz.</string>
 
     <!-- ========================================================= -->
     <!-- Memory & Virtual Machine Settings                        -->
@@ -178,7 +178,7 @@
     <string name="pref_fsync_summary">Abilita o disabilita completamente FSync.</string>
     <string name="pref_fstrim">Opzione di rifinitura</string>
     <string name="pref_fstrim_no_busybox">Per questa operazione è necessario BusyBox!</string>
-    <string name="pref_fstrim_summary">Taglia diverse parti del tuo sistema! L'operazione potrebbe richiedere del tempo.</string>
+    <string name="pref_fstrim_summary">Taglia diverse parti del tuo sistema! L\'operazione potrebbe richiedere del tempo.</string>
     <string name="pref_io_scheduler">Parametro dello scheduler IO</string>
     <string name="pref_io_scheduler_no_parameter">Sembra che non ci siano parametri per questo scheduler?</string>
     <string name="pref_ksm">KSM</string>
@@ -210,7 +210,7 @@
     <string name="pref_multitouch">Punti multitouch</string>
     <string name="pref_multitouch_summary">Numero di punti multitouch.</string>
     <string name="pref_sweeptowake">Sweep2Wake</string>
-    <string name="pref_sweeptowake_summary">Potrebbe consumare la batteria un po' più del solito.</string>
+    <string name="pref_sweeptowake_summary">Potrebbe consumare la batteria un po\' più del solito.</string>
 
     <!-- ========================================================= -->
     <!-- Accessibility / Content Descriptions                      -->
@@ -226,12 +226,12 @@
     <string name="app_theme_system">Sistema: utilizza il tema Materiale del tuo dispositivo</string>
     <string name="pref_category_application">Applicazione</string>
     <string name="pref_category_per_app_profiles">Profili per app</string>
-    <string name="pref_app_theme">Tema dell'app</string>
-    <string name="pref_app_theme_summary">Definisce il tema predefinito dell'app.</string>
+    <string name="pref_app_theme">Tema dell\'app</string>
+    <string name="pref_app_theme_summary">Definisce il tema predefinito dell\'app.</string>
     <string name="pref_boot_delay">Ritardo del timer di avvio</string>
     <string name="pref_boot_delay_dialog">Ritardo in minuti</string>
     <string name="pref_finishing_settings">impostazioni finite.</string>
-    <string name="pref_lollipop_usage_warning">Tieni presente che Google ha cambiato il modo di verificare l'attuale app in primo piano per Lollipop(+). Per far funzionare il servizio PerApp sul tuo dispositivo, devi accedere alle impostazioni e abilitare l'accesso alle statistiche di utilizzo per Aero Control. Puoi revocare questo diritto in qualsiasi momento. Se ti senti pronto, clicca su Continua.</string>
+    <string name="pref_lollipop_usage_warning">Tieni presente che Google ha cambiato il modo di verificare l\'attuale app in primo piano per Lollipop(+). Per far funzionare il servizio PerApp sul tuo dispositivo, devi accedere alle impostazioni e abilitare l\'accesso alle statistiche di utilizzo per Aero Control. Puoi revocare questo diritto in qualsiasi momento. Se ti senti pronto, clicca su Continua.</string>
     <string name="pref_misc_settings">Varie Impostazioni</string>
     <string name="pref_misc_tcp_congestion">Algoritmo di congestione TCP</string>
     <string name="pref_misc_delete_misc">Elimina le tue impostazioni</string>
@@ -249,7 +249,7 @@
     <string name="pref_profile_not_deleted">Impossibile eliminare il profilo</string>
     <string name="pref_profile_export">Esportare</string>
     <string name="pref_profile_import">Importare</string>
-    <string name="pref_profile_import_select">Seleziona i profili per l'importazione</string>
+    <string name="pref_profile_import_select">Seleziona i profili per l\'importazione</string>
     <string name="pref_profile_invalid_name">Utilizza da 1 a 64 lettere, numeri, spazi, trattini bassi o trattini.</string>
     <string name="pref_profile_name_exists">Questo nome esiste già.</string>
     <string name="pref_profile_no_import">Non sono riuscito a trovare nulla da importare.</string>
@@ -262,10 +262,10 @@
     <string name="pref_reboot_check_summary">Ti informerà se il tuo dispositivo ha avuto un riavvio improvviso.</string>
     <string name="pref_reset_tutorials">Ripristina tutorial</string>
     <string name="pref_reset_tutorials_dialog">Stai per reimpostare i tutorial.</string>
-    <string name="pref_reset_tutorials_title">Non c'è modo di tornare indietro</string>
+    <string name="pref_reset_tutorials_title">Non c\'è modo di tornare indietro</string>
     <string name="pref_screen_rotation">Rotazione dello schermo</string>
     <string name="pref_screen_rotation_summary">Consenti la rotazione dello schermo quando il dispositivo viene ruotato.</string>
-    <string name="pref_set_on_boot_settings">impostazioni predefinite all'avvio.</string>
+    <string name="pref_set_on_boot_settings">impostazioni predefinite all\'avvio.</string>
 
     <!-- ========================================================= -->
     <!-- App Monitor & CPU Statistics Tracker                      -->
@@ -309,7 +309,7 @@
     <string name="not_rooted">Nessuna radice?</string>
     <string name="reboot_notifier">Sembra che il kernel sia andato in crash. Assicurati di controllare \n/proc/last_kmsg \ne di inviare questo file al tuo sviluppatore preferito. Sul serio, invialo! \n Ci scusiamo per eventuali disagi!</string>
     <string name="reboot_notifier_header">Spiacenti, ciò non dovrebbe accadere</string>
-    <string name="root_required">Sembra che il tuo dispositivo non sia rootato. Questa app non funzionerà correttamente senza root. Se pensi che sia un errore, faccelo sapere e inviami un'e-mail!</string>
+    <string name="root_required">Sembra che il tuo dispositivo non sia rootato. Questa app non funzionerà correttamente senza root. Se pensi che sia un errore, faccelo sapere e inviami un\'e-mail!</string>
 
     <!-- ========================================================= -->
     <!-- About Screen & Social / Legal Open-Source Notice Items    -->
@@ -321,7 +321,7 @@
     <string name="github">GitHub</string>
     <string name="legal">Avvisi legali</string>
     <string name="legal_dialog">Questa app è concessa in licenza con la licenza Apache. Una copia di questo può essere scaricata qui:\n http://www.apache.org/licenses/LICENSE-2.0\n ShowCase Library di Alex Curran è concessa in licenza con la licenza Apache 2.0.\n HoloGraph Library di Daniel Nadeau è concessa in licenza con la licenza Apache 2.0. </string>
-    <string name="send_email">Invia un'e-mail</string>
+    <string name="send_email">Invia un\'e-mail</string>
     <string name="xda">Discussione XDA</string>
     <string name="no_activity_for_link">Nessuna app disponibile per aprire questo collegamento</string>
 
@@ -330,11 +330,11 @@
     <!-- ========================================================= -->
     <string name="introduction_perapp_check">Vuoi abilitare questo servizio?</string>
     <string name="introduction_perapp_heading">Profili per app</string>
-    <string name="introduction_perapp_content">Scegli automaticamente le tue preferenze per le singole app. Pertanto, un servizio controlla di tanto in tanto l'app in primo piano e applica automaticamente il profilo desiderato.\n Ciò potrebbe farti risparmiare un po' di energia extra per la batteria o darti un potenziamento completo delle prestazioni della tua app preferita.</string>
-    <string name="introduction_set_on_boot_heading">Impostato all'avvio!</string>
-    <string name="introduction_set_on_boot_content">Con la piccola casella di controllo accanto a ciascuna impostazione puoi impostare i tuoi valori all'avvio individualmente. Basta controllarlo e le tue impostazioni verranno salvate. Questo definisce anche i valori del tuo profilo attuale.</string>
+    <string name="introduction_perapp_content">Scegli automaticamente le tue preferenze per le singole app. Pertanto, un servizio controlla di tanto in tanto l\'app in primo piano e applica automaticamente il profilo desiderato.\n Ciò potrebbe farti risparmiare un po\' di energia extra per la batteria o darti un potenziamento completo delle prestazioni della tua app preferita.</string>
+    <string name="introduction_set_on_boot_heading">Impostato all\'avvio!</string>
+    <string name="introduction_set_on_boot_content">Con la piccola casella di controllo accanto a ciascuna impostazione puoi impostare i tuoi valori all\'avvio individualmente. Basta controllarlo e le tue impostazioni verranno salvate. Questo definisce anche i valori del tuo profilo attuale.</string>
     <string name="introduction_tutorial_check">Vuoi abilitare i tutorial?</string>
-    <string name="introduction_tutorial_content">I tutorial vengono visualizzati durante l'utilizzo di Aero Control. Potrebbero darti qualche spunto. Se sei un utente avanzato, è improbabile che tu ne abbia bisogno.</string>
+    <string name="introduction_tutorial_content">I tutorial vengono visualizzati durante l\'utilizzo di Aero Control. Potrebbero darti qualche spunto. Se sei un utente avanzato, è improbabile che tu ne abbia bisogno.</string>
     <string name="introduction_tutorial_heading">Tutorial</string>
     <string name="introduction_welcome_content">Stiamo per iniziare. Se ti senti pronto, scorri da destra a sinistra. Potrai modificare qualsiasi impostazione da questo assistente in un secondo momento.</string>
     <string name="introduction_welcome_heading">Benvenuto in \nAero Control</string>
@@ -343,11 +343,11 @@
     <!-- Interactive App Tutorials (Showcase Views)               -->
     <!-- ========================================================= -->
     <string name="showcase_aero_fragment">Benvenuti in AeroControl!</string>
-    <string name="showcase_aero_fragment_summary">Scorri da sinistra a destra per visualizzare il riquadro di navigazione. La pagina che stai visualizzando è il pannello di panoramica principale. C'è un piccolo riassunto di alcune impostazioni del kernel. Sono live, non devi aggiornare nulla!</string>
+    <string name="showcase_aero_fragment_summary">Scorri da sinistra a destra per visualizzare il riquadro di navigazione. La pagina che stai visualizzando è il pannello di panoramica principale. C\'è un piccolo riassunto di alcune impostazioni del kernel. Sono live, non devi aggiornare nulla!</string>
     <string name="showcase_app_monitor_fragment">Monitora le tue app!</string>
     <string name="showcase_app_monitor_fragment_summary">App Monitor mostra informazioni utili sulle app utilizzate. Sarai informato una volta che avremo raccolto dati sufficienti per mostrarti qualcosa. I tuoi dati appartengono a te, nessuna informazione verrà inviata a qualcun altro.</string>
     <string name="showcase_cpu_fragment_governor">Governatore della CPU</string>
-    <string name="showcase_cpu_fragment_governor_summary">Fare clic su questo simbolo per ottenere l'accesso completo al controllo del governatore! Puoi modificare ogni parametro per ogni governatore disponibile per migliorare le prestazioni.</string>
+    <string name="showcase_cpu_fragment_governor_summary">Fare clic su questo simbolo per ottenere l\'accesso completo al controllo del governatore! Puoi modificare ogni parametro per ogni governatore disponibile per migliorare le prestazioni.</string>
     <string name="showcase_memory_fragment_trim">Opzioni di ritaglio</string>
     <string name="showcase_memory_fragment_trim_summary">Per mantenere le prestazioni del dispositivo, puoi tagliare diverse parti del tuo sistema operativo. Questa operazione può richiedere del tempo, soprattutto se hai archiviato molti dati.</string>
     <string name="showcase_perapp_profiles">Assegna profili alle tue app!</string>
@@ -357,7 +357,7 @@
     <string name="showcase_statistics_fragment">Aggiorna le tue statistiche</string>
     <string name="showcase_statistics_fragment_summary">Questo pannello ti mostrerà le statistiche attuali sul consumo di tempo della CPU. Visualizza per quanto tempo il tuo dispositivo ha trascorso del tempo in ciascuna frequenza della CPU. Potresti volerlo controllare più tardi e vedere se il tuo dispositivo funziona come dovrebbe.</string>
     <string name="showcase_your_settings">Le tue impostazioni</string>
-    <string name="showcase_your_settings_summary">Fare clic su questo simbolo per ottenere un semplice file manager. Puoi scegliere qualsiasi file desideri e aggiungere i tuoi parametri sintonizzabili. Con l'icona a sinistra puoi eliminare quelle impostazioni.</string>
+    <string name="showcase_your_settings_summary">Fare clic su questo simbolo per ottenere un semplice file manager. Puoi scegliere qualsiasi file desideri e aggiungere i tuoi parametri sintonizzabili. Con l\'icona a sinistra puoi eliminare quelle impostazioni.</string>
 
     <!-- ========================================================= -->
     <!-- Easter Egg Loading Jokes                                   -->
@@ -378,82 +378,82 @@
     <string name="help_text_all_cpus_threshold">La soglia per il carico medio di tutte le CPU attualmente online per connettere il core successivo. Se si abbassa questo valore, i core potranno essere online più facilmente.</string>
     <string name="help_text_amp">Questo valore consente di aumentare o diminuire la forza del modulo di vibrazione. Di solito 100 è il massimo.</string>
     <string name="help_text_battery_saver">Se abilitato (1), solo un core rimarrà attivo non appena si spegne lo schermo. Se riscontri una qualità audio strana mentre lo schermo è spento, prova a spegnerlo tramite 0. Ciò consentirà a entrambi i core di rimanere attivi durante la sospensione.</string>
-    <string name="help_text_block_dump">block_dump abilita il debug dell'I/O del blocco quando impostato su un valore diverso da zero.</string>
+    <string name="help_text_block_dump">block_dump abilita il debug dell\'I/O del blocco quando impostato su un valore diverso da zero.</string>
     <string name="help_text_button_brightness">Imposta il livello di luminosità della retroilluminazione per i pulsanti capacitivi.</string>
-    <string name="help_text_boostpulse_duration">La durata del potenziamento dell'input.</string>
+    <string name="help_text_boostpulse_duration">La durata del potenziamento dell\'input.</string>
     <string name="help_text_dalvik_settings">Questo sottomenu ti consente di interagire con la macchina virtuale del tuo dispositivo. Principalmente ci sono opzioni relative alla memoria.</string>
     <string name="help_text_debug">Un flag di debug destinato allo sviluppatore. Niente da fare qui!</string>
-    <string name="help_text_dirty_background_bytes">Contiene la quantità di memoria sporca alla quale i thread di flusher del kernel in background inizieranno il writeback.\n Nota: dirty_ background_bytes è la controparte di dirty_ background_ratio. È possibile specificarne solo uno alla volta. Quando viene scritto un sysctl, viene immediatamente considerato per valutare i limiti di memoria sporchi e l'altro appare come 0 quando viene letto.</string>
+    <string name="help_text_dirty_background_bytes">Contiene la quantità di memoria sporca alla quale i thread di flusher del kernel in background inizieranno il writeback.\n Nota: dirty_ background_bytes è la controparte di dirty_ background_ratio. È possibile specificarne solo uno alla volta. Quando viene scritto un sysctl, viene immediatamente considerato per valutare i limiti di memoria sporchi e l\'altro appare come 0 quando viene letto.</string>
     <string name="help_text_dirty_background_ratio">Contiene, come percentuale della memoria totale disponibile che contiene pagine libere e pagine recuperabili, il numero di pagine in cui i thread di lavaggio del kernel in background inizieranno a scrivere i dati sporchi.</string>
     <string name="help_text_dirty_bytes">Contiene la quantità di memoria sporca alla quale un processo che genera scritture su disco inizierà esso stesso il writeback.\nNota: il valore minimo consentito per dirty_bytes è due pagine (in byte); qualsiasi valore inferiore a questo limite verrà ignorato e verrà mantenuta la vecchia configurazione.</string>
     <string name="help_text_dirty_expire_centisecs">Questo parametro sintonizzabile viene utilizzato per definire quando i dati sporchi sono abbastanza vecchi da poter essere cancellati dai thread di flusher del kernel. È espresso in centesimi di secondo. I dati che sono rimasti sporchi in memoria per un periodo più lungo di questo intervallo verranno scritti la prossima volta che si riattiva un thread di flusher.</string>
     <string name="help_text_dirty_ratio">Contiene, come percentuale della memoria totale disponibile che contiene pagine libere e pagine recuperabili, il numero di pagine in cui un processo che sta generando scritture su disco inizierà esso stesso a scrivere dati sporchi.</string>
-    <string name="help_text_dirty_writeback_centisecs">I thread di lavaggio del kernel si attiveranno periodicamente e scriveranno i dati "vecchi" sul disco. Questo parametro sintonizzabile esprime l'intervallo tra questi risvegli, in centesimi di secondo.\nImpostandolo su zero si disabilita del tutto il writeback periodico.</string>
+    <string name="help_text_dirty_writeback_centisecs">I thread di lavaggio del kernel si attiveranno periodicamente e scriveranno i dati "vecchi" sul disco. Questo parametro sintonizzabile esprime l\'intervallo tra questi risvegli, in centesimi di secondo.\nImpostandolo su zero si disabilita del tutto il writeback periodico.</string>
     <string name="help_text_display_control">Regola il profilo colore del display. Le modalità disponibili e i loro effetti dipendono dal dispositivo e dal kernel.</string>
     <string name="help_text_drop_caches">La scrittura di questo farà sì che il kernel elimini cache pulite, nonché oggetti lastra recuperabili come denterie e inode. Una volta abbandonati, la loro memoria diventa libera. (1 = cache della pagina libera, 2 = oggetti lastra recuperabili gratuiti, 3 = oggetti lastra gratuiti e cache della pagina)</string>
     <string name="help_text_doubletaptowake">Riattiva il dispositivo quando si tocca due volte lo schermo mentre è spento. La disponibilità dipende dal supporto del kernel.</string>
     <string name="help_text_dyn_fsync">Disabilita dinamicamente fsync mentre lo schermo è acceso e lo ripristina quando lo schermo si spegne. Ciò può migliorare le prestazioni, ma può aumentare il rischio di perdita di dati dopo un arresto anomalo.</string>
     <string name="help_text_entropy_settings">Il pool di entropia memorizza numeri casuali per varie applicazioni. Valori più alti per lettura/scrittura possono aiutare in alcuni casi, ma possono anche aumentare il consumo della batteria. In generale, il tuo pool dovrebbe essere sempre superiore a 200 in qualsiasi momento.</string>
-    <string name="help_text_extfrag_threshold">Questo parametro influenza se il kernel compatterà la memoria o dirigerà il recupero per soddisfare un'allocazione di ordine superiore. I valori che tendono verso 0 implicano che le allocazioni fallirebbero a causa della mancanza di memoria, i valori verso 1000 implicano che i fallimenti sono dovuti alla frammentazione e -1 implica che l'allocazione avrà successo purché vengano rispettati i limiti.</string>
-    <string name="help_text_extra_free_kbytes">Questo parametro indica alla VM di mantenere memoria libera extra tra la soglia in cui entra in azione il recupero in background (kswapd) e la soglia in cui entra in azione il recupero diretto (attraverso l'allocazione dei processi).</string>
-    <string name="help_text_fifo_batch">Controlla il numero massimo di richieste per batch. Questo parametro ottimizza l'equilibrio tra la latenza per richiesta e il throughput aggregato. Quando la bassa latenza è la preoccupazione principale, più piccolo è meglio è. L'aumento di fifo_batch generalmente migliora il throughput, al costo della variazione della latenza.</string>
+    <string name="help_text_extfrag_threshold">Questo parametro influenza se il kernel compatterà la memoria o dirigerà il recupero per soddisfare un\'allocazione di ordine superiore. I valori che tendono verso 0 implicano che le allocazioni fallirebbero a causa della mancanza di memoria, i valori verso 1000 implicano che i fallimenti sono dovuti alla frammentazione e -1 implica che l\'allocazione avrà successo purché vengano rispettati i limiti.</string>
+    <string name="help_text_extra_free_kbytes">Questo parametro indica alla VM di mantenere memoria libera extra tra la soglia in cui entra in azione il recupero in background (kswapd) e la soglia in cui entra in azione il recupero diretto (attraverso l\'allocazione dei processi).</string>
+    <string name="help_text_fifo_batch">Controlla il numero massimo di richieste per batch. Questo parametro ottimizza l\'equilibrio tra la latenza per richiesta e il throughput aggregato. Quando la bassa latenza è la preoccupazione principale, più piccolo è meglio è. L\'aumento di fifo_batch generalmente migliora il throughput, al costo della variazione della latenza.</string>
     <string name="help_text_front_merges">Questo parametro sintonizzabile richiede 0 (=off) o 1 (=on). A volte capita che una richiesta entri nello scheduler io contiguo ad una richiesta già in coda. O si inserisce nella parte posteriore di quella richiesta, oppure si inserisce nella parte anteriore.</string>
     <string name="help_text_fstrim_toggle">Taglia varie parti del tuo sistema per liberare blocchi inutilizzati nella tua memoria. Questa operazione richiede BusyBox e il completamento potrebbe richiedere del tempo.</string>
     <string name="help_text_fsync">La chiamata fsync() forza una scrittura fisica dei dati dalla cache del buffer. Disabilitare questa funzionalità può migliorare le prestazioni, ma al costo della perdita di dati in caso di arresto anomalo del sistema.</string>
     <string name="help_text_go_hispeed_load">Vai a hispeed quando il carico della CPU è pari o superiore a questo valore.</string>
-    <string name="help_text_gpu_control_enable">Abilita l'interfaccia del kernel utilizzata per modificare le frequenze e i regolatori della GPU. La disponibilità dipende dal supporto del kernel.</string>
+    <string name="help_text_gpu_control_enable">Abilita l\'interfaccia del kernel utilizzata per modificare le frequenze e i regolatori della GPU. La disponibilità dipende dal supporto del kernel.</string>
     <string name="help_text_gpu_gov_settings">Il tuo governatore GPU ha alcune impostazioni speciali per ottimizzare il suo comportamento. Questo è molto simile a un governatore della CPU.</string>
     <string name="help_text_gpu_max_freq">Questo sintonizzabile ti consente di modificare la frequenza massima della GPU. Abbassando questo valore è possibile risparmiare la carica della batteria a scapito delle prestazioni.</string>
     <string name="help_text_highmem_is_dirtyable">Il valore predefinito è 0 (falso), il che significa che i rapporti dirty_ratio e dirty_ background_ratio vengono calcolati solo come percentuale di memoria insufficiente. Ciò protegge da scansioni eccessive durante il recupero delle pagine, lo scambio e il disagio generale della VM.</string>
     <string name="help_text_hispeed_freq">Alta velocità per passare da qualsiasi frequenza più piccola in caso di carico pesante.</string>
     <string name="help_text_hotplug_control">Un tocco su questo elemento ti consente di modificare diversi valori del tuo driver hotplug. Il driver hotplug decide quando un core della CPU deve essere online o offline.</string>
     <string name="help_text_hotplug_sampling">La frequenza di campionamento del driver hotplug. La riduzione di questo valore determina decisioni più rapide riguardo se un nucleo debba essere portato online o meno.</string>
-    <string name="help_text_ignore_nice_load">Questo parametro assume il valore \'0\' o \'1\'. Se impostato su \'0\' (è l'impostazione predefinita), tutti i processi vengono conteggiati nel valore di \'Utilizzo CPU\'. Se impostato su \'1\', i processi eseguiti con un valore \'nice\' non verranno conteggiati (e quindi verranno ignorati) nel calcolo dell'utilizzo complessivo.</string>
+    <string name="help_text_ignore_nice_load">Questo parametro assume il valore \'0\' o \'1\'. Se impostato su \'0\' (è l\'impostazione predefinita), tutti i processi vengono conteggiati nel valore di \'Utilizzo CPU\'. Se impostato su \'1\', i processi eseguiti con un valore \'nice\' non verranno conteggiati (e quindi verranno ignorati) nel calcolo dell\'utilizzo complessivo.</string>
     <string name="help_text_input_boost_freq">La frequenza a cui passerà la CPU quando viene registrato un tocco sul display.</string>
-    <string name="help_text_io_is_busy">Questo è un flag che determina se l'attesa di vari IO dovrebbe aumentare l'utilizzo della CPU aumentandone la frequenza. Impostandolo su 0 il regolatore aumenterà la frequenza meno spesso.</string>
+    <string name="help_text_io_is_busy">Questo è un flag che determina se l\'attesa di vari IO dovrebbe aumentare l\'utilizzo della CPU aumentandone la frequenza. Impostandolo su 0 il regolatore aumenterà la frequenza meno spesso.</string>
     <string name="help_text_io_scheduler_list">Lo scheduler IO gestisce le richieste IO per un dispositivo specifico per consentire una gestione efficiente. La modifica di questo valore ha un impatto piuttosto ridotto sulla maggior parte dei sistemi Android.</string>
-    <string name="help_text_ksm">Kernel Samepage Merging (KSM) consente di deduplicare la memoria. È una funzionalità molto utile su Android che può far risparmiare un po' di RAM a scapito delle prestazioni della CPU.</string>
+    <string name="help_text_ksm">Kernel Samepage Merging (KSM) consente di deduplicare la memoria. È una funzionalità molto utile su Android che può far risparmiare un po\' di RAM a scapito delle prestazioni della CPU.</string>
     <string name="help_text_laptop_mode">laptop_mode è una manopola che controlla la modalità laptop.</string>
     <string name="help_text_legacy_va_layout">Se diverso da zero, questo sysctl disabilita il nuovo layout mmap a 32 bit: il kernel utilizzerà il layout legacy (2.4) per tutti i processi.</string>
-    <string name="help_text_live_oc_uc">Fai attenzione con questa opzione. È possibile effettuare l'overclock/underclock dei passaggi di frequenza elencati e impostare la tensione corretta. Tali valori non verranno applicati ai profili per-app per la tua sicurezza.</string>
+    <string name="help_text_live_oc_uc">Fai attenzione con questa opzione. È possibile effettuare l\'overclock/underclock dei passaggi di frequenza elencati e impostare la tensione corretta. Tali valori non verranno applicati ai profili per-app per la tua sicurezza.</string>
     <string name="help_text_low_latency" formatted="false">Se abilitato (1), consente al driver hotplug di reagire molto rapidamente a brevi picchi di carico (carico della CPU al 100%) e di portare le CPU online di conseguenza.</string>
-    <string name="help_text_lowmem_reserve_ratio">Per alcuni carichi di lavoro specializzati su macchine highmem è pericoloso per il kernel consentire l'allocazione della memoria del processo dalla zona lowmem. Questo perché quella memoria potrebbe essere bloccata tramite la chiamata di sistema mlock() o per indisponibilità di spazio di swap.</string>
+    <string name="help_text_lowmem_reserve_ratio">Per alcuni carichi di lavoro specializzati su macchine highmem è pericoloso per il kernel consentire l\'allocazione della memoria del processo dalla zona lowmem. Questo perché quella memoria potrebbe essere bloccata tramite la chiamata di sistema mlock() o per indisponibilità di spazio di swap.</string>
     <string name="help_text_max_freq_cpu">Questo parametro sintonizzabile consente di regolare la frequenza massima della CPU. Abbassare questo valore può farti risparmiare energia a scapito delle prestazioni.</string>
     <string name="help_text_max_freq_hysteresis">Rimanere alla frequenza massima almeno per questo valore prima di abbassare nuovamente la frequenza.</string>
     <string name="help_text_max_map_count">Questo file contiene il numero massimo di aree della mappa di memoria che un processo può avere. Le aree della mappa di memoria vengono utilizzate come effetto collaterale della chiamata di malloc, direttamente da mmap e mprotect, e anche durante il caricamento delle librerie condivise.</string>
     <string name="help_text_min_free_kbytes">Viene utilizzato per forzare la VM Linux a mantenere un numero minimo di kilobyte liberi.</string>
-    <string name="help_text_min_freq_cpu">Questo parametro sintonizzabile consente di regolare la frequenza minima della CPU. L'aumento di questo valore può fornire prestazioni migliori a scapito dell'utilizzo della batteria.</string>
+    <string name="help_text_min_freq_cpu">Questo parametro sintonizzabile consente di regolare la frequenza minima della CPU. L\'aumento di questo valore può fornire prestazioni migliori a scapito dell\'utilizzo della batteria.</string>
     <string name="help_text_min_online_time">Per evitare che i core siano offline/online quando sono vicini alla soglia. Questo è il tempo online minimo in secondi per un core.</string>
     <string name="help_text_min_sample_time">La quantità minima di tempo da trascorrere su una frequenza prima di poter diminuire.</string>
     <string name="help_text_no_data_found">Non ci sono informazioni disponibili su questo articolo.</string>
-    <string name="help_text_oom_dump_tasks">Consente la produzione di un dump dell'attività a livello di sistema (esclusi i thread del kernel) quando il kernel esegue un kill OOM e include informazioni quali pid, uid, tgid, dimensione VM, rss, nr_ptes, nr_pmds, swapents, punteggio oom_score_adj e nome. Ciò è utile per determinare il motivo per cui è stato invocato il killer OOM, per identificare l'attività canaglia che l'ha causato e per determinare il motivo per cui il killer OOM ha scelto l'attività da eliminare.</string>
-    <string name="help_text_oom_kill_allocating_task">Ciò abilita o disabilita l'interruzione dell'attività di attivazione OOM in situazioni di memoria insufficiente. Il valore predefinito è 0.</string>
-    <string name="help_text_overcommit_memory">Questo valore contiene un flag che abilita l'overcommit della memoria.\nQuando questo flag è 0, il kernel tenta di stimare la quantità di memoria libera rimasta quando lo spazio utente richiede più memoria.\nQuando questo flag è 1, il kernel finge che ci sia sempre memoria sufficiente finché non si esaurisce.\nQuando questo flag è 2, il kernel utilizza una politica di mai overcommit che tenta di impedire qualsiasi overcommit della memoria.</string>
+    <string name="help_text_oom_dump_tasks">Consente la produzione di un dump dell\'attività a livello di sistema (esclusi i thread del kernel) quando il kernel esegue un kill OOM e include informazioni quali pid, uid, tgid, dimensione VM, rss, nr_ptes, nr_pmds, swapents, punteggio oom_score_adj e nome. Ciò è utile per determinare il motivo per cui è stato invocato il killer OOM, per identificare l\'attività canaglia che l\'ha causato e per determinare il motivo per cui il killer OOM ha scelto l\'attività da eliminare.</string>
+    <string name="help_text_oom_kill_allocating_task">Ciò abilita o disabilita l\'interruzione dell\'attività di attivazione OOM in situazioni di memoria insufficiente. Il valore predefinito è 0.</string>
+    <string name="help_text_overcommit_memory">Questo valore contiene un flag che abilita l\'overcommit della memoria.\nQuando questo flag è 0, il kernel tenta di stimare la quantità di memoria libera rimasta quando lo spazio utente richiede più memoria.\nQuando questo flag è 1, il kernel finge che ci sia sempre memoria sufficiente finché non si esaurisce.\nQuando questo flag è 2, il kernel utilizza una politica di mai overcommit che tenta di impedire qualsiasi overcommit della memoria.</string>
     <string name="help_text_overcommit_ratio">Quando overcommit_memory è impostato su 2, lo spazio di indirizzi impegnato non può superare lo swap più questa percentuale di RAM fisica.</string>
     <string name="help_text_panic_on_oom">Ciò abilita o disabilita il panico in caso di memoria esaurita.</string>
     <string name="help_text_percpu_pagelist_fraction">Questa è la frazione di pagine al massimo (punteggio alto pcp-&gt;alto) in ciascuna zona allocata per ciascun elenco di pagine della CPU. Il valore minimo per questo è 8. Significa che non consentiamo che più di 1/8 delle pagine in ciascuna zona vengano allocate in ogni singolo per_cpu_pagelist.</string>
     <string name="help_text_powersave_bias" formatted="false">Questo parametro assume un valore compreso tra 0 e 1000. Definisce il valore percentuale (volte 10) della frequenza target che verrà eliminato dal target. Ad esempio, se impostato su 100 -&gt; 10%, quando Ondemand Governor avrebbe mirato a 1000 MHz, punterà invece a 1000 MHz - (10% di 1000 MHz) = 900 MHz. Per impostazione predefinita è impostato su 0 (disabilitato).</string>
-    <string name="help_text_read_ahead">Il kernel tenta di leggere in anticipo i blocchi di dati richiesti in precedenza e li memorizza nella cache per salvare potenziali I/O del disco. Il valore predefinito è 128 kB. Un valore più elevato può aumentare il tempo di caricamento dell'app.</string>
-    <string name="help_text_read_expire">Quando una richiesta di lettura entra per la prima volta nello scheduler io, le viene assegnata una scadenza che è l'ora corrente + il valore read_expire in unità di millisecondi.</string>
+    <string name="help_text_read_ahead">Il kernel tenta di leggere in anticipo i blocchi di dati richiesti in precedenza e li memorizza nella cache per salvare potenziali I/O del disco. Il valore predefinito è 128 kB. Un valore più elevato può aumentare il tempo di caricamento dell\'app.</string>
+    <string name="help_text_read_expire">Quando una richiesta di lettura entra per la prima volta nello scheduler io, le viene assegnata una scadenza che è l\'ora corrente + il valore read_expire in unità di millisecondi.</string>
     <string name="help_text_rgb_values">Ti permette di cambiare i colori RGB (= rosso, verde, blu) del tuo display per calibrarlo.</string>
-    <string name="help_text_sampling_down_factor">Questo parametro controlla la velocità con cui il kernel decide quando diminuire la frequenza mentre funziona alla massima velocità. Se impostato su 1 (impostazione predefinita), le decisioni di rivalutare il carico vengono prese allo stesso intervallo indipendentemente dalla velocità di clock corrente. Ma quando impostato su un valore maggiore di 1 (ad esempio 100) agisce come un moltiplicatore per l'intervallo di pianificazione per la rivalutazione del carico quando la CPU è alla massima velocità a causa del carico elevato.</string>
-    <string name="help_text_sampling_rate">Misurato in uS (10^-6 secondi), indica la frequenza con cui si desidera che il kernel controlli l'utilizzo della CPU e prenda decisioni su cosa fare con la frequenza.</string>
+    <string name="help_text_sampling_down_factor">Questo parametro controlla la velocità con cui il kernel decide quando diminuire la frequenza mentre funziona alla massima velocità. Se impostato su 1 (impostazione predefinita), le decisioni di rivalutare il carico vengono prese allo stesso intervallo indipendentemente dalla velocità di clock corrente. Ma quando impostato su un valore maggiore di 1 (ad esempio 100) agisce come un moltiplicatore per l\'intervallo di pianificazione per la rivalutazione del carico quando la CPU è alla massima velocità a causa del carico elevato.</string>
+    <string name="help_text_sampling_rate">Misurato in uS (10^-6 secondi), indica la frequenza con cui si desidera che il kernel controlli l\'utilizzo della CPU e prenda decisioni su cosa fare con la frequenza.</string>
     <string name="help_text_set_governor">Il governatore della CPU gestisce il modo in cui la tua CPU ridimensiona la sua frequenza. La scelta di un regolatore diverso può influire in modo significativo sulle prestazioni e sulla durata della batteria.</string>
     <string name="help_text_set_gpu_governor">Ti permette di cambiare il governatore della GPU. Gestisce il ridimensionamento della frequenza della tua GPU e potrebbe avere un grande impatto sulle prestazioni della GPU.</string>
     <string name="help_text_single_core_threshold" formatted="false">La soglia affinché un singolo core possa collegarne un altro. Ad esempio, se il core 1 è al 100% e il carico medio è superiore al 60%, il core 3 sarà online.</string>
-    <string name="help_text_stat_interval">L'intervallo di tempo entro il quale vengono aggiornate le statistiche della macchina virtuale. Il valore predefinito è 1 secondo.</string>
-    <string name="help_text_swappiness">Questo controllo viene utilizzato per definire quanto aggressivo il kernel scambierà le pagine di memoria. Valori più alti aumenteranno l'aggressività, mentre valori più bassi diminuiranno la quantità di scambio. Un valore pari a 0 indica al kernel di non avviare lo scambio finché la quantità di pagine libere e supportate da file non è inferiore al limite massimo in una zona.</string>
+    <string name="help_text_stat_interval">L\'intervallo di tempo entro il quale vengono aggiornate le statistiche della macchina virtuale. Il valore predefinito è 1 secondo.</string>
+    <string name="help_text_swappiness">Questo controllo viene utilizzato per definire quanto aggressivo il kernel scambierà le pagine di memoria. Valori più alti aumenteranno l\'aggressività, mentre valori più bassi diminuiranno la quantità di scambio. Un valore pari a 0 indica al kernel di non avviare lo scambio finché la quantità di pagine libere e supportate da file non è inferiore al limite massimo in una zona.</string>
     <string name="help_text_sweeptowake">Riattiva il dispositivo quando scorri sullo schermo mentre è spento. La disponibilità dipende dal supporto del kernel.</string>
     <string name="help_text_target_loads">A questo valore o al di sopra, il regolatore aumenterà la frequenza. Valori più bassi determinano velocità della CPU più elevate. Un esempio potrebbe essere \'85 1200000:80 1500000:95\'. Ciò significa che il carico target complessivo è 85, ma se la frequenza è superiore a 1,2 GHz è 80. Lo stesso vale per 1,5 GHz ma con 95.</string>
-    <string name="help_text_tcp_congestion">Scegli l'algoritmo alla base del controllo della congestione della rete. Di solito il valore predefinito è \'cubic\' o \'reno\'.</string>
+    <string name="help_text_tcp_congestion">Scegli l\'algoritmo alla base del controllo della congestione della rete. Di solito il valore predefinito è \'cubic\' o \'reno\'.</string>
     <string name="help_text_temp_threshold">La soglia di temperatura quando la CPU inizia a rallentare per evitare il surriscaldamento. Questo valore è solitamente in °C.</string>
     <string name="help_text_timer_rate">La frequenza di campionamento del timer utilizzata per aumentare la frequenza</string>
     <string name="help_text_timer_slack">Massimo tempo aggiuntivo di attesa in modalità inattiva, oltre timer_rate, a velocità superiori al minimo prima della riattivazione per ridurre la velocità o -1 se non necessario.</string>
-    <string name="help_text_up_frequency">La frequenza minima della CPU per avviare le operazioni hotplug. Se la frequenza corrente è inferiore a questo valore, non verrà eseguita alcuna operazione hotplug. L'impostazione predefinita è la frequenza massima.</string>
-    <string name="help_text_up_threshold">Definisce quale deve essere l'utilizzo medio della CPU tra i campionamenti di \'sampling_rate\' affinché il kernel possa decidere se aumentare la frequenza.</string>
+    <string name="help_text_up_frequency">La frequenza minima della CPU per avviare le operazioni hotplug. Se la frequenza corrente è inferiore a questo valore, non verrà eseguita alcuna operazione hotplug. L\'impostazione predefinita è la frequenza massima.</string>
+    <string name="help_text_up_threshold">Definisce quale deve essere l\'utilizzo medio della CPU tra i campionamenti di \'sampling_rate\' affinché il kernel possa decidere se aumentare la frequenza.</string>
     <string name="help_text_vfs_cache_pressure">Questo valore percentuale controlla la tendenza del kernel a recuperare la memoria utilizzata per la memorizzazione nella cache degli oggetti directory e inode.</string>
     <string name="help_text_voltage_values">In questo sottomenu è possibile modificare i valori di tensione della CPU. Ciò potrebbe aumentare la durata della batteria o consentire alla CPU di funzionare su frequenze più elevate. Tuttavia, questo può causare enormi problemi se esagerato.</string>
-    <string name="help_text_volume_boost">Questo valore dà una spinta ai tuoi altoparlanti o alle tue cuffie per renderli un po' più forti.</string>
+    <string name="help_text_volume_boost">Questo valore dà una spinta ai tuoi altoparlanti o alle tue cuffie per renderli un po\' più forti.</string>
     <string name="help_text_write_expire">Simile a read_expire, ma per le scritture.</string>
     <string name="help_text_writeback">Controlla dinamicamente il writeback ritardato dei dati memorizzati nella cache. Ciò può migliorare le prestazioni o la durata della batteria, ma può aumentare il rischio di perdita di dati dopo un arresto anomalo.</string>
     <string name="help_text_writes_starved">Quindi writes_starved controlla quante volte diamo la preferenza alle letture rispetto alle scritture. Dopo aver eseguito writes_starved un numero di volte, inviamo alcune scritture in base agli stessi criteri delle letture.</string>
